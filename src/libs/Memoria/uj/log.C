@@ -1,4 +1,4 @@
-/* $Id: log.C,v 1.7 1994/07/20 11:33:13 carr Exp $ */
+/* $Id: log.C,v 1.8 1995/03/13 15:04:06 carr Exp $ */
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -15,6 +15,7 @@
 
 static int LoopNumber = 1;
 
+extern Boolean mc_extended_cache;
 
 static void print_predicted_info(model_loop *loop_data,
 				 int        loop,
@@ -23,7 +24,8 @@ static void print_predicted_info(model_loop *loop_data,
 				 int        UnrollCount,
 				 int        *UnrolledLoops,
 				 int        *unroll_vector,
-				 LoopStatsType *LoopStats)
+				 LoopStatsType *LoopStats,
+				 char       **IVar)
 
   {
    StatsInfoType Stats;
@@ -39,8 +41,15 @@ static void print_predicted_info(model_loop *loop_data,
      Stats.UseCache = false;
      Stats.loop_data = loop_data;
      Stats.loop = loop;
+     if (mc_extended_cache)
+       Stats.UGS = new UniformlyGeneratedSets(loop_data[loop].node,
+					      loop_data[loop].level,
+					      IVar);
+     else
+       Stats.UGS = NULL;
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
 		     ut_ComputeBalance,(WK_EXPR_CLBACK)NOFUNC,(Generic)&Stats);
+     delete Stats.UGS;
      rhoL_lp = loop_data[loop].rho * ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
      if (Stats.flops < rhoL_lp)
        {
@@ -88,7 +97,8 @@ static void print_actual_info(model_loop *loop_data,
 			      PedInfo    ped,
 			      SymDescriptor symtab,
 			      arena_type *ar,
-			      LoopStatsType *LoopStats)
+			      LoopStatsType *LoopStats,
+			      char       **IVar)
 
   {
    StatsInfoType Stats;
@@ -136,8 +146,15 @@ static void print_actual_info(model_loop *loop_data,
      Stats.UseCache = false;
      Stats.loop_data = loop_data;
      Stats.loop = loop;
+     if (mc_extended_cache)
+       Stats.UGS = new UniformlyGeneratedSets(loop_data[loop].node,
+					      loop_data[loop].level,
+					      IVar);
+     else
+       Stats.UGS = NULL;
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
 		     ut_ComputeBalance,(WK_EXPR_CLBACK)NOFUNC,(Generic)&Stats);
+     delete Stats.UGS;
      fprintf(logfile,"Actual Unroll-and-Jam Statistics for Perfect Nest %d\n",
 	     LoopNumber++);
      fprintf(logfile,"========================================================\n\n");
@@ -183,7 +200,8 @@ static void print_NotUnrolledInfo(model_loop *loop_data,
 				  int        *unroll_vector,
 				  LoopStatsType *LoopStats,
 				  SymDescriptor symtab,
-				  arena_type    *ar)
+				  arena_type    *ar,
+				  char          **IVar)
 
   {
    StatsInfoType Stats;
@@ -200,8 +218,15 @@ static void print_NotUnrolledInfo(model_loop *loop_data,
      Stats.UseCache = false;
      Stats.loop_data = loop_data;
      Stats.loop = loop;
+     if (mc_extended_cache)
+       Stats.UGS = new UniformlyGeneratedSets(loop_data[loop].node,
+					      loop_data[loop].level,
+					      IVar);
+     else
+       Stats.UGS = NULL;
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
 		     ut_ComputeBalance,(WK_EXPR_CLBACK)NOFUNC,(Generic)&Stats);
+     delete Stats.UGS;
      rhoL_lp =  loop_data[loop].rho * ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
      if (Stats.flops < rhoL_lp)
        {
@@ -258,7 +283,8 @@ static void print_SingleDepthInfo(model_loop *loop_data,
 				  int        *unroll_vector,
 				  LoopStatsType *LoopStats,
 				  SymDescriptor symtab,
-				  arena_type    *ar)
+				  arena_type    *ar,
+				  char       **IVar)
   
   {
    StatsInfoType Stats;
@@ -275,8 +301,15 @@ static void print_SingleDepthInfo(model_loop *loop_data,
      Stats.UseCache = false;
      Stats.loop_data = loop_data;
      Stats.loop = loop;
+     if (mc_extended_cache)
+       Stats.UGS = new UniformlyGeneratedSets(loop_data[loop].node,
+					      loop_data[loop].level,
+					      IVar);
+     else
+       Stats.UGS = NULL;
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
 		     ut_ComputeBalance,(WK_EXPR_CLBACK)NOFUNC,(Generic)&Stats);
+     delete Stats.UGS;
      rhoL_lp = loop_data[loop].rho * ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
      if (Stats.flops < rhoL_lp)
        {
@@ -310,11 +343,14 @@ static void walk_loops(model_loop *loop_data,
 		       PedInfo    ped,
 		       SymDescriptor symtab,
 		       arena_type *ar,
-		       LoopStatsType *LoopStats)
+		       LoopStatsType *LoopStats,
+		       char          **IVar)
 
   {
    int i;
    
+     IVar[loop_data[loop].level-1] = gen_get_text(gen_DO_get_control(
+                                     gen_INDUCTIVE_get_name(loop_data[loop].node)));
      if (loop_data[loop].inner_loop != -1)
        {
 	i = loop_data[loop].inner_loop;
@@ -323,7 +359,7 @@ static void walk_loops(model_loop *loop_data,
 	   if (unroll_vector[loop_data[loop].level-1] > 0)
 	     UnrolledLoops[UnrollCount++] = loop;
 	   walk_loops(loop_data,i,unroll_vector,UnrolledLoops,UnrollCount,logfile,ped,
-		      symtab,ar,LoopStats);
+		      symtab,ar,LoopStats,IVar);
 	   i = loop_data[i].next_loop;
 	   if (i != -1)
 	      unroll_vector = loop_data[i].unroll_vector;
@@ -337,23 +373,25 @@ static void walk_loops(model_loop *loop_data,
 	     {
 	      LoopStats->UnrolledLoops++;
 	      print_predicted_info(loop_data,loop,logfile,ped,UnrollCount,
-				   UnrolledLoops,unroll_vector,LoopStats);
+				   UnrolledLoops,unroll_vector,LoopStats,IVar);
 	      print_actual_info(loop_data,loop,logfile,UnrollCount,
 				UnrolledLoops,unroll_vector,ped,symtab,ar,
-				LoopStats);
+				LoopStats,IVar);
 	     }
 	   else
 	     {
 	      LoopStats->NotUnrolled++;
 	      print_NotUnrolledInfo(loop_data,loop,logfile,ped,UnrollCount,
-				   UnrolledLoops,unroll_vector,LoopStats,symtab,ar);
+				    UnrolledLoops,unroll_vector,LoopStats,symtab,ar,
+				    IVar);
 	     }
 	  }
 	else
 	  {
 	   LoopStats->SingleDepth++;
 	   print_SingleDepthInfo(loop_data,loop,logfile,ped,UnrollCount,
-				 UnrolledLoops,unroll_vector,LoopStats,symtab,ar);
+				 UnrolledLoops,unroll_vector,LoopStats,symtab,ar,
+				 IVar);
 	  }
        }
   }
@@ -368,7 +406,8 @@ void mh_log_data(model_loop *loop_data,
   {
    int UnrollCount = 0;
    int UnrolledLoops[2];
+   char *IVar[21];  // Max Fortran loop nesting depth
 
      walk_loops(loop_data,0,loop_data[0].unroll_vector,UnrolledLoops,
-		UnrollCount,logfile,ped,symtab,ar,LoopStats);
+		UnrollCount,logfile,ped,symtab,ar,LoopStats,IVar);
   }        

@@ -11,6 +11,7 @@
 #include <analyze.h>
 #include <mem_util.h>
 #include <CacheAnalysis.h>
+#include <UniformlyGeneratedSets.h>
 
 static int remove_edges(AST_INDEX      stmt,
 			int            level,
@@ -133,7 +134,7 @@ static int StoreCacheInfo(AST_INDEX     node,
       {
        DepInfoPtr(node)->Locality = 
          ut_GetReferenceType(node,CacheInfo->loop_data,CacheInfo->loop,
-			     CacheInfo->ped);
+			     CacheInfo->ped,CacheInfo->UGS);
       }
      return(WALK_CONTINUE);
   }
@@ -145,11 +146,22 @@ static void walk_loops(CacheInfoType  *CacheInfo,
   {
    int i;
 
+     CacheInfo->IVar[CacheInfo->loop_data[loop].level-1] = 
+          gen_get_text(gen_DO_get_control(gen_INDUCTIVE_get_name(
+                       CacheInfo->loop_data[loop].node)));
      if (CacheInfo->loop_data[loop].inner_loop == -1)
        {
 	CacheInfo->loop = loop;
+	if (mc_extended_cache)
+	  CacheInfo->UGS=
+	      new UniformlyGeneratedSets(CacheInfo->loop_data[loop].node,
+					 CacheInfo->loop_data[loop].level,
+					 CacheInfo->IVar);
+	else
+	  CacheInfo->UGS = NULL;
 	walk_expression(CacheInfo->loop_data[loop].node,
-			(WK_EXPR_CLBACK)StoreCacheInfo,NOFUNC,(Generic)CacheInfo);
+			(WK_EXPR_CLBACK)StoreCacheInfo,NOFUNC,
+			(Generic)CacheInfo);
        }
      else
        {
@@ -200,5 +212,7 @@ void memory_PerformCacheAnalysis(PedInfo      ped,
      walk_expression(root,(WK_EXPR_CLBACK)BuildDependenceList,NOFUNC,
 		     (Generic)&CacheInfo);
      RefCount = CacheInfo.RefNum;
+     CacheInfo.IVar = new char*[pre_info.loop_num];
      walk_loops(&CacheInfo,0);
+     delete CacheInfo.IVar;
   }
