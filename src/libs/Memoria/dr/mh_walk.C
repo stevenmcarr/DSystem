@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.30 1995/03/13 15:06:34 carr Exp $ */
+/* $Id: mh_walk.C,v 1.31 1995/04/11 15:46:37 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -75,7 +75,7 @@ static int set_scratch(AST_INDEX node,
   }
 
 static void remove_bogus_dependences(AST_INDEX stmt,
-				    PedInfo  ped)
+				     PedInfo  ped)
 
   {
    int vector;
@@ -89,11 +89,12 @@ static void remove_bogus_dependences(AST_INDEX stmt,
 	  edge = next_edge)
        {
 	next_edge = dg_next_src_stmt( PED_DG(ped),edge);
-	if (((((dg[edge].type == dg_true || dg[edge].type == dg_output) &&
-	       (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink))) ||
-	      (dg[edge].src == dg[edge].sink)) &&
-	     dg[edge].level == LOOP_INDEPENDENT) ||
-	    (dg[edge].src == AST_NIL || dg[edge].sink == AST_NIL))
+	if ((dg[edge].src == AST_NIL || dg[edge].sink == AST_NIL))
+          dg_delete_free_edge(PED_DG(ped),edge);
+	else if ((((dg[edge].type == dg_true || dg[edge].type == dg_output) &&
+	      (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink))) ||
+	     (dg[edge].src == dg[edge].sink)) &&
+	    dg[edge].level == LOOP_INDEPENDENT)
           dg_delete_free_edge(PED_DG(ped),edge);
        }
      for (edge = dg_first_sink_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
@@ -101,11 +102,12 @@ static void remove_bogus_dependences(AST_INDEX stmt,
 	  edge = next_edge)
        {
 	next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
-	if (((((dg[edge].type == dg_true || dg[edge].type == dg_output) &&
-	       (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink))) ||
-	      (dg[edge].src == dg[edge].sink)) &&
-	     dg[edge].level == LOOP_INDEPENDENT) ||
-	    (dg[edge].src == AST_NIL || dg[edge].sink == AST_NIL))
+	if ((dg[edge].src == AST_NIL || dg[edge].sink == AST_NIL))
+          dg_delete_free_edge(PED_DG(ped),edge);
+	else if ((((dg[edge].type == dg_true || dg[edge].type == dg_output) &&
+	      (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink))) ||
+	     (dg[edge].src == dg[edge].sink)) &&
+	    dg[edge].level == LOOP_INDEPENDENT)
           dg_delete_free_edge(PED_DG(ped),edge);
        }
   }
@@ -191,8 +193,7 @@ static int pre_walk(AST_INDEX      stmt,
 	 else;  
        else
 	 list_insert_before(stmt,pt_gen_call("cache_report",AST_NIL));
-     if (walk_info->selection != ANNOTATE)
-       remove_bogus_dependences(stmt,walk_info->ped);
+     remove_bogus_dependences(stmt,walk_info->ped);
      return(WALK_CONTINUE);
   }
 

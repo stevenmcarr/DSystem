@@ -1,4 +1,4 @@
-/* $Id: name.C,v 1.10 1995/03/29 08:06:55 carr Exp $ */
+/* $Id: name.C,v 1.11 1995/04/11 15:45:55 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -177,7 +177,8 @@ static void check_if_oldest_value(AST_INDEX node,
 				  UtilList  *nlist,
 				  Boolean   *gen_not_found,
 				  DG_Edge   *dg,
-				  PedInfo   ped)
+				  PedInfo   ped,
+				  Boolean   LengthOne)
 
 /****************************************************************************/
 /*                                                                          */
@@ -189,8 +190,11 @@ static void check_if_oldest_value(AST_INDEX node,
    int        sink_ref;
    scalar_info_type *sptr;
 
-     *gen_not_found = false;
      sink_ref = get_info(ped,node,type_levelv);
+     if (dg_first_sink_ref(PED_DG(ped),sink_ref) == END_OF_LIST && LengthOne)
+       *gen_not_found = true;
+     else
+       *gen_not_found = false;
      for (edge = dg_first_sink_ref( PED_DG(ped),sink_ref);
 	  edge != END_OF_LIST && !*gen_not_found;
 	  edge = dg_next_sink_ref( PED_DG(ped),edge))
@@ -222,13 +226,15 @@ void sr_find_generator(UtilNode *lnode,
    AST_INDEX        astnode;
    scalar_info_type *sptr,*gptr;
    Boolean          gen_not_found,
-                    recurrence_ok;
+                    recurrence_ok,
+                    LengthOne;
    name_node_type   *name_node;
 
      gen_not_found = true;
      recurrence_ok = true;
      name_node = (name_node_type *)UTIL_NODE_ATOM(lnode);
      name_node->opt_will_allocate = false;
+     LengthOne = (UTIL_HEAD(name_node->nlist) == UTIL_TAIL(name_node->nlist));
      for (node = UTIL_HEAD(name_node->nlist);
 	  node != NULLNODE;
 	  node = UTIL_NEXT(node))
@@ -239,7 +245,7 @@ void sr_find_generator(UtilNode *lnode,
 	  if (gen_not_found)
 	    {
 	     check_if_oldest_value(astnode,name_node->nlist,&gen_not_found,
-				   dg,ped);
+				   dg,ped,LengthOne);
 	     if (gen_not_found)
 	       sptr->is_generator = false;
 	     else
@@ -255,15 +261,23 @@ void sr_find_generator(UtilNode *lnode,
 	if (sptr->gen_type == LIAV)
 	  name_node->opt_will_allocate = true;
        }
-     gptr = get_scalar_info_ptr(name_node->gen);
-     gptr->recurrence = BOOL(gptr->recurrence & recurrence_ok);
-     for (node = UTIL_HEAD(name_node->nlist);
-	  node != NULLNODE;
-	  node = UTIL_NEXT(node))
+     if (name_node->gen != AST_NIL)
        {
-	astnode = (AST_INDEX)UTIL_NODE_ATOM(node);
-	sptr = get_scalar_info_ptr(astnode);
-	sptr->recurrence = gptr->recurrence;
+	gptr = get_scalar_info_ptr(name_node->gen);
+	gptr->recurrence = BOOL(gptr->recurrence & recurrence_ok);
+	for (node = UTIL_HEAD(name_node->nlist);
+	     node != NULLNODE;
+	     node = UTIL_NEXT(node))
+	  {
+	   astnode = (AST_INDEX)UTIL_NODE_ATOM(node);
+	   sptr = get_scalar_info_ptr(astnode);
+	   sptr->recurrence = gptr->recurrence;
+	  }
+       }
+     else
+       {
+	util_pluck(lnode);
+	util_free_node(lnode);
        }
   }
 
@@ -276,13 +290,17 @@ void sr_generate_names(AST_INDEX        root,
 /****************************************************************************/
 
   {
-   UtilNode         *lnode;
+   UtilNode         *lnode,
+                    *next_lnode;
    
      walk_expression(gen_DO_get_stmt_LIST(root),(WK_EXPR_CLBACK)partition_names,
 		     NOFUNC,(Generic)name_info);
      for (lnode = UTIL_HEAD(name_info->glist);
 	  lnode != NULLNODE;
-	  lnode = UTIL_NEXT(lnode))
-       sr_find_generator(lnode,name_info->dg,name_info->ped);
+	  lnode = next_lnode)
+       {
+	next_lnode = UTIL_NEXT(lnode);
+        sr_find_generator(lnode,name_info->dg,name_info->ped);
+       }
   }
    

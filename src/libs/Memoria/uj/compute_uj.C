@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.15 1994/07/20 11:33:04 carr Exp $ */
+/* $Id: compute_uj.C,v 1.16 1995/04/11 15:47:15 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -794,6 +794,20 @@ static Boolean missing_out_LI_anti_dep(AST_INDEX node)
   } 
 
 
+static Boolean NotInvariantEdge(DG_Edge *edge,
+				dep_info_type *dinfo)
+
+  {
+   if (edge->level == dinfo->level1)
+     return(pt_find_var(tree_out(edge->src),dinfo->index[0]));
+   else if (edge->level == dinfo->level2)
+     return(pt_find_var(tree_out(edge->src),dinfo->index[1]));
+   else if (edge->level == dinfo->inner_level)
+     return(pt_find_var(tree_out(edge->src),dinfo->index[2]));
+   else
+    return(false);
+  }
+
 /****************************************************************************/
 /*                                                                          */
 /*    Function:
@@ -835,8 +849,7 @@ static AST_INDEX find_oldest_value(UtilList *nlist,
 	       /* handle scalar array refs correctly so that we can 
 		  find the oldest value */
 
-	     (!pt_expr_equal(tree_out(dg[edge].src),tree_out(dg[edge].sink)) ||
-	      dg[edge].level == LOOP_INDEPENDENT) &&
+	     NotInvariantEdge(&dg[edge],dinfo) &&
 
 	     get_subscript_ptr(dg[edge].src)->surrounding_do ==
 	     get_subscript_ptr(dg[edge].sink)->surrounding_do)

@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.14 1994/11/30 15:43:36 carr Exp $ */
+/* $Id: moderate.C,v 1.15 1995/04/11 15:45:42 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -607,7 +607,6 @@ static void build_cost_info(UtilList *glist,
 	     node != NULLNODE;
 	     node = UTIL_NEXT(node))
 	  {
-
 	   /* GET LIAV and LCAV info here */
 
 	   sptr = get_scalar_info_ptr(UTIL_NODE_ATOM(node));

@@ -1,4 +1,4 @@
-/* $Id: log.C,v 1.8 1995/03/13 15:04:06 carr Exp $ */
+/* $Id: log.C,v 1.9 1995/04/11 15:47:22 carr Exp $ */
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -109,7 +109,8 @@ static void print_actual_info(model_loop *loop_data,
      copy_info.val = unroll_vector[loop_data[UnrolledLoops[0]].level-1];
      copy_info.ar = ar;
      copy_info.symtab = symtab;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)ut_init_copies,(WK_EXPR_CLBACK)
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
+		     (WK_EXPR_CLBACK)ut_init_copies,(WK_EXPR_CLBACK)
 		     NOFUNC,(Generic)&copy_info);
      val1 = unroll_vector[loop_data[UnrolledLoops[0]].level-1];
      mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),val1,
@@ -125,8 +126,9 @@ static void print_actual_info(model_loop *loop_data,
      if (UnrollCount > 1)
        {
 	copy_info.val = unroll_vector[loop_data[UnrolledLoops[1]].level-1];
-	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
-			ut_init_copies,(WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
+	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
+			(WK_EXPR_CLBACK) ut_init_copies,
+			(WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
 	val2 = unroll_vector[loop_data[UnrolledLoops[1]].level-1];
 	mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),val2,
 			  loop_data[UnrolledLoops[1]].level,
@@ -349,8 +351,9 @@ static void walk_loops(model_loop *loop_data,
   {
    int i;
    
-     IVar[loop_data[loop].level-1] = gen_get_text(gen_DO_get_control(
-                                     gen_INDUCTIVE_get_name(loop_data[loop].node)));
+     IVar[loop_data[loop].level-1] = 
+       gen_get_text(gen_INDUCTIVE_get_name(
+                      gen_DO_get_control(loop_data[loop].node)));
      if (loop_data[loop].inner_loop != -1)
        {
 	i = loop_data[loop].inner_loop;

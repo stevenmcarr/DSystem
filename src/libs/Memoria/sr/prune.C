@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.9 1994/11/30 15:43:49 carr Exp $ */
+/* $Id: prune.C,v 1.10 1995/04/11 15:45:58 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -214,8 +214,8 @@ static int check_gen(AST_INDEX       node,
 	      {
 		scalar_info->generator = -1;
 		prune_dependence_edges(name,-2,gen_info);
-		if (scalar_info->scalar)
-		  scalar_info->is_generator = false;
+		scalar_info->scalar = false;  /* invariant code motion
+						    is unsafe if PAV */
 	      }
 	  }
        }

@@ -1,4 +1,4 @@
-/* $Id: interchange.C,v 1.13 1994/07/11 13:39:32 carr Exp $ */
+/* $Id: interchange.C,v 1.14 1995/04/11 15:46:56 carr Exp $ */
 
 /****************************************************************/
 /*                                                              */
@@ -236,18 +236,20 @@ static model_loop *TryFusionToEnableInterchange(model_loop    *loop_data,
 
 
 static void add_edge(PedInfo      ped,
-		     DG_Edge      *dg,
+		     DG_Edge      **old_dg,
 		     EDGE_INDEX   old_edge,
 		     int          level)
 		
 
   {
    EDGE_INDEX new_edge;
+   DG_Edge    *dg;
    int        dir;
    int        source,sink,temp,
               src_stmt,sink_stmt;
 
-     new_edge = dg_alloc_edge( PED_DG(ped),&dg);
+     new_edge = dg_alloc_edge( PED_DG(ped),old_dg);
+     dg = *old_dg;
      dg[new_edge].src_str = NULL;
      dg[new_edge].sink_str = NULL;
      dg[new_edge].type = dg[old_edge].type;
@@ -360,7 +362,7 @@ static int update_edges(AST_INDEX node,
 		{
 		 for (j = 1; j <= gen_get_dt_LVL(&dg[edge]);j++)
 		   gen_put_dt_DIS(&dg[edge],j,0);
-		 add_edge(info->ped,dg,edge,LOOP_INDEPENDENT);
+		 add_edge(info->ped,&dg,edge,LOOP_INDEPENDENT);
 		}
 	      dg_delete_free_edge( PED_DG(info->ped),edge);
 	     }
@@ -793,7 +795,7 @@ static int update_vectors(AST_INDEX     node,
 
 	      /* add a new edge with the new distance vector */
 
-	    add_edge(upd_info->ped,dg,edge,nlevel);
+	    add_edge(upd_info->ped,&dg,edge,nlevel);
 	    i = nlevel;
 
 	        /* may be multiple new edges because of the vector is a summary */
@@ -808,7 +810,7 @@ static int update_vectors(AST_INDEX     node,
 		 if ((nlevel = new_level(dg[edge],upd_info->num_loops,i+1))
 		     != LOOP_INDEPENDENT)
 		   {
-		    add_edge(upd_info->ped,dg,edge,nlevel);
+		    add_edge(upd_info->ped,&dg,edge,nlevel);
 		    i++;
 		   }
 		 else

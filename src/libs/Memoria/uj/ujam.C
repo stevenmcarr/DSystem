@@ -1,4 +1,4 @@
-/* $Id: ujam.C,v 1.7 1994/07/20 11:33:14 carr Exp $ */
+/* $Id: ujam.C,v 1.8 1995/04/11 15:47:27 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -29,6 +29,44 @@
 #ifndef dt_h
 #include <dt.h>
 #endif
+
+static int RemoveInterloopDependences(AST_INDEX node,
+				      PedInfo   ped)
+
+  {
+   DG_Edge    *dg;
+   int        vector;
+   EDGE_INDEX edge,
+              next_edge;
+   AST_INDEX  name;
+
+     if (is_subscript(node))
+       {
+	dg = dg_get_edge_structure( PED_DG(ped));
+	name = gen_SUBSCRIPT_get_name(node);
+	vector = get_info(ped,name,type_levelv);
+	for (edge = dg_first_src_ref( PED_DG(ped),vector);
+	     edge != END_OF_LIST;
+	     edge = next_edge)
+	  {
+	   next_edge = dg_next_src_ref( PED_DG(ped),edge);
+	   if (get_subscript_ptr(dg[edge].src)->surrounding_do !=
+	       get_subscript_ptr(dg[edge].sink)->surrounding_do)
+	     dg_delete_free_edge( PED_DG(ped),edge);
+	  }
+	for (edge = dg_first_sink_ref( PED_DG(ped),vector);
+	     edge != END_OF_LIST;
+	     edge = next_edge)
+	  {
+	   next_edge = dg_next_sink_ref( PED_DG(ped),edge);
+	   if (get_subscript_ptr(dg[edge].src)->surrounding_do !=
+	       get_subscript_ptr(dg[edge].sink)->surrounding_do)
+	   dg_delete_free_edge( PED_DG(ped),edge);
+	  }
+       } 
+     return(WALK_CONTINUE);
+  }
+
 
 static int remove_edges(AST_INDEX      stmt,
 			int            level,
@@ -184,9 +222,11 @@ static int check_unroll(AST_INDEX      stmt,
 	pre_info.ped = loop_info->ped;
 	pre_info.symtab = loop_info->symtab;
 	pre_info.ar = loop_info->ar;
-	walk_statements(stmt,level,(WK_STMT_CLBACK)ut_mark_do_pre,(WK_STMT_CLBACK)ut_mark_do_post,
+	walk_statements(stmt,level,(WK_STMT_CLBACK)ut_mark_do_pre,
+			(WK_STMT_CLBACK)ut_mark_do_post,
 			(Generic)&pre_info);
-	walk_statements(stmt,level,(WK_STMT_CLBACK)remove_edges,(WK_STMT_CLBACK)NOFUNC,(Generic)loop_info);
+	walk_statements(stmt,level,(WK_STMT_CLBACK)remove_edges,
+			(WK_STMT_CLBACK)NOFUNC,(Generic)loop_info);
 	if (pre_info.abort)
 	  return(WALK_ABORT);
 	loop_data = (model_loop *)loop_info->ar->arena_alloc_mem_clear
@@ -197,10 +237,19 @@ static int check_unroll(AST_INDEX      stmt,
 				  loop_info->num_loops,loop_info->ped,
 				  loop_info->symtab,loop_info->ar);
 	if (((config_type *)PED_MH_CONFIG(loop_info->ped))->logging)
-	  mh_log_data(loop_data,
-		      ((config_type *)PED_MH_CONFIG(loop_info->ped))->logfile,
-		      loop_info->ped,loop_info->symtab,loop_info->ar,
-		      loop_info->LoopStats);
+	  {
+
+	   /* removing interloop dependences is necessary to ensure that
+	      scalar replacement won't fail when called to gather unroll
+	      statistics */
+
+	   walk_expression(stmt,(WK_EXPR_CLBACK)RemoveInterloopDependences,
+			   (WK_EXPR_CLBACK)NOFUNC,(Generic)loop_info->ped);
+	   mh_log_data(loop_data,
+		       ((config_type *)PED_MH_CONFIG(loop_info->ped))->logfile,
+		       loop_info->ped,loop_info->symtab,loop_info->ar,
+		       loop_info->LoopStats);
+	  }
 	else
 	  {
 	   mh_do_distribution(loop_data,&loop_info->num_do);

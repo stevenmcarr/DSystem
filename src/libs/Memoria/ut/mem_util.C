@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.10 1995/03/13 15:13:55 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.11 1995/04/11 15:47:32 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -48,10 +48,9 @@ int ut_change_logical_to_block_if(AST_INDEX stmt,
      if (is_logical_if(stmt))
        {
 	rvalue = gen_LOGICAL_IF_get_rvalue(stmt);
-	tree_replace(rvalue,AST_NIL);
 	stmt_list = gen_LOGICAL_IF_get_stmt_LIST(stmt);
-	tree_replace(stmt_list,AST_NIL);
-	guard = gen_GUARD(AST_NIL,rvalue,stmt_list);
+	guard = gen_GUARD(AST_NIL,tree_copy_with_type(rvalue),
+			  tree_copy_with_type(stmt_list));
 	block_if = gen_IF(tree_copy_with_type(gen_get_label(stmt)),AST_NIL,
 			  list_create(guard));
 	pt_tree_replace(stmt,block_if);
