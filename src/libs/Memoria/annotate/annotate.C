@@ -78,6 +78,7 @@ static int InsertCacheCalls(AST_INDEX     stmt,
 		       (WK_EXPR_CLBACK)AddCall,(Generic)CallInfo);
      else if (is_print(stmt))
        walk_expression(gen_PRINT_get_data_vars_LIST(stmt),NOFUNC,
+		       (WK_EXPR_CLBACK)AddCall,(Generic)CallInfo);
      else if (is_read_short(stmt))
        {
 	strcpy(CallInfo->CacheRoutine,"cache_store");
