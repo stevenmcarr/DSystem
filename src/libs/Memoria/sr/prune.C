@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.11 1995/08/21 15:11:31 carr Exp $ */
+/* $Id: prune.C,v 1.12 1995/09/14 14:49:16 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -65,7 +65,8 @@ static void prune_dependence_edges(AST_INDEX     node,
    scalar_info_type *scalar_src,
                     *scalar_sink;
    AST_INDEX        src_stmt,
-                    sink_stmt;
+                    sink_stmt,
+                    name;
 
      scalar_sink = get_scalar_info_ptr(node);
      dg = dg_get_edge_structure( PED_DG(gen_info->ped));
@@ -117,39 +118,15 @@ static void prune_dependence_edges(AST_INDEX     node,
 			scalar_src->recurrence = false;
 			scalar_src->prevent_rec = true;
 		       }
-		     if (dg[edge].src == dg[edge].sink && 
-			 dg[edge].type == dg_input && !scalar_src->prevent_slr)
-		       {
-		        scalar_src->scalar = true;
-			Invariant = true;
-		       }
 		     if (edge_dist > distance)
 		       dg_delete_free_edge( PED_DG(gen_info->ped),edge);
-		   /*  else if (edge_dist == distance && 
-			      (scalar_src->generator == -1 || 
-			       dg[edge].src == dg[edge].sink))
-		       scalar_src->is_generator = true; */
 		    }
 		  else
 		    {
-		     if (dg[edge].type == dg_true)
-		       {
-			scalar_src->prevent_slr = true;
-			scalar_src->scalar = false;
-			Invariant = false;
-			MarkAllSinksAsNotScalar(gen_info->ped,dg[edge].src);
-		       }
 		     dg_delete_free_edge( PED_DG(gen_info->ped),edge);
 		    }
 		  break;
 		case dg_output: 
-		    if (dg[edge].consistent == consistent_SIV && 
-			!dg[edge].symbolic && dg[edge].src == dg[edge].sink &&
-			!scalar_src->prevent_slr)
-		      {
-		       scalar_src->scalar = true;
-		       Invariant = true;
-		      }
 		  break;
 		case dg_anti:
 		  if (dg[edge].consistent != inconsistent &&
@@ -162,6 +139,11 @@ static void prune_dependence_edges(AST_INDEX     node,
 		  dg_delete_free_edge( PED_DG(gen_info->ped),edge);
 	       }
 	  }
+       }
+     if (scalar_sink->generator != -1)
+       {
+	name=gen_SUBSCRIPT_get_name(gen_info->array_table[scalar_sink->generator].node);
+	Invariant = scalar_sink->scalar || get_scalar_info_ptr(name)->scalar;
        }
   }
 
@@ -176,7 +158,7 @@ static int check_gen(AST_INDEX       node,
   {
    AST_INDEX        name;
    scalar_info_type *scalar_info;
-   Boolean Invariant;
+   Boolean Invariant = false;
 
      if (is_subscript(node))
        {
@@ -186,7 +168,11 @@ static int check_gen(AST_INDEX       node,
 	 
 	/* no generator */
 
-	  prune_dependence_edges(name,-2,gen_info,Invariant);
+	  {
+	   prune_dependence_edges(name,-2,gen_info,Invariant);
+	   if (Invariant && ReplaceLevel < 2)
+	     scalar_info->scalar = false;
+	  }
 	else if (!scalar_info->is_consistent || !scalar_info->constant)
 	  {
 	   scalar_info->generator = -1;
@@ -245,6 +231,126 @@ static int check_gen(AST_INDEX       node,
    return(WALK_CONTINUE);
   }
 
+static int CheckForInv(AST_INDEX     AstNode,
+		       gen_info_type *gen_info)
+
+/****************************************************************************/
+/*                                                                          */
+/*                                                                          */
+/****************************************************************************/
+
+  {
+   int      sink_ref,
+            edge_dist,
+            edge,
+            next_edge;
+   DG_Edge  *dg;
+   scalar_info_type *scalar_src,
+                    *scalar_sink;
+   AST_INDEX        src_stmt,
+                    sink_stmt,
+                    node;
+
+     if (is_subscript(AstNode))
+       {
+	node = gen_SUBSCRIPT_get_name(AstNode);
+	scalar_sink = get_scalar_info_ptr(node);
+	dg = dg_get_edge_structure( PED_DG(gen_info->ped));
+	sink_ref= get_info(gen_info->ped,node,type_levelv);
+	for (edge = dg_first_sink_ref( PED_DG(gen_info->ped),sink_ref);
+	     edge != END_OF_LIST;
+	     edge = dg_next_sink_ref( PED_DG(gen_info->ped),edge))
+	  {
+	   if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
+	       dg[edge].type == dg_input || dg[edge].type == dg_output)
+	     {
+	      scalar_src = get_scalar_info_ptr(dg[edge].src);
+	      if (scalar_src->surrounding_do == scalar_sink->surrounding_do)
+		{
+		 switch(dg[edge].type)
+		   {
+		    case dg_input:
+		    case dg_true: 
+		      if (dg[edge].consistent != inconsistent && 
+			  !dg[edge].symbolic)
+			{
+			 if (dg[edge].level != LOOP_INDEPENDENT)
+			   if ((edge_dist = 
+				gen_get_dt_DIS(&dg[edge],dg[edge].level)) < 0)
+			     edge_dist = 1;
+			   else;
+			 else
+			   edge_dist = 0;
+			 src_stmt = ut_get_stmt(dg[edge].src);
+			 sink_stmt = ut_get_stmt(node);
+			 if (dg[edge].src == dg[edge].sink && 
+			     dg[edge].type == dg_input && !scalar_src->prevent_slr)
+			   scalar_src->scalar = true;
+			}
+		      else
+			{
+			 if (dg[edge].type == dg_true)
+			   {
+			    scalar_src->prevent_slr = true;
+			    scalar_src->scalar = false;
+			    MarkAllSinksAsNotScalar(gen_info->ped,dg[edge].src);
+			   }
+			}
+		      break;
+		    case dg_output: 
+		      if (dg[edge].consistent == consistent_SIV && 
+			  !dg[edge].symbolic && dg[edge].src == dg[edge].sink &&
+			  !scalar_src->prevent_slr)
+			 scalar_src->scalar = true;
+		      break;
+		    default:
+		      break;
+	          }
+		}
+	     }
+	  }
+       }
+     return(WALK_CONTINUE);
+  }
+
+
+static int mark_invariant(AST_INDEX       stmt,
+			  int             level,
+			  gen_info_type   *gen_info)
+
+/****************************************************************************/
+/*                                                                          */
+/*                                                                          */
+/****************************************************************************/
+
+  {
+   if (is_guard(stmt))
+     walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,(WK_EXPR_CLBACK)CheckForInv,
+		     (Generic)gen_info);
+   else if (is_logical_if(stmt))
+     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)CheckForInv,
+		     (Generic)gen_info);
+   else if (is_assignment(stmt))
+     {
+      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)CheckForInv,
+		      (Generic)gen_info);
+      walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)CheckForInv,
+		      (Generic)gen_info);
+     }
+   else if (is_write(stmt))
+     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)CheckForInv,
+		     (Generic)gen_info);
+   else if (is_arithmetic_if(stmt))
+     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)CheckForInv,
+		     (Generic)gen_info);
+   return(WALK_CONTINUE);
+  }
+
 static int check_stmts(AST_INDEX       stmt,
 		       int             level,
 		       gen_info_type   *gen_info)
@@ -292,5 +398,6 @@ void sr_prune_graph(AST_INDEX       root,
 /****************************************************************************/
 
   {
+   walk_statements(root,level,(WK_STMT_CLBACK)mark_invariant,NOFUNC,(Generic)gen_info);
    walk_statements(root,level,(WK_STMT_CLBACK)check_stmts,NOFUNC,(Generic)gen_info);
   }
