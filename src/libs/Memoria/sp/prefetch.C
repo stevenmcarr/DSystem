@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.26 2000/04/09 20:20:42 carr Exp $ */
+/* $Id: prefetch.C,v 1.27 2000/05/16 15:36:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,6 +39,7 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 #include <libs/Memoria/ut/Recurrence.h>
+#include <libs/Memoria/annotate/AddressEquivalenceClassSet.h>
 #undef is_open
 #include <iostream.h>
 #include <math.h>
@@ -413,8 +414,10 @@ static int CountCycles(AST_INDEX     Node,
 //               node requires in machine cycles
 //
 
-static int CyclesPerIteration(AST_INDEX Node,
-			      PedInfo   ped)
+static int CyclesPerIteration( PedInfo   ped,
+			      AST_INDEX Node,
+			      int       Level,
+			      char      **IVar)
 
   {
     SPCycleInfoType CycleInfo; // Cycle information
@@ -437,7 +440,21 @@ static int CyclesPerIteration(AST_INDEX Node,
     CycleInfo.MemCycles = 
       ceil_ab(CycleInfo.MemCycles,
 	      ((config_type *)PED_MH_CONFIG(ped))->IntegerUnits);
-     
+
+
+    // add in addres arithmetic instructions if there 
+    // is no auto increment mode
+
+     if (!((config_type *)PED_MH_CONFIG(ped))->AutoIncrement)
+       {
+	 AddressEquivalenceClassSet *AECS =
+	   new AddressEquivalenceClassSet(Node,Level,IVar);
+	 
+	 CycleInfo.MemCycles += (AECS->GetSize()+1); 
+	 
+	 delete AECS;
+       }
+
      // conservatively assume that memory and flops are parallel.  This gives a
      // lower bound on cycle time 
 
@@ -541,7 +558,8 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 					 PrefetchList *LinePrefetches,
 					 PrefetchList *WordPrefetches,
 					 PedInfo      ped,
-					 int          LogMaxWordsPerLine)
+					 int          LogMaxWordsPerLine,
+					 char         **IVar)
 
   {
     float PrefetchBandwidth;   // bandwidth provided by machine
@@ -573,7 +591,8 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
        ((float)((config_type *)PED_MH_CONFIG(ped))->line);
      BandwidthNeeded += LineValue;
 
-     Cycles = CyclesPerIteration(loop_data[loop].node,ped);
+     Cycles = CyclesPerIteration(ped,loop_data[loop].node,
+				 loop_data[loop].level,IVar);
 
      BandwidthNeeded /= Cycles;
 
@@ -1320,7 +1339,8 @@ static void SchedulePrefetches(model_loop *loop_data,
 			       PedInfo      ped,
 			       SymDescriptor symtab,
 			       arena_type    *ar,
-			       int           LogMaxWordsPerLine)
+			       int           LogMaxWordsPerLine,
+			       char          **IVar)
   {
     AST_INDEX var;                  // AST for loop induction variable
     AST_INDEX Step;
@@ -1351,7 +1371,8 @@ static void SchedulePrefetches(model_loop *loop_data,
       {
 	// determine how long for loop to finish
 
-	Cycles = CyclesPerIteration(loop_data[loop].node,ped);
+	Cycles = CyclesPerIteration(ped,loop_data[loop].node,
+				    loop_data[loop].level,IVar);
 
 	// determine number of iterations ahead we must prefetch to cover latency of
 	// prefetch with loop cycles
@@ -1619,12 +1640,13 @@ static void walk_loops(model_loop    *loop_data,
 	if (!((config_type *)PED_MH_CONFIG(ped))->aggressive)
 	  ModeratePrefetchRequirements(loop_data,loop,&LinePrefetches,
 				       &WordPrefetches,ped,
-				       LogMaxWordsPerLine);
+				       LogMaxWordsPerLine,
+				       IVar);
 
 	// Software pipeline the prefetches
 	SchedulePrefetches(loop_data,loop,&LinePrefetches,&WordPrefetches,
-			   &NoLocality,&TempLocality,&SpatLocality,ped,symtab,ar,
-			   LogMaxWordsPerLine);
+			   &NoLocality,&TempLocality,&SpatLocality,ped,symtab,
+			   ar,LogMaxWordsPerLine,IVar);
 
 	// Make prefetches into comments with directives
 
