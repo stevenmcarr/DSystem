@@ -2092,7 +2092,7 @@ PostProcessArrayDecl(SymTable t, int index, SymDescriptor d)
     int size = sizeof(ArrayBound) * ndims;
     ArrayBound *dimarray = 
       (ArrayBound *) get_mem(size, "Array dimension bounds");
-    bcopy(dims, dimarray, size);
+    bcopy((const char *)dims, (char*)dimarray, size);
     SymPutFieldByIndex(d->Table, index, SYMTAB_DIM_BOUNDS, (Generic) dimarray);
   }
 }

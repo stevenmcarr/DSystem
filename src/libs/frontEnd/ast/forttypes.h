@@ -1,4 +1,4 @@
-/* $Id: forttypes.h,v 1.7 1997/03/11 14:29:26 carr Exp $ */
+/* $Id: forttypes.h,v 1.8 1997/06/26 17:14:00 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -109,6 +109,6 @@ typedef enum {
     TYPE_MATCH_ERROR
 } CompTypeMatch;
 
-CompTypeMatch composition_type_match_table[TYPE_LAST][TYPE_LAST];
+extern CompTypeMatch composition_type_match_table[TYPE_LAST][TYPE_LAST];
 
 #endif
