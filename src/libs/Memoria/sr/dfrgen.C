@@ -1,8 +1,27 @@
-/* $Id: dfrgen.C,v 1.3 1992/10/03 15:48:42 rn Exp $ */
+/* $Id: dfrgen.C,v 1.4 1992/12/11 11:22:14 carr Exp $ */
+#include <general.h>
 #include <sr.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+
+#ifndef Arena_h
 #include <Arena.h>
+#endif
+
+#ifndef dfrgen_h
 #include <dfrgen.h>
-#include <check.h>
+#endif
+
+#ifndef mh_config_h
+#include <mh_config.h>
+#endif
+
+#ifndef dg_h
+#include <dg.h>
+#endif
+
+#include <mem_util.h>
+#include <pt_util.h>
 
 static int add_gens(AST_INDEX      node,
 		    rgen_info_type *rgen_info)

@@ -1,10 +1,23 @@
-/* $Id: block.h,v 1.3 1992/12/07 10:17:15 carr Exp $ */
+/* $Id: block.h,v 1.4 1992/12/11 11:19:42 carr Exp $ */
 
 #ifndef block_h
 #define block_h
 
-#include <Arena.h>
-#include <sr.h>
+#ifndef Arena_h
+#include <Arena.h>       /* for arena_type */
+#endif
+#ifndef cgen_set_h
+#include <cgen_set.h>    /* for Set */
+#endif
+#ifndef general_h
+#include <general.h>     /* for Boolean */
+#endif
+#ifndef ast_h          
+#include <fort/ast.h>    /* for AST_INDEX */
+#endif
+#ifndef fortsym_h
+#include <fort/fortsym.h>  /* for SymDescriptor */
+#endif
 
 typedef struct block_struct block_type;
 
@@ -71,12 +84,12 @@ typedef struct {
  } flow_graph_type;
 
 EXTERN(void, sr_build_flow_graph,(flow_graph_type *flow_graph,
-					  AST_INDEX stmt_list,
-					  SymDescriptor symtab,
-					  arena_type *ar));
+				  AST_INDEX stmt_list,
+				  SymDescriptor symtab,
+				  arena_type *ar));
 EXTERN(block_type *, sr_insert_block_on_edge,(arena_type *ar,
-						     edge_type *edge,
-						     SymDescriptor symtab));
+					      edge_type *edge,
+					      SymDescriptor symtab));
 EXTERN(void, sr_free_flow_graph,(flow_graph_type flow_graph));
 EXTERN(void, debug_print_graph,(flow_graph_type flow_graph));
 #endif

@@ -1,13 +1,35 @@
-/* $Id: mh_walk.h,v 1.4 1992/12/07 10:09:34 carr Exp $ */
+/* $Id: mh_walk.h,v 1.5 1992/12/11 11:17:38 carr Exp $ */
 
 #ifndef mh_walk_h
 #define mh_walk_h
 
+#ifndef context_h
 #include <context.h>
-#include <newdatabase.h>
+#endif
+
+#ifndef fortsym_h
 #include <fort/fortsym.h>
+#endif
+
+#ifndef Arena_h
 #include <Arena.h>
+#endif
+
+#ifndef LoopStats_h
 #include <LoopStats.h>
+#endif
+
+#ifndef ped_h
+#include <ped.h>
+#endif
+
+#ifndef FortTree_h
+#include <FortTree.h>
+#endif
+
+#ifndef ast_h
+#include <ast.h>
+#endif
 
 typedef struct walkinfotype {
   int     selection;

@@ -1,4 +1,4 @@
-/* $Id: block.C,v 1.3 1992/10/03 15:48:44 rn Exp $ */
+/* $Id: block.C,v 1.4 1992/12/11 11:21:59 carr Exp $ */
 /****************************************************************************/
 /*  block.c                                                                 */
 /*                                                                          */
@@ -6,10 +6,26 @@
 /*                innermost loop body.  Currently handles block-if only.    */
 /*                                                                          */
 /****************************************************************************/
+
+#include <general.h>
+
 #include <sr.h>
-#include <Arena.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+#include <pt_util.h>
+
+#ifndef block_h
+#include <block.h>
+#endif
+
+#ifndef codegen_h
 #include <codegen.h>
+#endif
+
+#ifndef label_h
 #include <label.h>
+#endif
+
 
 static block_type *build_basic_blocks(block_type *block,
 				      AST_INDEX stmt_list,

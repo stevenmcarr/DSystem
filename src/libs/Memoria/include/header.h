@@ -1,34 +1,26 @@
-/* $Id: header.h,v 1.4 1992/12/07 10:17:24 carr Exp $ */
+/* $Id: header.h,v 1.5 1992/12/11 11:19:46 carr Exp $ */
 
 #ifndef header_h
 #define header_h
 
-#include <general.h>
-#include <newdatabase.h>
-#include <ped.h>
-#include <fort/ast.h>
-#include <fort/strutil.h>
-#include <fort/astutil.h>
-#include <fort/astlist.h>
-#include <fort/astcons.h>
-#include <fort/astnode.h>
-#include <fort/aphelper.h>
-#include <fort/astsel.h>
-#include <fort/asttree.h>
-#include <fort/astrec.h>
-/* #include "/rn/usr/johnmc/src/ned_cp/FortTree.h" */
-#include <fort/FortTree.h>
-#include <fort/TextTree.h>
-#include <fort/FortTextTree.h>
-#include <fort/fortsym.h>
-#include <fort/groups.h>
-#include <cd.h>
-#include <dg.h>
-#include <el.h>
-#include <dp.h>
-#include <dt.h>
-#include <Arena.h>
-#include <LoopStats.h>
+#ifndef general_h
+#include <general.h>       /* for EXTERN */
+#endif
+#ifndef dp_h
+#include <dp.h>                 /* for PedInfo */
+#endif
+#ifndef ast_h
+#include <fort/ast.h>            /* for AST_INDEX */
+#endif
+#ifndef fortsym_h
+#include <fort/fortsym.h>        /* for SymDescriptor */
+#endif
+#ifndef Arena_h
+#include <Arena.h>               /* for arena_type */
+#endif
+#ifndef LoopStats_h
+#include <LoopStats.h>           /* for LoopStatsType */
+#endif 
 
 EXTERN(void, memory_interchange_stats,(PedInfo ped,AST_INDEX root,
 					       int level,

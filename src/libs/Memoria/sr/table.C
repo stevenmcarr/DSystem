@@ -1,12 +1,25 @@
-/* $Id: table.C,v 1.4 1992/10/03 15:48:48 rn Exp $ */
+/* $Id: table.C,v 1.5 1992/12/11 11:22:30 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <sr.h>
-#include <Arena.h>
-#include <scalar.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <table.h>
+#include <std.h>
+
+#ifndef Arena_h
+#include <Arena.h>
+#endif
+
+#ifndef scalar_h
+#include <scalar.h>
+#endif
+
+#include <mem_util.h>
+#include <pt_util.h>
 
 static int get_value(AST_INDEX     node,
 		     int           *index)

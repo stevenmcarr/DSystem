@@ -1,9 +1,8 @@
-/* $Id: global.h,v 1.4 1992/12/07 10:17:22 carr Exp $ */
+/* $Id: global.h,v 1.5 1992/12/11 11:19:45 carr Exp $ */
 
 /*
  *	global.h
  *
- *	supposed to be included by everything
  */
 
 #ifndef global_h
@@ -13,16 +12,11 @@
 #undef INLINE
 
 #define get_atom(ar,n,x) ar->arena_alloc_mem(n,x)
-#define free_mem(x)	{free(x); x=NULL;}
 
-
-#include <stdio.h>
 
 typedef char Bool;
 #define tr 1
 #define fa 0
 
-
-#include <cgen_set.h>
 
 #endif

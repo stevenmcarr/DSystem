@@ -1,13 +1,33 @@
-/* $Id: analyze.C,v 1.6 1992/12/07 10:23:38 carr Exp $ */
+/* $Id: analyze.C,v 1.7 1992/12/11 11:25:35 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <mh.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <analyze.h>
+
+#ifndef gi_h
 #include <fort/gi.h>
+#endif
+
+#ifndef dg_h
+#include <dg.h>
+#endif
+
+#ifndef dt_h
+#include <dt.h>
+#endif
+
+#ifndef mh_config_h
+#include <mh_config.h>
+#endif
+
 #include <mem_util.h>
+#include <pt_util.h>
 
 static int build_pre(AST_INDEX       stmt,
 		     int             level,

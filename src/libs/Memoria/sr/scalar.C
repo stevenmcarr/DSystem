@@ -1,27 +1,78 @@
-/* $Id: scalar.C,v 1.6 1992/12/07 10:19:49 carr Exp $ */
+/* $Id: scalar.C,v 1.7 1992/12/11 11:22:27 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <sr.h>
-#include <Arena.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <scalar.h>
+
+#ifndef check_h
 #include <check.h>
+#endif
+
+#ifndef codegen_h
 #include <codegen.h>
+#endif
+
+#ifndef dfantic_h
 #include <dfantic.h>
+#endif
+
+#ifndef dfavail_h
 #include <dfavail.h>
+#endif
+
+#ifndef dfrgen_h
 #include <dfrgen.h>
+#endif
+
+#ifndef gavail_h
 #include <gavail.h>
+#endif
+
+#ifndef insert_h
 #include <insert.h>
+#endif
+
+#ifndef name_h
 #include <name.h>
+#endif
+
+#ifndef moderate_h
 #include <moderate.h>
+#endif
+
+#ifndef pick_h
 #include <pick.h>
+#endif
+
+#ifndef profit_h
 #include <profit.h>
+#endif
+
+#ifndef prune_h
 #include <prune.h>
+#endif
+
+#ifndef table_h
 #include <table.h>
+#endif
+
+#ifndef gi_h
 #include <fort/gi.h>
+#endif
+
+#ifndef mh_config_h
+#include <mh_config.h>
+#endif
+
 #include <malloc.h>
+#include <mem_util.h>
+#include <pt_util.h>
 
 int dummy = 0; /* this decl keeps Rn from dying in get_mem (why?) */
 
@@ -747,68 +798,6 @@ static int post_scalar(AST_INDEX     stmt,
    return(WALK_FROM_OLD_NEXT);
   }
 
-static int cleanup_arrays(AST_INDEX node,
-			  int       dummy)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
-  {
-   AST_INDEX name;
-
-   if (is_subscript(node))
-     {
-      name = gen_SUBSCRIPT_get_name(node);
-      if (get_scalar_info_ptr(name) != NULL)
-        free((char *)get_scalar_info_ptr(name));
-      return(WALK_SKIP_CHILDREN);
-     }
-   return(WALK_CONTINUE);
-  }
-
-static int cleanup_space(AST_INDEX stmt,
-			 int       level,
-			 int       dummy)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
-  {
-   if (get_stmt_info_ptr(stmt) != NULL)
-     free((char *)get_stmt_info_ptr(stmt));
-   if (is_assignment(stmt))
-     {
-      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),cleanup_arrays,NOFUNC,
-		      dummy);
-      walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),cleanup_arrays,NOFUNC,
-		      dummy);
-     }
-   else if (is_guard(stmt))
-     walk_expression(gen_GUARD_get_rvalue(stmt),cleanup_arrays,NOFUNC,
-		     dummy);
-   else if (is_write(stmt))
-     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),cleanup_arrays,NOFUNC,
-		     dummy);
-   else if (is_read_short(stmt))
-     walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),cleanup_arrays,
-		     NOFUNC,dummy);
-   else if (is_logical_if(stmt))
-     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),cleanup_arrays,NOFUNC,
-		     dummy);
-   else if (is_arithmetic_if(stmt))
-     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),cleanup_arrays,NOFUNC,
-		     dummy);
-   else if (is_call(stmt))
-     walk_expression(gen_CALL_get_invocation(stmt),cleanup_arrays,NOFUNC,
-		     dummy);
-   return(WALK_CONTINUE);
-  }
-     
-
 void memory_scalar_replacement(PedInfo      ped,
 			       AST_INDEX    root,
 			       SymDescriptor symtab,
@@ -829,5 +818,4 @@ void memory_scalar_replacement(PedInfo      ped,
      do_info.symtab = symtab;
      do_info.ar = ar;
      walk_statements(root,LEVEL1,pre_scalar,post_scalar,(Generic)&do_info);
-     /* walk_statements(root,LEVEL1,cleanup_space,NOFUNC,NULL); */
   }

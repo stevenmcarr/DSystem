@@ -1,4 +1,4 @@
-/* $Id: cgen_set.h,v 1.4 1992/12/07 10:17:20 carr Exp $ */
+/* $Id: cgen_set.h,v 1.5 1992/12/11 11:19:44 carr Exp $ */
 
 /*
  *  Revision 4
@@ -11,11 +11,14 @@
 #define cgen_set_h
 
 #ifndef general_h
-#include <general.h> 
+#include <general.h>       /* for EXTERN */
 #endif
-
-#include <Arena.h> 
-#include <global.h>
+#ifndef Arena_h
+#include <Arena.h>    /* for arena_type */
+#endif
+#ifndef global_h
+#include <global.h>   /* for Bool */
+#endif
 
 #define NBITS	32
 #define LOGBITS	 5

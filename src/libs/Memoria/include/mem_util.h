@@ -1,9 +1,26 @@
-/* $Id: mem_util.h,v 1.4 1992/12/07 10:17:29 carr Exp $ */
+/* $Id: mem_util.h,v 1.5 1992/12/11 11:19:49 carr Exp $ */
 
 #ifndef mem_util_h
 #define mem_util_h
 
-#include <Arena.h>
+#ifndef general_h
+#include <general.h>         /* for Generic, EXTERN */
+#endif
+#ifndef Arena_h
+#include <Arena.h>            /* for arena_type */
+#endif 
+#ifndef ast_h
+#include <fort/ast.h>         /* for AST_INDEX */
+#endif
+#ifndef fortsym_h
+#include <fort/fortsym.h>     /* for SymDescriptor */
+#endif
+#ifndef context_h
+#include <context.h> 
+#endif
+#ifndef el_h
+#include <el.h>               /* for EDGE_INDEX */
+#endif
 
 typedef struct list_struct *listp;
 

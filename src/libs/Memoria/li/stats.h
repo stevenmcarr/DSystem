@@ -1,9 +1,30 @@
-/* $Id: stats.h,v 1.3 1992/12/07 10:15:36 carr Exp $ */
+/* $Id: stats.h,v 1.4 1992/12/11 11:19:20 carr Exp $ */
 #ifndef stats_h
 #define stats_h
 
+#ifndef general_h
+#include <general.h>
+#endif
+
+#ifndef Arena_h
 #include <Arena.h>
-#include <global.h>
+#endif
+
+#ifndef dp_h
+#include <dp.h>
+#endif
+
+#ifndef dg_h
+#include <dg.h>
+#endif
+
+#ifndef list_h
+#include <misc/list.h>
+#endif
+
+#ifndef mh_h
+#include <mh.h>
+#endif
 
 typedef struct refinfotype {
   PedInfo       ped;

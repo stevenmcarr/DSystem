@@ -1,12 +1,27 @@
-/* $Id: dfantic.C,v 1.4 1992/12/07 10:19:06 carr Exp $ */
+/* $Id: dfantic.C,v 1.5 1992/12/11 11:22:10 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
+
 #include <sr.h>
-#include <Arena.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+
 #include <dfantic.h>
+
+#include <mem_util.h>
+
+#ifndef cgen_set_h
+#include <cgen_set.h>
+#endif
+
+#ifndef mh_config_h
+#include <mh_config.h>
+#endif
+
 
 static int mark_def(AST_INDEX    node,
 		    Set          kill)

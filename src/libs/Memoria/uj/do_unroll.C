@@ -1,21 +1,41 @@
-/* $Id: do_unroll.C,v 1.7 1992/10/03 15:49:38 rn Exp $ */
+/* $Id: do_unroll.C,v 1.8 1992/12/11 11:23:24 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <mh.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <do_unroll.h>
+
 #include <ujam.h>
-#include <mark.h>
 #include <mem_util.h>
-#include <fort/gi.h>
+#include <pt_util.h>
 #include <label.h>
-#include <mem_util.h>
 #include <analyze.h>
 #include <shape.h>
 #include <compute_uj.h>
 #include <log.h>
+
+#include <mark.h>
 #include <bound.h>
+
+#ifndef gi_h
+#include <fort/gi.h>
+#endif
+
+#ifndef dg_h
+#include <dg.h>
+#endif
+
+#ifndef dt_h
+#include <dt.h>
+#endif
+
+#ifndef header_h
+#include <header.h>
+#endif
 
 static void walk_loops_to_unroll(model_loop    *loop_data,
 				 int           loop,

@@ -1,14 +1,50 @@
-/* $Id: interchange.C,v 1.7 1992/12/07 10:14:48 carr Exp $ */
+/* $Id: interchange.C,v 1.8 1992/12/11 11:19:04 carr Exp $ */
+
+#ifndef general_h
+#include <general.h>
+#endif
 
 #include <mh.h>
-#include <fort/gi.h>
-#include <interchange.h>
-#include <analyze.h>
-#include <shape.h>
-#include <mem_util.h>
-#include <mark.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+#include <pt_util.h>
+#include <mh_config.h>
 
+#ifndef header_h
+#include <header.h>
+#endif
+
+#ifndef dt_h
+#include <dt.h>
+#endif
+
+#ifndef gi_h
+#include <fort/gi.h>
+#endif
+
+#ifndef interchange_h
+#include <interchange.h>
+#endif
+
+#ifndef analyze_h
+#include <analyze.h>
+#endif
+
+#ifndef shape_h
+#include <shape.h>
+#endif
+
+#ifndef mem_util_h
+#include <mem_util.h>
+#endif
+
+#ifndef mark_h
+#include <mark.h>
+#endif
+
+#ifndef dg_h
 #include	<dg.h>		/* dg_add_edge()		*/
+#endif
 
 
 

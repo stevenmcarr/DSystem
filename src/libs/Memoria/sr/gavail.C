@@ -1,11 +1,19 @@
-/* $Id: gavail.C,v 1.2 1992/10/03 15:49:14 rn Exp $ */
+/* $Id: gavail.C,v 1.3 1992/12/11 11:22:15 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <sr.h>
-#include <Arena.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <gavail.h>
+
+#include <mem_util.h>
+
+#ifndef mh_config_h
+#include <mh_config.h>
+#endif
 
 static int update_LI_avail(AST_INDEX         node,
 			   gavail_info_type  *gavail_info)

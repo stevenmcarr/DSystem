@@ -1,8 +1,10 @@
-/* $Id: FloatList.h,v 1.1 1992/12/07 10:16:34 carr Exp $ */
+/* $Id: FloatList.h,v 1.2 1992/12/11 11:19:38 carr Exp $ */
 #ifndef FloatList_h
 #define FloatList_h
 
+#ifndef sllist_h
 #include <misc/sllist.h>
+#endif
 
 class FloatListEntry : public SinglyLinkedListEntry {
 

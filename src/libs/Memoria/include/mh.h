@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.6 1992/12/07 10:17:31 carr Exp $ */
+/* $Id: mh.h,v 1.7 1992/12/11 11:19:50 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -9,48 +9,30 @@
 
 */
 
-#include <general.h>
-#include <newdatabase.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <misc/kb.h>
-#include <misc/point.h>
-#include <misc/rect.h>
-#include <misc/rect_list.h>
-#include <mon/gfx.h>
-#include <mon/font.h>
-#include <misc/rn_string.h>
-#include <std.h>
-#include <misc/mem.h>
-#include <fort/ast.h>
-#include <fort/strutil.h>
-#include <fort/astutil.h>
-#include <fort/astlist.h>
-#include <fort/astcons.h>
-#include <fort/astnode.h>
-#include <fort/aphelper.h>
-#include <fort/astsel.h>
-#include <fort/asttree.h>
-#include <fort/astrec.h>
-#include <fort/FortTree.h>
-#include <fort/TextTree.h>
-#include <fort/FortTextTree.h>
-#include <fort/fortsym.h>
-#include <fort/groups.h>
-#include <cd.h>
-#include <dg.h>
-#include <el.h>
-#include <dp.h>
-#include <dt.h>
-#include <dep/rsd.h>
-#include <fort/walk.h>
-#include <mh_config.h>
-#include <pt_util.h>
-#include <malloc.h>
-#include <Arena.h>
-#include <header.h>
-#include <cgen_set.h>
-#include <FloatList.h>
+#ifndef general_h
+#include <general.h>                 /* for Boolean, EXTERN */
+#endif
+#ifndef ast_h
+#include <fort/ast.h>                /* for AST_INDEX */
+#endif
+#ifndef list_h
+#include <misc/list.h>               /* for UtilList */
+#endif
+#ifndef cgen_set_h
+#include <cgen_set.h>                /* for Set */
+#endif
+#ifndef fortsym_h
+#include <fort/fortsym.h>            /* for SymDescriptor */
+#endif
+#ifndef FloatList_h
+#include <FloatList.h>               /* for FloatList */
+#endif
+#ifndef dp_h
+#include <dp.h>                     /* for PedInfo */
+#endif 
+#ifndef groups_h
+#include <fort/groups.h>             /* for binary node tests */
+#endif 
 
 #define  MAX_LEVEL  20
 
@@ -112,6 +94,9 @@ struct loop_struct {
   Set             PreventLvl[MAX_LEVEL];
  };
 
+typedef enum {NONE,SELF_TEMPORAL,GROUP_TEMPORAL,SELF_SPATIAL,GROUP_SPATIAL} 
+        LocalityType;
+
 typedef struct subscriptinfotype {
   int       surrounding_do;
   AST_INDEX surround_node;
@@ -125,6 +110,7 @@ typedef struct subscriptinfotype {
   AST_INDEX original;
   UtilNode  *lnode;
   Boolean   store;
+  LocalityType Locality;
  } subscript_info_type;
 
 typedef struct stmtinfotype {

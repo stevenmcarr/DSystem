@@ -1,7 +1,23 @@
-/* $Id: analyze.h,v 1.3 1992/12/07 10:17:02 carr Exp $ */
+/* $Id: analyze.h,v 1.4 1992/12/11 11:19:41 carr Exp $ */
 
 #ifndef analyze_h
 #define analyze_h
+
+#ifndef general_h
+#include <general.h>       /* for EXTERN */
+#endif
+#ifndef mh_h
+#include <mh.h>               /* for loop_data */
+#endif
+#ifndef dp_h
+#include <dp.h>              /* for PedInfo */
+#endif
+#ifndef fortsym_h
+#include <fort/fortsym.h>     /* for SymDescriptor */
+#endif
+#ifndef ast_h
+#include <fort/ast_h>         /* for AST_INDEX */
+#endif
 
 typedef struct buildinfotype {
   int        parent,

@@ -1,6 +1,13 @@
-/* $Id: do_dist.C,v 1.3 1992/10/03 15:49:51 rn Exp $ */
+/* $Id: do_dist.C,v 1.4 1992/12/11 11:23:20 carr Exp $ */
+#include <general.h>
 #include <mh.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <do_dist.h>
+
+#ifndef dt_h
+#include <dt.h>
+#endif 
 
 static Boolean need_distribution(int *vec1,
 				 int *vec2,

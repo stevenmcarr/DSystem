@@ -1,13 +1,27 @@
-/* $Id: dfavail.C,v 1.3 1992/12/07 10:19:16 carr Exp $ */
+/* $Id: dfavail.C,v 1.4 1992/12/11 11:22:12 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <sr.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+
+#ifndef Arena_h
 #include <Arena.h>
+#endif 
+
+#ifndef dfavail_h
 #include <dfavail.h>
-#include <check.h>
+#endif 
+
+#ifndef mh_config_h
+#include <mh_config.h>
+#endif 
+
+#include <mem_util.h>
 
 static void allocate_sets(block_type *block,
 			  int        size,

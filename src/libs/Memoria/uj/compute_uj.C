@@ -1,13 +1,32 @@
-/* $Id: compute_uj.C,v 1.6 1992/10/03 15:50:16 rn Exp $ */
+/* $Id: compute_uj.C,v 1.7 1992/12/11 11:23:15 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <mh.h>
-#include <mem_util.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <compute_uj.h>
 #include <balance.h>
+
+#ifndef gi_h
 #include <fort/gi.h>
+#endif 
+
+#ifndef dg_h
+#include <dg.h>
+#endif 
+
+#ifndef dt_h
+#include <dt.h>
+#endif 
+
+#ifndef pt_h
+#include <pt.h>
+#endif 
+
+#include <mem_util.h>
 
 static int determine_uj_prof(AST_INDEX      stmt,
 			     int            level,

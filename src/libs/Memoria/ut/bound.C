@@ -1,6 +1,11 @@
-/* $Id: bound.C,v 1.3 1992/10/03 15:50:24 rn Exp $ */
+/* $Id: bound.C,v 1.4 1992/12/11 11:25:46 carr Exp $ */
+#include <general.h>
 #include <mh.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <bound.h>
+
+#include <pt_util.h>
 
 void ut_update_bounds(AST_INDEX loop,
 		      AST_INDEX copy,

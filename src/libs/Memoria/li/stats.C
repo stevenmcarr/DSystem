@@ -1,14 +1,54 @@
-/* $Id: stats.C,v 1.3 1992/12/07 10:14:59 carr Exp $ */
-#include <mh.h>
-#include <fort/gi.h>
-#include <stats.h>
-#include <analyze.h>
-#include <shape.h>
-#include <mem_util.h>
-#include <mark.h>
-#include <LoopStats.h>
+/* $Id: stats.C,v 1.4 1992/12/11 11:19:16 carr Exp $ */
+#ifndef general_h
+#include <general.h>
+#endif 
 
+#include <mh.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+#include <pt_util.h>
+#include <mh_config.h>
+
+#ifndef header_h
+#include <header.h>
+#endif
+
+#ifndef dt_h
+#include <dt.h>
+#endif
+
+#ifndef gi_h
+#include <fort/gi.h>
+#endif 
+
+#ifndef stats_h
+#include <stats.h>
+#endif 
+
+#ifndef analyze_h
+#include <analyze.h>
+#endif 
+
+#ifndef shape_h
+#include <shape.h>
+#endif 
+
+#ifndef mem_util_h
+#include <mem_util.h>
+#endif 
+
+#ifndef mark_h
+#include <mark.h>
+#endif 
+
+#ifndef LoopStats_h
+#include <LoopStats.h>
+#endif 
+
+#ifndef dg_h
 #include	<dg.h>		/* dg_add_edge()		*/
+#endif 
+
 
 
 
@@ -121,7 +161,7 @@ static Boolean OnlyInInnermostPosition(model_loop *loop_data,
   {
    AST_INDEX sub_list,sub;
    char *var;
-   int coeff,words;
+   int coeff;
    Boolean lin;
    
      if (level == LOOP_INDEPENDENT)
@@ -130,12 +170,7 @@ static Boolean OnlyInInnermostPosition(model_loop *loop_data,
      sub = list_first(sub_list);
      var = FindInductionVar(loop_data,node,level);
      if (pt_find_var(sub,var) && NotInOtherPositions(sub_list,var))
-       {
-	pt_get_coeff(sub,var,&lin,&coeff);
-	if (coeff < 0)
-	  coeff = -coeff;
-	return(coeff < words && lin);
-       }
+       return(true);
      return(false);
   }
 
@@ -349,7 +384,8 @@ static void CheckOtherSpatial(AST_INDEX  node,
 	   dg[edge].level != LOOP_INDEPENDENT &&
 	   CanMoveToInnermost(&dg[edge]))
 	 {
-	  if (OnlyInInnermostPosition(loop_data,node,dg[edge].level))
+	  if (OnlyInInnermostPosition(loop_data,node,dg[edge].level) &&
+	      gen_get_dt_DIS(&dg[edge],dg[edge].level) < words)
 	    {
 	     RefGroup->OtherSpatial = true;
 	     if (NOT(RefGroup->Temporal) && NOT(RefGroup->Invariant))

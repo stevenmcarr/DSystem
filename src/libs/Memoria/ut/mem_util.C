@@ -1,12 +1,20 @@
-/* $Id: mem_util.C,v 1.4 1992/10/03 15:50:27 rn Exp $ */
+/* $Id: mem_util.C,v 1.5 1992/12/11 11:25:52 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <mh.h>
-#include <fort/gi.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <mem_util.h>
-#include <Arena.h>
+#include <std.h>
+
+#ifndef gi_h
+#include <fort/gi.h>
+#endif
+
+#include <pt_util.h>
 
 AST_INDEX ut_get_stmt(AST_INDEX node)
 

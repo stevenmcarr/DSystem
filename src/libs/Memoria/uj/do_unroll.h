@@ -1,9 +1,31 @@
-/* $Id: do_unroll.h,v 1.4 1992/12/07 10:23:06 carr Exp $ */
+/* $Id: do_unroll.h,v 1.5 1992/12/11 11:23:41 carr Exp $ */
 
 #ifndef do_unroll_h
 #define do_unroll_h
 
+#ifndef general_h
+#include <general.h>
+#endif
+
+#ifndef Arena_h
 #include <Arena.h>
+#endif
+
+#ifndef fortsym_h
+#include <fort/fortsym.h>
+#endif
+
+#ifndef dp_h
+#include <dp.h>
+#endif
+
+#ifndef ast_h
+#include <ast.h>
+#endif
+
+#ifndef mh_h
+#include <mh.h>
+#endif
 
 typedef struct dupdinfotype {
   SymDescriptor symtab;
@@ -51,10 +73,10 @@ typedef struct refinfotype {
 #define RDX_VAR "mh: rdx_var"
 
 EXTERN(void, mh_do_unroll_and_jam,(model_loop *loop_data,
-					   PedInfo ped,
-					   SymDescriptor symtab,
-					   int num_loops,
-					   arena_type *ar));
+				   PedInfo ped,
+				   SymDescriptor symtab,
+				   int num_loops,
+				   arena_type *ar));
 EXTERN(int, mh_copy_edges,(AST_INDEX node,
-				   Generic ped));
+			   Generic ped));
 #endif

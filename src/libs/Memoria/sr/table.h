@@ -1,8 +1,16 @@
-/* $Id: table.h,v 1.2 1992/10/03 15:49:34 rn Exp $ */
+/* $Id: table.h,v 1.3 1992/12/11 11:22:50 carr Exp $ */
 #ifndef table_h
 #define table_h
 
-EXTERN(int, sr_build_table,(AST_INDEX stmt,int level,
-				    Generic prelim_info));
+#ifndef general_h
+#include <general.h>
+#endif
 
+#ifndef ast_h
+#include <ast.h>
+#endif
+
+EXTERN(int, sr_build_table,(AST_INDEX stmt,int level,
+			    Generic prelim_info));
+  
 #endif

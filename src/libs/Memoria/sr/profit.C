@@ -1,8 +1,15 @@
-/* $Id: profit.C,v 1.2 1992/10/03 15:49:26 rn Exp $ */
+/* $Id: profit.C,v 1.3 1992/12/11 11:22:23 carr Exp $ */
+#include <general.h>
 #include <sr.h>
-#include <Arena.h>
-#include <table.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <profit.h>
+
+#ifndef table_h
+#include <table.h>
+#endif
+
+#include <mem_util.h>
 
 static int chk_pav(AST_INDEX      node,
 		   prof_info_type *prof_info)

@@ -1,10 +1,14 @@
-/* $Id: ujam.C,v 1.4 1992/10/03 15:50:11 rn Exp $ */
+/* $Id: ujam.C,v 1.5 1992/12/11 11:23:29 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <mh.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <ujam.h>
+
 #include <mark.h>
 #include <mem_util.h>
 #include <analyze.h>
@@ -12,6 +16,18 @@
 #include <compute_uj.h>
 #include <do_unroll.h>
 #include <do_dist.h>
+
+#ifndef dg_h
+#include <dg.h>
+#endif
+
+#ifndef dp_h
+#include <dp.h>
+#endif
+
+#ifndef dt_h
+#include <dt.h>
+#endif
 
 static int remove_edges(AST_INDEX      stmt,
 			int            level,
@@ -190,39 +206,6 @@ static int check_unroll(AST_INDEX      stmt,
    return(WALK_CONTINUE);
   }
 
-static int cleanup_space(AST_INDEX node,
-			 int       dummy)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
-  {
-   subscript_info_type *sptr;
-   stmt_info_type      *stptr;
-
-     if (is_subscript(node))
-       {
-	if ((sptr = get_subscript_ptr(gen_SUBSCRIPT_get_name(node))) != NULL)
-	  {
-	   if (sptr->copies != NULL)
-	     {
-	      free((char *)sptr->copies);
-	      sptr->copies = NULL;
-	     }
-	   free((char *)sptr);
-	   set_scratch_to_NULL(gen_SUBSCRIPT_get_name(node));
-	  }
-       }
-     else if (stmt_containing_expr(node))
-       if ((stptr = get_stmt_info_ptr(node)) != NULL)
-	 {
-	  free((char *)stptr);
-	  set_scratch_to_NULL(node);
-	 }
-     return(WALK_CONTINUE);
-  }
 
 AST_INDEX memory_unroll_and_jam(PedInfo       ped,
 				AST_INDEX     root,
@@ -250,7 +233,6 @@ AST_INDEX memory_unroll_and_jam(PedInfo       ped,
      loop_info.symtab = symtab;
      loop_info.ar = ar;
      walk_statements(root,level,check_loop,check_unroll,(Generic)&loop_info);
-     /* walk_expression(root,cleanup_space,NOFUNC,NULL); */
      while (list_prev(root) != prev)
        root = list_prev(root);
      return(root);

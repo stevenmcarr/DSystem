@@ -1,6 +1,10 @@
-/* $Id: log.C,v 1.2 1992/10/03 15:50:08 rn Exp $ */
+/* $Id: log.C,v 1.3 1992/12/11 11:23:27 carr Exp $ */
+#include <general.h>
 #include <mh.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <log.h>
+#include <std.h>
 
 static void print_log_info(model_loop *loop_data,
 			   int        loop,

@@ -1,4 +1,4 @@
-/* $Id: sr.h,v 1.6 1992/12/07 10:17:36 carr Exp $ */
+/* $Id: sr.h,v 1.7 1992/12/11 11:20:13 carr Exp $ */
 
 /*-------------------------------------------------------------
 
@@ -9,49 +9,24 @@
 #ifndef sr_h
 #define sr_h
 
-#include <general.h>
-#include <newdatabase.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <misc/kb.h>
-#include <misc/point.h>
-#include <misc/rect.h>
-#include <misc/rect_list.h>
-#include <mon/gfx.h>
-#include <mon/font.h>
-#include <misc/rn_string.h>
-#include <misc/mem.h>
-#include <std.h>
-#include <fort/ast.h>
-#include <fort/strutil.h>
-#include <fort/astutil.h>
-#include <fort/astlist.h>
-#include <fort/astcons.h>
-#include <fort/astnode.h>
-#include <fort/aphelper.h>
-#include <fort/astsel.h>
-#include <fort/asttree.h>
-#include <fort/astrec.h>
-#include <fort/FortTree.h>
-#include <fort/TextTree.h>
-#include <fort/FortTextTree.h>
-#include <fort/fortsym.h>
-#include <fort/groups.h>
-#include <cd.h>
-#include <dp.h>
-#include <cfg.h>
-#include <dg.h>
-#include <el.h>
-#include <dt.h>
-#include <dep/rsd.h>
-#include <misc/list.h>
-#include <fort/walk.h>
-#include <mh_config.h>
-#include <pt_util.h>
-#include <global.h>
+#ifndef ast_h
+#include <fort/ast.h>                /* for AST_INDEX */
+#endif
+#ifndef general_h
+#include <general.h>                 /* for Boolean, EXTERN */
+#endif
+#ifndef list_h
+#include <misc/list.h>               /* for UtilList */
+#endif
+#ifndef cgen_set_h
+#include <cgen_set.h>                /* for Set */
+#endif
+#ifndef dp_h
+#include <dp.h>                     /* for PedInfo */
+#endif 
+#ifndef block_h
 #include <block.h>
-#include <mem_util.h>
-#include <header.h>
+#endif
 
 typedef enum {BOGUS,LIAV,LIPAV,LCAV,LCPAV} GenTypes;
 

@@ -1,9 +1,37 @@
-/* $Id: moderate.h,v 1.3 1992/12/07 10:20:36 carr Exp $ */
+/* $Id: moderate.h,v 1.4 1992/12/11 11:22:42 carr Exp $ */
 
 #ifndef moderate_h
 #define moderate_h
 
+#include <stdio.h>
+
+#ifndef general_h
+#include <general.h>
+#endif
+
+#ifndef scalar_h
 #include <scalar.h>
+#endif
+
+#ifndef cgen_set_h
+#include <cgen_set.h>
+#endif
+
+#ifndef list_h
+#include <misc/list.h>
+#endif
+
+#ifndef dp_h
+#include <dp.h>
+#endif
+
+#ifndef Arena_h
+#include <Arena.h>
+#endif
+
+#ifndef name_h
+#include <name.h>
+#endif
 
 #define GREEDY   0
 
@@ -24,8 +52,8 @@ typedef struct heaptype {
  }heap_type;
 
 EXTERN(void, sr_moderate_pressure,(PedInfo ped,UtilList *glist,
-					   int free_regs,Boolean *red,
-					   array_table_type *array_table,
-					   FILE *logfile,arena_type *ar));
+				   int free_regs,Boolean *red,
+				   array_table_type *array_table,
+				   FILE *logfile,arena_type *ar));
 
 #endif

@@ -1,13 +1,21 @@
-/* $Id: insert.C,v 1.3 1992/12/07 10:19:24 carr Exp $ */
+/* $Id: insert.C,v 1.4 1992/12/11 11:22:17 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <sr.h>
-#include <Arena.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+
 #include <insert.h>
+
+#ifndef dfantic_h
 #include <dfantic.h>
+#endif
+
+#include <mem_util.h>
 
 static void hoist_inserts(block_type *entry,
 			  int        size,

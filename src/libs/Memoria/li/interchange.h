@@ -1,9 +1,27 @@
-/* $Id: interchange.h,v 1.3 1992/12/07 10:15:10 carr Exp $ */
+/* $Id: interchange.h,v 1.4 1992/12/11 11:19:19 carr Exp $ */
 
 #ifndef interchange_h
 #define interchange_h
 
+#ifndef fortsym_h
+#include <fort/fortsym.h>
+#endif
+
+#ifndef dp_h
+#include <dp.h>
+#endif
+
+#ifndef mh_h
+#include <mh.h>
+#endif
+
+#ifndef list_h
+#include <misc/list.h>
+#endif
+
+#ifndef Arena_h
 #include <Arena.h>
+#endif
 
 typedef struct indexinfotype{
   int           index;

@@ -1,7 +1,13 @@
-/* $Id: label.C,v 1.2 1992/10/03 15:50:35 rn Exp $ */
+/* $Id: label.C,v 1.3 1992/12/11 11:25:49 carr Exp $ */
+#include <general.h>
 #include <sr.h>
-#include <malloc.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+#include <std.h>
 #include <label.h>
+
+#include <mem_util.h>
+#include <pt_util.h>
 
 char *ut_symtab_get_label_str(SymDescriptor symtab)
 

@@ -1,17 +1,37 @@
-/* $Id: mh_walk.C,v 1.5 1992/12/07 10:09:28 carr Exp $ */
+/* $Id: mh_walk.C,v 1.6 1992/12/11 11:17:33 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+
+#include <general.h>
 #include <mh.h>
-#include <Arena.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+
+#ifndef memory_menu_h
 #include <memory_menu.h>
+#endif
+
+#ifndef mh_walk_h
 #include <mh_walk.h>
+#endif
+
+#ifndef gi_h
 #include <fort/gi.h>
+#endif
+
+#ifndef header_h
 #include <header.h>
-#include <LoopStats.h>
+#endif
+
+#ifndef mh_config_h
 #include <mh_config.h>
+#endif
+
+#ifndef message_h
 #include <dialogs/message.h>
+#endif
 
 static walk_info_type memory_walk_info;
 

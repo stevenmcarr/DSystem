@@ -1,12 +1,16 @@
-/* $Id: codegen.C,v 1.5 1992/12/07 10:18:52 carr Exp $ */
+/* $Id: codegen.C,v 1.6 1992/12/11 11:22:09 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
-#include <Arena.h>
-#include <scalar.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+
+#include <pt_util.h>
+#include <mem_util.h>
+
 #include <name.h>
 #include <codegen.h>
 #include <label.h>

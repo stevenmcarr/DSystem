@@ -1,4 +1,4 @@
-/* $Id: set.C,v 1.3 1992/10/03 15:50:42 rn Exp $ */
+/* $Id: set.C,v 1.4 1992/12/11 11:25:53 carr Exp $ */
 /*
  *  An implementation of sets as bit-vectors
  *	(part of the Rn Module Compiler code generator)
@@ -17,9 +17,9 @@
  */
 
 #include <general.h>
-#include <Arena.h>
-#include <global.h>
+#include <cgen_set.h>
 #include <memory.h>
+#include <stdio.h>
 
 
 Set ut_create_set(arena_type *ar,

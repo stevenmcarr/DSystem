@@ -1,7 +1,35 @@
-/* $Id: scalar.h,v 1.3 1992/12/07 10:20:44 carr Exp $ */
+/* $Id: scalar.h,v 1.4 1992/12/11 11:22:49 carr Exp $ */
 
 #ifndef scalar_h
 #define scalar_h
+
+#ifndef general_h
+#include <general.h>
+#endif
+
+#ifndef ast_h
+#include <ast.h>
+#endif
+
+#ifndef dp_h
+#include <dp.h>
+#endif
+
+#ifndef fortsym_h
+#include <fort/fortsym.h>
+#endif
+
+#ifndef Arena_h
+#include <Arena.h>
+#endif
+
+#ifndef groups_h
+#include <fort/groups.h>
+#endif
+
+#ifndef mh_config_h
+#include <mh_config.h>
+#endif
 
 typedef struct arraytabletype {
   AST_INDEX   node;

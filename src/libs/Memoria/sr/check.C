@@ -1,11 +1,29 @@
-/* $Id: check.C,v 1.4 1992/10/03 15:48:40 rn Exp $ */
+/* $Id: check.C,v 1.5 1992/12/11 11:22:06 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
+
 #include <sr.h>
-#include <Arena.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
+
+#ifndef check_h
 #include <check.h>
+#endif
+
+#ifndef dg_h
+#include <dg.h>
+#endif
+
+#ifndef dt_h
+#include <dt.h>
+#endif
+
+#ifndef mem_util_h
+#include <mem_util.h>
+#endif
 
 static int check_def(AST_INDEX node,
 		     check_info_type *check_info)

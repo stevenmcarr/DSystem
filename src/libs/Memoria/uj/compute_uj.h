@@ -1,7 +1,39 @@
-/* $Id: compute_uj.h,v 1.4 1992/12/07 10:23:03 carr Exp $ */
+/* $Id: compute_uj.h,v 1.5 1992/12/11 11:23:35 carr Exp $ */
 
 #ifndef compute_uj_h
 #define compute_uj_h
+
+#ifndef general_h
+#include <general.h>
+#endif
+
+#ifndef ast_h
+#include <ast.h>
+#endif
+
+#ifndef dp_h
+#include <dp.h>
+#endif
+
+#ifndef fortsym_h
+#include <fort/fortsym.h>
+#endif
+
+#ifndef Arena_h
+#include <Arena.h>
+#endif
+
+#ifndef list_h
+#include <misc/list.h>
+#endif
+
+#ifndef mh_config_h
+#include <mh_config.h>
+#endif
+
+#ifndef mh_h
+#include <mh.h>
+#endif
 
 typedef struct exprinfotype {
   Boolean found;
@@ -62,8 +94,8 @@ typedef struct vectorinfotype {
 
 EXTERN(int, mh_increase_unroll,(int max,int denom,float rhoL_lp));
 EXTERN(void, mh_compute_unroll_amounts,(model_loop *loop_data,
-					       int size,int num_loops,
-					       PedInfo ped,
-					       SymDescriptor symtab,
-					       arena_type    *ar));
+					int size,int num_loops,
+					PedInfo ped,
+					SymDescriptor symtab,
+					arena_type    *ar));
 #endif

@@ -1,9 +1,33 @@
-/* $Id: codegen.h,v 1.3 1992/12/07 10:20:25 carr Exp $ */
+/* $Id: codegen.h,v 1.4 1992/12/11 11:22:33 carr Exp $ */
 
 #ifndef codegen_h
 #define codegen_h
 
+#include <stdio.h>
+
+#ifndef general_h
+#include <general.h>
+#endif
+
+#ifndef ast_h
+#include <ast.h>
+#endif
+
+#ifndef scalar_h
 #include <scalar.h>
+#endif
+
+#ifndef Arena_h
+#include <Arena.h>
+#endif
+
+#ifndef list_h
+#include <misc/list.h>
+#endif
+
+#ifndef fortsym_h
+#include <fort/fortsym.h>
+#endif
 
 typedef struct codeinfotype {
   int         iteration,

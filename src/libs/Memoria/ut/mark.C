@@ -1,6 +1,9 @@
-/* $Id: mark.C,v 1.4 1992/12/07 10:23:54 carr Exp $ */
+/* $Id: mark.C,v 1.5 1992/12/11 11:25:50 carr Exp $ */
 
+#include <general.h>
 #include <mh.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <mark.h>
 #include <dialogs/message.h>
 

@@ -1,11 +1,15 @@
-/* $Id: shape.C,v 1.5 1992/12/07 10:24:15 carr Exp $ */
+/* $Id: shape.C,v 1.6 1992/12/11 11:25:54 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <mh.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <shape.h>
+
+#include <pt_util.h>
 
 Boolean check_inner_control(AST_INDEX inner_control,
 			    char *outer_inductvar)

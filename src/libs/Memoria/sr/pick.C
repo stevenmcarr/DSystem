@@ -1,12 +1,24 @@
-/* $Id: pick.C,v 1.3 1992/10/03 15:48:59 rn Exp $ */
+/* $Id: pick.C,v 1.4 1992/12/11 11:22:22 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
 #include <sr.h>
-#include <Arena.h>
-#include <scalar.h>
+#include <mh_ast.h>
+#include <fort/walk.h>
 #include <pick.h>
+
+#ifndef Arena_h
+#include <Arena.h>
+#endif
+
+#ifndef dt_h
+#include <dt.h>
+#endif
+
+#include <pt_util.h>
+#include <mem_util.h>
 
 static int update_avail(AST_INDEX       node,
 			pick_info_type  *pick_info)
