@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.31 1995/04/11 15:46:37 carr Exp $ */
+/* $Id: mh_walk.C,v 1.32 1995/06/07 16:05:27 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -1242,6 +1242,8 @@ void mh_walk_ast(int          selection,
 	      walk_info.LoopStats->PredictedFinalBalance; 
 	  LoopStats->PredictedInitialBalance +=
 	      walk_info.LoopStats->PredictedInitialBalance;
+	  LoopStats->PredictedP_L +=
+	      walk_info.LoopStats->PredictedP_L;
 	  LoopStats->InitialBalanceWithInterlock +=
 	      walk_info.LoopStats->InitialBalanceWithInterlock;
 	  LoopStats->ActualFinalBalance +=
@@ -1553,6 +1555,9 @@ void UnrollStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 	     (float)LoopStats->UnrolledLoops);
      fprintf(logfile,"Final Loop Balance   = %.4f\n",
 	     LoopStats->PredictedFinalBalance/
+	     (float)LoopStats->UnrolledLoops);
+     fprintf(logfile,"Final Prefetch Requirements = %.4f\n",
+	     LoopStats->PredictedP_L/
 	     (float)LoopStats->UnrolledLoops);
      fprintf(logfile,"FP Register Pressure = %.4f\n",
 	     LoopStats->PredictedFPRegisterPressure/
