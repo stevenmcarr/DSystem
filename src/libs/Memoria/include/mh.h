@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.8 1992/12/11 14:08:46 carr Exp $ */
+/* $Id: mh.h,v 1.9 1993/06/15 14:07:25 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -97,8 +97,8 @@ struct loop_struct {
   Set             PreventLvl[MAX_LEVEL];
  };
 
-typedef enum {NONE,SELF_TEMPORAL,GROUP_TEMPORAL,SELF_SPATIAL,GROUP_SPATIAL} 
-        LocalityType;
+typedef enum {UNDEFINED,NONE,SELF_TEMPORAL,GROUP_TEMPORAL,SELF_SPATIAL,
+	      GROUP_SPATIAL} LocalityType;
 
 typedef struct subscriptinfotype {
   int       surrounding_do;
