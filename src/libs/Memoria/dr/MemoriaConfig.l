@@ -1,5 +1,5 @@
 %{
-/* $Id: MemoriaConfig.l,v 1.1 1997/10/30 15:10:35 carr Exp $ */
+/* $Id: MemoriaConfig.l,v 1.2 1999/04/21 14:42:43 carr Exp $ */
 
 /*****************************************************************/
 /*                                                               */
@@ -12,6 +12,10 @@
 
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh_config.h>
+
+static config_type *config;
+static char ctemp;
+
 %}
 
 %%
@@ -40,6 +44,10 @@ multiply[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[16],"%d",&config->mul_cycles);
 
 add[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[11],"%d",&config->add_cycles);
 
+fp[ ]units[ \t]*[0-9]+	         sscanf(&yytext[9],"%d",&config->FPUnits);
+
+integer[ ]units[ \t]*[0-9]+	 sscanf(&yytext[14],"%d",&config->IntegerUnits);
+
 hit[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[11],"%d",&config->hit_cycles);
 
 miss[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[12],"%d",&config->miss_cycles);
@@ -47,66 +55,61 @@ miss[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[12],"%d",&config->miss_cycles);
 instruction[ ]size[ \t]*[0-9]+	 sscanf(&yytext[17],"%d",&config->instruction_size);
 
 Chow[ \t]+[yn]			 {
-				  char temp_str[1];
-
-				  sscanf(&yytext[6],"%s",temp_str);
-				  config->chow_alloc = (temp_str[0] == 'y');
+				  sscanf(&yytext[5],"%s",&ctemp);
+				  config->chow_alloc = (ctemp == 'y');
 				 }
 
 opt_li[ \t]+[yn]	 	{
-				  char temp_str[1];
-
-				  sscanf(&yytext[7],"%s",temp_str);
-				  config->opt_li_alloc = (temp_str[0] == 'y');
+				  sscanf(&yytext[7],"%s",&ctemp);
+				  config->opt_li_alloc = (ctemp == 'y');
 				 }
 
 fma[ \t]+[yn]	 	        {
-				  char temp_str[1];
-
-				  sscanf(&yytext[5],"%s",temp_str);
-				  config->mult_accum = (temp_str[0] == 'y');
+				  sscanf(&yytext[4],"%c",&ctemp);
+				  config->mult_accum = (ctemp == 'y');
 				 }
 
 sdiv[ \t]+[yn]	 	        {
-				  char temp_str[1];
-
-				  sscanf(&yytext[6],"%s",temp_str);
-				  config->soft_div= (temp_str[0] == 'y');
+				  sscanf(&yytext[5],"%c",&ctemp);
+				  config->soft_div= (ctemp == 'y');
 				 }
 
 logging[ \t]+[yn]	 	{
-				  char temp_str[1];
-
-                                  sscanf(&yytext[9],"%s",temp_str);
-				  config->logging = (temp_str[0] == 'y');
+                                  sscanf(&yytext[8],"%c",&ctemp);
+				  config->logging = (ctemp == 'y');
 				 }
 
 aggressive[ \t]+[yn]	 	{
-				  char temp_str[1];
-
-				  sscanf(&yytext[11],"%s",temp_str);
-				  config->aggressive = (temp_str[0] == 'y');
+				  sscanf(&yytext[11],"%c",&ctemp);
+				  config->aggressive = (ctemp == 'y');
 				 }
 write[ ]back[ \t]+[yn]	 	{
-				  char temp_str[1];
-
-				  sscanf(&yytext[12],"%s",temp_str);
-				  config->write_back = (temp_str[0] == 'y');
+				  sscanf(&yytext[11],"%c",&ctemp);
+				  config->write_back = (ctemp == 'y');
 				 }
 write[ ]allocate[ \t]+[yn] 	{
-				  char temp_str[1];
-
-				  sscanf(&yytext[16],"%s",temp_str);
-				  config->write_allocate=(temp_str[0] == 'y');
+				  sscanf(&yytext[15],"%c",&ctemp);
+				  config->write_allocate=(ctemp == 'y');
 				 }
+
+auto[ ]increment[ \t]+[yn] 	{
+				  sscanf(&yytext[15],"%c",&ctemp);
+				  config->write_allocate=(ctemp == 'y');
+				 }
+
+non[ ]blocking[ ]cache[ \t]+[yn] {
+				  sscanf(&yytext[19],"%c",&ctemp);
+				  config->write_allocate=(ctemp == 'y');
+				 }
+
 [\n]		|
 .				;
 
 %%
 
-void mh_get_config(config,filename)
+void mh_get_config(NewConfig,filename)
 
-  config_type *config;
+  config_type *NewConfig;
   char        *filename;
 
   {
@@ -116,31 +119,35 @@ void mh_get_config(config,filename)
 	
               /* default settings */
 
-     config->max_regs = 8;
-     config->int_regs = 8;
-     config->pipe_length = 0;
-     config->beta_m = 1.0;
-     config->prefetch_latency = 0.0;
-     config->prefetch_buffer = 0.0;
-     config->double_fetches = 2;
-     config->double_regs = 2;
-     config->chow_alloc = 0;
-     config->opt_li_alloc = 0;
-     config->line = 64;
-     config->mult_accum = 0;
-     config->soft_div = 0;
-     config->aggressive = 0;
-     config->logging = 0;
-     config->logfile = NULL;
-     config->div_cycles = 10;
-     config->mul_cycles = 1;
-     config->add_cycles = 1;
-     config->min_flop_cycles = 1;
-     config->hit_cycles = 1;
-     config->miss_cycles = 1;
-     config->write_back= 1;
-     config->write_allocate= 0;
-     config->instruction_size = 100;
+     NewConfig->max_regs = 8;
+     NewConfig->int_regs = 8;
+     NewConfig->pipe_length = 0;
+     NewConfig->beta_m = 1.0;
+     NewConfig->prefetch_latency = 0.0;
+     NewConfig->prefetch_buffer = 0.0;
+     NewConfig->double_fetches = 2;
+     NewConfig->double_regs = 2;
+     NewConfig->chow_alloc = 0;
+     NewConfig->opt_li_alloc = 0;
+     NewConfig->line = 64;
+     NewConfig->mult_accum = 0;
+     NewConfig->soft_div = 0;
+     NewConfig->aggressive = 0;
+     NewConfig->logging = 0;
+     NewConfig->logfile = NULL;
+     NewConfig->div_cycles = 10;
+     NewConfig->mul_cycles = 1;
+     NewConfig->add_cycles = 1;
+     NewConfig->FPUnits = 1;
+     NewConfig->IntegerUnits = 1;
+     NewConfig->min_flop_cycles = 1;
+     NewConfig->hit_cycles = 1;
+     NewConfig->miss_cycles = 1;
+     NewConfig->write_back= 1;
+     NewConfig->write_allocate= 0;
+     NewConfig->AutoIncrement= 0;
+     NewConfig->NonBlockingCache= 0;
+     NewConfig->instruction_size = 100;
 
            /* get configuration file */
      if (filename != NULL)
@@ -161,15 +168,16 @@ void mh_get_config(config,filename)
          /* read in configuration */
      temp = yyin;
      yyin = fd;
-     ret = mh_yylex(config);
+     config = NewConfig;
+     ret = yylex();
      yyin = temp;
-     config->min_flop_cycles = config->mul_cycles < config->add_cycles ?
-                                 (config->mul_cycles < config->div_cycles ?
-                                  config->mul_cycles :
-                                  config->div_cycles):
-                                 (config->add_cycles < config->div_cycles ?
-                                  config->add_cycles :
-                                  config->div_cycles); 
+     NewConfig->min_flop_cycles = NewConfig->mul_cycles < NewConfig->add_cycles ?
+                                 (NewConfig->mul_cycles < NewConfig->div_cycles ?
+                                  NewConfig->mul_cycles :
+                                  NewConfig->div_cycles):
+                                 (NewConfig->add_cycles < NewConfig->div_cycles ?
+                                  NewConfig->add_cycles :
+                                  NewConfig->div_cycles); 
      fclose(fd);
   }
 	
