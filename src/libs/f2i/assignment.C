@@ -1,4 +1,4 @@
-/* $Id: assignment.C,v 1.4 1998/08/05 20:38:15 carr Exp $ */
+/* $Id: assignment.C,v 1.5 1998/08/06 13:49:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -137,7 +137,7 @@ static void NonCharacterAssignment(AST_INDEX	node)
 	 else
 	   {
 	     lhs_index = ASTRegMap->MapToValue(DepInfoPtr(lhs)->AddressLeader);
-	     Offset = DepInfoPtr(node)->Offset*GetDataSize(TYPE_INTEGER);
+	     Offset = DepInfoPtr(lhs)->Offset*GetDataSize(TYPE_INTEGER);
 	     int OffsetReg = getConstantInRegFromInt(Offset);
 	     int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
 	     int TempIndex = TempReg(lhs_index, OffsetReg, op, TYPE_INTEGER);
