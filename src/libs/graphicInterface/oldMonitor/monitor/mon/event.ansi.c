@@ -1,4 +1,4 @@
-/* $Id: event.ansi.c,v 1.13 1997/06/25 14:53:48 carr Exp $ */
+/* $Id: event.ansi.c,v 1.14 1997/06/27 17:40:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,7 +13,9 @@
 
 #include <fcntl.h>
 #include <signal.h>
+#ifndef OSF1
 #include <vfork.h>
+#endif
 #include <stdio.h>
 #include <sys/wait.h>
 #include <sys/types.h>

@@ -1,4 +1,4 @@
-/* $Id: queue.C,v 1.2 1997/06/26 17:28:48 carr Exp $ */
+/* $Id: queue.C,v 1.3 1997/06/27 17:48:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -18,6 +18,8 @@ struct QueueStruct {
 	int	qMax;
 	char	*q;
 };
+
+#include <string.h>
 
 #include <include/bstring.h>
 #include <libs/support/misc/general.h>

@@ -1,4 +1,4 @@
-/* $Id: mem.C,v 1.1 1997/06/25 15:16:37 carr Exp $ */
+/* $Id: mem.C,v 1.2 1997/06/27 17:46:19 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -145,7 +145,7 @@ void* reget_mem(void* old, int size, char* format, ...)
               {     /* realloc failed! */
                  die_with_message("reget_mem():  realloc returned 0! (Out of memory).");
               }
-            bcopy(old, chunk, MIN(RGN_SIZE(old), RGN_SIZE(chunk)));
+            bcopy((const char *)old, (char *)chunk, MIN(RGN_SIZE(old), RGN_SIZE(chunk)));
             zap_block((char*)chunk + RGN_SIZE(old), MAX(0, RGN_SIZE(chunk) - RGN_SIZE(old)));
             zap_block((char*)old, RGN_SIZE(old));
             free(old);

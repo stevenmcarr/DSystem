@@ -1,4 +1,4 @@
-/* $Id: ResizableArray.C,v 1.6 1997/03/11 14:36:32 carr Exp $ */
+/* $Id: ResizableArray.C,v 1.7 1997/06/27 17:44:46 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -28,7 +28,7 @@ Array::Array( Array &a ) : len(a.len)
   max = a.max;
   count = a.count;
   data = (char *)malloc(max*len);
-  bcopy( a.data, data, max*len );
+  bcopy( (const char *)a.data, (char *)data, max*len );
 }
 
 //------------------------------Array----------------------------------------
@@ -40,7 +40,7 @@ Array &Array::operator =( Array &a )
   count = a.count;
   len = a.len;
   data = (char *)malloc(max*len);
-  bcopy( a.data, data, max*len );
+  bcopy( (const char *)a.data, (char *)data, max*len );
   return *this;
 }
 
@@ -67,7 +67,7 @@ void Array::insert( void *datum, uint where )
   count++;			// Inserting somewheres
   if( count > max ) grow(count);// Need to grow?
   void **home = &((void **)data)[where];
-  bcopy( home, home+1, (count-where-1)*sizeof(void *) );
+  bcopy((const char *) home, (char *)home+1, (count-where-1)*sizeof(void *) );
   *home = datum;
 }
 
@@ -79,8 +79,8 @@ void Array::insert( char &datum, uint where )
   count++;			// Inserting somewheres
   if( count > max ) grow(count);// Need to grow?
   char *home = data+where*len;
-  bcopy( home, home+len, (count-where-1)*len );
-  bcopy( &datum, home, len);
+  bcopy((const char *) home, (char *)home+len, (count-where-1)*len );
+  bcopy((const char *) &datum, (char *)home, len);
 }
 
 //------------------------------remove-----------------------------------------
@@ -90,7 +90,7 @@ void Array::remove( uint where )
   if( where >= count ) return;	// Deleting past end?
   count--;			// One fewer items in array
   char *home = data+where*len;	// Address being wiped out
-  bcopy( home+len, home, (count-where)*len );
+  bcopy((const char *) home+len, (char *)home, (count-where)*len );
 }
 
 //------------------------------find-----------------------------------------

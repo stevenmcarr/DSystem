@@ -1,4 +1,4 @@
-/* $Id: bmsearch.C,v 1.2 1997/06/26 17:27:36 carr Exp $ */
+/* $Id: bmsearch.C,v 1.3 1997/06/27 17:47:00 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <include/bstring.h>
 

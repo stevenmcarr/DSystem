@@ -1,4 +1,4 @@
-/* $Id: optim.C,v 1.1 1997/06/25 14:58:38 carr Exp $ */
+/* $Id: optim.C,v 1.2 1997/06/27 17:42:46 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,6 +10,7 @@
         /*                          */
         /****************************/
 
+#include <string.h>
 #include <include/bstring.h>
 #include <libs/graphicInterface/oldMonitor/monitor/sms/optim_sm/optim_private.h>
 
