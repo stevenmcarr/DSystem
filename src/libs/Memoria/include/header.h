@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.9 1994/04/13 14:25:32 carr Exp $ */
+/* $Id: header.h,v 1.10 1994/06/13 10:32:56 carr Exp $ */
 
 #ifndef header_h
 #define header_h
@@ -63,5 +63,11 @@ EXTERN (void, ApplyMemoryCompiler, (int selection, PedInfo ped, AST_INDEX root,
 EXTERN(void, memory_stats_total, (char *program));
 
 EXTERN(void, memory_UnrollStatsTotal, (char *program));
+
+EXTERN(void, memory_PerformCacheAnalysis, (PedInfo      ped,
+					   SymDescriptor symtab,
+					   arena_type   *ar,
+					   AST_INDEX    root,
+					   int          level));
 
 #endif
