@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.19 1994/07/21 10:13:33 yguan Exp $ */
+/* $Id: scalar.C,v 1.20 1994/07/22 14:57:32 yguan Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -567,7 +567,31 @@ static void perform_scalar_replacement(do_info_type  *do_info,
    FILE              *logfile;
    bal_info_type     bal_info;
 
-     logfile = ((config_type *)PED_MH_CONFIG(do_info->ped))->logfile;
+     logfile  = ((config_type *)PED_MH_CONFIG(do_info->ped))->logfile;
+
+     if (logfile != NULL)
+       {
+
+	/* ACCUMULATE BALANCE HERE */
+
+	bal_info.mem = 0;
+	bal_info.flops = 0;
+	bal_info.ped = do_info->ped;
+	walk_expression(root,(WK_EXPR_CLBACK)compute_balance,NOFUNC,
+			(Generic)&bal_info);
+	if (bal_info.flops > 0)
+         {
+	  fprintf(logfile,"Final Loop Balance = %.4f\n",
+		  ((float) bal_info.mem)/((float) bal_info.flops));
+          do_info->LoopStats->LoopBal += 
+		     (float) bal_info.mem/(float) bal_info.flops;
+         }
+	else
+	 {
+	  fprintf(logfile,"Final Loop Balance = 0.0\n");
+	  do_info->LoopStats->LoopBal += 0.0;
+         }
+       }
      prelim_info.array_refs = 0;
      prelim_info.scalar_regs = 0;
      prelim_info.def_num = 0;
@@ -711,29 +735,6 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 		     (Generic)do_info->ped);
      walk_statements(root,level,NOFUNC,(WK_STMT_CLBACK)cleanup_gotos,
 		     (Generic)prelim_info.symtab);
-     if (logfile != NULL)
-       {
-
-	/* ACCUMULATE BALANCE HERE */
-
-	bal_info.mem = 0;
-	bal_info.flops = 0;
-	bal_info.ped = do_info->ped;
-	walk_expression(root,(WK_EXPR_CLBACK)compute_balance,NOFUNC,
-			(Generic)&bal_info);
-	if (bal_info.flops > 0)
-         {
-	  fprintf(logfile,"Final Loop Balance = %.4f\n",
-		  ((float) bal_info.mem)/((float) bal_info.flops));
-          do_info->LoopStats->LoopBal += 
-		     (float) bal_info.mem/(float) bal_info.flops;
-         }
-	else
-	 {
-	  fprintf(logfile,"Final Loop Balance = 0.0\n");
-	  do_info->LoopStats->LoopBal += 0.0;
-         }
-       }
      fst_KillField(do_info->symtab,LBL_STMT);
      fst_KillField(do_info->symtab,REFS);
      fst_KillField(do_info->symtab,NEW_LBL_INDEX);
