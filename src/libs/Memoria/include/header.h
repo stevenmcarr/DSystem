@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.15 1995/08/31 12:47:24 carr Exp $ */
+/* $Id: header.h,v 1.16 1996/04/10 13:13:50 carr Exp $ */
 
 #ifndef header_h
 #define header_h
@@ -49,6 +49,10 @@ EXTERN(void, memory_scalar_replacement,(PedInfo ped,AST_INDEX root,
 					LoopStatsType *LoopStats));
 
 EXTERN(void, memory_software_prefetch,(PedInfo ped,AST_INDEX root,
+				       int level,SymDescriptor symtab,
+				       arena_type *ar));
+
+EXTERN(void, memory_dead_cache_lines,(PedInfo ped,AST_INDEX root,
 				       int level,SymDescriptor symtab,
 				       arena_type *ar));
 
