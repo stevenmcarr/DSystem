@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.16 1998/09/01 17:34:53 carr Exp $ */
+/* $Id: prune.C,v 1.17 2002/03/04 16:50:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -243,79 +243,60 @@ static int CheckForInv(AST_INDEX     AstNode,
 /*                                                                          */
 /****************************************************************************/
 
-  {
-   int      sink_ref,
-            edge_dist,
-            edge,
-            next_edge;
-   DG_Edge  *dg;
-   scalar_info_type *scalar_src,
-                    *scalar_sink;
-   AST_INDEX        src_stmt,
-                    sink_stmt,
-                    node;
+{
+  int      sink_ref, edge, next_edge;
+  DG_Edge  *dg;
+  scalar_info_type *scalar_src,
+                   *scalar_sink;
+  AST_INDEX        src_stmt,
+                   sink_stmt,
+                   node;
 
-     if (is_subscript(AstNode))
-       {
-	node = gen_SUBSCRIPT_get_name(AstNode);
-	scalar_sink = get_scalar_info_ptr(node);
-	dg = dg_get_edge_structure( PED_DG(gen_info->ped));
-	sink_ref= get_info(gen_info->ped,node,type_levelv);
-	for (edge = dg_first_sink_ref( PED_DG(gen_info->ped),sink_ref);
-	     edge != END_OF_LIST;
-	     edge = dg_next_sink_ref( PED_DG(gen_info->ped),edge))
-	  {
-	   if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
-	       dg[edge].type == dg_input || dg[edge].type == dg_output)
-	     {
+  if (is_subscript(AstNode))
+    {
+      node = gen_SUBSCRIPT_get_name(AstNode);
+      scalar_sink = get_scalar_info_ptr(node);
+      dg = dg_get_edge_structure( PED_DG(gen_info->ped));
+      sink_ref= get_info(gen_info->ped,node,type_levelv);
+      for (edge = dg_first_sink_ref( PED_DG(gen_info->ped),sink_ref);
+	   edge != END_OF_LIST;
+	   edge = dg_next_sink_ref( PED_DG(gen_info->ped),edge))
+	{
+	  if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
+	      dg[edge].type == dg_input || dg[edge].type == dg_output)
+	    {
 	      scalar_src = get_scalar_info_ptr(dg[edge].src);
 	      if (scalar_src->surrounding_do == scalar_sink->surrounding_do)
 		{
-		 switch(dg[edge].type)
+		  switch(dg[edge].type)
 		   {
 		    case dg_input:
-		    case dg_true: 
-		      if (dg[edge].consistent != inconsistent && 
-			  !dg[edge].symbolic)
-			{
-			 if (dg[edge].level != LOOP_INDEPENDENT)
-			   if ((edge_dist = 
-				gen_get_dt_DIS(&dg[edge],dg[edge].level)) < 0)
-			     edge_dist = 1;
-			   else;
-			 else
-			   edge_dist = 0;
-			 src_stmt = ut_get_stmt(dg[edge].src);
-			 sink_stmt = ut_get_stmt(node);
-			 if (dg[edge].src == dg[edge].sink && 
-			     dg[edge].type == dg_input && !scalar_src->prevent_slr)
-			   scalar_src->scalar = true;
-			}
-		      else
-			{
-			 if (dg[edge].type == dg_true)
-			   {
-			    scalar_src->prevent_slr = true;
-			    scalar_src->scalar = false;
-			    MarkAllSinksAsNotScalar(gen_info->ped,dg[edge].src);
-			   }
-			}
-		      break;
 		    case dg_output: 
 		      if (dg[edge].consistent == consistent_SIV && 
-			  !dg[edge].symbolic && dg[edge].src == dg[edge].sink &&
+			  !dg[edge].symbolic &&
+			  dg[edge].src == dg[edge].sink &&
 			  !scalar_src->prevent_slr)
-			 scalar_src->scalar = true;
+			scalar_src->scalar = true;
+		      break;
+		    case dg_true: 
+		      if (dg[edge].consistent != consistent_SIV || 
+			  dg[edge].symbolic)
+			{
+			  scalar_src->prevent_slr = true;
+			  scalar_src->scalar = false;
+			  MarkAllSinksAsNotScalar(gen_info->ped,
+						  dg[edge].src);
+			}
 		      break;
 		    default:
 		      break;
-	          }
+		   }
 		}
-	     }
-	  }
-       }
-     return(WALK_CONTINUE);
-  }
+	    }
+	}
+    }
+  return(WALK_CONTINUE);
+}
 
 
 static int mark_invariant(AST_INDEX       stmt,

@@ -1,4 +1,4 @@
-/* $Id: pick.C,v 1.11 2001/09/14 17:02:07 carr Exp $ */
+/* $Id: pick.C,v 1.12 2002/03/04 16:50:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -265,7 +265,9 @@ static int get_gen(AST_INDEX         node,
 	   next_edge = dg_next_sink_ref( PED_DG(pick_info->ped),edge);
 	   if (pick_info->dg[edge].type == dg_true ||
 	       (pick_info->dg[edge].type == dg_input && 
-		pick_info->dg[edge].consistent != inconsistent && 
+		(pick_info->dg[edge].consistent == consistent_SIV ||
+		 (pick_info->dg[edge].consistent == consistent_MIV &&
+		  pick_info->dg[edge].src != pick_info->dg[edge].sink)) && 
 		!pick_info->dg[edge].symbolic)) 
 	     {
 	      psrc = get_scalar_info_ptr(pick_info->dg[edge].src);
