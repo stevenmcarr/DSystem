@@ -1,4 +1,4 @@
-/* $Id: name.C,v 1.9 1994/07/20 11:32:51 carr Exp $ */
+/* $Id: name.C,v 1.10 1995/03/29 08:06:55 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -202,11 +202,15 @@ static void check_if_oldest_value(AST_INDEX node,
 	      if (util_in_list(sptr->list_index,nlist))
 	        *gen_not_found = true;
 	   }
-	 else if (dg[edge].type == dg_true || 
-		  (dg[edge].type == dg_input && 
-		   NOT(gen_is_dt_DIR(gen_get_dt_DIS(&dg[edge],dg[edge].level)))))
-		   
+	 else if (dg[edge].type == dg_true)  
 	   *gen_not_found = true;
+         else if (dg[edge].type == dg_input) 
+	   if (dg[edge].level == LOOP_INDEPENDENT)
+	     *gen_not_found = true;
+	   else if (NOT(gen_is_dt_DIR(gen_get_dt_DIS(&dg[edge],
+						     dg[edge].level))))
+	     *gen_not_found = true;
+		   
   }
 
 void sr_find_generator(UtilNode *lnode,
