@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.19 1994/07/08 11:30:30 yguan Exp $ */
+/* $Id: mh_walk.C,v 1.20 1994/07/11 13:31:29 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -46,6 +46,7 @@
 
 #include <fort/FortTextTree.h>
 #include <FDgraph.h>
+#include <PedExtern.h>
 
 extern char *mc_program;
 extern char *mc_module_list;
@@ -541,6 +542,7 @@ static int post_walk(AST_INDEX      stmt,
 	                     break;
 	case CACHE_ANALYSIS: PerformCacheAnalysis(stmt,level,walk_info);
 			     break;
+	case FUSION:         break;
        }
       return(WALK_FROM_OLD_NEXT);
      } 
@@ -558,22 +560,63 @@ static int TryFusionToCleanup(AST_INDEX stmt,
 
   {
    FDGraph *problem;
-   Boolean all,any;
+   Boolean   all, any, free;
+   int       depth;
+   AST_INDEX scope;
 
      if (is_do(stmt) && level == LEVEL1)
        {
-	if ((problem = fdBuildFusion(ped,stmt,false)) != NULL)
-	  {
-	   fdGreedyFusion(ped,problem,false,&all,&any);
+    
+ 
+	problem = fdBuildFusion(ped, stmt, false, FD_ALL);
+	free    = false;
+	if (problem == NULL)
+	  return(WALK_CONTINUE);
+
+	fdGreedyFusion(ped, problem, false, &all, &any);
+   
+	for (depth = problem->depth; depth >= 1 ;  )
+	  {     
+	   /* Do the fusion */ 
 	   if (any)
-	     {	   
-	      fprintf(stderr,"Fusion Candidates = %d\n",problem->size);
-	      fprintf(stderr,"Fusion Applied = %d\n",problem->types);
-	      fdDoFusion(ped,problem,stmt);
-	      fprintf(stderr,"Fusion Performed to Improve Cache Performance\n");
+	     {
+	      scope = find_scope(stmt);
+
+	      fdDoFusion(ped, problem);
+	      
+	      pedReinitialize(ped);
+
+	      fprintf(stderr, "Fusion Performed to Improve Cache Performance\n");
+	      fprintf(stderr, "Fusion Candidates = %d\n", problem->size);
+	      fprintf(stderr, "Fusion Applied = %d\n", problem->types);
+	      if (all)
+		depth--;
 	     }
+	   else
+	     depth--;
+
 	   fdDestroyProblem(problem);
+	   free = true;
+
+	   /* try again at this depth (if all = false) because fusion may 
+	    * change reuse between loops, if no fusions, go shallower,
+	    * 
+	    */
+	   for ( ; depth >= 1; depth--)
+	     {
+	      problem = fdBuildFusion(ped, stmt, false, depth);
+	      free    = false;
+	      if (problem != NULL)
+		break;
+	     }
+	   if ((problem == NULL) || (depth < 1))
+	     break;
+
+	   else 
+	     fdGreedyFusion(ped, problem, false, &all, &any);
 	  }
+	if ((!free) && problem != NULL)
+	  fdDestroyProblem(problem);
 	return(WALK_CONTINUE);
        }
      return(WALK_CONTINUE);
@@ -944,6 +987,18 @@ static void memory_stats_dump(FILE *logfile, LoopStatsType *LoopStats)
  int WeightedNumberLoops = 0;
 
 	fprintf(logfile,
+		"Loop Nests With Exits:             %d\n",
+		LoopStats->ContainsExit);
+	fprintf(logfile,
+		"Loop Nests With  IO:               %d\n",
+		LoopStats->ContainsIO);
+	fprintf(logfile,
+		"Loop Nests With Calls:             %d\n",
+		LoopStats->ContainsCall);
+	fprintf(logfile,
+		"Loop Nests With Conditional DOs:   %d\n\n\n",
+		LoopStats->ContainsConditionalDO);
+	fprintf(logfile,
 		"\n\nTotal Loops: %d\n",LoopStats->TotalLoops);
 	fprintf(logfile,
 		"Loop Nests: %d\n",LoopStats->Nests);
@@ -1171,7 +1226,7 @@ void mh_walk_ast(int          selection,
 		     (WK_STMT_CLBACK)ut_change_logical_to_block_if,(Generic)NULL);
      walk_statements(root,LEVEL1,(WK_STMT_CLBACK)pre_walk,(WK_STMT_CLBACK)post_walk,
 		     (Generic)&walk_info);
-     if (selection == LI_FUSION)
+     if (selection == FUSION || selection == LI_FUSION)
        walk_statements(root,LEVEL1,(WK_STMT_CLBACK)TryFusionToCleanup,NOFUNC,
 		       (Generic)ped);
      walk_statements(root,LEVEL1,(WK_STMT_CLBACK)build_label_symtab,
@@ -1268,6 +1323,14 @@ void mh_walk_ast(int          selection,
              += walk_info.LoopStats->NeedsScalarExpansion;
          LoopStats->TimeStepPreventedMemoryOrder
              += walk_info.LoopStats->TimeStepPreventedMemoryOrder;
+         LoopStats->ContainsExit 
+             += walk_info.LoopStats->ContainsExit;
+         LoopStats->ContainsIO 
+             += walk_info.LoopStats->ContainsIO;
+         LoopStats->ContainsCall 
+             += walk_info.LoopStats->ContainsCall;
+         LoopStats->ContainsConditionalDO 
+             += walk_info.LoopStats->ContainsConditionalDO;
          LoopStats->TooComplex 
              += walk_info.LoopStats->TooComplex;
          LoopStats->Nests 
@@ -1355,20 +1418,14 @@ void mh_walk_ast(int          selection,
                   += walk_info.LoopStats->NumLoop_badexit;
 	   LoopStats->NumLoop_backjump
 	          += walk_info.LoopStats->NumLoop_backjump;
-           LoopStats->NumLoop_illjump
-		  += walk_info.LoopStats->NumLoop_illjump;
 	   LoopStats->FPRegisterPressure
 	          += walk_info.LoopStats->FPRegisterPressure;
 	   LoopStats->NumRefRep
 	          += walk_info.LoopStats->NumRefRep;
            LoopStats->NumLoopReplaced
 		  += walk_info.LoopStats->NumLoopReplaced;
-           LoopStats->NumLoopSpilled
-		  += walk_info.LoopStats->NumLoopSpilled;
 	   LoopStats->NumBasicBlock
 	          += walk_info.LoopStats->NumBasicBlock;
-           LoopStats->NumZeroFPLoop
-		  += walk_info.LoopStats->NumZeroFPLoop;
 	   LoopStats->NumInnermostLoop
 	          += walk_info.LoopStats->NumInnermostLoop;
 	   LoopStats->LoopBal
@@ -1524,7 +1581,7 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
     total_loop_replaced = LoopStats->NumLoopReplaced;
 
      fprintf(logfile,"\n\n");
-
+   
      fprintf(logfile, "Total Number of Bad Flow = %d\n\n",
   		     LoopStats->Numbadflow);
 
@@ -1536,9 +1593,6 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 
      fprintf(logfile, "Total number of back jumps = %d\n\n",
   		     LoopStats->NumLoop_backjump); 
-
-     fprintf(logfile, "Total number of illegal jumps = %d\n\n",
-		     LoopStats->NumLoop_illjump);
     }
    
    fprintf(logfile, "Total Number of Loop Spilled = %d\n\n",
@@ -1553,20 +1607,8 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
    if(total_loop_replaced > 0)
      {
       /*printf("total basic block = %d\n", LoopStats->NumBasicBlock); */
-
       fprintf(logfile, "Average FPregister Pressure/Loop Replaced = %.4f\n\n",
    		     (float)LoopStats->FPRegisterPressure/(float)total_loop_replaced);
-
-      fprintf(logfile, "Total number of replaced loops wo/ FP pressure = %d\n\n",
-			LoopStats->NumZeroFPLoop);
-
-      int LoopRepw_pressure; /* Loop Replaced with FP register pressure */
-
-      LoopRepw_pressure = total_loop_replaced - LoopStats->NumZeroFPLoop;
-
-      fprintf(logfile, "Average FPregister Pressure/Loop Replaced w/ pressur 
-			= %.4f\n\n",
-			(float)LoopStats->FPRegisterPressure/(float)LoopRepw_pressure);
 
       fprintf(logfile, "Average Number of Reference Replaced/Loop Replaced = %.4f\n\n",
    		     (float)LoopStats->NumRefRep/(float)total_loop_replaced);
