@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.21 1999/03/31 21:57:14 carr Exp $ */
+/* $Id: prefetch.C,v 1.22 2000/01/27 20:45:13 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -44,6 +44,7 @@
 
 extern Boolean Memoria_LetRocketSchedulePrefetches;
 extern Boolean Memoria_IssueDead;
+extern Boolean CheckRecurrencesForPrefetching;
 
 
 
@@ -451,7 +452,7 @@ static void AllocatePrefetches(PrefetchListIterator WordIterator,
 			       float PrefetchBandwidth,
 			       float LineValue,
 			       float Cycles,
-			       Recurrence& RData,
+			       Recurrence *RData,
 			       Boolean& NothingFetched,
 			       Boolean RecurrenceOnly)
 {
@@ -463,7 +464,8 @@ static void AllocatePrefetches(PrefetchListIterator WordIterator,
   while (WordIterator.current() != NULL)
     {
       if (RecurrenceOnly)
-	OnRecurrence = RData.IsReferenceOnRecurrence(WordIterator.current()->GetValue());
+	OnRecurrence = 
+	  RData->IsReferenceOnRecurrence(WordIterator.current()->GetValue());
       else
 	OnRecurrence = true;
       
@@ -491,7 +493,7 @@ static void AllocatePrefetches(PrefetchListIterator WordIterator,
       if (RecurrenceOnly)
 	{
 	  OnRecurrence = 
-	    RData.IsReferenceOnRecurrence(LineIterator.current()->GetValue());
+	    RData->IsReferenceOnRecurrence(LineIterator.current()->GetValue());
 	}
       else
 	OnRecurrence = true;
@@ -574,14 +576,20 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 
      if (BandwidthNeeded > PrefetchBandwidth)
        {
-	 Recurrence RData(loop_data[loop].node,ped,loop_data[loop].level);
+	 Recurrence *RData = NULL;
 	 ScheduleBandwidth = 0.0;
 
 	 // First Check for References on Recurrences
 
-	 AllocatePrefetches(WordIterator,LineIterator,WordPrefetches,LinePrefetches,
-			    ScheduleBandwidth,PrefetchBandwidth,LineValue,Cycles,
-			    RData,NothingFetched,true);
+	 if (CheckRecurrencesForPrefetching)
+	   {
+	     RData = new Recurrence(loop_data[loop].node,ped,loop_data[loop].level);
+	     AllocatePrefetches(WordIterator,LineIterator,WordPrefetches,LinePrefetches,
+				ScheduleBandwidth,PrefetchBandwidth,LineValue,Cycles,
+				RData,NothingFetched,true);
+	     delete RData;
+	     RData = NULL;
+	   }
 
 	 // Now Check for any References
 
