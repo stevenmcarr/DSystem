@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.C,v 1.11 2000/05/16 18:50:23 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.C,v 1.12 2000/07/19 19:19:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -433,7 +433,7 @@ UniformlyGeneratedSetsEntry::SingleNodeHasGroupSpatialReuse(AST_INDEX node1)
      if (NOT(Uniform)) 
        return (false);
        for (UGSEntryIterator UGSEIter(*this);
-	    node2 = UGSEIter() && NOT(HasGroupSpatial);)
+	    (node2 = UGSEIter()) && NOT(HasGroupSpatial);)
          if (node1 != node2)
 	   HasGroupSpatial = NodesHaveGroupSpatialReuse(node1,node2);
      return (HasGroupSpatial);
@@ -449,7 +449,7 @@ UniformlyGeneratedSetsEntry::SingleNodeHasGroupTemporalReuse(AST_INDEX node1)
      if (NOT(Uniform)) 
        return (false);
        for (UGSEntryIterator UGSEIter(*this);
-	    node2 = UGSEIter() && NOT(HasGroupTemporal);)
+	    (node2 = UGSEIter()) && NOT(HasGroupTemporal);)
          if (node1 != node2)
 	   HasGroupTemporal = NodesHaveGroupTemporalReuse(node1,node2);
      return (HasGroupTemporal);
