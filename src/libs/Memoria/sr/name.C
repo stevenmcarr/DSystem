@@ -1,4 +1,4 @@
-/* $Id: name.C,v 1.7 1994/06/09 14:38:05 carr Exp $ */
+/* $Id: name.C,v 1.8 1994/07/07 16:00:49 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -203,7 +203,8 @@ static void check_if_oldest_value(AST_INDEX node,
 	        *gen_not_found = true;
 	   }
 	 else if (dg[edge].type == dg_true || 
-		  (dg[edge].type == dg_input && gen_is_dt_DIS(&dg[edge])))
+		  (dg[edge].type == dg_input && 
+		   NOT(gen_is_dt_DIR(gen_get_dt_DIS(&dg[edge],dg[edge].level)))))
 		   
 	   *gen_not_found = true;
   }
