@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.10 1994/07/27 18:56:25 yguan Exp $ */
+/* $Id: LoopStats.h,v 1.11 1994/11/21 14:56:15 qwu Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -94,8 +94,16 @@ typedef struct loopstatstype {
           NumRefRep,           /* number of references replaced */
           NumBasicBlock,       /* number of basic blocks */
 	  NumZeroFPLoop,       /* number of loops w/ free FP pressure */ 
-          NumInnermostLoop;    /* number of innermost loops */
+          NumInnermostLoop,    /* number of innermost loops */
 
+	  /* QUNYAN 0001 */
+	  /* Add in new variables for LIAV,LCAV ... */
+	  NumLIAV,             /* number of loop independent dependency */
+	  NumLCAV,             /* number of loop carry dependency */
+	  NumLIPAV,            /* number of partial loop indenpendent dependency*/
+	  NumLCPAV;            /* number of partial loop carry dependency */
+          /* QUNYAN 0001*/
+  
   float   LoopBal;             /* Loop Balance */
   
  } LoopStatsType;
