@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.11 2000/01/27 20:44:02 carr Exp $ */
+/* $Id: f2i_options.C,v 1.12 2000/03/21 15:09:21 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -241,7 +241,6 @@ static void f2i_opt_Cache(void *state)
 
 static void f2i_opt_SpecialCache(void *state)
   {
-   aiParseComments++;
    aiSpecialCache++;
    aiCache++;
   }
