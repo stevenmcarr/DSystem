@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.h,v 1.19 2000/01/12 23:00:44 mjbedy Exp $ */
+/* $Id: CacheAnalysis.h,v 1.20 2000/04/09 20:19:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -20,6 +20,7 @@ typedef struct CacheInfoStruct {
   model_loop *loop_data;
   int        loop;
   int        RefNum;
+  int        LogMaxBytesPerWord;
   PedInfo    ped;
   SymDescriptor symtab;
   arena_type *ar;
@@ -57,11 +58,12 @@ typedef struct cachecycleinfostruct {
 
 // Add a couple things for PFLD
 typedef struct prefetchdatatypestruct {
-   int LoopCycles;
-   int PrefetchLatency;
-   int LineSize;
-    char *IVar;
-    SymDescriptor symtab;
+  int LoopCycles;
+  int PrefetchLatency;
+  int LineSize;
+  char *IVar;
+  SymDescriptor symtab;
+  int        LogMaxBytesPerWord;
 } PrefetchDataType;
 
 #define DepInfoPtr(n) \

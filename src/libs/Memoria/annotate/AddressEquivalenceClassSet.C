@@ -223,6 +223,7 @@ AddressEquivalenceClassSet::AddressEquivalenceClassSet(AST_INDEX loop,
    
      NestingLevel = NL;
      Size = 0;
+     TotalReferences = 0;
      IndexVars = new char*[NestingLevel];
      for (i = 0; i < NestingLevel; i++)
        IndexVars[i] = new char[80];
@@ -241,7 +242,7 @@ void AddressEquivalenceClassSet::ComputeAddressOffsets()
   AddressEquivalenceClass *Class;
   AST_INDEX node;
   
-  Offsets->MapCreate(Size);
+  Offsets->MapCreate(TotalReferences);
 
   
   for (AddressEquivSetIterator AECSIter(*this);
@@ -277,7 +278,7 @@ void AddressEquivalenceClassSet::AddNode(AST_INDEX node)
    Boolean uniform;
    int **nodeH,i,j,Subscripts;
 
-     Size++;
+     TotalReferences++;
      Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(node));
      nodeH = la_matNew(Subscripts,NestingLevel);
      GetH(node,nodeH,uniform);
@@ -298,7 +299,7 @@ void AddressEquivalenceClassSet::AddNode(Directive *Dir)
    Boolean uniform;
    int **nodeH,i,j,Subscripts;
 
-     Size++;
+     TotalReferences++;
      Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(Dir->Subscript));
      nodeH = la_matNew(Subscripts,NestingLevel);
      GetH(Dir->Subscript,nodeH,uniform);
@@ -369,6 +370,7 @@ AddressEquivalenceClass* AddressEquivalenceClassSet::Append(la_matrix nodeH,
   {
    AddressEquivalenceClass *Class;
    
+     Size++;
      Class = new AddressEquivalenceClass(gen_get_text(gen_SUBSCRIPT_get_name(node)),
 					 nodeH,NestingLevel,NumSubs,uniform);
      Class->AddEntry(node);
@@ -617,7 +619,7 @@ GenericListEntry *e;
      else return AST_NIL;
 }
 
-void AddressEquivalenceClassSet::Dump()
+void AddressEquivalenceClassSet::Dump(void)
 {
  AddressEquivalenceClass *aecs;
  int i = 0;
@@ -633,7 +635,7 @@ void AddressEquivalenceClassSet::Dump()
    }
 }
 
-void AddressEquivalenceClass::Dump()
+void AddressEquivalenceClass::Dump(void)
 {
  char Text[80];
 

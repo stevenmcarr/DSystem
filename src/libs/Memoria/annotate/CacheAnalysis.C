@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.29 2000/03/28 20:07:00 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.30 2000/04/09 20:19:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,6 +31,8 @@
 extern int aiCache;
 extern int aiOptimizeAddressCode;
 extern int aiParseComments;
+extern int aiLongIntegers;
+extern int aiDoubleReals;
 
 static int RefCount = 0;
 
@@ -248,37 +250,44 @@ static int StoreCacheInfo(AST_INDEX     node,
 {
     if (is_subscript(node))
     {
-        DepInfoPtr(node)->Locality = CacheInfo->ReuseModel->GetNodeReuseType(node);
 
-        //
-        // Identify the load that should bring in two cache lines
-        // to eliminate misses associated with self-spatial loads
-        // The load should have self-spatial reuse or group-spatial
-        // with the self-spatial property and be a trailer in 
-        // group-spatial set.
-        //
-//        printf ("Testing\n");
-        if (aiSpecialCache && 
-            NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
-            CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
-        {
-//            printf("Self Spacial\n");
-            DepInfoPtr(node)->UsePrefetchingLoad = 
-                CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
-        }
-        else if (DepInfoPtr(node)->Locality == NONE && 
-                 IsConstantStride(node, *(CacheInfo->IVar)) == true)
-        {
-            // Add support for constant stride, non self-spacial referances.
-//            printf("Constant stride\n");
-            DepInfoPtr(node)->UsePrefetchingLoad = true;
-        }
-        else
-        {
-            DepInfoPtr(node)->UsePrefetchingLoad = false;
-        }
+      // Set the log2 of the max words in a cache line. This is used for prefetch
+      // distance.
+      
+      if (gen_get_real_type(node) == TYPE_DOUBLE_PRECISION ||
+	  (gen_get_real_type(node) == TYPE_INTEGER && aiLongIntegers) ||
+	  (gen_get_real_type(node) == TYPE_REAL && aiDoubleReals))
+        if (CacheInfo->LogMaxBytesPerWord < 3)
+	  CacheInfo->LogMaxBytesPerWord = 3;
+	else;
+      else if (CacheInfo->LogMaxBytesPerWord < 2)
+	CacheInfo->LogMaxBytesPerWord = 2;
+	
+      DepInfoPtr(node)->Locality = CacheInfo->ReuseModel->GetNodeReuseType(node);
+      
+      //
+      // Identify the load that should bring in two cache lines
+      // to eliminate misses associated with self-spatial loads
+      // The load should have self-spatial reuse or group-spatial
+      // with the self-spatial property and be a trailer in 
+      // group-spatial set.
+      //
+
+      if (aiSpecialCache && 
+	  NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
+	  CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
+	DepInfoPtr(node)->UsePrefetchingLoad = 
+	  CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
+      else if (DepInfoPtr(node)->Locality == NONE && 
+	       IsConstantStride(node,*(CacheInfo->IVar)))
+
+	// Add support for constant stride, non self-spatial referances.
+
+	DepInfoPtr(node)->UsePrefetchingLoad = true;
+      else
+	DepInfoPtr(node)->UsePrefetchingLoad = false;
     }
-     
+    
     return(WALK_CONTINUE);
       
 }
@@ -492,8 +501,13 @@ static int LoadCycles(AST_INDEX Node,
     switch(CycleInfo->ReuseModel->GetNodeReuseType(Node))
        {
 	case SELF_TEMPORAL:
-	case GROUP_TEMPORAL:
 	  return 0;
+
+	case GROUP_TEMPORAL:
+	  if (NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(Node))->store))
+	    return 0;
+	  else
+	    return LoadPenalty;
 
 	case SELF_SPATIAL:
         case GROUP_SPATIAL:
@@ -565,9 +579,16 @@ static int CountCycles(AST_INDEX     Node,
 
   {
     if (is_subscript(Node))
-      CycleInfo->IntCycles += LoadCycles(Node,CycleInfo);
+      {
+	CycleInfo->IntCycles += LoadCycles(Node,CycleInfo);
+	
+	return(WALK_SKIP_CHILDREN);
+      }
     else if (is_binary_op(Node))
-      CycleInfo->FPCycles += OperationCycles(Node,CycleInfo->ped);
+      if (gen_get_real_type(Node) == TYPE_INTEGER)
+	CycleInfo->IntCycles++;
+      else
+	CycleInfo->FPCycles += OperationCycles(Node,CycleInfo->ped);
     return(WALK_CONTINUE);
   }
 
@@ -899,11 +920,23 @@ static int SetDistance(AST_INDEX Node,
              
             if (DepInfoPtr(Node)->Locality == SELF_SPATIAL)
             {                 
-                DepInfoPtr(Node)->PrefetchDistance =
-                    ceil_ab(PrefetchData->PrefetchLatency,
-                            PrefetchData->LoopCycles*(PrefetchData->LineSize >> 3)) * 
-                    PrefetchData->LineSize;
-                DepInfoPtr(Node)->PrefetchOffsetAST = AST_NIL;
+
+	      //
+	      // Compute how many iterations of the loop are necessary to hide
+	      // the prefetch latency. Then, set the prefetch distance to be that
+	      // many cache lines ahead + 1 because we are not counting the current
+	      // iteration (prefetching load may be at end of loop)
+	      // 
+	      // We assume the loop has been unrolled, so we are doing a prefetching
+	      // load on the last reference in a line. This removes the problem
+	      // with cache-line alignment
+	      //
+
+	      DepInfoPtr(Node)->PrefetchDistance =
+		(ceil_ab(PrefetchData->PrefetchLatency,PrefetchData->LoopCycles) + 1) *
+		PrefetchData->LineSize;
+
+	      DepInfoPtr(Node)->PrefetchOffsetAST = AST_NIL;
             }
             else if (DepInfoPtr(Node)->Locality == NONE)
             {
@@ -938,6 +971,7 @@ static void SetPrefetchLoadDistance(AST_INDEX LoopHeader,
 				    int NumberOfAddressSets,
 				    PedInfo ped,
                                     char *IVar,
+				    int LogMaxBytesPerWord,
                                     SymDescriptor symtab)
 {
   PrefetchDataType PrefetchData;
@@ -960,6 +994,7 @@ static void SetPrefetchLoadDistance(AST_INDEX LoopHeader,
   // New stuff (MJB)
   PrefetchData.IVar = IVar;
   PrefetchData.symtab = symtab;
+  PrefetchData.LogMaxBytesPerWord = LogMaxBytesPerWord;
 
   walk_expression(gen_DO_get_stmt_LIST(LoopHeader),(WK_EXPR_CLBACK)SetDistance,
 		  (WK_EXPR_CLBACK)NOFUNC,(Generic)&PrefetchData);
@@ -1019,6 +1054,7 @@ static void walk_loops(CacheInfoType  *CacheInfo,
 				    CacheInfo->AECS->GetSize(),
 				    CacheInfo->ped,
                                     CacheInfo->IVar[loop],
+				    CacheInfo->LogMaxBytesPerWord,
                                     CacheInfo->symtab);
         
 	    delete CacheInfo->AECS;
@@ -1065,6 +1101,7 @@ void memory_PerformCacheAnalysis(PedInfo       ped,
      CacheInfo.IVar = new char*[loop_num];
      CacheInfo.symtab = symtab;
      CacheInfo.ar = ar;
+     CacheInfo.LogMaxBytesPerWord = 0;
      walk_loops(&CacheInfo,0);
      delete CacheInfo.IVar;
   }

@@ -17,6 +17,7 @@ class AddressEquivalenceClassSet : public GenericList
   int NestingLevel;
   char **IndexVars;
   int Size;
+  int TotalReferences;
 
   void GetH(AST_INDEX node,
 	    la_matrix nodeH,
@@ -49,6 +50,7 @@ public:
   void AddNode(AST_INDEX node);
   void AddNode(Directive *Dir);
   int GetSize() {return Size;}
+  int GetTotalReferences() {return TotalReferences;}
 
 };
 
