@@ -334,8 +334,6 @@ static int build_edge_pre(AST_INDEX       stmt,
 	      {
 	       build_info->loop_data[build_info->last_stack[lvl]].
 	                                        scalar_array_refs++;
-	       build_info->loop_data[build_info->last_stack[lvl]].reduction =
-	                                        true;
 	      }
 	    check_backwards_dep(&build_info->loop_data[build_info->
 	                        last_stack[lvl]],dg,edge,build_info->ped);
