@@ -1,4 +1,9 @@
-/* $Id: sr.h,v 1.10 1995/08/21 15:14:04 carr Exp $ */
+/* $Id: sr.h,v 1.11 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /*-------------------------------------------------------------
 
@@ -10,25 +15,25 @@
 #define sr_h
 
 #ifndef ast_h
-#include <fort/ast.h>                /* for AST_INDEX */
+#include <libs/frontEnd/ast/ast.h>
 #endif
 #ifndef general_h
-#include <general.h>                 /* for Boolean, EXTERN */
+#include <libs/support/misc/general.h>
 #endif
 #ifndef list_h
-#include <misc/list.h>               /* for UtilList */
+#include <libs/support/lists/list.h>
 #endif
 #ifndef cgen_set_h
-#include <cgen_set.h>                /* for Set */
+#include <libs/Memoria/include/cgen_set.h>
 #endif
 #ifndef dp_h
-#include <dp.h>                     /* for PedInfo */
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif 
 #ifndef block_h
-#include <block.h>
+#include <libs/Memoria/include/block.h>
 #endif
 #ifndef header_h
-#include <header.h>
+#include <libs/Memoria/include/header.h>
 #endif
 
 typedef enum {BOGUS,LIAV,LIPAV,LCAV,LCPAV} GenTypes;

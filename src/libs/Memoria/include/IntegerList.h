@@ -1,10 +1,13 @@
-/* $Id: IntegerList.h,v 1.2 1996/11/18 13:01:42 carr Exp $ */
+/* $Id: IntegerList.h,v 1.3 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #ifndef IntegerList_h
 #define IntegerList_h
 
-#ifndef sllist_h
-#include <misc/sllist.h>
-#endif
+#include <libs/support/lists/SinglyLinkedList.h>
 
 class IntegerListEntry : public SinglyLinkedListEntry {
 

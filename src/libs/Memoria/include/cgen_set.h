@@ -1,4 +1,9 @@
-/* $Id: cgen_set.h,v 1.6 1993/06/21 13:47:58 carr Exp $ */
+/* $Id: cgen_set.h,v 1.7 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /*
  *  Revision 4
@@ -11,13 +16,13 @@
 #define cgen_set_h
 
 #ifndef general_h
-#include <general.h>       /* for EXTERN */
+#include <libs/support/misc/general.h>
 #endif
 #ifndef Arena_h
-#include <misc/Arena.h>    /* for arena_type */
+#include <libs/support/memMgmt/Arena.h>
 #endif
 #ifndef global_h
-#include <global.h>   /* for Bool */
+#include <libs/Memoria/include/global.h>
 #endif
 
 #define NBITS	32

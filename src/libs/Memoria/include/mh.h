@@ -1,4 +1,9 @@
-/* $Id: mh.h,v 1.24 1996/12/05 17:03:09 rcrowell Exp $ */
+/* $Id: mh.h,v 1.25 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef mh_h
 #define mh_h 
@@ -10,36 +15,36 @@
 */
 
 #ifndef general_h
-#include <general.h>                 /* for Boolean, EXTERN */
+#include <libs/support/misc/general.h>
 #endif
 #ifndef ast_h
-#include <fort/ast.h>                /* for AST_INDEX */
+#include <libs/frontEnd/ast/ast.h>
 #endif
 #ifndef list_h
-#include <misc/list.h>               /* for UtilList */
+#include <libs/support/lists/list.h>
 #endif
 #ifndef cgen_set_h
-#include <cgen_set.h>                /* for Set */
+#include <libs/Memoria/include/cgen_set.h>
 #endif
 #ifndef fortsym_h
-#include <fort/fortsym.h>            /* for SymDescriptor */
+#include <libs/frontEnd/fortTree/fortsym.h>
 #endif
 #ifndef FloatList_h
-#include <FloatList.h>               /* for FloatList */
+#include <libs/Memoria/include/FloatList.h>
 #endif
 #ifndef dp_h
-#include <dp.h>                     /* for PedInfo */
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif 
 #ifndef groups_h
-#include <fort/groups.h>             /* for binary node tests */
+#include <libs/frontEnd/ast/groups.h>
 #endif 
 #ifndef header_h
-#include <header.h>
+#include <libs/Memoria/include/header.h>
 #endif
 #ifndef mem_util_h
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 #endif
-#include <UniformlyGeneratedSets.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
 extern Boolean mc_extended_cache;
 extern int PartitionUnrollAmount;

@@ -1,12 +1,16 @@
+/* $Id: GenList.h,v 1.3 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #ifndef GenList_h
 #define GenList_h
 
-#ifndef sllist_h
-#include <misc/sllist.h>
-#endif
+#include <libs/support/lists/SinglyLinkedList.h>
 
 #ifndef sr_h
-#include <sr.h>
+#include <libs/Memoria/include/sr.h>
 #endif
 
 class GenListEntry : public SinglyLinkedListEntry {

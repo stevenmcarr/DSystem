@@ -1,23 +1,28 @@
-/* $Id: block.h,v 1.6 1994/07/08 11:31:33 yguan Exp $ */
+/* $Id: block.h,v 1.7 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 
 #ifndef block_h
 #define block_h
 
 #ifndef Arena_h
-#include <misc/Arena.h>       /* for arena_type */
+#include <libs/support/memMgmt/Arena.h>
 #endif
 #ifndef cgen_set_h
-#include <cgen_set.h>    /* for Set */
+#include <libs/Memoria/include/cgen_set.h>
 #endif
 #ifndef general_h
-#include <general.h>     /* for Boolean */
+#include <libs/support/misc/general.h>
 #endif
 #ifndef ast_h          
-#include <fort/ast.h>    /* for AST_INDEX */
+#include <libs/frontEnd/ast/ast.h>
 #endif
 #ifndef fortsym_h
-#include <fort/fortsym.h>  /* for SymDescriptor */
+#include <libs/frontEnd/fortTree/fortsym.h>
 #endif
 
 #include <LoopStats.h>

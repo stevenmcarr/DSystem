@@ -1,41 +1,46 @@
-/* $Id: mem_util.h,v 1.15 1996/02/14 11:04:41 carr Exp $ */
+/* $Id: mem_util.h,v 1.16 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef mem_util_h
 #define mem_util_h
 
 #ifndef general_h
-#include <general.h>         /* for Generic, EXTERN */
+#include <libs/support/misc/general.h>
 #endif
 
 #ifndef Arena_h
-#include <misc/Arena.h>            /* for arena_type */
+#include <libs/support/memMgmt/Arena.h>
 #endif 
 #ifndef ast_h
-#include <fort/ast.h>         /* for AST_INDEX */
+#include <libs/frontEnd/ast/ast.h>
 #endif
 #ifndef fortsym_h
-#include <fort/fortsym.h>     /* for SymDescriptor */
+#include <libs/frontEnd/fortTree/fortsym.h>
 #endif
 #ifndef context_h
-#include <context.h> 
+#include <libs/support/database/context.h>
 #endif
 #ifndef el_h
-#include <el.h>               /* for EDGE_INDEX */
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/el.h>
 #endif
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
 #ifndef dt_h
-#include <dt.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
-#include <UniformlyGeneratedSets.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
 typedef struct loop_struct model_loop;
 typedef enum {UNDEFINED,NONE,SELF_TEMPORAL,GROUP_TEMPORAL,SELF_SPATIAL,

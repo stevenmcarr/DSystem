@@ -1,13 +1,16 @@
-/* $Id: PrefetchList.h,v 1.6 1994/07/20 11:31:52 carr Exp $ */
+/* $Id: PrefetchList.h,v 1.7 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #ifndef PrefetchList_h
 #define PrefetchList_h
 
-#ifndef sllist_h
-#include <misc/sllist.h>
-#endif
+#include <libs/support/lists/SinglyLinkedList.h>
 
 #ifndef mh_ast_h
-#include <mh_ast.h>
+#include <libs/Memoria/include/mh_ast.h>
 #endif
 
 class PrefetchListEntry : public SinglyLinkedListEntry {

@@ -1,10 +1,13 @@
-/* $Id: FloatList.h,v 1.4 1994/06/13 10:32:45 carr Exp $ */
+/* $Id: FloatList.h,v 1.5 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #ifndef FloatList_h
 #define FloatList_h
 
-#ifndef sllist_h
-#include <misc/sllist.h>
-#endif
+#include <libs/support/lists/SinglyLinkedList.h>
 
 class FloatListEntry : public SinglyLinkedListEntry {
 

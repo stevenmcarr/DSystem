@@ -1,16 +1,20 @@
+/* $Id: UniformlyGeneratedSets.h,v 1.7 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #ifndef UniformlyGeneratedSets_h
 #define UniformlyGeneratedSets_h
 
 #include <string.h>
-#include <general.h>
-#include <mh_ast.h>
-#ifndef sllist_h
-#include <misc/sllist.h>
-#endif
-#include <fort/treeutil.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/support/lists/SinglyLinkedList.h>
+#include <libs/frontEnd/ast/treeutil.h>
 
-#include <IntegerList.h>
-#include <fort/AstIter.h>
+#include <libs/Memoria/include/IntegerList.h>
+#include <libs/frontEnd/ast/AstIter.h>
 #include <Lambda/Lambda.h>
 
 #define MINVAL -1.0E+99

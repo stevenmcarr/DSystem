@@ -1,29 +1,34 @@
-/* $Id: header.h,v 1.16 1996/04/10 13:13:50 carr Exp $ */
+/* $Id: header.h,v 1.17 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef header_h
 #define header_h
 
 #ifndef general_h
-#include <general.h>       /* for EXTERN */
+#include <libs/support/misc/general.h>
 #endif
 #ifndef dp_h
-#include <dp.h>                 /* for PedInfo */
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 #ifndef ast_h
-#include <fort/ast.h>            /* for AST_INDEX */
+#include <libs/frontEnd/ast/ast.h>
 #endif
 #ifndef fortsym_h
-#include <fort/fortsym.h>        /* for SymDescriptor */
+#include <libs/frontEnd/fortTree/fortsym.h>
 #endif
 #ifndef Arena_h
-#include <misc/Arena.h>               /* for arena_type */
+#include <libs/support/memMgmt/Arena.h>
 #endif
 #ifndef LoopStats_h
-#include <LoopStats.h>           /* for LoopStatsType */
+#include <LoopStats.h>
 #endif 
 
-#include <fort/FortTextTree.h>
-#include <ArrayTable.h>
+#include <libs/frontEnd/fortTextTree/FortTextTree.h>
+#include <libs/Memoria/include/ArrayTable.h>
 
 EXTERN(void, memory_interchange_stats,(PedInfo ped,AST_INDEX root,
 					       int level,

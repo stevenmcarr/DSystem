@@ -1,11 +1,17 @@
+/* $Id: RefGroups.h,v 1.4 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #ifndef RefGroups_h
 #define RefGroups_h
 
-#include <general.h>
-#include <mh.h>
-#include <fort/AstIter.h>
-#include <IntegerList.h>
-#include <UniformlyGeneratedSets.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/frontEnd/ast/AstIter.h>
+#include <libs/Memoria/include/IntegerList.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
 class RefGroupSet;
 

@@ -1,3 +1,9 @@
+/* $Id: la.h,v 1.2 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 //  Linear Algebra Data Reuse Model
 //      Header File
@@ -17,12 +23,12 @@
 #define la_h
 
 #include <Lambda/Lambda.h>
-#include <misc/sllist.h>
-#include <mh_ast.h>
-#include <fort/AstIter.h>
-#include <UniformlyGeneratedSets.h>
-#include <Estimate.h>
-#include <../uj/compute_uj.h>
+#include <libs/support/lists/SinglyLinkedList.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/ast/AstIter.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
+#include <libs/Memoria/include/Estimate.h>
+#include <libs/Memoria/uj/compute_uj.h>
 
 
 #define True  1

@@ -1,13 +1,18 @@
-/* $Id: mark.h,v 1.4 1992/12/11 11:19:48 carr Exp $ */
+/* $Id: mark.h,v 1.5 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef mark_h
 #define mark_h
 
 #ifndef general_h
-#include <general.h>       /* for Generic */
+#include <libs/support/misc/general.h>
 #endif
 #ifndef ast_h
-#include <fort/ast.h>      /* for AST_INDEX */
+#include <libs/frontEnd/ast/ast.h>
 #endif
 
 EXTERN(int, ut_mark_do_pre,(AST_INDEX stmt,int level,

@@ -1,13 +1,18 @@
-/* $Id: bound.h,v 1.7 1995/08/22 14:16:33 carr Exp $ */
+/* $Id: bound.h,v 1.8 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef bound_h
 #define bound_h
 
 #ifndef general_h
-#include <general.h>       /* for EXTERN */
+#include <libs/support/misc/general.h>
 #endif
 #ifndef ast_h
-#include <fort/ast.h>     /* for AST_INDEX */
+#include <libs/frontEnd/ast/ast.h>
 #endif
 
 EXTERN(void, ut_update_bounds,(AST_INDEX loop,AST_INDEX copy,

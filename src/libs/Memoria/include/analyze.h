@@ -1,22 +1,27 @@
-/* $Id: analyze.h,v 1.5 1994/07/11 13:33:54 carr Exp $ */
+/* $Id: analyze.h,v 1.6 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef analyze_h
 #define analyze_h
 
 #ifndef general_h
-#include <general.h>       /* for EXTERN */
+#include <libs/support/misc/general.h>
 #endif
 #ifndef mh_h
-#include <mh.h>               /* for loop_data */
+#include <libs/Memoria/include/mh.h>
 #endif
 #ifndef dp_h
-#include <dp.h>              /* for PedInfo */
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 #ifndef fortsym_h
-#include <fort/fortsym.h>     /* for SymDescriptor */
+#include <libs/frontEnd/fortTree/fortsym.h>
 #endif
 #ifndef ast_h
-#include <fort/ast_h>         /* for AST_INDEX */
+#include <fort/ast_h>
 #endif
 
 typedef struct buildinfotype {

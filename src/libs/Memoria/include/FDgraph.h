@@ -1,3 +1,9 @@
+/* $Id: FDgraph.h,v 1.3 1997/03/20 15:49:33 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /************************************************************************/
 /*									*/
 /*	ped_cp/pt/FDgraph.h						*/
@@ -54,19 +60,19 @@
 #define FDgraph_h
 
 #ifndef	stdio_h
-#include	<stdio.h>	        /* NULL				*/
+#include <stdio.h>
 #endif
 
 #ifndef	ast_h
-#include	<fort/ast.h>		/* AST_INDEX			*/
+#include <libs/frontEnd/ast/ast.h>
 #endif	
 				
 #ifndef	general_h
-#include	<general.h>	        /* Boolean			*/
+#include <libs/support/misc/general.h>
 #endif	
 			
 #ifndef	list_h
-#include	<misc/list.h>           /* UtilList			*/
+#include <libs/support/lists/list.h>
 #endif
 
 #define FD_ALL 100
