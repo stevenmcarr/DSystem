@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.16 2001/09/14 17:17:49 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.17 2002/02/20 16:20:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -33,6 +33,7 @@ int aiOptimizeAddressCode = 0;
 int aiParseComments = 0;
 int aiLongIntegers = 0;
 int aiDoubleReals = 0;
+int aiGenClusters = 0;
 int blue_color = 0;
 
 Boolean Memoria_LetRocketSchedulePrefetches = false;
