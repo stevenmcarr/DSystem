@@ -1,4 +1,4 @@
-/* $Id: assignment.C,v 1.6 1999/06/11 17:42:27 carr Exp $ */
+/* $Id: assignment.C,v 1.7 2000/02/10 19:04:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -127,7 +127,7 @@ static void NonCharacterAssignment(AST_INDEX	node)
 
      comment = GenDepComment(lhs);
 
-     if (aiOptimizeAddressCode)
+     if (aiOptimizeAddressCode && DepInfoPtr(node) != NULL)
        if (DepInfoPtr(lhs)->AddressLeader != AST_NIL)
 	 {
 

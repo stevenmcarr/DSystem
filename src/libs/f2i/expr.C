@@ -1,4 +1,4 @@
-/* $Id: expr.C,v 1.8 2000/01/27 19:43:06 carr Exp $ */
+/* $Id: expr.C,v 1.9 2000/02/10 19:04:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -325,7 +325,7 @@ int getIdInRegister(AST_INDEX node)
 	Index = getIndex(gen_SUBSCRIPT_get_name(node));
 	Index_type = fst_my_GetFieldByIndex(ft_SymTable, Index, SYMTAB_TYPE);
 	comment = GenDepComment(node);
-	if (aiOptimizeAddressCode)
+	if (aiOptimizeAddressCode && DepInfoPtr(node) != NULL)
 	  if (DepInfoPtr(node)->AddressLeader != AST_NIL)
 	    {
 
@@ -368,10 +368,13 @@ int getIdInRegister(AST_INDEX node)
 	    AReg  = getSubscriptLValue(node);
 	    DReg  = StrTempReg("!", AReg, Index_type);
 	  }
-        if (aiSpecialCache && DepInfoPtr(node)->UsePrefetchingLoad)
-	  generate_pfload(DReg,AReg,DepInfoPtr(node)->PrefetchDistance,
-			  DepInfoPtr(node)->PrefetchOffsetAST,
-			  Index_type,Index,comment);
+        if (aiSpecialCache && DepInfoPtr(node) != NULL)
+ 	  if (DepInfoPtr(node)->UsePrefetchingLoad)
+	    generate_pfload(DReg,AReg,DepInfoPtr(node)->PrefetchDistance,
+			    DepInfoPtr(node)->PrefetchOffsetAST,
+			    Index_type,Index,comment);
+	  else
+	    generate_load( DReg, AReg, Index_type, Index, comment);
 	else
 	  generate_load( DReg, AReg, Index_type, Index, comment);
 	free(comment);
