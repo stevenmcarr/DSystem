@@ -1,4 +1,4 @@
-/* $Id: interchange.C,v 1.12 1994/05/31 15:01:18 carr Exp $ */
+/* $Id: interchange.C,v 1.13 1994/07/11 13:39:32 carr Exp $ */
 
 /****************************************************************/
 /*                                                              */
@@ -64,7 +64,8 @@
 #endif
 
 #include <MemoryOrder.h>
-#include <FDgraph.h>
+#include <FDgraph.h> 
+#include <fort/cd_branch.h>
 
 
 /****************************************************************************/
@@ -86,96 +87,6 @@ static int set_scratch(AST_INDEX node,
   {
    set_scratch_to_NULL(node);
    return(WALK_CONTINUE);
-  }
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   Remove_Edges                                   */
-/*                                                              */
-/*   Input:      stmt - statement in AST                        */
-/*               level - nesting level of stmt                  */
-/*               ped - structure containing dependence graph    */
-/*                                                              */
-/*   Description:  removes io, control, exit and call           */
-/*                 dependences from the dependence graph.       */
-/*                 called by walk_statements.                   */
-/*                                                              */
-/****************************************************************/
-
-static int RemoveEdges(AST_INDEX stmt,
-			int       level,
-			PedInfo   ped)
-
-  {
-   DG_Edge    *dg;
-   int        vector;
-   EDGE_INDEX edge,
-              next_edge;
-   int        i;
-
-     dg = dg_get_edge_structure( PED_DG(ped));
-     vector = get_info(ped,stmt,type_levelv);
-   
-       /* remove carried dependences */
-
-     for (i = 1;i <= level; i++)
-       {
-
-	        /* remove outgoing dependences */
-
-	for (edge = dg_first_src_stmt( PED_DG(ped),vector,i);
-	     edge != END_OF_LIST;
-	     edge = next_edge)
-	  {
-	   next_edge = dg_next_src_stmt( PED_DG(ped),edge);
-	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge( PED_DG(ped),edge);
-	  }
-
-	        /* remove incoming dependences */
-
-	for (edge = dg_first_sink_stmt( PED_DG(ped),vector,i);
-	     edge != END_OF_LIST;
-	     edge = next_edge)
-	  {
-	   next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
-	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge( PED_DG(ped),edge);
-	  }
-       }
-
-	        /* remove outgoing loop-independent dependences */
-
-     for (edge = dg_first_src_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
-	  edge != END_OF_LIST;
-	  edge = next_edge)
-       {
-	next_edge = dg_next_src_stmt( PED_DG(ped),edge);
-	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	    dg[edge].type == dg_call || dg[edge].type == dg_control ||
-	    dg[edge].src == dg[edge].sink ||
-	    (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink) &&
-	     dg[edge].type == dg_true))
-	  dg_delete_free_edge( PED_DG(ped),edge);
-       }
-
-	        /* remove incoming loop-independent dependences */
-
-     for (edge = dg_first_sink_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
-	  edge != END_OF_LIST;
-	  edge = next_edge)
-       {
-	next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
-	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	    dg[edge].type == dg_call || dg[edge].type == dg_control ||
-	    dg[edge].src == dg[edge].sink ||
-	    (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink) &&
-	     dg[edge].type == dg_true))
-	   dg_delete_free_edge( PED_DG(ped),edge);
-       }
-     return(WALK_CONTINUE);
   }
 
 static model_loop *PrepareLoopForInterchange(PedInfo       ped,
@@ -203,11 +114,7 @@ static model_loop *PrepareLoopForInterchange(PedInfo       ped,
      walk_statements(root,level,(WK_STMT_CLBACK)ut_mark_do_pre,
 		     (WK_STMT_CLBACK)ut_mark_do_post,(Generic)&pre_info);
      if (pre_info.abort)
-       return NULL;;
-
-             /* remove dependence edges not wanted */
-
-     walk_statements(root,level,(WK_STMT_CLBACK)RemoveEdges,NOFUNC,(Generic)ped);
+       return NULL;
 
      loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 					 pre_info.loop_num*sizeof(model_loop));
@@ -223,7 +130,7 @@ static model_loop *PrepareLoopForInterchange(PedInfo       ped,
    
      return loop_data;
   }
-
+/*
 static void WalkLoopsToCheckForFuse(model_loop *loop_data,
 				    int        loop,
 				    int        num_loops,
@@ -250,7 +157,6 @@ static void WalkLoopsToCheckForFuse(model_loop *loop_data,
 	  }
        }
   }
-
 
 static void WalkLoopsToPerformFusion(model_loop    *loop_data,
 				     int           loop,
@@ -312,8 +218,7 @@ static model_loop *TryFusionToEnableInterchange(model_loop    *loop_data,
      return loop_data;
   }
 
-
-
+*/
 /****************************************************************/
 /*                                                              */
 /*   Function:     add_edge                                     */
@@ -540,14 +445,32 @@ static void distribute_loop(model_loop    *loop_data,
 	gen_DO_put_stmt_LIST(new_do,stmt_list[j]);
 	list_insert_after(loop_data[loop].node,new_do);
 
-	   /* perform interchange on each new nest */
-
-	memory_loop_interchange(ped,new_do,loop_data[loop].level,symtab,ar,Fusion);
+	   /* perform interchange on each new nest if it is separate*/
+	
+	if (loop_data[loop].parent == -1)
+	   memory_loop_interchange(ped,new_do,loop_data[loop].level,symtab,ar,
+				   Fusion);
        }
      walk_expression(stmt_list[0],(WK_EXPR_CLBACK)update_edges,NOFUNC,(Generic)&info);
      gen_DO_put_stmt_LIST(loop_data[loop].node,stmt_list[0]);
-     memory_loop_interchange(ped,loop_data[loop].node,loop_data[loop].level,
-			     symtab,ar,Fusion);
+     if (loop_data[loop].parent == -1)
+
+	   /* perform interchange on each new nest if it is separate*/
+	
+       memory_loop_interchange(ped,loop_data[loop].node,loop_data[loop].level,
+			       symtab,ar,Fusion);
+     else
+       /* perform interchange on whole new nest (may need outer distributions) */
+       {
+	for (i = loop;
+	     loop_data[i].parent != -1;
+	     i = loop_data[i].parent);
+
+	   /* interchange only on outermost loop */
+
+	memory_loop_interchange(ped,loop_data[i].node,loop_data[i].level,
+				symtab,ar,Fusion);
+       }
   }
 
 
@@ -939,10 +862,6 @@ static void perform_interchange(model_loop *loop_data,
           /* Is interchange necessary? */
 
        if (loop_data[heap[i].index].level != j)
-
-          /* Is interchange legal?  This check is probably redundant */
-
-         if (loop_data[heap[i].index].interchange)
 	   do_interchange = true;
 
      if (do_interchange)
@@ -1081,9 +1000,8 @@ static void walk_loops_to_interchange(model_loop *loop_data,
    int dstr_index = -1;
    AST_INDEX stmt,next_stmt,new_do;
 
-     if (!loop_data[loop].transform || !loop_data[loop].interchange ||
-	 !loop_data[loop].distribute || loop_data[loop].type == COMPLEX ||
-	 loop_data[loop].type == TRAP)
+     if (!loop_data[loop].transform || !loop_data[loop].distribute || 
+	 loop_data[loop].type == COMPLEX || loop_data[loop].type == TRAP)
        {
 
 	   /* we've found a level where interchange is illegal, recurse and 
@@ -1189,11 +1107,13 @@ void memory_loop_interchange(PedInfo       ped,
   {
    model_loop *loop_data;
 
+
      if ((loop_data = PrepareLoopForInterchange(ped,root,level,symtab,ar)) == NULL)
        return;
-     if (Fusion)
-       loop_data = TryFusionToEnableInterchange(loop_data,ped,symtab,ar);
 
+/*      if (Fusion)
+       loop_data = TryFusionToEnableInterchange(loop_data,ped,symtab,ar);
+*/
        /* reorder loop nests as necessary */
 
      walk_loops_to_interchange(loop_data,0,0,1,loop_data[0].heap,symtab,ped,
