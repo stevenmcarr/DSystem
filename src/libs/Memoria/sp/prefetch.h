@@ -1,4 +1,4 @@
-/* $Id: prefetch.h,v 1.7 1997/03/27 20:26:39 carr Exp $ */
+/* $Id: prefetch.h,v 1.8 1997/10/30 15:19:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,6 +19,9 @@ typedef struct intinfotype {
   model_loop    *loop_data;
   PrefetchList  *SPLinePrefetches;
   PrefetchList  *DPLinePrefetches;
+  PrefetchList  *NoLocality;
+  PrefetchList  *TempLocality;
+  PrefetchList  *SpatLocality;
   PrefetchList  *WordPrefetches;
   UniformlyGeneratedSets *UGS;
  } locality_info_type;
