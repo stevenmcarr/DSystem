@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.45 1997/06/25 15:22:42 carr Exp $ */
+/* $Id: mh_walk.C,v 1.46 1997/06/30 18:42:35 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -215,6 +215,39 @@ static int pre_walk(AST_INDEX      stmt,
      if (walk_info->selection != ANNOTATE)
        remove_bogus_dependences(stmt,walk_info->ped);
      return(WALK_CONTINUE);
+  }
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   DependenceStats                                            */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description:  Calls the function to gather statistics about            */
+/*                 dependences on a given loop.                             */
+/*                                                                          */
+/****************************************************************************/
+
+static void DependenceStats(AST_INDEX      stmt,
+			     int            level,
+			     walk_info_type *walk_info)
+  {
+      /* gather statistics */
+   memory_GetDependenceStats(walk_info->ped,stmt,
+			     walk_info->LoopStats,
+			     walk_info->symtab,
+			     walk_info->ar,
+			     LEVEL1);
+
+     /* re-initialize scratch field (no dangling pointers) */
+   walk_expression(stmt,set_scratch,NOFUNC,
+		   (Generic)NULL);
+
+     /* free up space used */
+   walk_info->ar->arena_deallocate(LOOP_ARENA);
+   if (NOT(walk_info->LoopStats->Perfect))
+     walk_info->LoopStats->Imperfect++;
   }
 
 /****************************************************************************/
@@ -639,7 +672,9 @@ static int post_walk(AST_INDEX      stmt,
 	                     break;
 	case CACHE_ANALYSIS: PerformCacheAnalysis(stmt,level,walk_info);
 			     break;
-       }
+       	case DEP_STATS:      DependenceStats(stmt,level,walk_info);
+	                     break;
+}
       return(WALK_FROM_OLD_NEXT);
      } 
    else if (is_program(stmt) || is_function(stmt) || is_subroutine(stmt))
@@ -1494,12 +1529,26 @@ void mh_walk_ast(int          selection,
            SRStatsDump(((config_type *)PED_MH_CONFIG(ped))->logfile,
 				       walk_info.LoopStats);
            break;
+       case DEP_STATS:
+           LoopStats->Nests 
+             += walk_info.LoopStats->Nests;
+	   LoopStats->NumberOfTrueDependences
+	          += walk_info.LoopStats->NumberOfTrueDependences;
+	   LoopStats->NumberOfAntiDependences
+	          += walk_info.LoopStats->NumberOfAntiDependences;
+	   LoopStats->NumberOfInputDependences
+	          += walk_info.LoopStats->NumberOfInputDependences;
+	   LoopStats->NumberOfOutputDependences
+	          += walk_info.LoopStats->NumberOfOutputDependences;
+           DepStatsDump(((config_type *)PED_MH_CONFIG(ped))->logfile,
+			walk_info.LoopStats);
+	   break;
        default:
          break;
       }
      if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
 	 selection == LI_STATS || selection == UJ_STATS ||
-	 selection == SR_STATS)
+	 selection == SR_STATS || selection == DEP_STATS)
        fclose(((config_type *)PED_MH_CONFIG(ped))->logfile);
      hide_message2();
   }
@@ -1743,6 +1792,34 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 
   }
 
+
+void DepStatsDump(FILE *logfile, LoopStatsType *LoopStats)
+
+{
+  int TotalDependences = LoopStats->NumberOfTrueDependences +
+    LoopStats->NumberOfAntiDependences +
+    LoopStats->NumberOfOutputDependences +
+    LoopStats->NumberOfInputDependences;
+ 
+  fprintf(logfile,"Total Loop Nests = %d\n",LoopStats->Nests);
+  fprintf(logfile,"Total Number of Dependences = %d\n",TotalDependences);
+  if (TotalDependences == 0)
+    return;
+  fprintf(logfile,"Total Number of True Dependences = %d\t\tPercent = %d\n",
+	  LoopStats->NumberOfTrueDependences,
+	  (LoopStats->NumberOfTrueDependences*100)/TotalDependences);
+  fprintf(logfile,"Total Number of Anti Dependences = %d\t\tPercent = %d\n",
+	  LoopStats->NumberOfAntiDependences,
+	  (LoopStats->NumberOfAntiDependences*100)/TotalDependences);
+  fprintf(logfile,"Total Number of Output Dependences = %d\t\tPercent = %d\n",
+	  LoopStats->NumberOfOutputDependences,
+	  (LoopStats->NumberOfOutputDependences*100)/TotalDependences);
+  fprintf(logfile,"Total Number of Input Dependences = %d\t\tPercent = %d\n",
+	  LoopStats->NumberOfInputDependences,
+	  (LoopStats->NumberOfInputDependences*100)/TotalDependences);
+  fprintf(logfile,"\n\n");
+}
+
 /****************************************************************************/
 /*                                                                          */
 /*   Function:   memory_UnrollStatsTotal                                    */
@@ -1790,4 +1867,26 @@ void memory_SRStatsTotal(char *program)
      fclose(logfile);
   }
 
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   memory_DepStatsTotal                                        */
+/*                                                                          */
+/*   Input:      program - name of program being processed                  */
+/*                                                                          */
+/*   Description:  print out the dependence statistics for          */ 
+/*                 an entire program                                        */
+/*                                                                          */
+/****************************************************************************/
+
+void memory_DepStatsTotal(char *program)
+
+  {
+   char fn[DB_PATH_LENGTH];
+   FILE *logfile;
+
+     sprintf(fn,"%s.STATSLOG",program);
+     logfile = fopen(fn,"w");
+     DepStatsDump(logfile,LoopStats);
+     fclose(logfile);
+  }
 

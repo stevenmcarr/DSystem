@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.19 1997/04/09 18:40:48 carr Exp $ */
+/* $Id: header.h,v 1.20 1997/06/30 18:43:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -87,4 +87,6 @@ EXTERN(void, memory_PerformCacheAnalysis, (PedInfo      ped,
 EXTERN(void, memory_AnnotateWithLDSTCount, (AST_INDEX    root,
 					    int          level,
 					    Boolean      MainProgram));
+EXTERN(void, memory_DepStatsTotal, (char *program));
+EXTERN(void, DepStatsDump, (FILE *logfile, LoopStatsType *LoopStats));
 #endif

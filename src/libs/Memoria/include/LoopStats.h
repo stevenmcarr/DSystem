@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.15 1997/03/27 20:24:47 carr Exp $ */
+/* $Id: LoopStats.h,v 1.16 1997/06/30 18:43:10 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -112,6 +112,11 @@ typedef struct loopstatstype {
 	  NonUniformLoopsZeroFP;     /* number of loops w/ non-uniformly generated references and no register pressure */
   float   LoopBal;             /* Loop Balance */
   
+
+  int 	  NumberOfTrueDependences;
+  int 	  NumberOfAntiDependences;
+  int 	  NumberOfOutputDependences;
+  int 	  NumberOfInputDependences;
  } LoopStatsType;
 
 #endif

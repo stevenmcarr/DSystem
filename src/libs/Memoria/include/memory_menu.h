@@ -1,4 +1,4 @@
-/* $Id: memory_menu.h,v 1.14 1997/04/09 18:40:48 carr Exp $ */
+/* $Id: memory_menu.h,v 1.15 1997/06/30 18:43:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -26,7 +26,8 @@
 #define LDST		        14
 #define DEAD			15    
 #define PARTITION_UNROLL	16    
-#define MEM_SIZE		17    /* MUST BE LAST! */
+#define DEP_STATS               17
+#define MEM_SIZE		18    /* MUST BE LAST! */
 
 #define ARENAS 1
 
