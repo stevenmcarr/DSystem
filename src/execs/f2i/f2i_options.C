@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.10 1999/04/22 14:31:37 carr Exp $ */
+/* $Id: f2i_options.C,v 1.11 2000/01/27 20:44:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -38,6 +38,7 @@ int ReplaceLevel = 0;
 int DependenceLevel = 3;
 int blue_color = 0;
 Boolean ReuseModelDebugFlag = false;
+Boolean CheckRecurrencesForPrefetching = false;
 
  int aiAnnotate;   /* automatically generate comments      */
  int aiCheapGoto;  /* controls assigned goto generation    */
