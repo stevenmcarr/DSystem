@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.10 1998/07/07 20:46:42 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.11 1998/09/29 20:45:03 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -595,6 +595,7 @@ int MemoriaInitOptions(int argc, char **argv)
   MemoriaOptions.Add(mc_cache_anal_flag);
   MemoriaOptions.Add(mc_ldst_anal_flag);
   MemoriaOptions.Add(mc_dep_choice);
+  MemoriaOptions.Add(mc_debug_choice);
   MemoriaOptions.Add(mc_stats_flag);
   MemoriaOptions.Add(mc_dep_stats_flag);
   MemoriaOptions.Add(mc_annotate_flag);
