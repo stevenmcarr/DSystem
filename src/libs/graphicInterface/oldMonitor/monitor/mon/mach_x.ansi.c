@@ -1,4 +1,4 @@
-/* $Id: mach_x.ansi.c,v 1.17 1997/03/11 14:33:42 carr Exp $ */
+/* $Id: mach_x.ansi.c,v 1.18 1997/04/07 15:22:03 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1841,7 +1841,8 @@ XSetWindowAttributes	wwAttr;			/* window attributes for root window	*/
 #endif /* distribution */
                 {/* Some IBM-style keyboarded display */
                         kb_keyboard_id = KB_IBM;
-			if (strcmp(x_display->vendor, "Silicon Graphics") == 0)
+/*			if (strcmp(x_display->vendor, "Silicon Graphics") == 0) */
+			if (strcmp(ServerVendor(x_display), "Silicon Graphics") == 0)
 			{/* Silicon Graphics (IBM Style) keyboard */
 				the_keys = ibmSG_keys;
 				num_keys = sizeof(ibmSG_keys) / sizeof(struct key);
