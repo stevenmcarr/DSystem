@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.37 1995/08/31 12:45:47 carr Exp $ */
+/* $Id: mh_walk.C,v 1.38 1995/12/28 10:17:21 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -462,22 +462,23 @@ static void AnnotateCodeForLDSTCount(AST_INDEX      stmt,
 				     int            level,
 				     walk_info_type *walk_info)
   {
-   AST_INDEX List,ExecutableStmt,TypeStmt,CommonStmt;
+   AST_INDEX List,FirstStmt,TypeStmt,CommonStmt,ExecutableStmt;
 
      List = pt_gen_ident("NumLoads");
      List = list_create(List);
      List = list_insert_last(List,pt_gen_ident("NumStores"));
-     ExecutableStmt = first_f77_executable_stmt(ut_GetSubprogramStmtList(stmt));
+     FirstStmt = list_first(ut_GetSubprogramStmtList(stmt));
      TypeStmt = gen_TYPE_STATEMENT(AST_NIL,gen_TYPE_LEN(gen_REAL(),
 							pt_gen_int(SIZE_PER_DB_PREC)),
 				   tree_copy(List));
      ft_SetComma(TypeStmt,false);
-     list_insert_before(ExecutableStmt,TypeStmt);
+     list_insert_before(FirstStmt,TypeStmt);
      CommonStmt = gen_COMMON(AST_NIL,list_create(gen_COMMON_ELT(
 					           pt_gen_ident("/LdStCount/"),List)));
-     list_insert_before(ExecutableStmt,CommonStmt);
+     list_insert_before(FirstStmt,CommonStmt);
      if (walk_info->MainProgram)
        {
+	ExecutableStmt = first_f77_executable_stmt(ut_GetSubprogramStmtList(stmt));
 	list_insert_before(ExecutableStmt,gen_ASSIGNMENT(AST_NIL,
 							 pt_gen_ident("NumLoads"),
 							 pt_gen_int(0)));
@@ -881,9 +882,7 @@ static void make_decls(SymDescriptor symtab,
      decl_lists.real_list = list_create(AST_NIL);
      decl_lists.cmplx_list = list_create(AST_NIL);
      fst_ForAll(symtab,(fst_ForAllCallback)check_decl,(Generic)&decl_lists);
-     for (stmt = list_first(stmt_list);
-          !is_executable_stmt(stmt);
-	  stmt = list_next(stmt));
+     stmt = list_first(stmt_list);
      if (!list_empty(decl_lists.dbl_prec_list))
        {
 	type_stmt = gen_TYPE_STATEMENT(AST_NIL,gen_TYPE_LEN(gen_REAL(),
@@ -907,7 +906,7 @@ static void make_decls(SymDescriptor symtab,
      if (!list_empty(decl_lists.cmplx_list))
        {
 	type_stmt = gen_TYPE_STATEMENT(AST_NIL,gen_TYPE_LEN(gen_COMPLEX(),
-					       pt_gen_int(SIZE_PER_COMPLEX)),
+							    AST_NIL),
 				       decl_lists.cmplx_list);
 	ft_SetComma(type_stmt,false);
 	list_insert_before(stmt,type_stmt);
