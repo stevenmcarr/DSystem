@@ -1,4 +1,4 @@
-/* $Id: name.C,v 1.15 1997/03/27 20:27:20 carr Exp $ */
+/* $Id: name.C,v 1.16 2002/03/06 16:42:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -217,7 +217,7 @@ static void check_if_oldest_value(AST_INDEX node,
      for (edge = dg_first_sink_ref( PED_DG(ped),sink_ref);
 	  edge != END_OF_LIST && !*gen_not_found;
 	  edge = dg_next_sink_ref( PED_DG(ped),edge))
-       if(dg[edge].consistent != inconsistent && !dg[edge].symbolic)
+       if(dg[edge].consistent == consistent_SIV && !dg[edge].symbolic)
          if (dg[edge].type == dg_output && dg[edge].src != dg[edge].sink)
 	   {
 	    sptr = get_scalar_info_ptr(dg[edge].src);

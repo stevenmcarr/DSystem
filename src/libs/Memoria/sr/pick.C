@@ -1,4 +1,4 @@
-/* $Id: pick.C,v 1.12 2002/03/04 16:50:51 carr Exp $ */
+/* $Id: pick.C,v 1.13 2002/03/06 16:43:00 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -124,7 +124,7 @@ static int chk_store(AST_INDEX         node,
 	   if (pick_info->dg[edge].type == dg_output &&
 	       pick_info->dg[edge].level == LOOP_INDEPENDENT &&
 	       sptr1->surrounding_do == sptr2->surrounding_do)
-	    if (pick_info->dg[edge].consistent != inconsistent && 
+	    if (pick_info->dg[edge].consistent == consistent_SIV && 
 		!pick_info->dg[edge].symbolic)
 	      {
 	       stmt_ptr2 = get_stmt_info_ptr(ut_get_stmt(pick_info->dg[edge].
@@ -160,7 +160,7 @@ static void countReferencesWithKilledGenerators(AST_INDEX         node,
   {
     if ((pick_info->dg[edge].type == dg_true ||
 	 pick_info->dg[edge].type == dg_input)) 
-      if ( pick_info->dg[edge].consistent != inconsistent && 
+      if ( pick_info->dg[edge].consistent == consistent_SIV && 
 	   !pick_info->dg[edge].symbolic)
       {
 	
@@ -265,9 +265,7 @@ static int get_gen(AST_INDEX         node,
 	   next_edge = dg_next_sink_ref( PED_DG(pick_info->ped),edge);
 	   if (pick_info->dg[edge].type == dg_true ||
 	       (pick_info->dg[edge].type == dg_input && 
-		(pick_info->dg[edge].consistent == consistent_SIV ||
-		 (pick_info->dg[edge].consistent == consistent_MIV &&
-		  pick_info->dg[edge].src != pick_info->dg[edge].sink)) && 
+		pick_info->dg[edge].consistent == consistent_SIV &&
 		!pick_info->dg[edge].symbolic)) 
 	     {
 	      psrc = get_scalar_info_ptr(pick_info->dg[edge].src);
@@ -309,13 +307,13 @@ static int get_gen(AST_INDEX         node,
 			 psink->gen_type = LCAV;
 			 psink->constant = NOT(pick_info->dg[edge].symbolic);
 			 psink->is_consistent = 
-			   BOOL(pick_info->dg[edge].consistent != inconsistent);
+			   BOOL(pick_info->dg[edge].consistent == consistent_SIV);
 			}
 		      else if (psink->gen_type == LCAV)
 		        if (dist < psink->gen_distance ||
 			    (dist == psink->gen_distance && 
 			     (!psink->is_consistent || !psink->constant) &&
-			     pick_info->dg[edge].consistent != inconsistent
+			     pick_info->dg[edge].consistent == consistent_SIV
 			     && !pick_info->dg[edge].symbolic))
 			  {
 			   GList.Clear();
@@ -325,16 +323,15 @@ static int get_gen(AST_INDEX         node,
 			   psink->gen_type = LCAV;
 			   psink->constant = NOT(pick_info->dg[edge].symbolic);
 			   psink->is_consistent =
-			    BOOL(pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent == consistent_SIV);
 			  }
 			else if (dist == psink->gen_distance &&
-				 pick_info->dg[edge].consistent != inconsistent
+				 pick_info->dg[edge].consistent == consistent_SIV
 				 && !pick_info->dg[edge].symbolic)
 			  GList.Append(psrc);
 			else;
-		      else if (pick_info->dg[edge].consistent != 
-			          inconsistent &&
-			       !pick_info->dg[edge].symbolic)
+		      else if (pick_info->dg[edge].consistent == consistent_SIV
+			       && !pick_info->dg[edge].symbolic)
 			{
 			 GList.Clear();
 			 GList.Append(psrc);
@@ -343,7 +340,7 @@ static int get_gen(AST_INDEX         node,
 			 psink->gen_type = LCAV;
 			 psink->constant = NOT(pick_info->dg[edge].symbolic);
 			 psink->is_consistent = 
-			    BOOL(pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent == consistent_SIV);
 			}
 		      else;
 		    else if (ut_member_number(pick_info->exit_block->
@@ -365,14 +362,14 @@ static int get_gen(AST_INDEX         node,
 			 psink->gen_type = LCPAV;
 			 psink->constant = NOT(pick_info->dg[edge].symbolic);
 			 psink->is_consistent = 
-			    BOOL(pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent == consistent_SIV);
 			}
 		      else if (psink->gen_type == LCPAV)
 		      
 		      /* current generator is LCPAV pick one with largest 
 			 distance */
 		      
-		        if (pick_info->dg[edge].consistent != inconsistent 
+		        if (pick_info->dg[edge].consistent == consistent_SIV 
 			    && !pick_info->dg[edge].symbolic &&
 			    (dist > psink->gen_distance || 
 			     !psink->is_consistent || !psink->constant))
@@ -384,15 +381,15 @@ static int get_gen(AST_INDEX         node,
 			   psink->gen_type = LCPAV;
 			   psink->constant = NOT(pick_info->dg[edge].symbolic);
 			   psink->is_consistent=
-			    BOOL(pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent == consistent_SIV);
 			  }
 			else if (dist == psink->gen_distance &&
-				 pick_info->dg[edge].consistent != inconsistent
+				 pick_info->dg[edge].consistent == consistent_SIV
 				 && !pick_info->dg[edge].symbolic)
 			  GList.Append(psrc);
 			else;
 		      else if ((!psink->is_consistent || !psink->constant) && 
-			       pick_info->dg[edge].consistent != inconsistent
+			       pick_info->dg[edge].consistent == consistent_SIV
 			       && !pick_info->dg[edge].symbolic)
 			{
 			 GList.Clear();
@@ -402,7 +399,7 @@ static int get_gen(AST_INDEX         node,
 			 psink->gen_type = LCPAV;
 			 psink->constant = NOT(pick_info->dg[edge].symbolic);
 			 psink->is_consistent = 
-			    BOOL(pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent == consistent_SIV);
 			}
 		   }
 		}
@@ -416,14 +413,14 @@ static int get_gen(AST_INDEX         node,
 					   psrc->table_index))
 		   if (psink->gen_type == LIAV && psink->is_consistent &&
 		       psink->constant && 
-		       (pick_info->dg[edge].consistent == inconsistent ||
+		       (pick_info->dg[edge].consistent != consistent_SIV ||
 			pick_info->dg[edge].symbolic))
 	/*	     dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
 		   else if (psink->generator == -1 ||
 			    !psink->is_consistent || 
 			    !psink->constant || 
 			    (psink->gen_type != LIAV && 
-			     pick_info->dg[edge].consistent != inconsistent 
+			     pick_info->dg[edge].consistent == consistent_SIV 
 			     && !pick_info->dg[edge].symbolic))
 		     {
 		      GList.Clear();
@@ -433,9 +430,9 @@ static int get_gen(AST_INDEX         node,
 		      psink->gen_type = LIAV;
 		      psink->constant = NOT(pick_info->dg[edge].symbolic);
 		      psink->is_consistent = 
-			    BOOL(pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent == consistent_SIV);
 		     }
-		   else if (pick_info->dg[edge].consistent != inconsistent &&
+		   else if (pick_info->dg[edge].consistent == consistent_SIV &&
 			    !pick_info->dg[edge].symbolic)
 		      GList.Append(psrc);
 		   else;
@@ -449,7 +446,7 @@ static int get_gen(AST_INDEX         node,
 		/*     dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
 		   else if (psink->generator == -1 || 
 			    ((!psink->is_consistent  || !psink->constant) &&
-			     pick_info->dg[edge].consistent != inconsistent 
+			     pick_info->dg[edge].consistent == consistent_SIV 
 			     && !pick_info->dg[edge].symbolic))
 		     {
 		      GList.Clear();
@@ -459,9 +456,9 @@ static int get_gen(AST_INDEX         node,
 		      psink->gen_type = LIPAV;
 		      psink->constant = NOT(pick_info->dg[edge].symbolic);
 		      psink->is_consistent = 
-			    BOOL(pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent == consistent_SIV);
 		     }
-		   else if (pick_info->dg[edge].consistent != inconsistent &&
+		   else if (pick_info->dg[edge].consistent == consistent_SIV &&
 			    !pick_info->dg[edge].symbolic &&
 			    psink->gen_type != LCAV)
 		  
@@ -476,9 +473,9 @@ static int get_gen(AST_INDEX         node,
 		      psink->gen_type = LIPAV;
 		      psink->constant = NOT(pick_info->dg[edge].symbolic);
 		      psink->is_consistent =
-			    BOOL(pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent == consistent_SIV);
 		     }
-		   else if (pick_info->dg[edge].consistent != inconsistent &&
+		   else if (pick_info->dg[edge].consistent == consistent_SIV &&
 			    !pick_info->dg[edge].symbolic)
 		      GList.Append(psrc);
 		}

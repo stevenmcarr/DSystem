@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.17 2002/03/04 16:50:51 carr Exp $ */
+/* $Id: prune.C,v 1.18 2002/03/06 16:42:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -93,7 +93,7 @@ static void prune_dependence_edges(AST_INDEX     node,
 	       {
 		case dg_input:
 		case dg_true: 
-		  if (dg[edge].consistent != inconsistent && 
+		  if (dg[edge].consistent == consistent_SIV && 
 		      !dg[edge].symbolic)
 		    {
 		     if (dg[edge].level != LOOP_INDEPENDENT)
@@ -128,7 +128,7 @@ static void prune_dependence_edges(AST_INDEX     node,
 		case dg_output: 
 		  break;
 		case dg_anti:
-		  if (dg[edge].consistent != inconsistent &&
+		  if (dg[edge].consistent == consistent_SIV &&
 		      dg[edge].level == LOOP_INDEPENDENT)
 		    {
 		     scalar_src->recurrence = false;
