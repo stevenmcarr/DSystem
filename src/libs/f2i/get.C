@@ -1,4 +1,4 @@
-/* $Id: get.C,v 1.3 1997/11/10 21:22:28 carr Exp $ */
+/* $Id: get.C,v 1.4 1998/04/29 13:00:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -153,3 +153,33 @@ char *getLocality(AST_INDEX node)
         return("&unknown");
      }
   }
+
+int GetDataSize(int ftype)
+
+{
+  switch (ftype)
+    {
+      case TYPE_INTEGER:
+      case TYPE_LOGICAL:
+      case TYPE_LABEL:
+	if (aiLongIntegers)
+	  return 8;
+	else
+	  return 4;
+      case TYPE_REAL:
+	if (aiDoubleReals)
+	  return 8;
+	else
+	  return 4;
+      case TYPE_DOUBLE_PRECISION:
+	return 8;
+      case TYPE_CHARACTER:
+	return 1;
+      case TYPE_COMPLEX:
+	return 8;
+      case TYPE_DOUBLE_COMPLEX:
+	return 16;
+      default:
+	return 8;
+    }
+}

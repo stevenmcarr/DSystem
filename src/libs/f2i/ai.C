@@ -1,4 +1,4 @@
-/* $Id: ai.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: ai.C,v 1.3 1998/04/29 13:00:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -226,10 +226,8 @@ static void aiInit(void)
   {
     aiNextStatic = 16;	/* reserve space for label, profile counters */
   }
-  else if (aiLongIntegers)
-    aiNextStatic = 8;  /* reserve space for label */
   else
-    aiNextStatic = 4;  /* reserve space for label */
+    aiNextStatic = GetDataSize(TYPE_LABEL);  /* reserve space for label */
 
 
   proc_name = "Uninitialized!";

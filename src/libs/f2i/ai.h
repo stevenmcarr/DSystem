@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.7 1997/11/10 21:22:28 carr Exp $ */
+/* $Id: ai.h,v 1.8 1998/04/29 13:00:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -468,6 +468,7 @@ EXTERN(int,SizeOfType,(int ));
 EXTERN(int,TempReg,(int  , int  , int  , int ));
 EXTERN(int,StrTempReg,(char *  , int  , int ));
 EXTERN(char *,ConstantNameFromIndex,(int ));
+EXTERN(int ,GetDataSize,(int));
 
      /* from libs/Memoria/dr/mh_walk.C  */
 EXTERN(void, ApplyMemoryCompiler,(int,PedInfo,AST_INDEX,FortTree,Context,char *));

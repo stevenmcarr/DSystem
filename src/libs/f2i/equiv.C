@@ -1,4 +1,4 @@
-/* $Id: equiv.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: equiv.C,v 1.3 1998/04/29 13:00:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -337,25 +337,19 @@ static void compute_size( AST_INDEX node, int *high, int *eq_pt)
   Index = getIndex(identifier);
   dims  = fst_my_GetFieldByIndex(ft_SymTable, Index, SYMTAB_NUM_DIMS);
 
-  switch(fst_my_GetFieldByIndex(ft_SymTable, Index, SYMTAB_TYPE))
+  int ftype = fst_my_GetFieldByIndex(ft_SymTable, Index, SYMTAB_TYPE);
+  switch (ftype)
   {
-    case TYPE_CHARACTER:	size = 1;	break;
-    case TYPE_LOGICAL:		size = 4;	break;
+    case TYPE_CHARACTER:
+    case TYPE_LOGICAL:
     case TYPE_INTEGER:	
     case TYPE_LABEL:
-      if (aiLongIntegers)
-	size = 8;
-      else
-	size = 4;
     case TYPE_REAL:	
-      if (aiDoubleReals)
-	size = 8;
-      else
-	size = 4;
+    case TYPE_DOUBLE_PRECISION:
+    case TYPE_COMPLEX:	
+    case TYPE_DOUBLE_COMPLEX:
+      size = GetDataSize(ftype);
       break;
-    case TYPE_DOUBLE_PRECISION:	size = 8;	break;
-    case TYPE_COMPLEX:		size = 8;	break;
-    case TYPE_DOUBLE_COMPLEX:	size = 16;	break;
     default:
 	ERROR("Equivalence(ComputeSize)", "Unexpected data type encountered",
 	      WARNING);

@@ -1,4 +1,4 @@
-/* $Id: addr.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: addr.C,v 1.3 1998/04/29 13:00:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -96,6 +96,7 @@ static int constantBounds( AST_INDEX var, int index, int dims, AST_INDEX *args )
   int past, present;
   char buffer[100];
   ArrayBound *bounds;
+  char dSize[5];
 
   if (aiDebug > 0)
      (void) fprintf(stdout, "\tConstantBounds( %d, %d, %d, %d ).\n",
@@ -157,6 +158,7 @@ static int constantBounds( AST_INDEX var, int index, int dims, AST_INDEX *args )
   }
 
   /* now, running total gets multiplied by bytes/element */
+  sprintf(dSize,"%d",GetDataSize(fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_TYPE)));
   switch(fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_TYPE))
   {
     case TYPE_CHARACTER:
@@ -189,25 +191,19 @@ static int constantBounds( AST_INDEX var, int index, int dims, AST_INDEX *args )
 
     case TYPE_LABEL:
     case TYPE_INTEGER:
-        if (aiLongIntegers)
-	  temp = getIntConstantInRegister("8");
-	else
-	  temp = getIntConstantInRegister("4");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is Integer");
 	past = present;
 	break;
     case TYPE_LOGICAL:
-	temp = getIntConstantInRegister("4");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is 4");
 	past = present;
 	break;
     case TYPE_REAL:	 /* length is four or 8 */
-        if (aiDoubleReals)
-	  temp = getIntConstantInRegister("8");
-	else
-	  temp = getIntConstantInRegister("4");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is 4");
 	past = present;
@@ -215,14 +211,14 @@ static int constantBounds( AST_INDEX var, int index, int dims, AST_INDEX *args )
 
     case TYPE_DOUBLE_PRECISION:
     case TYPE_COMPLEX:	 /* length is eight */
-        temp = getIntConstantInRegister("8");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is 8");
 	past = present;
 	break;
 
     case TYPE_DOUBLE_COMPLEX:
-        temp = getIntConstantInRegister("16");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is 16");
 	past = present;
@@ -263,6 +259,7 @@ static int parameterArray( AST_INDEX var, int index, int dims, AST_INDEX *args )
   int lb, lbr, minusLb;
   int past, present;
   ArrayBound *bounds;
+  char dSize[5];
 
   if (aiDebug > 0)
      (void) fprintf(stdout, "\tParameterArray( %d, %d, %d, %d ).\n",
@@ -340,6 +337,7 @@ static int parameterArray( AST_INDEX var, int index, int dims, AST_INDEX *args )
   }
 
   /* now, running total gets multiplied by bytes/element */
+  sprintf(dSize,"%d",GetDataSize(fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_TYPE)));
   switch(fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_TYPE))
   {
     case TYPE_CHARACTER: /* length is one! */
@@ -347,25 +345,19 @@ static int parameterArray( AST_INDEX var, int index, int dims, AST_INDEX *args )
 
     case TYPE_LABEL:
     case TYPE_INTEGER:
-        if (aiLongIntegers)
-	  temp = getIntConstantInRegister("8");
-	else
-	  temp = getIntConstantInRegister("4");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is Integer");
 	past = present;
 	break;
     case TYPE_LOGICAL:
-	temp = getIntConstantInRegister("4");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is 4");
 	past = present;
 	break;
     case TYPE_REAL:	 /* length is four or eight*/
-        if (aiDoubleReals)
-	  temp = getIntConstantInRegister("8");
-	else
-	  temp = getIntConstantInRegister("4");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is 4");
 	past = present;
@@ -373,14 +365,14 @@ static int parameterArray( AST_INDEX var, int index, int dims, AST_INDEX *args )
 
     case TYPE_DOUBLE_PRECISION:
     case TYPE_COMPLEX:	 /* length is eight */
-        temp = getIntConstantInRegister("8");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is 8");
 	past = present;
 	break;
 
     case TYPE_DOUBLE_COMPLEX:
-        temp = getIntConstantInRegister("16");
+	temp = getIntConstantInRegister(dSize);
 	present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	generate(0, iMUL, past, temp, present, "elt length is 16");
 	past = present;

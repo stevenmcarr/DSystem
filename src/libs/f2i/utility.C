@@ -1,4 +1,4 @@
-/* $Id: utility.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: utility.C,v 1.2 1998/04/29 13:00:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -228,24 +228,18 @@ int SizeOfType( int type )
   switch(type)
   {
     case TYPE_CHARACTER:	value = 4;	break; /* pointer to string */
-    case TYPE_LOGICAL:		value = 4;	break;
+    case TYPE_LOGICAL:	
     case TYPE_INTEGER:	
     case TYPE_LABEL:	
-      if (aiLongIntegers)
-	value = 8;
-      else
-	value = 4;
-      break;
     case TYPE_REAL:
-      if (aiDoubleReals)
-	value = 8;
-      else
-	value = 4;
-      break;
-    case TYPE_COMPLEX:		value = 8; 	break;
-    case TYPE_DOUBLE_PRECISION:	value = 8; 	break;
-    case TYPE_DOUBLE_COMPLEX:	value = 16;	break;
-    case TYPE_UNKNOWN:		value = 16;	break; /* worst case */
+    case TYPE_COMPLEX:	
+    case TYPE_DOUBLE_PRECISION:
+    case TYPE_DOUBLE_COMPLEX:
+	value = GetDataSize(type);
+	break;
+    case TYPE_UNKNOWN:	
+	value = 16;	break; /* worst case */
+	break;
     default:			value = DK;	break;
   };
   return value;

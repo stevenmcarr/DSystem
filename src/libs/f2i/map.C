@@ -1,4 +1,4 @@
-/* $Id: map.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: map.C,v 1.2 1998/04/29 13:00:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -496,27 +496,20 @@ int VarSize(int index)
 
   elements = 1;
 
-  switch(fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_TYPE))
+  int ftype = fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_TYPE);
+  switch(ftype)
   {
     case TYPE_CHARACTER:	size = fst_my_GetFieldByIndex(ft_SymTable, index, 
 						SYMTAB_CHAR_LENGTH);	break;
-    case TYPE_LOGICAL:		size = 4;			break;
+    case TYPE_LOGICAL:
     case TYPE_INTEGER:		
     case TYPE_LABEL:	
-      if (aiLongIntegers)
-	size = 8;
-      else
-	size = 4;
-      break;
     case TYPE_REAL:	
-      if (aiDoubleReals)
-	size = 8;
-      else
-	size = 4;
-      break;
-    case TYPE_DOUBLE_PRECISION:	size = 8;			break;
-    case TYPE_COMPLEX:		size = 8;			break;
-    case TYPE_DOUBLE_COMPLEX:	size = 16;			break;
+    case TYPE_DOUBLE_PRECISION:
+    case TYPE_COMPLEX:	
+    case TYPE_DOUBLE_COMPLEX:
+	size = GetDataSize(ftype);
+	break;
     default:
 	(void) sprintf(error_buffer, 
 		"The name '%s' has an unexpected data type", 

@@ -1,4 +1,4 @@
-/* $Id: prepass.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: prepass.C,v 1.2 1998/04/29 13:00:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -79,10 +79,7 @@ void aiPrePass(AST_INDEX node)
 
   /* add 4 bytes for the parameter for "exit" if we have a program */
   if (proc_type == GEN_PROGRAM)
-    if (aiLongIntegers)
-      aiExpressionStackSpace += 8;
-    else
-      aiExpressionStackSpace += 4;
+    aiExpressionStackSpace += GetDataSize(TYPE_INTEGER);
 
   aiStmtCount = SavedStmtNo;
   aiNextStack += max(spaceForActuals,getIOLActuals());

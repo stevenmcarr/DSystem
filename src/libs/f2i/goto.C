@@ -1,4 +1,4 @@
-/* $Id: goto.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: goto.C,v 1.3 1998/04/29 13:00:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -143,10 +143,9 @@ void HandleComputedGoto( AST_INDEX node )
 		index = StrTempReg("(-L)+", begin_table, TYPE_INTEGER);
 		generate(0, iLDI, begin_table, index, GEN_LABEL, 
 			  "read label from table");
-		if (aiLongIntegers)
-		    four = getIntConstantInRegister("8");
-		else
-		    four = getIntConstantInRegister("4");
+		char dSize[5];
+		sprintf(dSize,"%d",GetDataSize(TYPE_LABEL));
+		four = getIntConstantInRegister(dSize),
 		base = TempReg(index, four, iSUB, TYPE_INTEGER);
 		generate(0, iSUB, index, four, base, NOCOMMENT);
 
