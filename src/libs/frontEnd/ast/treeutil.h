@@ -1,4 +1,4 @@
-/* $Id: treeutil.h,v 1.25 1997/03/11 14:29:33 carr Exp $ */
+/* $Id: treeutil.h,v 1.26 1997/03/27 20:34:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -136,8 +136,8 @@ EXTERN(int, walk_statements,
 EXTERN(int, walk_statements_v,
 		(AST_INDEX stmt,
 		 int nesting_level,
-		 WK_STMT_CLBACK pre_action,
-		 WK_STMT_CLBACK post_action,
+		 WK_STMT_CLBACK_V pre_action,
+		 WK_STMT_CLBACK_V post_action,
 		 ...)); 	/* the arguments to pass to pre_ and post_ */
 
 
@@ -155,8 +155,8 @@ EXTERN(int, walk_statements_reverse,
 EXTERN(int, walk_statements_reverse_v,
 		(AST_INDEX stmt,
 		 int nesting_level,
-		 WK_STMT_CLBACK pre_action,
-		 WK_STMT_CLBACK post_action,
+		 WK_STMT_CLBACK_V pre_action,
+		 WK_STMT_CLBACK_V post_action,
 		 ...));	/* the arguments to pass to pre_ and post_ */
 
 

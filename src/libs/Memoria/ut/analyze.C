@@ -1,4 +1,9 @@
-/* $Id: analyze.C,v 1.16 1996/10/14 14:48:03 carr Exp $ */
+/* $Id: analyze.C,v 1.17 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
@@ -10,32 +15,32 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <general.h>
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <analyze.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/include/analyze.h>
 
 #ifndef gi_h
-#include <fort/gi.h>
+#include <libs/frontEnd/include/gi.h>
 #endif
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
 #ifndef dt_h
-#include <dt.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
 #endif
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif
 
-#include <mem_util.h>
-#include <pt_util.h>
-#include <varargs.h>
-#include <fort/treeutil.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <stdarg.h>
+#include <libs/frontEnd/ast/treeutil.h>
 #include <assert.h>
 
 extern Boolean mc_allow_expansion;
@@ -225,7 +230,7 @@ static int build_pre(AST_INDEX       stmt, int             level,
      if (is_do(stmt))
        {
 	fst_PutField(build_info->symtab,
-		     (int)gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(stmt))),
+		     gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(stmt))),
 		     IVAR,true);
 	loop_num = get_stmt_info_ptr(stmt)->loop_num;
 	build_info->loop_data[loop_num].inner_loop = -1;
@@ -605,7 +610,7 @@ static void check_crossing_dep(model_loop *loop_data,
 				   sptr2->surrounding_do);
 	      if (fst_GetField(symtab,gen_get_text(dg[edge].src),EXPAND_LVL) <
 		  loop_data[loop].level)
-	        fst_PutField(symtab,(int)gen_get_text(dg[edge].src),EXPAND_LVL,
+	        fst_PutField(symtab,gen_get_text(dg[edge].src),EXPAND_LVL,
 			     loop_data[loop].level);
 	      if (loop_data[loop].distribute && mc_allow_expansion)
 	        loop_data[loop].expand = true;

@@ -1,4 +1,4 @@
-/* $Id: FormalParameters.C,v 1.1 1997/03/11 14:34:42 carr Exp $ */
+/* $Id: FormalParameters.C,v 1.2 1997/03/27 20:40:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -64,7 +64,7 @@ FormalParameters::FormalParameters(FormalParameters &rhs)
 {
   NamedObjectTableIterator entries((NamedObjectTable *) &rhs);
   FormalParameter *entry;
-  for (; entry = (FormalParameter *) entries.Current(); entries++) {
+  for (; entry = (FormalParameter *) entries.Current(); ++entries) {
     AddEntry(new FormalParameter(entry));
   }
 }

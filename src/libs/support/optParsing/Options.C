@@ -1,4 +1,4 @@
-/* $Id: Options.C,v 1.4 1997/03/11 14:37:07 carr Exp $ */
+/* $Id: Options.C,v 1.5 1997/03/27 20:51:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -12,13 +12,6 @@
 //
 // data structure for managing options processing with opt_parse_argv
 // JMC 2/93
-
-struct OptionsS {
-  char *title;
-  SinglyLinkedList olist;
-  OptionsS(char *t) : title(t) {};
-};
-
 
 Options::Options(char *options_title)
 {
@@ -47,7 +40,7 @@ void Options::Usage(char *exec_name)
 {
   fprintf(stderr, "usage: %s\n", exec_name);
   OptionsIterator oi(this);
-  for (Option *opt; opt = oi.Current(); oi++) {
+  for (Option *opt; opt = oi.Current(); ++oi) {
     char *help_text;
     fprintf(stderr, "   -%c ", opt->arg_char);
     switch(opt->t) {
@@ -72,11 +65,6 @@ void Options::Usage(char *exec_name)
   }
 }
 
-struct OptionsIteratorS {
-  SinglyLinkedListIterator it;
-  OptionsIteratorS(SinglyLinkedList *l) : it(l) {};
-};
-
 OptionsIterator::OptionsIterator(Options *opts)
 {
   hidden = new OptionsIteratorS(&opts->hidden->olist);
@@ -89,7 +77,7 @@ OptionsIterator::~OptionsIterator()
 
 void OptionsIterator::operator ++()
 {
-  hidden->it++;
+  ++hidden->it;
 }
 
 void OptionsIterator::Reset()

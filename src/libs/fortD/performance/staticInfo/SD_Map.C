@@ -1,10 +1,10 @@
-/* $Id: SD_Map.C,v 1.2 1997/03/11 14:29:02 carr Exp $ */
+/* $Id: SD_Map.C,v 1.3 1997/03/27 20:34:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 // -*- C++ -*-
-static const char * RCS_ID = "$Id: SD_Map.C,v 1.2 1997/03/11 14:29:02 carr Exp $";
+static const char * RCS_ID = "$Id: SD_Map.C,v 1.3 1997/03/27 20:34:10 carr Exp $";
 #define MKASSERT
 #define ASSERT_FILE_VERSION RCS_ID
 
@@ -145,7 +145,7 @@ SDDF_SideArray::SDDF_SideArray(char* moduleFileName,
   // use the same mapping routines for both
   
   AstIterator tree_walk(theRoot, PreOrder, AST_ITER_FULL_WALK);
-  for ( ; node = tree_walk.Current(); tree_walk++) {
+  for ( ; node = tree_walk.Current(); ++tree_walk) {
     if (is_statement(node) || is_identifier(node))
 	SD_MapNode(node);
   }
@@ -170,7 +170,7 @@ void SDDF_SideArray::Dump() {
   if (mapText) {
     AST_INDEX stmt;
     AstIterator tree_walk(theRoot, PreOrder, AST_ITER_STMTS_ONLY);
-    for ( ; stmt = tree_walk.Current(); tree_walk++) {
+    for ( ; stmt = tree_walk.Current(); ++tree_walk) {
       line = (int)(ft_GetFromSideArray(md,stmt,SD_START_LINE_INDEX));
       text = (char *)(ft_GetFromSideArray(md,stmt,SD_NODE_TEXT_INDEX));
       linetwo = ((PabloSideArrayInfo *)

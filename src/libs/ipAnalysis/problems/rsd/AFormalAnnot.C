@@ -1,4 +1,4 @@
-/* $Id: AFormalAnnot.C,v 1.1 1997/03/11 14:35:14 carr Exp $ */
+/* $Id: AFormalAnnot.C,v 1.2 1997/03/27 20:41:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -89,7 +89,7 @@ AFormalAnnot::CreateOrderedSetOfStrings()
   
   string.Append("%s:", this->name);
   
-  for (StringSetIterator it(this); name = it.Current(); it++) {
+  for (StringSetIterator it(this); name = it.Current(); ++it) {
     string.Append(" %s", name);
   }
   oss->Append(string.Finalize());

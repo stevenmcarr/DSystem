@@ -1,4 +1,4 @@
-/* $Id: File.h,v 1.4 1997/03/11 14:36:35 carr Exp $ */
+/* $Id: File.h,v 1.5 1997/03/27 20:49:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,6 +31,11 @@ typedef enum
 {SEEK_ORIGIN=L_SET, SEEK_CURRENT=L_INCR, SEEK_LAST=L_XTND}
 #endif
 SeekRefPt;
+
+// definition of File internal representation
+struct FileS {
+  FILE *fp;
+};
 
 class File {
   struct FileS *hidden;

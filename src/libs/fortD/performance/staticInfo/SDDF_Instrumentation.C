@@ -1,4 +1,4 @@
-/* $Id: SDDF_Instrumentation.C,v 1.1 1997/03/11 14:28:57 carr Exp $ */
+/* $Id: SDDF_Instrumentation.C,v 1.2 1997/03/27 20:34:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -6,11 +6,11 @@
 // -*- C++ -*- xterm -geometry 80x40+495+0 -name "`hostname`_2" &
 
 /* Contains the C code for the basic interface routines for fortran D */ 
-/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/SDDF_Instrumentation.C,v 1.1 1997/03/11 14:28:57 carr Exp $
+/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/SDDF_Instrumentation.C,v 1.2 1997/03/27 20:34:10 carr Exp $
 //
 */
 
-static const char * RCS_ID = "$Id: SDDF_Instrumentation.C,v 1.1 1997/03/11 14:28:57 carr Exp $";
+static const char * RCS_ID = "$Id: SDDF_Instrumentation.C,v 1.2 1997/03/27 20:34:10 carr Exp $";
 #define ASSERT_FILE_VERSION RCS_ID
 #define MKASSERT
 
@@ -365,7 +365,7 @@ void SD_ProcessArrays() {
   ArrayNameListEntry *canonicalEntry;
   ArrayNameIterator arrayNameSet(thePabloGlobalInfo.arrayInfo);
   
-  for ( ; (name = arrayNameSet.arrayName) != (char*) NULL; arrayNameSet++) {
+  for ( ; (name = arrayNameSet.arrayName) != (char*) NULL; ++arrayNameSet) {
     array     = arrayNameSet.arrayInfo;
     iTableEnt = arrayNameSet.fullEntry;
     MkAssert(iTableEnt!=0,"We should have an entry for this array name",ABORT);

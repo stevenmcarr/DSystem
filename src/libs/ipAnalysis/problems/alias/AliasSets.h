@@ -1,4 +1,4 @@
-/* $Id: AliasSets.h,v 1.1 1997/03/11 14:34:55 carr Exp $ */
+/* $Id: AliasSets.h,v 1.2 1997/03/27 20:40:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -70,7 +70,7 @@ friend class GlobalAliasesSet;
 // class FormalAliasesSet:  set of sets of aliases for each formal 
 //                          parameter 
 //---------------------------------------------------------------------
-class FormalAliasesSet : private NamedObjectTableIO {
+class FormalAliasesSet : public NamedObjectTableIO {
 public:
   FormalAliasesSet();
   FormalAliasesSet(FormalAliasesSet &);
@@ -94,7 +94,7 @@ friend class FormalAliasesSetIterator;
 //---------------------------------------------------------------------
 // class GlobalAliasesSet:  set of sets of aliases for each global 
 //---------------------------------------------------------------------
-class GlobalAliasesSet : private HashTable {
+class GlobalAliasesSet : public HashTable {
 public:
   GlobalAliasesSet();
   GlobalAliasesSet(GlobalAliasesSet&);
@@ -120,7 +120,7 @@ private:
 //---------------------------------------------------------------------
 // class FormalAliasesSetIterator: enumerate FormalAliasesSet members 
 //---------------------------------------------------------------------
-class FormalAliasesSetIterator : private NamedObjectTableIterator {
+class FormalAliasesSetIterator : public NamedObjectTableIterator {
 public:
   FormalAliasesSetIterator(const FormalAliasesSet *annot);
   ~FormalAliasesSetIterator();
@@ -133,7 +133,7 @@ public:
 //---------------------------------------------------------------------
 // class GlobalAliasesSetIterator:  enumerate GlobalAliasesSet members
 //---------------------------------------------------------------------
-class GlobalAliasesSetIterator : private HashTableIterator {
+class GlobalAliasesSetIterator : public HashTableIterator {
 public:
   GlobalAliasesSetIterator(const GlobalAliasesSet *annot);
   ~GlobalAliasesSetIterator();

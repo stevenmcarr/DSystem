@@ -1,4 +1,4 @@
-/* $Id: ModuleProcsIterator.h,v 1.1 1997/03/11 14:28:06 carr Exp $ */
+/* $Id: ModuleProcsIterator.h,v 1.2 1997/03/27 20:32:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,9 +21,31 @@
 #ifndef StackableIterator_h
 #include <libs/support/iterators/StackableIterator.h>
 #endif
+#include <libs/fileAttrMgmt/module/NeedProvModAttr.h>
+#include <libs/frontEnd/include/NeedProvSet.h>
 
 class AttributedFile;        // minimal external declaration
 class Module;                // minimal external declaration
+
+
+//***************************************************************************
+// interface operations for class ModuleProcsIterator
+//***************************************************************************
+
+
+class ModuleProcsIteratorS {
+public:
+  NeedProvSetIterator npi;
+  NeedProvModAttr *npAttr;
+  ModuleProcsIteratorS(Module *module) :
+  npAttr((NeedProvModAttr *) 
+	 module->AttachAttribute(CLASS_NAME(NeedProvModAttr))),
+  npi(npAttr->provs) {};
+  ~ModuleProcsIteratorS() {
+    npAttr->uplinkToFile->DetachAttribute(npAttr);
+  }
+};
+
 
 class ModuleProcsIterator : public StackableIterator {
 private:

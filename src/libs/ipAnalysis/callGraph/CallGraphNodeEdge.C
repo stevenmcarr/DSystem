@@ -1,4 +1,4 @@
-/* $Id: CallGraphNodeEdge.C,v 1.7 1997/03/11 14:34:32 carr Exp $ */
+/* $Id: CallGraphNodeEdge.C,v 1.8 1997/03/27 20:40:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -54,7 +54,7 @@ static char *CallGraphSyntheticEdgeName
 // class ProcParBindingsSet interface
 //*************************************************************************
 
-class ProcParBindingsSet : public NamedObjectIO, private StringSet {
+class ProcParBindingsSet : public NamedObjectIO, public StringSet {
 public:
   ProcParBindingsSet(const char *_name) : NamedObjectIO(_name) { };
   ~ProcParBindingsSet() { };
@@ -84,16 +84,6 @@ friend class ProcParBindingSetIterator;
 CLASS_NAME_IMPL(ProcParBindingsSet);
 
 
-//*************************************************************************
-// class ProcParBindingsSetIterator interface
-//*************************************************************************
-
-struct ProcParBindingsIteratorS {
-  ProcParBindingsIteratorS(StringSet *t) : iterator(t) {};
-  StringSetIterator iterator;
-};
-
-
 ProcParBindingsIterator::ProcParBindingsIterator(ProcParBindingsSet *s)
 {
   hidden = new ProcParBindingsIteratorS((StringSet *) s);
@@ -120,7 +110,7 @@ void ProcParBindingsIterator::Reset()
 
 void ProcParBindingsIterator::operator++()
 {
-  (hidden->iterator)++;
+  ++(hidden->iterator);
 }
 
 
@@ -192,10 +182,10 @@ entryPoints(new EntryPoints)
 
   EntryPointsIterator entries(entryPoints);
   EntryPoint *entry;
-  for (; entry = entries.Current(); entries++) {
+  for (; entry = entries.Current(); ++entries) {
     FormalParametersIterator formals(&entry->formals);
     FormalParameter *formal;
-    for (; formal = formals.Current(); formals++) {
+    for (; formal = formals.Current(); ++formals) {
       if (formalParameterSet->QueryEntry(formal->name) == 0)
 	formalParameterSet->AddEntry(new ProcParBindingsSet(formal->name));
     }
@@ -458,7 +448,7 @@ type(CGET_CallSite)
   
   SinglyLinkedListIterator actuals(al);
   for (int pos = FIRST_FORMAL; pos < (numFormals + FIRST_FORMAL);
-	 pos++, actuals++) {
+	 pos++, ++actuals) {
     ActualListEntry *actual = (ActualListEntry *) actuals.Current();
     char *actualName = actual->Name();
     const char *formalName = callee->FormalPositionToName(calleeName, pos);

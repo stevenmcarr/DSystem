@@ -1,4 +1,4 @@
-/* $Id: ReachDFProblem.C,v 1.3 1997/03/11 14:35:05 carr Exp $ */
+/* $Id: ReachDFProblem.C,v 1.4 1997/03/27 20:41:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -108,7 +108,7 @@ const IPinfoTree *iptree =
                                     it.Current() != 0; ++it)
    {
     CallSitesIterator callsites(((IPinfoTreeNode*)it.Current())->calls);
-    for(CallSite *c; c = callsites.Current(); callsites++)
+    for(CallSite *c; c = callsites.Current(); ++callsites)
 
 //-------------------------------------------------------------
 // if the callsite id matches the callsite id of the edge then

@@ -1,6 +1,11 @@
-/* $Id: intrins.h,v 1.1 1997/03/20 14:27:37 carr Exp $ */
+/* $Id: intrins.h,v 1.2 1997/03/27 20:30:00 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #define	NUMBER_OF_BUILTINS	94
-#include <mnemonics.h>
+#include <libs/f2i/mnemonics.h>
 
 
 

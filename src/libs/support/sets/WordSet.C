@@ -1,4 +1,4 @@
-/* $Id: WordSet.C,v 1.1 1997/03/11 14:37:21 carr Exp $ */
+/* $Id: WordSet.C,v 1.2 1997/03/27 20:51:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -96,7 +96,7 @@ int WordSet::operator==(WordSet &rhs)
   //-----------------------------------------
   WordSetIterator words(&rhs);
   unsigned long *word;
-  for (; word = words.Current(); words++) if (IsMember(*word) == 0) return 0;
+  for (; word = words.Current(); ++words) if (IsMember(*word) == 0) return 0;
 
   return 1; // equal otherwise
 }
@@ -106,7 +106,7 @@ void WordSet::operator|=(WordSet &rhs)
 {
   WordSetIterator words(&rhs);
   unsigned long *word;
-  for (; word = words.Current(); words++) Add(*word);
+  for (; word = words.Current(); ++words) Add(*word);
 }
 
 
@@ -130,7 +130,7 @@ int WordSet::Write(FormattedFile *file)
 
   WordSetIterator words(this);
   unsigned long *word;
-  for (; word = words.Current(); words++) 
+  for (; word = words.Current(); ++words) 
     if (file->Write(*word)) return EOF;
 
   return 0;

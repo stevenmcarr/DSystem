@@ -1,4 +1,4 @@
-/* $Id: CommDFProblem.C,v 1.8 1997/03/11 14:28:25 carr Exp $ */
+/* $Id: CommDFProblem.C,v 1.9 1997/03/27 20:32:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,7 +11,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: CommDFProblem.C,v $
- * Revision 1.8  1997/03/11 14:28:25  carr
+ * Revision 1.9  1997/03/27 20:32:56  carr
+ * Alpha
+ *
+ * Revision 1.8  1997/03/11  14:28:25  carr
  * newly checked in as revision 1.8
  *
 Revision 1.8  94/03/21  13:21:32  patton
@@ -543,7 +546,7 @@ CommDFAnnot::get_reduction_type() const
   {
     VectorSetI iter(&REDUCEE);
     lhs_id = iter.test() ? iter.elem : RefsKeyNil;
-    iter++;
+    ++iter;
 
     is_reduction = (Boolean)
 
@@ -710,7 +713,7 @@ CommDFAnnot::place_Inspecs()
 	SET = gt[i].getTAKEN();
       }
       
-      for(VectorSetI en(&SET); en.test(); en++)
+      for(VectorSetI en(&SET); en.test(); ++en)
       {
 	refs_key = refs_keys->getRefsKey(en.elem);
 	refs_key->place_Inspecs(cn);
@@ -768,7 +771,7 @@ CommDFAnnot::gen_red_init_stmts()
 	level     = getLevel();
 	buf << "--<< " << Gt_names[gti] << " initialization for {";
 
-	for( VectorSetI iter(&init_set); iter.test(); iter++ )
+	for( VectorSetI iter(&init_set); iter.test(); ++iter )
 	{
 	  refs_key = refs_keys->getRefsKey(iter.elem);
 	  if (refs_key->needs_irreg_comm())
@@ -989,7 +992,7 @@ CommDFAnnot::gen_comm_node(const VectorSet &SET,
   if (!comm_problem->getHigh_level())
   {
     // "call fscatter_add(x(x$onsize + 1), x(1), x$sched)"
-    for( VectorSetI i(&SET); i.test(); i++ )
+    for( VectorSetI i(&SET); i.test(); ++i )
     {
       refs_key = refs_keys->getRefsKey(i.elem);
       if (refs_key->needs_irreg_comm())

@@ -1,4 +1,9 @@
-/* $Id: classes.h,v 1.1 1997/03/20 14:27:37 carr Exp $ */
+/* $Id: classes.h,v 1.2 1997/03/27 20:30:00 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /* the classification for names */
 
 /* use the TypeChecker's Symbol Tables classification */

@@ -1,7 +1,8 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:28:31 carr Exp $
+# $Id: Makefile,v 1.2 1997/03/27 20:32:56 carr Exp $
 
 HERE = libs/fortD/irregAnalysis
 
+#	  OnHomeTable.C 
 SRCS = \
 	  AST_Graph.C \
 	  AST_SSA_Graph.C \
@@ -13,7 +14,6 @@ SRCS = \
 	  IrrGlobals.C \
 	  IrrSymTab.C \
 	  Mall.C \
-	  OnHomeTable.C \
 	  S_desc.C \
 	  Slice.C \
 	  Slice2.C \

@@ -1,4 +1,4 @@
-/* $Id: ValDecomp.C,v 1.3 1997/03/11 14:28:36 carr Exp $ */
+/* $Id: ValDecomp.C,v 1.4 1997/03/27 20:32:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -8,7 +8,10 @@
  * Information associated with value based decompositions.
  *
  * $Log: ValDecomp.C,v $
- * Revision 1.3  1997/03/11 14:28:36  carr
+ * Revision 1.4  1997/03/27 20:32:56  carr
+ * Alpha
+ *
+ * Revision 1.3  1997/03/11  14:28:36  carr
  * newly checked in as revision 1.3
  *
 Revision 1.3  94/03/21  12:48:51  patton
@@ -31,7 +34,10 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 /**********************************************************************
  * Revision History:
  * $Log: ValDecomp.C,v $
- * Revision 1.3  1997/03/11 14:28:36  carr
+ * Revision 1.4  1997/03/27 20:32:56  carr
+ * Alpha
+ *
+ * Revision 1.3  1997/03/11  14:28:36  carr
  * newly checked in as revision 1.3
  *
 Revision 1.3  94/03/21  12:48:51  patton
@@ -234,7 +240,7 @@ ValDecompInfo::ref2ValDecomp(AST_INDEX node)
   //while (vd = (ValDecomp*) iter())
   for (;
        vd = (ValDecomp*) iter.Current();
-       iter++)
+       ++iter)
   {
     if (vd->reaches_ref(node))
     {
@@ -268,7 +274,7 @@ ValDecompInfo::gencode_redists()
   //while (vd = (ValDecomp*) iter())
   for (;
        vd = (ValDecomp*) iter.Current();
-       iter++)
+       ++iter)
   {
     vd->gencode_redist();
     vd->decl_vars();

@@ -1,4 +1,4 @@
-/* $Id: EntryPoints.C,v 1.1 1997/03/11 14:34:40 carr Exp $ */
+/* $Id: EntryPoints.C,v 1.2 1997/03/27 20:40:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -77,7 +77,7 @@ void EntryPoints::operator =(EntryPoints &rhs)
   // precondition LHS is empty
   NamedObjectTableIterator entries((NamedObjectTable *) &rhs);
   EntryPoint *entry;
-  for (; entry = (EntryPoint *) entries.Current(); entries++) {
+  for (; entry = (EntryPoint *) entries.Current(); ++entries) {
     AddEntry(new EntryPoint(entry));
   }
 }

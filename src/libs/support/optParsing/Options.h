@@ -1,4 +1,4 @@
-/* $Id: Options.h,v 1.4 1997/03/11 14:37:07 carr Exp $ */
+/* $Id: Options.h,v 1.5 1997/03/27 20:51:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -9,6 +9,19 @@
 # ifndef general_h
 #include <libs/support/misc/general.h>
 # endif
+#include <libs/support/lists/SinglyLinkedList.h>
+
+struct OptionsS {
+  char *title;
+  SinglyLinkedList olist;
+  OptionsS(char *t) : title(t) {};
+};
+
+struct OptionsIteratorS {
+  SinglyLinkedListIterator it;
+  OptionsIteratorS(SinglyLinkedList *l) : it(l) {};
+};
+
 
 
 typedef FUNCTION_POINTER(void, OPT_FLAG_CLBK_FN, (void *handle));

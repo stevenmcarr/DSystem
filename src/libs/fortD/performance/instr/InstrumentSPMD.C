@@ -1,9 +1,9 @@
-/* $Id: InstrumentSPMD.C,v 1.13 1997/03/11 14:28:50 carr Exp $ */
+/* $Id: InstrumentSPMD.C,v 1.14 1997/03/27 20:33:53 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// $Id: InstrumentSPMD.C,v 1.13 1997/03/11 14:28:50 carr Exp $
+// $Id: InstrumentSPMD.C,v 1.14 1997/03/27 20:33:53 carr Exp $
 //**********************************************************************
 // Routines for instrumenting SPMD code put out by the compiler.
 //**********************************************************************
@@ -142,7 +142,7 @@ AST_ChangeFlags SPMDInstrumentation::instrumentProcedureEntryExit
     AstIterator tree_walk(header, PreOrder, AST_ITER_STMTS_ONLY);
 
     while ((stmt = tree_walk.Current()) != AST_NIL) {
-	tree_walk++;		// Advance the walk *before* inserting
+	++tree_walk;		// Advance the walk *before* inserting
 				// instrumentation statements
 	if (curProcInfo->is_first_stmt(stmt) || is_entry(stmt)) {
 	    if (is_entry(stmt)) {
@@ -207,7 +207,7 @@ AST_ChangeFlags SPMDInstrumentation::measureLoopTime
     // insert instrumentation immediately before each such point
     AstIterator tree_walk(header, PreOrder, AST_ITER_STMTS_ONLY);
     while ((nextStmt = tree_walk.Current()) != AST_NIL) {
-	tree_walk++;	// Advance the walk *before* inserting instrumentation 
+	++tree_walk;	// Advance the walk *before* inserting instrumentation 
 	if (curProcInfo->is_loop_exit_stmt(nextStmt)) {
 	    rc |= iLib->InstrLoopExit(nextStmt, exitId);
 	}
@@ -235,7 +235,7 @@ AST_ChangeFlags SPMDInstrumentation::measureProgramTime(Dist_Globals* dh,
     AstIterator tree_walk(header, PreOrder, AST_ITER_STMTS_ONLY);
 
     while ((stmt = tree_walk.Current()) != AST_NIL) {
-	tree_walk++;		// Advance the walk *before* inserting
+	++tree_walk;		// Advance the walk *before* inserting
 				// instrumentation statements
 	if (curProcInfo->is_first_stmt(stmt) || is_entry(stmt)) {
 	    if (is_entry(stmt)) {
@@ -308,7 +308,7 @@ AST_ChangeFlags SPMDInstrumentation::wrapupProgramUnit(Dist_Globals *dh)
 	rc |= InitPgmTiming(declPoint,initPoint);
 
 	while ((stmt = tree_walk.Current()) != AST_NIL) {
-	    tree_walk++;	// Advance the walk *before* inserting
+	    ++tree_walk;	// Advance the walk *before* inserting
 				// instrumentation statements
 	    if (curProcInfo->is_program_exit_point(stmt)) {
 		AST_INDEX instrBefore =
@@ -322,7 +322,7 @@ AST_ChangeFlags SPMDInstrumentation::wrapupProgramUnit(Dist_Globals *dh)
     }
     else {
 	while ((stmt = tree_walk.Current()) != AST_NIL) {
-	    tree_walk++;	// Advance the walk *before* inserting
+	    ++tree_walk;	// Advance the walk *before* inserting
 				// instrumentation statements
 	    if (curProcInfo->is_first_stmt(stmt) || is_entry(stmt)) {
 		AST_INDEX instrBefore = (is_entry(stmt))?
@@ -436,12 +436,12 @@ CurrentProcInstrInfo::CurrentProcInstrInfo(Dist_Globals *dh)
     AST_INDEX stmt;
     AstIterator tree_walk(repr.root, PreOrder, AST_ITER_STMTS_ONLY);
 
-    for (; stmt = tree_walk.Current(); tree_walk++)
+    for (; stmt = tree_walk.Current(); ++tree_walk)
 	if (find_name_and_type(stmt))	// Must get type and name first
 	    break;			// before doing anything else.
     for (tree_walk.Reset();
 	 (stmt = tree_walk.Current()) && !executable_stmt(stmt);
-	 tree_walk++)
+	 ++tree_walk)
 	;
     if (stmt == AST_NIL) {
 	Assert(! is_main_program());	// Cannot have empty main program
@@ -450,7 +450,7 @@ CurrentProcInstrInfo::CurrentProcInstrInfo(Dist_Globals *dh)
     mark_first_executable_stmt(stmt);	// Puts marker before comments
 
     AST_INDEX new_node;
-    for (tree_walk.Reset(); stmt = tree_walk.Current(); tree_walk++)
+    for (tree_walk.Reset(); stmt = tree_walk.Current(); ++tree_walk)
 	if ((new_node = findLogicalIF(stmt)) != AST_NIL)
 	    tree_walk.ReplaceCurrent(new_node);
 }
@@ -1029,6 +1029,6 @@ static void myInstrLoops(Dist_Globals* dh, SPMDInstrumentation* instr)
 	    // Ignore statements nested inside the do loop:
 	    tree_walk.Advance(AST_ITER_SKIP_CHILDREN);
 	}
-	else tree_walk++;
+	else ++tree_walk;
     }
 }    

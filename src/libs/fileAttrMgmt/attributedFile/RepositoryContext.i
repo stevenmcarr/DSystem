@@ -1,4 +1,4 @@
-/* $Id: RepositoryContext.i,v 1.1 1997/03/11 14:27:46 carr Exp $ */
+/* $Id: RepositoryContext.i,v 1.2 1997/03/27 20:31:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -27,6 +27,25 @@
 
 class File;           // external declaration
 class FileTimeStamp;  // external declaration
+
+
+class RepositoryContext;
+
+//------------------------------------------------------
+// RepositoryContext internal representation
+//------------------------------------------------------
+struct RepositoryContextS {
+  RepositoryContext *parent;
+
+  char *absoluteLocation;
+  char *absoluteLocationDir;
+  char *absoluteLocationBase;
+
+  char *cacheLocation;
+  
+  // ***** compatability support *****
+  int createdParent;
+};
 
 
 class RepositoryContext {

@@ -1,4 +1,4 @@
-/* $Id: arch.h,v 1.5 1997/03/11 14:27:39 carr Exp $ */
+/* $Id: arch.h,v 1.6 1997/03/27 20:29:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -42,6 +42,7 @@ typedef enum Architecture_enum
   ARCH_i860,
   ARCH_RS6k,
   ARCH_Cray,
+  ARCH_Alpha,
   ARCH_iPSC
 } 
 Architecture;

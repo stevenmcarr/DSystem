@@ -1,4 +1,4 @@
-/* $Id: WordObjectTable.C,v 1.6 1997/03/11 14:37:42 carr Exp $ */
+/* $Id: WordObjectTable.C,v 1.7 1997/03/27 20:53:05 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -111,7 +111,7 @@ void WordObjectTable::WordObjectTableDump()
   WordObjectTableDumpUpCall();
   WordObjectTableIterator noti(this);
   WordObject *entry;
-  for (; entry = noti.Current(); noti++) {
+  for (; entry = noti.Current(); ++noti) {
     entry->WordObjectDump();
     fprintf(stderr,"\n");
   }
@@ -203,7 +203,7 @@ int WordObjectTableIO::WordObjectTableWrite(FormattedFile *file)
   WordObjectTableIterator it(this);
   WordObjectIO* no;
 
-  for (; no = (WordObjectIO *) it.Current(); it++) {
+  for (; no = (WordObjectIO *) it.Current(); ++it) {
     code = no->WordObjectWrite(file);
     if (code) return EOF;
   }

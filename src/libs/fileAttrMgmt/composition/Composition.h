@@ -1,4 +1,4 @@
-/* $Id: Composition.h,v 1.1 1997/03/11 14:27:48 carr Exp $ */
+/* $Id: Composition.h,v 1.2 1997/03/27 20:31:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -43,6 +43,9 @@
 #include <libs/support/strings/OrderedSetOfStrings.h>
 #endif
 
+#ifndef NeedProvCompAttr_h
+#include <libs/fileAttrMgmt/composition/NeedProvCompAttr.h>
+#endif
 
 #define COMPOSITION_FILE_SUFFIX ".comp"
 
@@ -58,12 +61,22 @@ class Module;
 #define COMPOSITION_OPEN_MISSING_PARTS  -2
 
 
+class CompositionS {
+public:
+  NeedProvCompAttr *npcAttr;
+  CompositionS() { npcAttr = 0; };
+  ~CompositionS() { 
+    if (npcAttr) npcAttr->uplinkToFile->DetachAttribute(npcAttr);
+  };
+};
+
+
 // ***************************************************************************
 // class Composition
 // ***************************************************************************
 class Composition : public AttributedFile, private AttributedFileSet {
 private:
-  struct CompositionS *attributedCompositionRepr;
+  CompositionS *attributedCompositionRepr;
 
 
   //--------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/* $Id: CallGraphNodeEdge.h,v 1.4 1997/03/11 14:34:33 carr Exp $ */
+/* $Id: CallGraphNodeEdge.h,v 1.5 1997/03/27 20:40:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,6 +39,7 @@
 #include <libs/ipAnalysis/callGraph/CallSiteParamBindings.h>
 #endif
 
+#include <libs/support/strings/StringSet.h>
 
 //--------------------------------------------------------------------------
 // external declarations
@@ -266,6 +267,17 @@ public:
 friend class CallGraphNode;
 };
 
+//*************************************************************************
+// class ProcParBindingsSetIterator interface
+//*************************************************************************
+
+class ProcParBindingsIteratorS {
+public:
+  ProcParBindingsIteratorS(StringSet *t) : iterator(t) {};
+  StringSetIterator iterator;
+};
+
+
 
 //--------------------------------------------------------------------------
 // class ProcParBindingsIterator  
@@ -276,7 +288,7 @@ friend class CallGraphNode;
 //    JMC 1/93
 //--------------------------------------------------------------------------
 class ProcParBindingsIterator { 
-  struct ProcParBindingsIteratorS *hidden;
+  ProcParBindingsIteratorS *hidden;
 public:
   ProcParBindingsIterator(ProcParBindingsSet *s); 
   ~ProcParBindingsIterator(); 

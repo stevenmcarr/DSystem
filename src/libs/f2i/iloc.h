@@ -1,5 +1,10 @@
-/* $Id: iloc.h,v 1.1 1997/03/20 14:27:37 carr Exp $ */
-# include <mnemonics.h>
+/* $Id: iloc.h,v 1.2 1997/03/27 20:30:00 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
+#include <libs/f2i/mnemonics.h>
 
 static char *iloc_mnemonics[ ] = {
 	"MEM",	"FRAME",

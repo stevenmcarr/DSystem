@@ -1,4 +1,4 @@
-/* $Id: libmem.C,v 1.6 1997/03/11 14:36:52 carr Exp $ */
+/* $Id: libmem.C,v 1.7 1997/03/27 20:50:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -64,7 +64,7 @@ static uint32 totalmem = 0;	/* Current memory ever used */
 /* 16 bytes before the end.  The checksum is used to catch if the user is    */
 class Tag;
 static void printnode( Tag *tag );
-static class Tag {		/* Memory tags */
+class Tag {		/* Memory tags */
  public:
   const char *fname;		/* Filename of caller */
   uint32 size;			/* Actual size of area */

@@ -1,4 +1,4 @@
-/* $Id: AliasAnnot.C,v 1.1 1997/03/11 14:34:53 carr Exp $ */
+/* $Id: AliasAnnot.C,v 1.2 1997/03/27 20:40:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -86,13 +86,13 @@ OrderedSetOfStrings *AliasAnnot::CreateOrderedSetOfStrings()
 
   FormalAliasesSetIterator fi(&formalAliases);
   FormalAliases *fa;
-  for (; fa = fi.Current(); fi++) {
+  for (; fa = fi.Current(); ++fi) {
     StringBuffer string(80); // large enough initial length so few reallocs
     string.Append("%s: ",fa->name);
     StringSetIterator si(fa);
     const char *s;
     const char *format = INIT_FORMAT;
-    for (; s = si.Current(); si++) {
+    for (; s = si.Current(); ++si) {
       string.Append(format, s);
       format = CONT_FORMAT;
     }
@@ -100,7 +100,7 @@ OrderedSetOfStrings *AliasAnnot::CreateOrderedSetOfStrings()
     EqClassPairs *eqp;
     if (format == CONT_FORMAT && eqs.Current())
       string.Append(", ");
-    for (; eqp = eqs.Current(); eqs++) {
+    for (; eqp = eqs.Current(); ++eqs) {
       string.Append("%s[", eqp->name);
       format = FIRST_PAIR;
       unsigned int npairs = eqp->NumberOfEntries();

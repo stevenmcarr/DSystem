@@ -1,4 +1,4 @@
-/* $Id: FortDInterface.h,v 1.8 1997/03/11 14:28:10 carr Exp $ */
+/* $Id: FortDInterface.h,v 1.9 1997/03/27 20:32:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -22,6 +22,8 @@
 #include <libs/fortD/misc/fd_string.h>
 #include <libs/frontEnd/fortTree/FortTree.h>
 #include <libs/support/database/context.h>
+#include <libs/fortD/misc/fd_types.h>
+#include <libs/fortD/codeGen/FortDInterface.i>
 
 
 const int initSize = 8;

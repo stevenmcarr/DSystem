@@ -1,4 +1,4 @@
-/* $Id: FortDNumProcsAnnot.C,v 1.1 1997/03/11 14:34:58 carr Exp $ */
+/* $Id: FortDNumProcsAnnot.C,v 1.2 1997/03/27 20:41:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -68,7 +68,7 @@ Annotation* FortDNumProcsAnnotMgr::Compute(CallGraph* graph)
      //-----------------------------------------------------------------------
      ModuleLocalInfoIterator summaries(fdAttr);
      for(ProcFortDInfo *summary; summary = (ProcFortDInfo *)summaries.Current();
-         summaries++) 
+         ++summaries) 
      {
         CallGraphNode *aNode = cg->LookupNode(summary->name);
         FortDLocalAnnot *fdla = (FortDLocalAnnot*)aNode->GetAnnotation(FORTD_LOCAL_ANNOT,

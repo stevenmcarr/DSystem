@@ -1,4 +1,4 @@
-/* $Id: IteratorStack.C,v 1.2 1997/03/11 14:36:45 carr Exp $ */
+/* $Id: IteratorStack.C,v 1.3 1997/03/27 20:50:00 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,10 +19,6 @@
 
 #include <libs/support/iterators/IteratorStack.h>
 #include <libs/support/stacks/PointerStack.h>
-
-struct IteratorStackS {
-  PointerStack pstack;
-};
 
 
 IteratorStack::IteratorStack(TraversalOrder torder, 
@@ -64,14 +60,14 @@ void IteratorStack::operator++()
     
     if ((traversalOrder == PreOrder) || (traversalOrder == PreAndPostOrder)) {
       void *current = top->CurrentUpCall();
-      (*top)++; // advance iterator at the top of stack
+      ++(*top); // advance iterator at the top of stack
       StackableIterator *newtop = IteratorToPushIfAny(current);
       if (newtop) { 
 	Push(newtop);
 	top = Top();
       }
     } 
-    else (*top)++; // advance iterator at the top of stack
+    else ++(*top); // advance iterator at the top of stack
     
     if (top->IsValid() == false) {
       Boolean popped = false;

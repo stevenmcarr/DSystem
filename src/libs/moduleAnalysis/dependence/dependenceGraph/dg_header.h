@@ -1,4 +1,4 @@
-/* $Id: dg_header.h,v 1.6 1997/03/11 14:35:45 carr Exp $ */
+/* $Id: dg_header.h,v 1.7 1997/03/27 20:46:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -69,7 +69,7 @@ EXTERN( void, dg_all,
 		 Context     prog_context,
 		 FortTextTree ftt, FortTree  ft, DG_Instance **DG,
 		 EL_Instance **EL, LI_Instance **LI, SideInfo  **SI,
-		 CfgInfo *cfgModule, 
+		 DT_info **DT,CfgInfo *cfgModule, 
 		 Boolean InputDep) );
 
 EXTERN(Boolean, dg_save_instance, (FortTextTree ftt, DG_Instance *dg_instance, 

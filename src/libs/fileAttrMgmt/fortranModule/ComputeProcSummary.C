@@ -1,4 +1,4 @@
-/* $Id: ComputeProcSummary.C,v 1.1 1997/03/11 14:27:55 carr Exp $ */
+/* $Id: ComputeProcSummary.C,v 1.2 1997/03/27 20:31:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -238,7 +238,7 @@ static void ProcessProc(ProcSummary *ps, FortTree ft, SymDescriptor symTable,
   
   AST_INDEX node;
   for (AstIterator nodes(stmtList); 
-       (node = nodes.Current()) != AST_NIL; nodes++) {
+       (node = nodes.Current()) != AST_NIL; ++nodes) {
     switch(gen_get_node_type(node)) {
     case GEN_INVOCATION: { 
       fst_index_t findex = 

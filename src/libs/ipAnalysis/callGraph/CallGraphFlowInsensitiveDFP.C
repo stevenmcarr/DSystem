@@ -1,4 +1,4 @@
-/* $Id: CallGraphFlowInsensitiveDFP.C,v 1.1 1997/03/11 14:34:31 carr Exp $ */
+/* $Id: CallGraphFlowInsensitiveDFP.C,v 1.2 1997/03/27 20:40:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -214,7 +214,7 @@ void CallGraphFlowInsensitiveDFP::Initialize(DirectedGraph *dg, int edgeClass)
       // for each procedure defined in the module ...
       //-----------------------------------------------------------------------
       ModuleLocalInfoIterator procedures(mli);
-      for(ProcLocalInfo *pli; pli = procedures.Current(); procedures++) {
+      for(ProcLocalInfo *pli; pli = procedures.Current(); ++procedures) {
         node = cg->LookupNode(pli->name);
         assert(node);
         //--------------------------------------------------------------------
@@ -227,7 +227,7 @@ void CallGraphFlowInsensitiveDFP::Initialize(DirectedGraph *dg, int edgeClass)
         // for each callsite noted in the procedure ...
         //--------------------------------------------------------------------
 	CallSitesLocalInfoIterator callsites(pli);
-	for(CallSiteLocalInfo *cli; cli = callsites.Current(); callsites++) {
+	for(CallSiteLocalInfo *cli; cli = callsites.Current(); ++callsites) {
 	  CallGraphEdge *edge = cg->LookupEdge(pli->name, cli->id);
 	  //------------------------------------------------------------------
 	  // perform edge initialization passing local information
@@ -245,13 +245,13 @@ void CallGraphFlowInsensitiveDFP::Initialize(DirectedGraph *dg, int edgeClass)
   // initialization for nodes and edges that have no local 
   // information 
   //--------------------------------------------------------------------
-  for (; node = nodes.Current(); nodes++) {
+  for (; node = nodes.Current(); ++nodes) {
     unsigned int nodeId = node->Id();
     nodeSets[nodeId].VALUE = newTopAnnotation();
     if (!nodeInitialized[nodeId]) 
       nodeSets[nodeId].INIT = InitializeNode(node, 0);
     CallGraphEdgeIterator edges(node, DirectedEdgeOut, edgeClass);
-    for (CallGraphEdge *edge; edge = edges.Current(); edges++) {
+    for (CallGraphEdge *edge; edge = edges.Current(); ++edges) {
       unsigned int edgeId = edge->Id();
       edgeSets[edgeId].VALUE = newTopAnnotation();
       if (!edgeInitialized[edge->Id()]) 
@@ -306,7 +306,7 @@ unsigned int CallGraphFlowInsensitiveDFP::AtDirectedGraphNode
   //--------------------------------------------------------
   DataFlowSet *meetPartialResult = newTopAnnotation();
   CallGraphEdgeIterator edges(cnode, incoming);
-  for (CallGraphEdge *edge; edge = edges.Current(); edges++) {
+  for (CallGraphEdge *edge; edge = edges.Current(); ++edges) {
     if (edge->type == CGET_FromEntry || edge->type == CGET_ToExit) continue;
 
     DataFlowSet *nodeIn = EdgeToNode(edge, cnode, edgeSets[edge->Id()].VALUE); 

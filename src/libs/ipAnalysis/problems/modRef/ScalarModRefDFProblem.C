@@ -1,4 +1,4 @@
-/* $Id: ScalarModRefDFProblem.C,v 1.4 1997/03/11 14:35:08 carr Exp $ */
+/* $Id: ScalarModRefDFProblem.C,v 1.5 1997/03/27 20:41:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -124,7 +124,7 @@ void ScalarModRefDFProblem::FinalizeAnnotation(CallGraphNode *node,
   // delete GMOD/GREF annotations temporarily on edges 
   //----------------------------------------------------------------------
   CallGraphEdgeIterator edges(node, DirectedEdgeIn);
-  for (CallGraphEdge *edge; edge = edges.Current(); edges++) {
+  for (CallGraphEdge *edge; edge = edges.Current(); ++edges) {
     edge->DeleteAnnotation(smr_annot->name);
   }
 }
@@ -227,7 +227,7 @@ static void AugmentAnnotWithModRefInfo
   // for each equivalence class
   //----------------------------------------------------------------
   EqClassScalarModRefInfo *eqclass;
-  for (; eqclass = eqclasses.Current(); eqclasses++) {
+  for (; eqclass = eqclasses.Current(); ++eqclasses) {
     OffsetLengthPairVector *olpairs = &eqclass->pairs[which];
     unsigned int npairs = olpairs->NumberOfEntries();
     
@@ -257,7 +257,7 @@ static void MapNodeAnnotToInEdges(CallGraphNode *node,
   //-----------------------------------------------------------------------
   CallGraphEdgeIterator edges(node, DirectedEdgeIn);
   CallGraphEdge *edge;
-  for(; edge = edges.Current(); edges++) AugmentIncomingEdgeAnnot(annot, edge);
+  for(; edge = edges.Current(); ++edges) AugmentIncomingEdgeAnnot(annot, edge);
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: interface.C,v 1.6 1997/03/11 14:28:22 carr Exp $ */
+/* $Id: interface.C,v 1.7 1997/03/27 20:32:40 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -190,7 +190,7 @@ void FortDInterfaceTest(CallGraph *cg, Composition *comp)
   
  CompModulesIterator modules(comp);
  FortranModule *module;
- for (; module = (FortranModule *) modules.Current(); modules++) {
+ for (; module = (FortranModule *) modules.Current(); ++modules) {
    FortTreeModAttr *ftAttr = ATTACH_ATTRIBUTE(module, FortTreeModAttr);
    FortTextTreeModAttr *fttAttr = ATTACH_ATTRIBUTE(module, FortTextTreeModAttr);
    

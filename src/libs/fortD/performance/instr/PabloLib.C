@@ -1,9 +1,9 @@
-/* $Id: PabloLib.C,v 1.1 1997/03/11 14:28:52 carr Exp $ */
+/* $Id: PabloLib.C,v 1.2 1997/03/27 20:33:53 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// $Id: PabloLib.C,v 1.1 1997/03/11 14:28:52 carr Exp $
+// $Id: PabloLib.C,v 1.2 1997/03/27 20:33:53 carr Exp $
 //**********************************************************************
 // Interface to Pablo trace capture library routines
 //**********************************************************************
@@ -668,7 +668,7 @@ PabloTraceCaptureLib::SymbDeclAndInitAtEntry(AST_INDEX declPoint,
     char* symVarName;
     Boolean anEntryFound = false;
     NameValueTableIterator entries(SymOldVarTable);
-    for ( ; symVarName = (char*) entries.name; entries++) {
+    for ( ; symVarName = (char*) entries.name; ++entries) {
 	anEntryFound = true;
 	initialValue = (int) entries.value; // This may legitimately be 0
 	(void) list_insert_before(declPoint, int_decl_stmt(symVarName));
@@ -943,7 +943,7 @@ TagTable::insertAllTagDeclarations(AST_INDEX here, Boolean isMainProgram)
 
     //--- Insert decl and parameter stmts for proc entry and exit tags ----
     NameValueTableIterator entries(nameEntryPairs);
-    for (; entry = (TagListEntry*) entries.value; entries++) {
+    for (; entry = (TagListEntry*) entries.value; ++entries) {
 	insertTagDeclarations(here, entry);
 	add_blank_line_before(here);
     }
@@ -988,7 +988,7 @@ TagTable::insertTagArrayDataStatements(AST_INDEX here)
     
     NameValueTableIterator entries(nameEntryPairs);
     node_list1 = list_create(AST_NIL);
-    for (; (entry = (TagListEntry*) entries.value); entries++) {
+    for (; (entry = (TagListEntry*) entries.value); ++entries) {
 	node = pt_gen_ident(GetEntryTagName(entry));
 	(void) list_insert_last(node_list1, node);
     }
@@ -1000,7 +1000,7 @@ TagTable::insertTagArrayDataStatements(AST_INDEX here)
     add_blank_line_before(here);
 
     node_list1 = list_create(AST_NIL);
-    for (entries.Reset(); (entry = (TagListEntry*) entries.value); entries++) {
+    for (entries.Reset(); (entry = (TagListEntry*) entries.value); ++entries) {
 	node = pt_gen_ident(GetExitTagName(entry));
 	(void) list_insert_last(node_list1, node);
     }
@@ -1023,7 +1023,7 @@ void TagTable::Absorb(TagTable* aTagTable)
 	return;
     TagListEntry *entry, *newEntry;
     NameValueTableIterator entries(aTagTable->nameEntryPairs);
-    for (; entry = (TagListEntry*) entries.value; entries++) {
+    for (; entry = (TagListEntry*) entries.value; ++entries) {
 	++curTagNum;
 	newEntry = new TagListEntry();				 // Allocate,
 	strcpy(newEntry->unitName,     entry->unitName);	 // then copy

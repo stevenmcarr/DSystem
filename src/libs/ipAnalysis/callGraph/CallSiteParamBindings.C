@@ -1,4 +1,4 @@
-/* $Id: CallSiteParamBindings.C,v 1.4 1997/03/11 14:34:34 carr Exp $ */
+/* $Id: CallSiteParamBindings.C,v 1.5 1997/03/27 20:40:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -46,21 +46,14 @@ ParamBindingListEntry::~ParamBindingListEntry()
   sfree((char *) binding.formal);
 }
 
-struct CallSiteParamBindingsS {
-  CallSiteParamBindingsS() : forward(cmpstr, hashstr, 0), 
-  reverse(cmpstr, hashstr, 0) {};
-  Dict forward;
-  Dict reverse;
-};
-
 CallSiteParamBindings::CallSiteParamBindings()
 {
-  hidden = new struct CallSiteParamBindingsS(); 
+  hidden = new CallSiteParamBindingsS(); 
 }
 
 CallSiteParamBindings::~CallSiteParamBindings()
 {
-  for (DictI i(&(hidden->forward)); i.k; i++) {
+  for (DictI i(&(hidden->forward)); i.k; ++i) {
     delete (SinglyLinkedList *) i.v;
   }
   delete hidden;
@@ -124,7 +117,7 @@ int CallSiteParamBindings::Write(FormattedFile *file)
   // number of binding pairs is same as number of reverse
   // bindings
   file->Write((unsigned int) hidden->reverse.Size()); 
-  for(DictI i(&hidden->reverse); i.k; i++) {
+  for(DictI i(&hidden->reverse); i.k; ++i) {
     ParamBinding *binding = (ParamBinding *) i.v;
     int code = file->Write(binding->actual, strlen(binding->actual)) ||
       file->Write(binding->a_offset) || file->Write(binding->a_length) ||
@@ -144,7 +137,7 @@ void CallSiteParamBindings::Dump()
   dumpHandler.BeginScope();
   // number of binding pairs is same as number of reverse
   // bindings
-  for(DictI i(&hidden->reverse); i.k; i++) {
+  for(DictI i(&hidden->reverse); i.k; ++i) {
     ParamBinding *binding = (ParamBinding *) i.v;
     dumpHandler.Dump("(%s[off=%d,len=%d,class=%d],%s)\n",
 		     binding->actual, binding->a_offset, binding->a_length,
@@ -153,17 +146,11 @@ void CallSiteParamBindings::Dump()
   dumpHandler.EndScope();
 }
 
-struct ParamNameIteratorS {
-  ParamNameIteratorS(Dict *d) : iterator(d) {};
-  DictI iterator;
-};
-
-
 ParamNameIterator::ParamNameIterator(CallSiteParamBindings &b, ParamNameSet s)
 {
-  hidden = new struct ParamNameIteratorS(s == ActualNameSet ? 
-					 &(b.hidden->forward) : 
-					 &(b.hidden->reverse));
+  hidden = new ParamNameIteratorS(s == ActualNameSet ? 
+				  &(b.hidden->forward) : 
+				  &(b.hidden->reverse));
 }
 
 
@@ -175,7 +162,7 @@ ParamNameIterator::~ParamNameIterator()
 
 void ParamNameIterator::operator ++()
 {
-  (hidden->iterator)++;
+  ++(hidden->iterator);
 }
 
 
@@ -191,15 +178,9 @@ const char *ParamNameIterator::Current()
 }
 
 
-struct ParamBindingsSetIteratorS {
-  ParamBindingsSetIteratorS(ParamBindingsSet *s) : 
-  iterator((SinglyLinkedList *) s) {};
-  SinglyLinkedListIterator iterator;
-};
-
 ParamBindingsSetIterator::ParamBindingsSetIterator(ParamBindingsSet *s)
 {
-  hidden = new struct ParamBindingsSetIteratorS(s);
+  hidden = new ParamBindingsSetIteratorS(s);
 }
 
 ParamBindingsSetIterator::~ParamBindingsSetIterator()
@@ -210,7 +191,7 @@ ParamBindingsSetIterator::~ParamBindingsSetIterator()
 
 void ParamBindingsSetIterator::operator ++()
 {
-  (hidden->iterator)++;
+  ++(hidden->iterator);
 }
 
 void ParamBindingsSetIterator::Reset()

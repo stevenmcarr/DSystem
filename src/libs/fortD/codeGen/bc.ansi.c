@@ -1,4 +1,4 @@
-/* $Id: bc.ansi.c,v 1.34 1997/03/11 14:28:13 carr Exp $ */
+/* $Id: bc.ansi.c,v 1.35 1997/03/27 20:32:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -476,8 +476,8 @@ iter_build_stmt(AST_INDEX stmt, int level, Dist_Globals *dh)
           /* should form union of isets, just set to all for now */
           iset2 = dc_alloc_iter_set(dh);
           iset2->allproc = true;
-          bcopy(get_info(dh->ped, loop, type_ref), 
-                &iset2->set, sizeof(Loop_list)); 
+          bcopy((const char *)get_info(dh->ped, loop, type_ref), 
+                (char *)&iset2->set, sizeof(Loop_list)); 
           put_info(dh->ped, stmt, type_dc, (Generic)iset2);
         }
       }

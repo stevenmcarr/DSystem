@@ -1,4 +1,4 @@
-/* $Id: local_decomp.C,v 1.16 1997/03/11 14:28:22 carr Exp $ */
+/* $Id: local_decomp.C,v 1.17 1997/03/27 20:32:40 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -82,7 +82,7 @@ static int dc_compute_decomp(AST_INDEX stmt, int level, Generic f)
 
       // 12/3/93 RvH: Store current Distribution to allow multiple
       //              intraprocedural distributions
-      if (fdi->comment_type == DISTRIBUTE)
+      if (fdi->comment_type == (enum FDtype)DISTRIBUTE)
       {
 	distrib_index = ((DecompListEntry*)(fdi->getDlist()->Last()))->id_number;
 	put_info(fd->Ped(fd->proc()), stmt, type_fd, distrib_index);

@@ -1,4 +1,4 @@
-/* $Id: Sparse_Set.h,v 1.6 1997/03/11 14:37:20 carr Exp $ */
+/* $Id: Sparse_Set.h,v 1.7 1997/03/27 20:51:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -24,7 +24,10 @@
 /**********************************************************************
  * Revision history:
  * $Log: Sparse_Set.h,v $
- * Revision 1.6  1997/03/11 14:37:20  carr
+ * Revision 1.7  1997/03/27 20:51:49  carr
+ * Alpha
+ *
+ * Revision 1.6  1997/03/11  14:37:20  carr
  * newly checked in as revision 1.6
  *
  * Revision 1.6  94/01/05  14:22:13  johnmc
@@ -68,7 +71,7 @@ typedef FUNCTION_POINTER(int, ElementCompareFunctPtr, (const Element* first,
 /*********************************************************************/
 /*** Declaration of class Sparse_Set *********************************/
 /*********************************************************************/
-class Sparse_Set : private HashTable 
+class Sparse_Set : public HashTable 
 {
   public:
     Sparse_Set();
@@ -98,7 +101,7 @@ class Sparse_Set : private HashTable
  *    ...
  *    for (Sparse_Set_Iter iter(set); elmt = iter();) { ... }
  */
-class Sparse_Set_Iter : private HashTableIterator
+class Sparse_Set_Iter : public HashTableIterator
 {
   public:
     Sparse_Set_Iter(const Sparse_Set& my_set);
@@ -121,7 +124,7 @@ class Sparse_Set_Iter : private HashTableIterator
  *    ...
  *    for (Sparse_Set_Sorted_Iter iter(set); elmt = iter();) { ... }
  */
-class Sparse_Set_Sorted_Iter : private HashTableSortedIterator
+class Sparse_Set_Sorted_Iter : public HashTableSortedIterator
 {
   public:
     Sparse_Set_Sorted_Iter(const Sparse_Set& my_set, ElementCompareFunctPtr my_comp);

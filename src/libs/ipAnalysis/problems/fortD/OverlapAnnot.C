@@ -1,4 +1,4 @@
-/* $Id: OverlapAnnot.C,v 1.3 1997/03/11 14:35:00 carr Exp $ */
+/* $Id: OverlapAnnot.C,v 1.4 1997/03/27 20:41:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -282,7 +282,7 @@ void FD_Overlap_Annot::Union(CallGraphNode *, CallGraphEdge *edge1, FD_Overlap_A
 // map a formal to an actual
 //---------------------------------------------------------------------
  for (ParamNameIterator fni(edge1->paramBindings, FormalNameSet);
-             fni.Current(); fni++) {
+             fni.Current(); ++fni) {
      formal = fni.Current();
 
     ParamBinding *binding = 

@@ -1,4 +1,4 @@
-/* $Id: StringSet.C,v 1.1 1997/03/11 14:37:31 carr Exp $ */
+/* $Id: StringSet.C,v 1.2 1997/03/27 20:52:29 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -96,7 +96,7 @@ int StringSet::operator==(StringSet &rhs)
   //-----------------------------------------
   StringSetIterator strings(&rhs);
   const char *s;
-  for (; s = strings.Current(); strings++) if (IsMember(s) == 0) return 0;
+  for (; s = strings.Current(); ++strings) if (IsMember(s) == 0) return 0;
 
   return 1; // equal otherwise
 }
@@ -106,7 +106,7 @@ void StringSet::operator|=(StringSet &rhs)
 {
   StringSetIterator strings(&rhs);
   const char *string;
-  for (; string = strings.Current(); strings++) Add(string);
+  for (; string = strings.Current(); ++strings) Add(string);
 }
 
 

@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:28:43 carr Exp $
+# $Id: Makefile,v 1.2 1997/03/27 20:33:11 carr Exp $
 
 HERE = libs/fortD/localInfo
 
+#	   CommBlock.C 
 SRCS = \
-	   CommBlock.C \
 	   FortDExpr.C \
 	   FortDHash.C \
 	   FortDMisc.C \

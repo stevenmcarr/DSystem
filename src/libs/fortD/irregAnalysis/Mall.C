@@ -1,4 +1,4 @@
-/* $Id: Mall.C,v 1.3 1997/03/11 14:28:31 carr Exp $ */
+/* $Id: Mall.C,v 1.4 1997/03/27 20:32:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,7 +13,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: Mall.C,v $
- * Revision 1.3  1997/03/11 14:28:31  carr
+ * Revision 1.4  1997/03/27 20:32:56  carr
+ * Alpha
+ *
+ * Revision 1.3  1997/03/11  14:28:31  carr
  * newly checked in as revision 1.3
  *
 Revision 1.3  94/03/21  13:08:04  patton
@@ -262,7 +265,7 @@ Mall::delete_decls()
   //while (dyn_arr = (Mall_entry*) iter())
   for (;
        dyn_arr = (Mall_entry*) iter.Current();
-       iter++)
+       ++iter)
   {
     name   = dyn_arr->getName();
     index  = fst_Index(symtab, (char *)name);

@@ -1,4 +1,4 @@
-/* $Id: ParameterList.C,v 1.1 1997/03/11 14:34:44 carr Exp $ */
+/* $Id: ParameterList.C,v 1.2 1997/03/27 20:40:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -89,7 +89,7 @@ ParameterList::ParameterList(ParameterList *rhs) : current(0)
 { 
   SinglyLinkedListIterator entries(rhs);
   ParameterListEntry *entry;
-  for (; entry = (ParameterListEntry *) entries.Current(); entries++) {
+  for (; entry = (ParameterListEntry *) entries.Current(); ++entries) {
     Append(new ParameterListEntry(entry));
   }
 }

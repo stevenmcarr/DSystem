@@ -1,4 +1,4 @@
-/* $Id: astutil.h,v 1.12 1997/03/11 14:29:24 carr Exp $ */
+/* $Id: astutil.h,v 1.13 1997/03/27 20:34:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -40,18 +40,6 @@ typedef unsigned char     TYPE;      /* bottom 4 bits - real type
 
 typedef unsigned char  AST_DATA;
 typedef unsigned int   SCRATCH;
-
-
-typedef union {
-  struct LeafNodeStruct    *Leafnode;
-  struct ListNodeStruct    *Listnode;
-  struct Int_1_NodeStruct  *Int1node;
-  struct Int_2_NodeStruct  *Int2node;
-  struct Int_3_NodeStruct  *Int3node;
-  struct Int_4_NodeStruct  *Int4node;
-  struct Int_5_NodeStruct  *Int5node;
-  struct Int_6_NodeStruct  *Int6node;
-} NODE;
 
 
 typedef struct LeafNodeStruct 
@@ -171,6 +159,18 @@ typedef struct ListNodeStruct
   AST_INDEX      son;
 } ListNode;
 
+
+
+typedef union {
+  struct LeafNodeStruct    *Leafnode;
+  struct ListNodeStruct    *Listnode;
+  struct Int_1_NodeStruct  *Int1node;
+  struct Int_2_NodeStruct  *Int2node;
+  struct Int_3_NodeStruct  *Int3node;
+  struct Int_4_NodeStruct  *Int4node;
+  struct Int_5_NodeStruct  *Int5node;
+  struct Int_6_NodeStruct  *Int6node;
+} NODE;
 
 
 
@@ -477,7 +477,7 @@ struct other {
 	      } dcl_info;			/* now unused -- JMC 5/1/92 */
 	Generic         display;
 	short	   	is_param;		/* now unused -- JMC 5/1/92 */
-	short	   	other;
+	short	   	scratch;
 	Generic		error_code;
 	META_TYPE	meta_type;
 	STATUS		status;

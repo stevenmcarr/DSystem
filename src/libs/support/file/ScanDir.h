@@ -1,4 +1,4 @@
-/* $Id: ScanDir.h,v 1.3 1997/03/11 14:36:39 carr Exp $ */
+/* $Id: ScanDir.h,v 1.4 1997/03/27 20:49:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,10 +30,13 @@ typedef FUNCTION_POINTER (int, SelectFunctPtr, (struct dirent*));
 typedef FUNCTION_POINTER (int, CompareFunctPtr, (struct dirent**, 
                                                  struct dirent**));
 
+#ifndef OSF1
 /********************** scandir extern functions ************************/
 
 EXTERN (int, scandir, (char*, struct dirent***, SelectFunctPtr, CompareFunctPtr));
 
 EXTERN (int, alphasort, (struct dirent**, struct dirent**));
+
+#endif
 
 #endif

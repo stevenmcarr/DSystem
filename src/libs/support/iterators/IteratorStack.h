@@ -1,4 +1,4 @@
-/* $Id: IteratorStack.h,v 1.1 1997/03/11 14:36:46 carr Exp $ */
+/* $Id: IteratorStack.h,v 1.2 1997/03/27 20:50:00 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -24,6 +24,11 @@
 #ifndef general_h
 #include <libs/support/misc/general.h>
 #endif
+#include <libs/support/stacks/PointerStack.h>
+
+struct IteratorStackS {
+  PointerStack pstack;
+};
 
 enum IterStackEnumType {
   ITER_STACK_ENUM_LEAVES_ONLY, ITER_STACK_ENUM_ALL_NODES

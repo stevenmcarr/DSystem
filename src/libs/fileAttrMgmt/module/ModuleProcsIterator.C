@@ -1,4 +1,4 @@
-/* $Id: ModuleProcsIterator.C,v 1.1 1997/03/11 14:28:06 carr Exp $ */
+/* $Id: ModuleProcsIterator.C,v 1.2 1997/03/27 20:32:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -28,24 +28,6 @@
 #include <libs/fileAttrMgmt/module/ModuleProcsIterator.h>
 
 
-//***************************************************************************
-// interface operations for class ModuleProcsIterator
-//***************************************************************************
-
-
-struct ModuleProcsIteratorS {
-  NeedProvSetIterator npi;
-  NeedProvModAttr *npAttr;
-  ModuleProcsIteratorS(Module *module) :
-  npAttr((NeedProvModAttr *) 
-	 module->AttachAttribute(CLASS_NAME(NeedProvModAttr))),
-  npi(npAttr->provs) {};
-  ~ModuleProcsIteratorS() {
-    npAttr->uplinkToFile->DetachAttribute(npAttr);
-  }
-};
-
-
 ModuleProcsIterator::ModuleProcsIterator(Module *module) 
 {
   hidden = new ModuleProcsIteratorS(module);
@@ -72,7 +54,7 @@ void *ModuleProcsIterator::CurrentUpCall() const
 
 void ModuleProcsIterator::operator++() 
 {
-  hidden->npi++;
+  ++hidden->npi;
 }
 
 

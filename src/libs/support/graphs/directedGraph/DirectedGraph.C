@@ -1,4 +1,4 @@
-/* $Id: DirectedGraph.C,v 1.1 1997/03/11 14:36:42 carr Exp $ */
+/* $Id: DirectedGraph.C,v 1.2 1997/03/27 20:49:29 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -208,7 +208,7 @@ int DirectedGraph::DirectedGraphWrite(FormattedFile *file)
   //-------------------------------------------------------
   DirectedGraphNodeIterator nodes(this);
   DirectedGraphNode *node;
-  for(; node = nodes.Current(); nodes++) {
+  for(; node = nodes.Current(); ++nodes) {
     code = file->Write(node) || node->DirectedGraphNodeWrite(file);
     if (code) return code;
   }
@@ -229,10 +229,10 @@ int DirectedGraph::DirectedGraphWrite(FormattedFile *file)
   // write edges
   //-------------------------------------------------------
   nodes.Reset();
-  for (; node = nodes.Current(); nodes++) {
+  for (; node = nodes.Current(); ++nodes) {
     DirectedGraphEdgeIterator edges(node, DirectedEdgeIn, ALL_EDGE_CLASSES);
     DirectedGraphEdge *edge;
-    for (; edge = edges.Current(); edges++) {
+    for (; edge = edges.Current(); ++edges) {
       //-------------------------------------------------------
       // write incoming graph edges
       //-------------------------------------------------------
@@ -325,7 +325,7 @@ void DirectedGraph::DirectedGraphDump()
   //-------------------------------------------------------
   // dump nodes
   //-------------------------------------------------------
-  for (; node = nodes.Current(); nodes++) {
+  for (; node = nodes.Current(); ++nodes) {
     node->DirectedGraphNodeDump();
   }
 
@@ -333,10 +333,10 @@ void DirectedGraph::DirectedGraphDump()
   // dump edges
   //-------------------------------------------------------
   nodes.Reset();
-  for (; node = nodes.Current(); nodes++) {
+  for (; node = nodes.Current(); ++nodes) {
     DirectedGraphEdgeIterator edges(node, DirectedEdgeIn, ALL_EDGE_CLASSES);
     DirectedGraphEdge *edge;
-    for (; edge = edges.Current(); edges++) {
+    for (; edge = edges.Current(); ++edges) {
       //-------------------------------------------------------
       // dump incoming graph edges
       //-------------------------------------------------------
@@ -384,7 +384,7 @@ void DirectedGraph::WalkHelper(const DirectedGraphNode *node,
   DirectedEdgeDirection opposite = 
     (direction == DirectedEdgeIn) ? DirectedEdgeOut : DirectedEdgeIn;
   DirectedGraphEdgeIterator edges(node, direction, edgeClass);
-  for (DirectedGraphEdge *edge; edge = edges.Current(); edges++) {
+  for (DirectedGraphEdge *edge; edge = edges.Current(); ++edges) {
     WalkHelper(edge->Endpoint(opposite), function, direction, order, 
 	       edgeClass, nodeSet, args);
   }
@@ -472,7 +472,7 @@ DirectedGraphNode::DirectedGraphNode(DirectedGraph *dg)
   if (next) next->prev = this;
   graph->nodeListHead = this;
 
-  graph->numberOfNodes++; // correct node count
+  ++graph->numberOfNodes; // correct node count
 
   Initialize(dg->nodeIds.AcquireId());
 }
@@ -620,7 +620,7 @@ void DirectedGraphEdge::Initialize
   edgeId = _edgeId;
   LinkEdge(DirectedEdgeIn, sink);
   LinkEdge(DirectedEdgeOut, src);
-  graph->numberOfEdges[edgeClass]++;
+  ++graph->numberOfEdges[edgeClass];
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: DependenceInfo.C,v 1.4 1997/03/11 14:35:58 carr Exp $ */
+/* $Id: DependenceInfo.C,v 1.5 1997/03/27 20:46:29 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -22,24 +22,6 @@
 
 #define INVALID_DEP_EDGE_INDEX  -1
 #define	INITIAL_EDGE_COUNT	2000
-
-
-//-----------------------------------------------------------------------
-// DependenceInfo hidden representation
-//-----------------------------------------------------------------------
-struct DependenceInfoS {
-  FortTree      ft;
-  DG_Instance	*dg;
-  EL_Instance	*el;
-  LI_Instance	*li;
-  SideInfo	*si;
-  DT_info	*dt_info;
-  DG_Edge       *dg_edges;
-  AST_INDEX     current_loop_node;
-  int           cur_edge_index;
-  CfgInfo       cfg_module;	
-};
-
 
 //-----------------------------------------------------------------------
 // DependenceInfo::DependenceInfo(FortTree ft, Context module, 

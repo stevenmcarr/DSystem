@@ -1,4 +1,4 @@
-/* $Id: NamedObjectTable.C,v 1.6 1997/03/11 14:37:40 carr Exp $ */
+/* $Id: NamedObjectTable.C,v 1.7 1997/03/27 20:53:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -121,7 +121,7 @@ void NamedObjectTable::NamedObjectTableDumpContents()
 {
   NamedObjectTableIterator noti(this);
   NamedObject *entry;
-  for (; entry = noti.Current(); noti++) {
+  for (; entry = noti.Current(); ++noti) {
     entry->NamedObjectDump();
   }
 }
@@ -212,7 +212,7 @@ int NamedObjectTableIO::NamedObjectTableWrite(FormattedFile *file)
   NamedObjectTableIterator it(this);
   NamedObjectIO* no;
 
-  for (; no = (NamedObjectIO *) it.Current(); it++) {
+  for (; no = (NamedObjectIO *) it.Current(); ++it) {
     code = no->NamedObjectWrite(file);
     if (code) return EOF;
   }

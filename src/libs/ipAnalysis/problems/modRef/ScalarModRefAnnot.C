@@ -1,4 +1,4 @@
-/* $Id: ScalarModRefAnnot.C,v 1.6 1997/03/11 14:35:07 carr Exp $ */
+/* $Id: ScalarModRefAnnot.C,v 1.7 1997/03/27 20:41:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -78,7 +78,7 @@ static void PrintEqClassSet(StringBuffer *string, unsigned int width,
 
   EqClassPairSetIterator eqclasses(set);
   EqClassPairs *eqpairs;
-  for (; eqpairs = eqclasses.Current(); eqclasses++) {
+  for (; eqpairs = eqclasses.Current(); ++eqclasses) {
     unsigned int npairs = eqpairs->NumberOfEntries();
     if (npairs > 0) {
       nonempty = 1;
@@ -108,7 +108,7 @@ OrderedSetOfStrings *ScalarModRefAnnot::CreateOrderedSetOfStrings()
 
     StringSetIterator strings(&formals);
     const char *formal;
-    for (; formal = strings.Current(); strings++) {
+    for (; formal = strings.Current(); ++strings) {
       string.Append(" %s", formal);
     }
 
@@ -143,7 +143,7 @@ void ScalarModRefAnnot::AugmentCallerAnnotFromCalleeAnnot
 (CallGraphEdge *edge, ScalarModRefAnnot *calleeAnnot)
 {
   ParamNameIterator fnames(edge->paramBindings, FormalNameSet);
-  for(const char *formal; formal = fnames.Current(); fnames++) {
+  for(const char *formal; formal = fnames.Current(); ++fnames) {
     if(calleeAnnot->formals.IsMember(formal)) {  // formal is in callee GMOD/GREF
       ParamBinding *bind = edge->paramBindings.GetReverseBinding(formal);
       EqClassPairs *entry;
@@ -176,7 +176,7 @@ void ScalarModRefAnnot::AugmentWithAliases(AliasAnnot *aliasAnnot)
 
   // integrate aliases into MOD/REF annotation
   StringSetIterator allFormals(&temp.formals);
-  for (const char *formal; formal = allFormals.Current(); allFormals++) {
+  for (const char *formal; formal = allFormals.Current(); ++allFormals) {
     FormalAliases *faliases = aliasAnnot->FindAliasesFormal(name);
     if (faliases) {
       formals |= *faliases; // note all formals aliased to "formal"
@@ -185,7 +185,7 @@ void ScalarModRefAnnot::AugmentWithAliases(AliasAnnot *aliasAnnot)
   }
 
   GlobalAliasesIterator gai(aliasAnnot);
-  for (GlobalAliases *galiases; galiases = gai.Current(); gai++) {
+  for (GlobalAliases *galiases; galiases = gai.Current(); ++gai) {
     // if global with aliases is in the MOD/REF set, add the aliases too
     EqClassPairs *mrpairs = globals.QueryEntry(galiases->name);
     if (mrpairs && mrpairs->Overlaps(galiases->globalInfo.offset,

@@ -1,4 +1,4 @@
-/* $Id: FortD.h,v 1.13 1997/03/11 14:28:45 carr Exp $ */
+/* $Id: FortD.h,v 1.14 1997/03/27 20:33:24 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -617,7 +617,7 @@ public:
 // A hash table for storing DECOMPOSITION, DISTRIBUTE  
 // ALIGNMENT and overlap information                           
 //---------------------------------------------------------
-class FortranDInfo : private HashTable {
+class FortranDInfo : public HashTable {
   private:
     int current_index;
     DecompList *dlist;

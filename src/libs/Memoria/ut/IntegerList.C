@@ -1,6 +1,12 @@
+/* $Id: IntegerList.C,v 1.3 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #include <stddef.h>
-#include <general.h>
-#include <IntegerList.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/IntegerList.h>
 
 Boolean IntegerList::QueryEntry(int i)
 {

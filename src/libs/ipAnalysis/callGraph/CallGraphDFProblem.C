@@ -1,4 +1,4 @@
-/* $Id: CallGraphDFProblem.C,v 1.1 1997/03/11 14:34:30 carr Exp $ */
+/* $Id: CallGraphDFProblem.C,v 1.2 1997/03/27 20:40:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -131,7 +131,7 @@ void CallGraphDFProblem::Initialize(DirectedGraph *dg, int)
       // for each procedure defined in the module ...
       //-----------------------------------------------------------------------
       ModuleLocalInfoIterator procedures(mli);
-      for(ProcLocalInfo *pli; pli = procedures.Current(); procedures++) {
+      for(ProcLocalInfo *pli; pli = procedures.Current(); ++procedures) {
         node = cg->LookupNode(pli->name);
         assert(node);
         //--------------------------------------------------------------------
@@ -146,7 +146,7 @@ void CallGraphDFProblem::Initialize(DirectedGraph *dg, int)
   //--------------------------------------------------------------------
   // perform node initialization for nodes that have no local information
   //--------------------------------------------------------------------
-  for (; node = nodes.Current(); nodes++) {
+  for (; node = nodes.Current(); ++nodes) {
     nodeSets[node->Id()].VALUE = top->Clone();
     if (hasLocalInfo.IsMember(node)) continue;
     else InitializeNode(node, 0);
@@ -156,10 +156,10 @@ void CallGraphDFProblem::Initialize(DirectedGraph *dg, int)
   //---------------------------------------------------------------------
   // initialize dataflow problem at each edge
   //---------------------------------------------------------------------
-  for (; node = nodes.Current(); nodes++) {
+  for (; node = nodes.Current(); ++nodes) {
     CallGraphEdgeIterator edges(node, DirectedEdgeIn);
     CallGraphEdge *edge;
-    for (; edge = edges.Current(); edges++) {
+    for (; edge = edges.Current(); ++edges) {
       InitializeEdge(edge);
     }
   }
@@ -242,7 +242,7 @@ unsigned int CallGraphDFProblem::AtDirectedGraphNode
 
   // meet for each edge
   CallGraphEdgeIterator edges(cnode, incoming);
-  for (CallGraphEdge *edge; edge = edges.Current(); edges++) {
+  for (CallGraphEdge *edge; edge = edges.Current(); ++edges) {
     CallGraphNode *predNode = (CallGraphNode *) edge->Endpoint(outgoing);
     assert(predNode != cnode);
     meetPartialResult = (DataFlowSet *) 

@@ -1,4 +1,4 @@
-/* $Id: opt_parse.C,v 1.7 1997/03/11 14:37:08 carr Exp $ */
+/* $Id: opt_parse.C,v 1.8 1997/03/27 20:51:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -74,7 +74,7 @@ int opt_parse_argv (Options *opts, void *handle, int argc, char **argv)
 
     OptionsIterator oi(opts);
     Option *opt;
-    for (; c != '?' && (opt = oi.Current()) && c != opt->arg_char; oi++);
+    for (; c != '?' && (opt = oi.Current()) && c != opt->arg_char; ++oi);
     
     if ( c != '?' && opt && c == opt->arg_char ) {
       switch (opt->t) {
@@ -168,7 +168,7 @@ int opt_get_choice(Options *opts, char arg_char, int argc, char **argv)
 
   OptionsIterator oi(opts);
   Option *opt;
-  for (; (opt = oi.Current()) && arg_char != opt->arg_char; oi++);
+  for (; (opt = oi.Current()) && arg_char != opt->arg_char; ++oi);
 
   if (opt) { // found the option 
     for (i = 1; i < argc; i++) {
@@ -199,7 +199,7 @@ static char *get_optstr(Options *opts)
 
   Option *opt;
 
-  for (OptionsIterator oi(opts); opt = oi.Current(); oi++) {
+  for (OptionsIterator oi(opts); opt = oi.Current(); ++oi) {
     optstring.Append(opt->arg_char);
     if (opt->t == choice || opt->t == string) optstring.Append(':');
   }

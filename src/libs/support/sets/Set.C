@@ -1,4 +1,4 @@
-/* $Id: Set.C,v 1.5 1997/03/11 14:37:19 carr Exp $ */
+/* $Id: Set.C,v 1.6 1997/03/27 20:51:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,7 +30,7 @@ extern "C" long unsigned int strtoul(const char *s, char **end, int base);
 //-------------------------Virtual Functions-----------------------------------
 // These functions MUST be implemented by the inheriting class.
 Set &Set::operator =  (const Set &)       { abort(); return *this; }
-Set &Set::clone       (void)        const { abort(); return *this; }
+Set &Set::clone       (void)        const { abort(); }
 Set &Set::operator <<= (uint)             { abort(); return *this; }
 Set &Set::operator >>= (uint)             { abort(); return *this; }
 int  Set::operator []  (uint)       const { abort(); return 0; }
@@ -75,7 +75,7 @@ char *Set::setstr() const
 
   // For all elements of the Set
   uint hi = (uint)-2L, lo = (uint)-2L;
-  for( SetI i(&set); i.test(); i++ ) {	
+  for( SetI i(&set); i.test(); ++i ) {	
     if( hi+1 == i.elem ) {      // Moving sequentially thru range?
       hi = i.elem;              // Yes, just update hi end of range
     } else {                    // Else range ended

@@ -1,4 +1,4 @@
-/* $Id: AttributedFileSet.h,v 1.1 1997/03/11 14:27:44 carr Exp $ */
+/* $Id: AttributedFileSet.h,v 1.2 1997/03/27 20:31:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -20,9 +20,19 @@
 #ifndef StackableIterator_h
 #include <libs/support/iterators/StackableIterator.h>
 #endif
+#include <libs/support/tables/namedObject/NamedObject.h>
+#include <libs/support/tables/namedObject/NamedObjectTable.h>
 
 class AttributedFile;            // minimal external declaration
 class FileSuffixRegistry;        // minimal external declaration
+
+//***************************************************************************
+// interface operations for class AttributedFileSet
+//***************************************************************************
+
+struct AttributedFileSetS {
+  NamedObjectTable ht;
+};
 
 //--------------------------------------------------------------------
 // class AttributedFileSet
@@ -42,6 +52,19 @@ public:
   void CloseFile(AttributedFile *mod);
 friend class AttributedFileSetIterator;
 };
+
+
+//***************************************************************************
+// interface operations for class AttributedFileSetIterator
+//***************************************************************************
+
+
+class AttributedFileSetIteratorS {
+public:
+  NamedObjectTableIterator noti;
+  AttributedFileSetIteratorS(NamedObjectTable *ht) : noti(ht) { ; };
+};
+
 
 
 //--------------------------------------------------------------------

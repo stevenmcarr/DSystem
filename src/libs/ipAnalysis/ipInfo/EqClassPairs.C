@@ -1,4 +1,4 @@
-/* $Id: EqClassPairs.C,v 1.1 1997/03/11 14:34:41 carr Exp $ */
+/* $Id: EqClassPairs.C,v 1.2 1997/03/27 20:40:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -102,7 +102,7 @@ EqClassPairSet::EqClassPairSet(EqClassPairSet &rhs)
 {
   EqClassPairSetIterator entries(&rhs);
   EqClassPairs *entry;
-  for(; entry = entries.Current(); entries++) {
+  for(; entry = entries.Current(); ++entries) {
     AddEntry(new EqClassPairs(*entry));
   }
 }
@@ -152,7 +152,7 @@ int EqClassPairSet::operator ==(EqClassPairSet &rhs)
   //-----------------------------------------
   EqClassPairSetIterator entries(this);
   EqClassPairs *lhsentry;
-  for (; lhsentry = entries.Current(); entries++) {
+  for (; lhsentry = entries.Current(); ++entries) {
     EqClassPairs *rhsentry = rhs.GetEntry(lhsentry->name);
     if (rhsentry == 0 || !(*lhsentry == *rhsentry)) return 0;
   }
@@ -165,7 +165,7 @@ void EqClassPairSet::operator |=(EqClassPairSet &rhs)
 {
   EqClassPairSetIterator entries(&rhs);
   EqClassPairs *rhsentry;
-  for (; rhsentry = entries.Current(); entries++) {
+  for (; rhsentry = entries.Current(); ++entries) {
     EqClassPairs *lhsentry = GetEntry(rhsentry->name);
     *lhsentry |= *rhsentry;
   }

@@ -1,4 +1,4 @@
-/* $Id: AttributeTable.C,v 1.1 1997/03/11 14:27:42 carr Exp $ */
+/* $Id: AttributeTable.C,v 1.2 1997/03/27 20:31:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -37,7 +37,7 @@ AttributeTable::~AttributeTable()
 {
   AttributeTableIterator attributes(this);
   Attribute *attr;
-  for (; attr = attributes.Current(); attributes++) 
+  for (; attr = attributes.Current(); ++attributes) 
     attr->uplinkToFile->SaveAttribute(attr);
 
   this->Destroy();

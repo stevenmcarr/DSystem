@@ -1,10 +1,14 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:27:38 carr Exp $
+# $Id: Makefile,v 1.2 1997/03/27 20:29:39 carr Exp $
 
 HERE = libs/config
 
 SRCS = \
 	   arch.C \
 	   config.C
+
+ifeq "$(DSYSTEM_OS)" "OSF1"
+CPPFLAGS := $(CPPFLAGS) -DDSYSTEM_ARCH=\\\"$(DSYSTEM_OS)\\\"
+endif # "$(DSYSTEM_OS)" "OSF1"
 
 ifeq "$(DSYSTEM_OS)" "SunOS-4.x"
 CPPFLAGS := $(CPPFLAGS) -DDSYSTEM_ARCH=\\\"$(DSYSTEM_OS)\\\"

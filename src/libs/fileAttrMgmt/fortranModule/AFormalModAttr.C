@@ -1,4 +1,4 @@
-/* $Id: AFormalModAttr.C,v 1.1 1997/03/11 14:27:52 carr Exp $ */
+/* $Id: AFormalModAttr.C,v 1.2 1997/03/27 20:31:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -137,7 +137,7 @@ static void AddArrayFormals(ProcAFormalInfo *afi, AST_INDEX formalList,
 {
   AstListElementsIterator formals(formalList);
   AST_INDEX formal;
-  for (; formal = formals.Current(); formals++) {
+  for (; formal = formals.Current(); ++formals) {
     // if formal is an identifier (it could be a * -- an alternate return)
     if (is_identifier(formal)) { 
       char *name = gen_get_text(formal);
@@ -162,7 +162,7 @@ static ProcLocalInfo *ComputeProcAFormalInfo(FortTree ft, AST_INDEX node)
   AST_INDEX stmtList = get_stmts_in_scope(node);
   AstListElementsIterator stmts(stmtList);
   AST_INDEX stmt;
-  for (; stmt = stmts.Current(); stmts++) {
+  for (; stmt = stmts.Current(); ++stmts) {
     if (is_entry(stmt)) { 
       AddArrayFormals(afi,  get_formals_in_entry(stmt), symtab);
     }

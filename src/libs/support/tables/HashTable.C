@@ -1,4 +1,4 @@
-/* $Id: HashTable.C,v 1.1 1997/03/11 14:37:33 carr Exp $ */
+/* $Id: HashTable.C,v 1.2 1997/03/27 20:52:45 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -979,7 +979,7 @@ void HashTableSortedIterator::Reset ()
 
   sortedEntries = new  void* [numberOfSortedEntries];
 
-  for (int i = 0; i < numberOfSortedEntries; i++, anIterator++)
+  for (int i = 0; i < numberOfSortedEntries; i++, ++anIterator)
     {
        sortedEntries[i] = anIterator.Current();
     }

@@ -1,4 +1,4 @@
-/* $Id: DirectedGraphDFPIterative.C,v 1.1 1997/03/11 14:36:42 carr Exp $ */
+/* $Id: DirectedGraphDFPIterative.C,v 1.2 1997/03/27 20:49:29 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -55,7 +55,7 @@ void DirectedGraphIterativeDFP::Solve(DirectedGraph *dg,
   DirectedGraphNodeIterator nodes(dg, ReversePostOrder, alongFlow, edgeClass);
   do {
     changed = 0;
-    for (; node = nodes.Current(); nodes++) {
+    for (; node = nodes.Current(); ++nodes) {
       //--------------------------------------------------
       // compute dataflow information at node
       //--------------------------------------------------
@@ -65,7 +65,7 @@ void DirectedGraphIterativeDFP::Solve(DirectedGraph *dg,
       // compute dataflow information at outgoing edges 
       //--------------------------------------------------
       DirectedGraphEdgeIterator edges(node, alongFlow, edgeClass);
-      for (; edge = edges.Current(); edges++) {
+      for (; edge = edges.Current(); ++edges) {
 	changed |= AtDirectedGraphEdge(edge, alongFlow);
       }
     }
@@ -76,10 +76,10 @@ void DirectedGraphIterativeDFP::Solve(DirectedGraph *dg,
   //---------------------------------------------------------------
   // finalize dataflow information at each of the nodes and edges
   //---------------------------------------------------------------
-  for (; node = nodes.Current(); nodes++) {
+  for (; node = nodes.Current(); ++nodes) {
     FinalizeNode(node);
     DirectedGraphEdgeIterator edges(node, alongFlow, edgeClass);
-    for (; edge = edges.Current(); edges++) FinalizeEdge(edge);
+    for (; edge = edges.Current(); ++edges) FinalizeEdge(edge);
   }
 }
 

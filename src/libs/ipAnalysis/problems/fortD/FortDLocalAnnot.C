@@ -1,4 +1,4 @@
-/* $Id: FortDLocalAnnot.C,v 1.1 1997/03/11 14:34:57 carr Exp $ */
+/* $Id: FortDLocalAnnot.C,v 1.2 1997/03/27 20:41:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -63,7 +63,7 @@ Annotation *FortDLocalAnnotMgr::Compute(CallGraphNode *node)
     //-----------------------------------------------------------------------
     ModuleLocalInfoIterator summaries(fdAttr);
     for(ProcFortDInfo *summary; summary = (ProcFortDInfo *)summaries.Current(); 
-        summaries++) {
+        ++summaries) {
       CallGraphNode *aNode = cg->LookupNode(summary->name);
       FortDLocalAnnot *fda = new FortDLocalAnnot(summary->tree);
 #if 0
@@ -81,7 +81,7 @@ Annotation *FortDLocalAnnotMgr::Compute(CallGraphNode *node)
   //--------------------------------------------------------------------
   // perform node initialization for nodes that have no fortD local info
   //--------------------------------------------------------------------
-  for (CallGraphNode* aNode; aNode = nodeSet.Current(); nodeSet++) {
+  for (CallGraphNode* aNode; aNode = nodeSet.Current(); ++nodeSet) {
     if (hasFortDLocalInfo.IsMember(aNode)) {
       continue;
     }

@@ -1,15 +1,22 @@
+/* $Id: Analysis.C,v 1.3 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 //      Linear Algebra Data Reuse Model
 //              C++ Code File
 //	Do Analysis on Data Reuse Model
 //	Be Ready for Next Step
 
 #include <iostream.h>
-#include <la.h>
+#include <libs/Memoria/include/la.h>
+#include <libs/Memoria/include/Estimate.h>
 #include <assert.h>
-#include <pt_util.h>
-#include <UniformlyGeneratedSets.h>
-#include <Lambda/Lambda.h>
-#include <mem_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
+#include <libs/support/Lambda/Lambda.h>
+#include <libs/Memoria/include/mem_util.h>
 
 extern "C" {
 #include <stdlib.h>
@@ -175,9 +182,9 @@ void GroupSpatialSet::DoAnalysis()
    computeboard = new ComputeBoard[Subs];
    for( i=1; i<Subs; ++i)
      {
-      computeboard[i].ComputeBoard(Strideof(i), i);
+      computeboard[i].Initialize(Strideof(i), i);
      }
-   computeboard[0].ComputeBoard(0, 0);
+   computeboard[0].Initialize(0, 0);
 
 // Gether GSEntry According to the difference on each dimension
 

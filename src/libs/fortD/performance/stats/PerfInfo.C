@@ -1,9 +1,9 @@
-/* $Id: PerfInfo.C,v 1.1 1997/03/11 14:29:12 carr Exp $ */
+/* $Id: PerfInfo.C,v 1.2 1997/03/27 20:34:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// $Id: PerfInfo.C,v 1.1 1997/03/11 14:29:12 carr Exp $
+// $Id: PerfInfo.C,v 1.2 1997/03/27 20:34:26 carr Exp $
 //**************************************************************************
 // Implementation of class FortDPerfInfo: Wrapper class for accessing runtime
 //					  performance data from Pablo traces.
@@ -493,7 +493,7 @@ FortDPerfInfo::LoopCommPerfInfo(Dist_Globals *dh,
     AstIterator tree_walk(loopHdr, PreOrder, AST_ITER_STMTS_ONLY);
     AST_INDEX stmt;
     Iter_set *iset;
-    for (; (stmt = tree_walk.Current()) != AST_NIL; tree_walk++)
+    for (; (stmt = tree_walk.Current()) != AST_NIL; ++tree_walk)
 	if (is_assignment(stmt)) {
 	    iset = (Iter_set *) get_info(dh->ped, stmt, type_dc);
 	    if (iset != (Iter_set *) NO_DC_INFO  	  // info available
@@ -559,7 +559,7 @@ void printPerfStatistics(Dist_Globals* dh, Generic PerfInfoObjectP)
     PerfMetrics *metrics;
     
     // For procedures and loops, loop through all stmts:
-    for (; (stmt = tree_walk.Current()) != AST_NIL; tree_walk++) {
+    for (; (stmt = tree_walk.Current()) != AST_NIL; ++tree_walk) {
 	if (is_f77_subprogram_stmt(stmt)) {
 	    PrintProc(stmt);
 	    
@@ -627,7 +627,7 @@ void printPerfStatistics(Dist_Globals* dh, Generic PerfInfoObjectP)
     // Walk the AST looking for reductions (in side-array for assignment stmts)
     Iter_set *iset;
     tree_walk.Reset();
-    for (; (stmt = tree_walk.Current()) != AST_NIL; tree_walk++)
+    for (; (stmt = tree_walk.Current()) != AST_NIL; ++tree_walk)
 	if (is_assignment(stmt)) {
 	    iset = (Iter_set *) get_info(dh->ped, stmt, type_dc);
 	    if (iset != (Iter_set *) NO_DC_INFO  	  // info available

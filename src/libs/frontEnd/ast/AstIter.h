@@ -1,4 +1,4 @@
-/* $Id: AstIter.h,v 1.4 1997/03/11 14:29:18 carr Exp $ */
+/* $Id: AstIter.h,v 1.5 1997/03/27 20:34:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -34,6 +34,8 @@
  * NOTE: When the current node is modified, put_cur_node() has to be
  *       called w/ the new node.
  */
+#ifndef AstIter_h
+#define AstIter_h
 
 #ifndef astlist_h
 #include <libs/frontEnd/ast/astlist.h>
@@ -67,3 +69,5 @@ private:
   Boolean   only_stmts;  // Not below statement level ?
   Boolean   only_inner;  // Do we also move out on the tree ?
 };
+
+#endif

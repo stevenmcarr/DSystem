@@ -1,4 +1,4 @@
-/* $Id: ModuleInfoIterator.C,v 1.1 1997/03/11 14:34:36 carr Exp $ */
+/* $Id: ModuleInfoIterator.C,v 1.2 1997/03/27 20:40:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,20 +19,6 @@
 #include <libs/fileAttrMgmt/composition/CompositionIterators.h>
 
 #include <libs/ipAnalysis/callGraph/ModuleInfoIterator.h>
-
-
-//*******************************************************************
-// declarations 
-//*******************************************************************
-
-struct ModuleInfoIteratorS {
-  CompModulesIterator modules;
-  const char *moduleInfoClassName;
-
-  ModuleInfoIteratorS(const Composition *program, 
-		      const char *_moduleInfoClassName) : modules(program),
-  moduleInfoClassName(_moduleInfoClassName) {};
-};
 
 
 
@@ -74,7 +60,7 @@ void ModuleInfoIterator::Advance(Boolean detachCurrentModuleInfo)
   if (detachCurrentModuleInfo && moduleInfo) 
     (*(Module **) &module)->DetachAttribute(*((ModuleLocalInfo **)&moduleInfo));
 
-  hidden->modules++;
+  ++hidden->modules;
   SetCurrent();
 }
 

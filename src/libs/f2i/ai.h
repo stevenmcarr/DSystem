@@ -1,4 +1,9 @@
-/* $Id: ai.h,v 1.1 1997/03/20 14:27:37 carr Exp $ */
+/* $Id: ai.h,v 1.2 1997/03/27 20:30:00 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /* 
  * ai.h -
  *
@@ -7,19 +12,18 @@
  */
 
 #ifndef general_h
-#include <general.h>
+#include <libs/support/misc/general.h>
 #endif general_h
-#include <newdatabase.h>	
-#include <context.h>
-#include <fort/fortObject.h>
+#include <libs/support/database/newdatabase.h>
+#include <libs/support/database/context.h>
 
-#ifndef AST_INDEX
-#include <fort/ast.h>
-#endif
+#include <libs/frontEnd/ast/ast.h>
+#include <libs/frontEnd/fortTree/FortTree.h>
+#include <libs/frontEnd/fortTextTree/FortTextTree.h>
 
-#include <misc/list.h>
+#include <libs/support/lists/list.h>
 
-#include <DirectivesInclude.h> 
+#include <libs/Memoria/annotate/DirectivesInclude.h>
 
   /* the various flags - initialized in main.c */
     extern    int aiAnnotate;	/* automatically generate comments	*/
@@ -145,7 +149,7 @@ int getIndex();
 #define PUT_DIRECTIVE_INFO(N,D) \
         ast_put_scratch(N,D)  
 
-EXTERN(void,ai,(FortObject fo, Context m_context));
+EXTERN(void,ai,(Context, FortTree, FortTextTree, char *));
 
 typedef enum {UNDEFINED,NONE,SELF_TEMPORAL,GROUP_TEMPORAL,SELF_SPATIAL,
               GROUP_SPATIAL,SELF_TEMPORAL_CACHE,GROUP_TEMPORAL_CACHE} 

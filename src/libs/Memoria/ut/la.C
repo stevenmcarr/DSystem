@@ -1,3 +1,9 @@
+/* $Id: la.C,v 1.2 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 //	Linear Algebra Data Reuse Model
 //		C++ Code File
 //     
@@ -8,12 +14,12 @@
 //			Group Temporal Data Reuse
 
 #include <iostream.h>
-#include <la.h>
+#include <libs/Memoria/include/la.h>
 #include <assert.h>
-#include <pt_util.h>
-#include <UniformlyGeneratedSets.h>
-#include <Lambda/Lambda.h>
-#include <mem_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
+#include <libs/support/Lambda/Lambda.h>
+#include <libs/Memoria/include/mem_util.h>
 
 #define sign(x) (((x)>0) ? 1: -1)
 
@@ -39,7 +45,7 @@ DataReuseModel::DataReuseModel(UniformlyGeneratedSets *UGS)
 DataReuseModelEntry* DRIter::operator () ()
 {
  DataReuseModelEntry *e = (DataReuseModelEntry *) SinglyLinkedListIterator ::Current();
- (*this)++;
+ ++(*this);
  return e;
 }
 
@@ -243,7 +249,7 @@ void GroupSpatialSet::PutintoGSEntry(AST_INDEX node, la_vect c_vect)
 GroupSpatialEntry* GSSetIter::operator () ()
 {
  GroupSpatialEntry *e = (GroupSpatialEntry *) SinglyLinkedListIterator::Current();
- (*this)++;
+ ++(*this);
  return e;
 }
 
@@ -482,7 +488,7 @@ if(!Done)
 GroupTemporalEntry* GTSetIter::operator () ()
 {
  GroupTemporalEntry *e = (GroupTemporalEntry *) SinglyLinkedListIterator::Current();
- (*this)++;
+ ++(*this);
  return e;
 }
 
@@ -556,7 +562,7 @@ int GroupTemporalEntry::NodeshasGT(la_vect vect1, la_vect vect2)
  int i,j,numSol;
  la_matrix X;
  la_vect b;
- Boolean HasGroupTemporal;
+ int HasGroupTemporal;
 
  b = la_vecNew(Subs);
  for(i=0; i<Subs; i++)
@@ -673,7 +679,7 @@ void VectList::PrintOut()
 VectListEntry* VectListIter::operator () ()
 {
  VectListEntry *e = (VectListEntry *)SinglyLinkedListIterator::Current();
- (*this)++;
+ ++(*this);
  return e;
 }
 

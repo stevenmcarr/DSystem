@@ -1,4 +1,4 @@
-/* $Id: Exec.C,v 1.13 1997/03/11 14:28:27 carr Exp $ */
+/* $Id: Exec.C,v 1.14 1997/03/27 20:32:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,7 +10,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: Exec.C,v $
- * Revision 1.13  1997/03/11 14:28:27  carr
+ * Revision 1.14  1997/03/27 20:32:56  carr
+ * Alpha
+ *
+ * Revision 1.13  1997/03/11  14:28:27  carr
  * newly checked in as revision 1.13
  *
 Revision 1.13  94/03/21  14:04:57  patton
@@ -341,7 +344,7 @@ Exec::catSlicesBuf(ostrstream &slices_buf)    // Append to this buffer
   first   = true;
   for (;
        str = str_cntsI.CurrentName();
-       str_cntsI++)
+       ++str_cntsI)
   {
     if (!first) {
       slices_buf << ", ";

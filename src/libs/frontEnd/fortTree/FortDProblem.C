@@ -1,4 +1,4 @@
-/* $Id: FortDProblem.C,v 1.10 1997/03/11 14:29:47 carr Exp $ */
+/* $Id: FortDProblem.C,v 1.11 1997/03/27 20:35:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -198,7 +198,7 @@ static void FDInvocation(AST_INDEX node, Generic LocInfo)
        it.Current() != 0; ++it) 
    {
       CallSitesIterator callsites(((IPinfoTreeNode*)it.Current())->calls);
-      for(CallSite *c; c = callsites.Current(); callsites++) 
+      for(CallSite *c; c = callsites.Current(); ++callsites) 
       {
 	 if (callsite_id == c->Id()) 
 	 {

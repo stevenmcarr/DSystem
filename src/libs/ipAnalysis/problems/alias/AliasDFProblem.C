@@ -1,4 +1,4 @@
-/* $Id: AliasDFProblem.C,v 1.1 1997/03/11 14:34:54 carr Exp $ */
+/* $Id: AliasDFProblem.C,v 1.2 1997/03/27 20:40:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -57,7 +57,7 @@ DataFlowSet *AliasDFProblem::InitializeEdge
   // global that is bound to a formal
   //----------------------------------------------------------------
   for (ParamNameIterator fni(edge->paramBindings, FormalNameSet); 
-       fni.Current(); fni++) {
+       fni.Current(); ++fni) {
     const char *formal = fni.Current();
     ParamBinding *binding = edge->paramBindings.GetReverseBinding(formal);
     if (binding->a_class & APC_DataGlobal) {  // actual is a global
@@ -72,7 +72,7 @@ DataFlowSet *AliasDFProblem::InitializeEdge
   // passed
   //----------------------------------------------------------------
   for (ParamNameIterator ani(edge->paramBindings, ActualNameSet); 
-       ani.Current(); ani++) {
+       ani.Current(); ++ani) {
     const char *actual = ani.Current();
     ParamBindingsSet *bindings = 
       edge->paramBindings.GetForwardBindings(actual);
@@ -87,11 +87,11 @@ DataFlowSet *AliasDFProblem::InitializeEdge
     ParamBinding *formal, *formal2;
     
     // for bindings 2, ..., n 
-    for(bi++; formal = bi.Current(); bi++) {
+    for(++bi; formal = bi.Current(); ++bi) {
       
       // for bindings 1, ..., formal
       for(ParamBindingsSetIterator bi2(bindings); 
-	  (formal2 = bi2.Current()) != formal; bi2++) {
+	  (formal2 = bi2.Current()) != formal; ++bi2) {
 	
 	// formal if in formal dictionary and also in formal list 
 	if (caller->IsFormal(actual)) {
@@ -150,10 +150,10 @@ DataFlowSet *AliasDFProblem::NodeToEdge
   //---------------------------------------------------------------------
   FormalAliasesIterator formalAliasSets((AliasAnnot *) nodeOut);
   FormalAliases *fa;
-  for( ; fa = formalAliasSets.Current(); formalAliasSets++) {
+  for( ; fa = formalAliasSets.Current(); ++formalAliasSets) {
     StringSetIterator strings(fa);
     const char *name2;
-    for( ; name2 = strings.Current(); strings++) {
+    for( ; name2 = strings.Current(); ++strings) {
       ParamBindingsSet *formal1_bindings = 
 	edge->paramBindings.GetForwardBindings(fa->name);
       ParamBindingsSet *formal2_bindings = 
@@ -161,9 +161,9 @@ DataFlowSet *AliasDFProblem::NodeToEdge
       
       // add all pairs introduced by this alias 
       for(ParamBindingsSetIterator bi1(formal1_bindings); 
-	  formal = bi1.Current(); bi1++) {
+	  formal = bi1.Current(); ++bi1) {
 	for(ParamBindingsSetIterator bi2(formal2_bindings); 
-	    formal2 = bi2.Current(); bi2++) {
+	    formal2 = bi2.Current(); ++bi2) {
 	  edgeIn->Add(formal->formal, formal2->formal);
 	}
       }
@@ -175,10 +175,10 @@ DataFlowSet *AliasDFProblem::NodeToEdge
   //---------------------------------------------------------------------
   GlobalAliasesIterator globalAliasSets((AliasAnnot *) nodeOut);
   GlobalAliases *ga;
-  for( ; ga = globalAliasSets.Current(); globalAliasSets++) {
+  for( ; ga = globalAliasSets.Current(); ++globalAliasSets) {
     StringSetIterator strings(ga);
     const char *name2;
-    for( ; name2 = strings.Current(); strings++) {
+    for( ; name2 = strings.Current(); ++strings) {
       ParamBindingsSet *formal_bindings = 
 	edge->paramBindings.GetForwardBindings(name2);
       ParamBindingsSet *global_bindings = 
@@ -188,13 +188,13 @@ DataFlowSet *AliasDFProblem::NodeToEdge
       // of the callers formal at the callsite
       
       for(ParamBindingsSetIterator fi(formal_bindings); 
-	  formal = fi.Current(); fi++) {
+	  formal = fi.Current(); ++fi) {
 	edgeIn->Add(formal->formal, ga->name, ga->globalInfo.offset, 
 		    ga->globalInfo.length);
 	
 	// add all pairs introduced by this alias 
 	for(ParamBindingsSetIterator gi(global_bindings); 
-	    formal2 = gi.Current(); gi++) {
+	    formal2 = gi.Current(); ++gi) {
 	  if ((formal2->a_offset == ga->globalInfo.offset))
 	    edgeIn->Add(formal2->formal, formal->formal); 
 	}

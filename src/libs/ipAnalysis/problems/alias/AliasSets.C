@@ -1,4 +1,4 @@
-/* $Id: AliasSets.C,v 1.1 1997/03/11 14:34:54 carr Exp $ */
+/* $Id: AliasSets.C,v 1.2 1997/03/27 20:40:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -129,7 +129,7 @@ FormalAliasesSet::FormalAliasesSet(FormalAliasesSet &rhs)
 {
   FormalAliasesSetIterator entries(&rhs);
   FormalAliases *entry;
-  for(; entry = entries.Current(); entries++) {
+  for(; entry = entries.Current(); ++entries) {
     AddEntry(new FormalAliases(*entry));
   }
 }
@@ -161,7 +161,7 @@ FormalAliases *FormalAliasesSet::GetEntry(const char *name)
 void FormalAliasesSet::operator|=(const FormalAliasesSet &rhs)
 {
   FormalAliasesSetIterator fsi(&rhs);
-  for (FormalAliases *rfs; rfs = fsi.Current(); fsi++) {
+  for (FormalAliases *rfs; rfs = fsi.Current(); ++fsi) {
     FormalAliases *lfs = GetEntry(rfs->name);
     lfs->StringSet::operator|=(*rfs);
     lfs->EqClassPairSet::operator|=(*rfs);
@@ -172,7 +172,7 @@ void FormalAliasesSet::operator|=(const FormalAliasesSet &rhs)
 int FormalAliasesSet::operator==(const FormalAliasesSet &rhs) const
 {
   FormalAliasesSetIterator fsi(&rhs);
-  for (FormalAliases *rfs; rfs = fsi.Current(); fsi++) {
+  for (FormalAliases *rfs; rfs = fsi.Current(); ++fsi) {
     FormalAliases *lfs = QueryEntry(rfs->name);
     if (lfs == 0 || !(lfs->EqClassPairSet::operator==(*rfs)) ||
 	!(lfs->StringSet::operator==(*rfs)))
@@ -216,7 +216,7 @@ GlobalAliasesSet::GlobalAliasesSet(GlobalAliasesSet &rhs)
   Create(sizeof(GlobalAliases *), 8);
   GlobalAliasesSetIterator it(&rhs);
   GlobalAliases* ra;
-  for (; ra = it.Current(); it++) AddEntry(new GlobalAliases(*ra));
+  for (; ra = it.Current(); ++it) AddEntry(new GlobalAliases(*ra));
 }
 
 
@@ -259,7 +259,7 @@ void GlobalAliasesSet::operator|=(const GlobalAliasesSet &rhs)
 {
   GlobalAliasesSetIterator fsi(&rhs);
   GlobalAliases *rfs;
-  for (; rfs = fsi.Current(); fsi++) {
+  for (; rfs = fsi.Current(); ++fsi) {
     GlobalAliases *lfs = 
       GetEntry(rfs->name, rfs->globalInfo.offset, rfs->globalInfo.length);
     *lfs |= *rfs;
@@ -271,7 +271,7 @@ int GlobalAliasesSet::operator==(const GlobalAliasesSet &rhs) const
 {
   GlobalAliasesSetIterator fsi(&rhs);
   GlobalAliases *rfs;
-  for (; rfs = fsi.Current(); fsi++) {
+  for (; rfs = fsi.Current(); ++fsi) {
     GlobalAliases *lfs = 
       QueryEntry(rfs->name, rfs->globalInfo.offset, rfs->globalInfo.length);
     if (lfs == 0 || !(*lfs == *rfs)) return 0;
@@ -302,7 +302,7 @@ int GlobalAliasesSet::Write(FormattedFile *file)
   uint n = NumberOfEntries();
   if (file->Write(n)) return EOF;
   GlobalAliasesSetIterator it(this);
-  for (GlobalAliases* a; a = it.Current(); it++) {
+  for (GlobalAliases* a; a = it.Current(); ++it) {
     if (a->Write(file)) return EOF;
   }
 }

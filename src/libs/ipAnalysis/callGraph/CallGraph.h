@@ -1,4 +1,4 @@
-/* $Id: CallGraph.h,v 1.2 1997/03/11 14:34:29 carr Exp $ */
+/* $Id: CallGraph.h,v 1.3 1997/03/27 20:40:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -29,6 +29,16 @@
 #ifndef Attribute_h
 #include <libs/fileAttrMgmt/attributedFile/Attribute.h>
 #endif
+
+#include <libs/support/misc/dict.h>
+
+class CallGraphS {
+public:
+  Dict nameToNodeMap;			// map: node name --> node 
+  Dict nameToEdgeMap;			// map: edge name --> edge 
+  // constructor
+  CallGraphS();
+};
 
 class ClassInstanceRegistry; // external definition
 class FormattedFile;         // external definition
@@ -131,7 +141,7 @@ private: // member functions
   ClassInstanceRegistry *GetAnnotMgrRegistry();
 
 private: // data
-  struct CallGraphS *hidden;   // keep other representation details  hidden 
+  CallGraphS *hidden;   // keep other representation details  hidden 
   
 friend class CallGraphNode;
 friend class CallGraphEdge;

@@ -1,4 +1,4 @@
-/* $Id: AttributedFileSet.C,v 1.1 1997/03/11 14:27:44 carr Exp $ */
+/* $Id: AttributedFileSet.C,v 1.2 1997/03/27 20:31:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -66,14 +66,6 @@ AttrFileEntry::~AttrFileEntry()
 }
 
 
-//***************************************************************************
-// interface operations for class AttributedFileSet
-//***************************************************************************
-
-struct AttributedFileSetS {
-  NamedObjectTable ht;
-};
-
 
 AttributedFileSet::AttributedFileSet()  
 {
@@ -128,18 +120,6 @@ void AttributedFileSet::CloseFile(AttributedFile *attrFile)
   if (ame->refCnt == 0) attrFileSetRepr->ht.DeleteEntry(ame->name);
 }
 
-
-//***************************************************************************
-// interface operations for class AttributedFileSetIterator
-//***************************************************************************
-
-
-struct AttributedFileSetIteratorS {
-  NamedObjectTableIterator noti;
-  AttributedFileSetIteratorS(NamedObjectTable *ht) : noti(ht) { ; };
-};
-
-
 AttributedFileSetIterator::AttributedFileSetIterator
 (const AttributedFileSet *attrFileSet) 
 {
@@ -169,7 +149,7 @@ void *AttributedFileSetIterator::CurrentUpCall() const
 
 void AttributedFileSetIterator::operator++() 
 {
-  attrFileSetIterRepr->noti++;
+  ++attrFileSetIterRepr->noti;
 }
 
 

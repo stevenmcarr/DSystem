@@ -1,4 +1,4 @@
-/* $Id: arch.C,v 1.6 1997/03/11 14:27:38 carr Exp $ */
+/* $Id: arch.C,v 1.7 1997/03/27 20:29:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -38,6 +38,7 @@ static char* arch_names[] =
   "i860",
   "RS6k",
   "cray",
+  "alpha"
   "iPSC"
 };
 

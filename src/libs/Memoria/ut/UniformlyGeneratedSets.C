@@ -1,10 +1,16 @@
+/* $Id: UniformlyGeneratedSets.C,v 1.5 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #include <assert.h>
 #include <iostream.h>
-#include <general.h>
-#include <UniformlyGeneratedSets.h>
-#include <pt_util.h>
-#include <mem_util.h>
-#include <Lambda/Lambda.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/support/Lambda/Lambda.h>
 
 Boolean UniformlyGeneratedSetsEntry::SameUniformlyGeneratedSet(AST_INDEX node,
 							       la_matrix nodeH)

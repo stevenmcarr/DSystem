@@ -1,4 +1,4 @@
-/* $Id: ScanFile.h,v 1.1 1997/03/11 14:28:03 carr Exp $ */
+/* $Id: ScanFile.h,v 1.2 1997/03/27 20:31:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,7 +17,8 @@
 typedef FUNCTION_POINTER(void, ScanFileFileFunc, (const char *fileName, va_list args));
 typedef FUNCTION_POINTER(void, ScanFileLineFunc, (const char *lineText, va_list args));
 
-// 0 on success, -1 on failure
+/* 0 on success, -1 on failure */
+
 EXTERN(int, ScanFile, 
        (const char *srcFile, ScanFileFileFunc enterFile, ScanFileFileFunc exitFile,
 	ScanFileLineFunc procFileLine, ...));

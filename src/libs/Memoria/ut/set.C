@@ -1,12 +1,17 @@
-/* $Id: set.C,v 1.7 1996/02/14 11:02:55 carr Exp $ */
+/* $Id: set.C,v 1.8 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /*
  *  An implementation of sets as bit-vectors
  *	(part of the Rn Module Compiler code generator)
  *   Copied from code developed by Preston Brigs.
  */
 
-#include <general.h>
-#include <cgen_set.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/cgen_set.h>
 #include <memory.h>
 #include <stdio.h>
 #include <strings.h>

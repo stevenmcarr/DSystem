@@ -1,4 +1,4 @@
-/* $Id: driver.C,v 1.23 1997/03/11 14:28:21 carr Exp $ */
+/* $Id: driver.C,v 1.24 1997/03/27 20:32:40 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -147,7 +147,7 @@ void fortd_compiler(cNameValueTable analyses, Fd_opts *fd_opts)
       
       // 2/9/94 RvH: Determinism helps debugging
       //for(CallGraphNodeIterator x(cg2, Unordered); n = x.Current(); x++)
-      for(CallGraphNodeIterator x(callGraph, PostOrder); n = x.Current(); x++) {
+      for(CallGraphNodeIterator x(callGraph, PostOrder); n = x.Current(); ++x) {
 	switch(n->type) {
 	case CGNT_Function:
 	case CGNT_Program:

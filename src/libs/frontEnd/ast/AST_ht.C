@@ -1,4 +1,4 @@
-/* $Id: AST_ht.C,v 1.3 1997/03/11 14:29:17 carr Exp $ */
+/* $Id: AST_ht.C,v 1.4 1997/03/27 20:34:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,7 +10,10 @@
 /***********************************************************************
  * Revision history:
  * $Log: AST_ht.C,v $
- * Revision 1.3  1997/03/11 14:29:17  carr
+ * Revision 1.4  1997/03/27 20:34:58  carr
+ * Alpha
+ *
+ * Revision 1.3  1997/03/11  14:29:17  carr
  * newly checked in as revision 1.3
  *
 Revision 1.3  93/12/17  14:46:13  rn
@@ -252,7 +255,7 @@ void AST_ht::forall(Apply_ftype apply_func, Action_ftype action, ...)
 
   va_start(argList, apply_func);
     {
-       for (int i = 0; i < HashTable::NumberOfEntries(); i++, anIterator++)
+       for (int i = 0; i < HashTable::NumberOfEntries(); i++, ++anIterator)
          {
          apply_func((AST_htEntry*)anIterator.Current(), argList);
          }

@@ -1,4 +1,9 @@
-/* $Id: bound.C,v 1.8 1995/08/22 14:39:20 carr Exp $ */
+/* $Id: bound.C,v 1.9 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
@@ -8,15 +13,15 @@
 /*                                                                          */
 /****************************************************************************/
   
-#include <general.h>
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <bound.h>
-#include <fort/gen.h>
-#include <fort/forttypes.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/include/bound.h>
+#include <libs/frontEnd/ast/gen.h>
+#include <libs/frontEnd/ast/forttypes.h>
 
-#include <pt_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 
 static int set_type(AST_INDEX node,
 		    Generic   dummy)

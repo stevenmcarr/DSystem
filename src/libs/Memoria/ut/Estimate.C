@@ -1,13 +1,19 @@
+/* $Id: Estimate.C,v 1.2 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 // Estimate.C
 // C++ code
 // Estimate the cache miss per iteration
 
-#include "iostream.h"
-#include <la.h>
+#include <iostream.h>
+#include <libs/Memoria/include/la.h>
 
 
 #ifndef Estimate_h
-#include <Estimate.h>
+#include <libs/Memoria/include/Estimate.h>
 #endif
 
 extern "C"{
@@ -21,6 +27,11 @@ static int intcompare(const void *i, const void *j)
 }
 
 ComputeBoard::ComputeBoard(int n, int d)
+{
+ Initialize(n,d);
+}
+
+ComputeBoard::Initialize(int n, int d)
 {
  stride = n;
  dimension = d;
@@ -69,8 +80,6 @@ void ComputeBoard::GetReady1stD()
  int i, j;
 
  block_array = new CacheBlock[Num_Rows];
- for(i=0; i<Num_Rows; ++i)
-      block_array[i].CacheBlock();
  i = 0;
  for( RowsIter rowsiter(rows);
          r = rowsiter();)
@@ -150,9 +159,6 @@ void ComputeBoard::GetReadyRestD()
   for( i = 1; i <= Num_Rows; i++) 
      newnum +=i;
   init_cacheblock = new CacheBlock[newnum];
-
-  for( i=0; i<newnum; ++i)
-     init_cacheblock[i].CacheBlock();
 
   int need_newcacheblock;
   matrix_col = 0; 
@@ -412,7 +418,7 @@ float ComputeBoard::Estimate(int IsSP, int spatial_degree, int unroll_amount)
 CacheBlock::CacheBlock()
 {
  NumGap = TotalBlock = Num_Rows = 0;
- rows = new Rows();
+ rows = new Rows;
 }
 
 void CacheBlock::TakeRows( GroupSpatialEntry* e)

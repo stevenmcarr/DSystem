@@ -1,4 +1,4 @@
-/* $Id: FortTextTree.h,v 1.14 1997/03/11 14:29:36 carr Exp $ */
+/* $Id: FortTextTree.h,v 1.15 1997/03/27 20:35:24 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -207,6 +207,30 @@ EXTERN(void, ftt_TraverseText,
 		 EnterFunc Enter,
 		 Generic   other));
 
+#ifdef OSF1
+
+#include <include/rn_varargs.h>
+
+typedef
+FUNCTION_POINTER(void, PushFuncV,   
+		 (char *include_name, va_list args));
+typedef
+FUNCTION_POINTER(void, PopFuncV,   
+		 (char *include_name, va_list args));
+typedef
+FUNCTION_POINTER(void, EnterFuncV,   
+		 (char *line, va_list args));
+
+
+EXTERN(void, ftt_TraverseTextV,
+                (char        *loc,
+		 PushFuncV  Push,
+		 PopFuncV   Pop,
+		 EnterFuncV Enter,
+		 va_list    args));
+
+
+#endif
 /************************/
 /*  Error Reporting	*/
 /************************/

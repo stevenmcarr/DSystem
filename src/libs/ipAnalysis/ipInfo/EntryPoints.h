@@ -1,4 +1,4 @@
-/* $Id: EntryPoints.h,v 1.1 1997/03/11 14:34:41 carr Exp $ */
+/* $Id: EntryPoints.h,v 1.2 1997/03/27 20:40:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -48,7 +48,7 @@ public:
 //--------------------------------------------------------------------
 // class EntryPoints
 //--------------------------------------------------------------------
-class EntryPoints : private NamedObjectTableIO {
+class EntryPoints : public NamedObjectTableIO {
 private:
   NamedObjectIO *NewEntry();
 public:
@@ -71,7 +71,7 @@ public:
 //-------------------------------------------------------------
 // class EntryPointsIterator
 //-------------------------------------------------------------
-class EntryPointsIterator : private NamedObjectTableIterator {
+class EntryPointsIterator : public NamedObjectTableIterator {
 public:
   EntryPointsIterator(const EntryPoints *theTable);
   ~EntryPointsIterator();

@@ -1,4 +1,4 @@
-/* $Id: NeedProvSet.C,v 1.2 1997/03/11 14:29:19 carr Exp $ */
+/* $Id: NeedProvSet.C,v 1.3 1997/03/27 20:34:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -391,7 +391,7 @@ NeedProvSet:: NeedProvSet(NeedProvSet &rhs)
 {
   NeedProvSetIterator npi(&rhs);
   ProcInterface *entry;
-  for (; entry = npi.Current(); npi++) AddEntry(new ProcInterface(*entry));
+  for (; entry = npi.Current(); ++npi) AddEntry(new ProcInterface(*entry));
 }
 
 

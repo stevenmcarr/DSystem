@@ -1,4 +1,4 @@
-/* $Id: AFormalDFProblem.C,v 1.1 1997/03/11 14:35:15 carr Exp $ */
+/* $Id: AFormalDFProblem.C,v 1.2 1997/03/27 20:41:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -44,7 +44,7 @@ CallGraphFlowInsensitiveDFP(CLASS_NAME(AFormalModAttr), newAFormalTop,
 }
 
 
-DataFlowSet *::AFormalDFProblem::newAFormalTop()
+DataFlowSet *AFormalDFProblem::newAFormalTop()
 {
   return new AFormalAnnot();
 }
@@ -83,7 +83,7 @@ DataFlowSet *NodeToEdge(CallGraphNode *node, CallGraphEdge *edge,
   
   ParamNameIterator fnames(edge->paramBindings, FormalNameSet); 
   const char *formal;
-  for( ; formal = fnames.Current(); fnames++) {
+  for( ; formal = fnames.Current(); ++fnames) {
     if (calleeAnnot->IsMember(formal)) {
       ParamBinding *binding = 
 	edge->paramBindings.GetReverseBinding(formal);

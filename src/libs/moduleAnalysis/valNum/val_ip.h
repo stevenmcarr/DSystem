@@ -1,4 +1,4 @@
-/* $Id: val_ip.h,v 1.5 1997/03/11 14:36:20 carr Exp $ */
+/* $Id: val_ip.h,v 1.6 1997/03/27 20:47:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,11 +21,13 @@
 typedef Generic ValNumber;
 
 class FormattedFile;  // minimal external declaration
+class ValPassMap;
+class ValTable;
 
-struct ValIP {
+class ValIP {
   public:
-    struct ValTable *values;
-    struct ValPassMap *pass;
+    ValTable *values;
+    ValPassMap *pass;
 
     ValIP();
     ~ValIP();

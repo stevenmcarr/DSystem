@@ -1,4 +1,4 @@
-/* $Id: RepositoryContext.C,v 1.1 1997/03/11 14:27:46 carr Exp $ */
+/* $Id: RepositoryContext.C,v 1.2 1997/03/27 20:31:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -44,24 +44,6 @@ static void ExtendCache(char *name);
 static int  PositiveNumeric(struct dirent *ent);
 static int  NumericSort(struct dirent **d1, struct dirent **d2);
 static char *FilePath(struct RepositoryContextS *context, char *name);
-
-
-//------------------------------------------------------
-// RepositoryContext internal representation
-//------------------------------------------------------
-struct RepositoryContextS {
-  RepositoryContext *parent;
-
-  char *absoluteLocation;
-  char *absoluteLocationDir;
-  char *absoluteLocationBase;
-
-  char *cacheLocation;
-  
-  // ***** compatability support *****
-  int createdParent;
-};
-
 
 RepositoryContext::RepositoryContext()
 {

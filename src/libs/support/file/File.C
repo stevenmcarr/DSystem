@@ -1,4 +1,4 @@
-/* $Id: File.C,v 1.6 1997/03/11 14:36:35 carr Exp $ */
+/* $Id: File.C,v 1.7 1997/03/27 20:49:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,11 +21,6 @@
 
 #include <libs/support/strings/rn_string.h>
 #include <libs/support/file/File.h>
-
-// definition of File internal representation
-struct FileS {
-  FILE *fp;
-};
 
 File::File() 
 { 

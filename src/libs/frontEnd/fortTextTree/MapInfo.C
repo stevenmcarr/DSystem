@@ -1,4 +1,4 @@
-/* $Id: MapInfo.C,v 1.6 1997/03/11 14:29:39 carr Exp $ */
+/* $Id: MapInfo.C,v 1.7 1997/03/27 20:35:24 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -116,7 +116,7 @@ MapInfo::MapInfo(FortTextTree ftt)
        {
 	MapEntries[j].PutEntry((MapLineEntry *)MapIterator->Current());
 	Temp = (MapLineEntry *)MapIterator->Current();
-	(*MapIterator)++;
+	++(*MapIterator);
 	EntryList->Delete(Temp);
        }
      delete EntryList;
@@ -153,7 +153,7 @@ MapInfo::~MapInfo()
 	   while(VarIterator->Current() != NULL)
 	     {
 	      Temp = (MapVarEntry *)VarIterator->Current();
-	      (*VarIterator)++;
+	      ++(*VarIterator);
 	      MapEntries[i].GetVarList()->Delete(Temp);
 	     }
 	   delete VarIterator;
@@ -234,7 +234,7 @@ AST_INDEX MapInfo::MapVarToIndex(int  Line,
 	  n--;
 	if (n == 0) 
 	  return(((MapVarEntry *)VarListIterator.Current())->GetNode());
-	VarListIterator++;
+	++VarListIterator;
        }
     return(AST_NIL);
   }

@@ -1,4 +1,4 @@
-/* $Id: NeedProvCompAttr.C,v 1.1 1997/03/11 14:27:50 carr Exp $ */
+/* $Id: NeedProvCompAttr.C,v 1.2 1997/03/27 20:31:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -189,7 +189,7 @@ static void ApplyToComponents(NeedProvCompAttr *npcAttr,
   //-----------------------------------------
   CompComponentsIterator ci(comp);
   AttributedFile *component;
-  for (; component = ci.Current(); ci++) {
+  for (; component = ci.Current(); ++ci) {
     if (component->ClassName() == CLASS_NAME(Composition)) 
       compFn(comp, (Composition *) component, npcAttr);
     else modFn(comp, (Module *) component, npcAttr);
@@ -220,7 +220,7 @@ static void AddModuleProvides(Composition *comp,
   //---------------------------------------------------
   NeedProvSetIterator npsi(npAttr->provs);
   ProcInterface *pi;
-  for (; pi = npsi.Current(); npsi++) {
+  for (; pi = npsi.Current(); ++npsi) {
     StringBuffer error(256); // temporary space for building error messages
     
     //-----------------------------------------------------
@@ -297,7 +297,7 @@ static void AddCompositionProvides(Composition *outerComp,
   //---------------------------------------------------
   ProcModuleMapIterator pmmi(npAttr->provides);
   ProcModuleMapEntry *pmme;
-  for (; pmme = pmmi.Current(); pmmi++) {
+  for (; pmme = pmmi.Current(); ++pmmi) {
     StringBuffer error(256); // temporary space for building error messages
     
     //-----------------------------------------------------
@@ -371,7 +371,7 @@ static void CheckModuleNeeds(Composition *comp,
   //---------------------------------------------------
   NeedProvSetIterator npsi(npAttr->needs);
   ProcInterface *pi;
-  for (; pi = npsi.Current(); npsi++) {
+  for (; pi = npsi.Current(); ++npsi) {
     
     //---------------------------------------------------------------------
     // error if the entry is not provided by some module in the composition
@@ -414,7 +414,7 @@ static void CheckCompositionNeeds(Composition *outerComp,
   //---------------------------------------------------
   ProcModuleMapIterator pmmi(npAttr->needs);
   ProcModuleMapEntry *pmme;
-  for (; pmme = pmmi.Current(); pmmi++) {
+  for (; pmme = pmmi.Current(); ++pmmi) {
     StringBuffer error(256); // temporary space for building error messages
   
     //---------------------------------------------------------------------

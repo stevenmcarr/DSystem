@@ -1,4 +1,4 @@
-/* $Id: OverlapForwardDFProblem.C,v 1.3 1997/03/11 14:35:02 carr Exp $ */
+/* $Id: OverlapForwardDFProblem.C,v 1.4 1997/03/27 20:41:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -167,7 +167,7 @@ void FD_Overlap_Annot::UnionF(CallGraphNode *, CallGraphEdge *CallGraphEdge1, FD
  // for each actual parameter passed at the callsite
  //--------------------------------------------------------------
  for (ParamNameIterator ani(CallGraphEdge1->paramBindings, ActualNameSet);
-      ani.Current(); ani++) 
+      ani.Current(); ++ani) 
      {
       actual = ani.Current();
 
@@ -177,7 +177,7 @@ void FD_Overlap_Annot::UnionF(CallGraphNode *, CallGraphEdge *CallGraphEdge1, FD
      ParamBindingsSet *bindings =
        CallGraphEdge1->paramBindings.GetForwardBindings(actual);
        for (ParamBindingsSetIterator bi(bindings);
-            formal_bi = bi.Current(); bi++)
+            formal_bi = bi.Current(); ++bi)
        {
        formal = formal_bi->formal;
        found = found2 = false;

@@ -1,4 +1,4 @@
-/* $Id: StandardModuleAttributes.C,v 1.1 1997/03/11 14:28:04 carr Exp $ */
+/* $Id: StandardModuleAttributes.C,v 1.2 1997/03/27 20:31:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -49,7 +49,7 @@ void ComputeStandardModuleAttributes(AttributedFile *file)
   if (standardModuleAttributes) {
     NamedObjectTableIterator attrs(standardModuleAttributes);
     NamedObject *fileAttr;
-    for(; fileAttr = attrs.Current(); attrs++) {
+    for(; fileAttr = attrs.Current(); ++attrs) {
       Attribute *attr = file->AttachAttribute(fileAttr->name);
       if (attr) file->DetachAttribute(attr);
     }

@@ -1,4 +1,4 @@
-/* $Id: cfgval.i,v 1.9 1997/03/11 14:35:37 carr Exp $ */
+/* $Id: cfgval.i,v 1.10 1997/03/27 20:45:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,6 +21,7 @@
 #include <libs/frontEnd/ast/forttypes.h>
 #include <libs/moduleAnalysis/cfgValNum/cfgval.h>
 #include <libs/moduleAnalysis/valNum/val_ip.h>
+#include <libs/moduleAnalysis/valNum/val_pass.h>
 
 /*
  *  Fields borrowed from CFG

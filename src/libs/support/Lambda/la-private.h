@@ -1,3 +1,9 @@
+/* $Id: la-private.h,v 1.2 1997/03/27 20:47:40 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************
  * Copyright (C) 1993, 1992, 1991 Cornell University -- The Typhoon Project
  *
@@ -22,7 +28,7 @@
 #include <strings.h>
 #include <sys/types.h>
 
-#include <Lambda/Lambda.h>
+#include <libs/support/Lambda/Lambda.h>
 
 #if defined(LA_SunOS)
 int LA_PROTO(fprintf,(FILE *fp, char *format, ...));

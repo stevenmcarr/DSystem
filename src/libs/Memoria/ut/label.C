@@ -1,4 +1,9 @@
-/* $Id: label.C,v 1.5 1994/07/20 11:33:25 carr Exp $ */
+/* $Id: label.C,v 1.6 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
@@ -9,14 +14,14 @@
 /*                                                                          */
 /****************************************************************************/
   
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <label.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/include/Memoria_label.h>
 
-#include <mem_util.h>
-#include <pt_util.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #include <malloc.h>
 
 
@@ -85,7 +90,7 @@ static int chk_labels(AST_INDEX     stmt,
 	index = fst_QueryIndex(symtab,new_label_str);
 	set_label_sym_index(new_label,index);
 	fst_PutFieldByIndex(symtab,index,LBL_STMT,stmt);
-	fst_PutField(symtab,(int)gen_get_text(label),NEW_LBL_INDEX,index);
+	fst_PutField(symtab,gen_get_text(label),NEW_LBL_INDEX,index);
 	fst_PutFieldByIndex(symtab,index,REFS,
 			    (int)fst_GetField(symtab,gen_get_text(label),
 					      REFS));

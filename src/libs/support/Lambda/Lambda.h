@@ -1,3 +1,9 @@
+/* $Id: Lambda.h,v 1.2 1997/03/27 20:47:40 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************
  * Copyright (C) 1993, 1992, 1991 Cornell University -- The Typhoon Project
  *
@@ -51,11 +57,11 @@ typedef int * la_vect;
 
 typedef la_vect * la_matrix;
 
-#include <Lambda/la-dep.h>
-#include <Lambda/la-trans.h>
-#include <Lambda/la-code.h>
-#include <Lambda/la-print.h>
-#include <Lambda/la-utilities.h>
+#include <libs/support/Lambda/la-dep.h>
+#include <libs/support/Lambda/la-trans.h>
+#include <libs/support/Lambda/la-code.h>
+#include <libs/support/Lambda/la-print.h>
+#include <libs/support/Lambda/la-utilities.h>
 
 #ifdef __cplusplus
 }

@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:36:44 carr Exp $
+# $Id: Makefile,v 1.2 1997/03/27 20:49:29 carr Exp $
 
 HERE = libs/support/graphs/directedGraph
 
+	#DirectedGraph.C 
 SRCS = \
-	DirectedGraph.C \
 	DirectedGraphIterators.C \
 	DirectedGraphNodeSet.C \
 	DGNodePointerVector.C \

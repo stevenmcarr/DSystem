@@ -1,4 +1,4 @@
-/* $Id: CallGraph.C,v 1.6 1997/03/11 14:34:28 carr Exp $ */
+/* $Id: CallGraph.C,v 1.7 1997/03/27 20:40:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -136,13 +136,6 @@ public:
 //=========================================================================
 // class CallGraphS 
 //=========================================================================
-
-struct CallGraphS {
-  Dict nameToNodeMap;			// map: node name --> node 
-  Dict nameToEdgeMap;			// map: edge name --> edge 
-  // constructor
-  CallGraphS();
-};
 
 //-------------------------------------------------------------------------
 // CallGraphS::CallGraphS()  
@@ -291,7 +284,7 @@ int CallGraph::Build()
     //-----------------------------------------------------------------------
     ModuleLocalInfoIterator summaries(psAttr);
     for(ProcSummary *summary; summary = (ProcSummary *) summaries.Current(); 
-	summaries++) {
+	++summaries) {
       CallGraphNode *node = new CallGraphNode(this, summary);
 
       switch(node->type) { 
@@ -307,7 +300,7 @@ int CallGraph::Build()
 
   ProcSummaryTableIterator psti(&pst);
   ProcSummary *summary;
-  for (; summary = psti.Current(); psti++) {
+  for (; summary = psti.Current(); ++psti) {
     returncode |= AddStaticCallEdges(summary);
   }
   
@@ -363,7 +356,7 @@ int CallGraph::AddStaticCallEdges(ProcSummary *summary)
   //---------------------------------------------------------------------
   CallSitesIterator csites(summary->calls);
   CallSite *cs;
-  for ( ; (cs = csites.Current()) != NULL; csites++) {
+  for ( ; (cs = csites.Current()) != NULL; ++csites) {
     
     //---------------------------------------------------------------------
     // if the callsite is an invocation using a procedure variable ...
@@ -502,7 +495,7 @@ void CallGraph::DemandNodeAnnotations(char *aname)
   // demand an annotation for each node 
   CallGraphNodeIterator nodes(this);
   CallGraphNode *node;
-  for ( ; node = nodes.Current(); nodes++) {
+  for ( ; node = nodes.Current(); ++nodes) {
     node->GetAnnotation(aname, true); // demand annotation for node
   }
 }
@@ -520,10 +513,10 @@ void CallGraph::DemandEdgeAnnotations(char *aname)
   // demand an annotation for each edge 
   CallGraphNodeIterator nodes(this);
   CallGraphNode *node;
-  for ( ; node = nodes.Current(); nodes++) {
+  for ( ; node = nodes.Current(); ++nodes) {
     CallGraphEdgeIterator edges(node, DirectedEdgeOut);
     CallGraphEdge *edge; 
-    for ( ; edge = edges.Current(); edges++) {
+    for ( ; edge = edges.Current(); ++edges) {
       edge->GetAnnotation(aname, true); // demand annotation for edge
     }
   }
@@ -680,7 +673,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
   
   CallGraphNodeIterator nodes(cg);
   CallGraphNode *node;
-  for (; node = nodes.Current(); nodes++) {
+  for (; node = nodes.Current(); ++nodes) {
     
     //---------------------------------------------------------------------
     // ignore any node that does not represent a user procedure -- JMC 1/93
@@ -695,7 +688,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
     // -- JMC 1/93
     //-------------------------------------------------------------------
     CallSitesIterator csi(pst->GetSummary(node)->calls);
-    for ( ; (cs = csi.Current()) != NULL; csi++) {
+    for ( ; (cs = csi.Current()) != NULL; ++csi) {
       
       //--------------------------------------------------------------
       // ignore invocations through procedure variables -- JMC 1/93 
@@ -715,7 +708,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
 	  // for all actual parameters passed at the callsite ...
 	  //--------------------------------------------------------------
 	  for (ParamNameIterator ani(edge->paramBindings, ActualNameSet); 
-	       ani.Current(); ani++) {
+	       ani.Current(); ++ani) {
 	    const char *actual = ani.Current();
 	    ParamBindingsSetIterator bi(edge->paramBindings.
 					GetForwardBindings(actual));
@@ -725,7 +718,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
 	    // if an actual is a procedure constant ...
 	    //------------------------------------------------------------
 	    if (binding != NULL && binding->a_class == APC_ProcConstant) {
-	      for (; binding = bi.Current(); bi++) 
+	      for (; binding = bi.Current(); ++bi) 
 		
 		//---------------------------------------------------------
 		// add an entry to the worklist for each formal that the 
@@ -794,7 +787,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
     // iterate over all of the callsites in the user procedure ...
     //--------------------------------------------------------------
     CallSitesIterator csi(pst->GetSummary(node)->calls);
-    for( ; (cs = csi.Current()) != NULL; csi++) {
+    for( ; (cs = csi.Current()) != NULL; ++csi) {
       CallGraphEdge *edge = cg->LookupEdge(node->procName, cs->Id());
       
       //--------------------------------------------------------------
@@ -809,7 +802,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
 	// constant specified by elt->binding -- JMC 1/93
 	//--------------------------------------------------------------
 	bindings = edge->paramBindings.GetForwardBindings(elt->formalName);
-	for (ParamBindingsSetIterator bi(bindings); bi.Current(); bi++) {
+	for (ParamBindingsSetIterator bi(bindings); bi.Current(); ++bi) {
 	  worklist.Insert (elt->binding, cs->Name(), bi.Current()->formal);
 	}
       }
@@ -831,7 +824,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
 	// for each callee binding of the invoked procedure variable 
 	// -- JMC 1/93
 	//----------------------------------------------------------------
-	for (; procName = ppbi.Current(); ppbi++) {
+	for (; procName = ppbi.Current(); ++ppbi) {
 	  bindings = edge->paramBindings.GetForwardBindings(elt->formalName);
 	  
 	  //----------------------------------------------------------------
@@ -839,7 +832,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
 	  // add a new entry to the worklist that reflects a binding of 
 	  // that formal to the procedure constant elt->binding -- JMC 1/93
 	  //----------------------------------------------------------------
-	  for (ParamBindingsSetIterator bi(bindings); bi.Current(); bi++) {
+	  for (ParamBindingsSetIterator bi(bindings); bi.Current(); ++bi) {
 	    worklist.Insert(elt->binding, procName, bi.Current()->formal);
 	  }
 	}
@@ -877,7 +870,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
 	  // for each actual parameter passed at the callsite -- JMC 1/93
 	  //--------------------------------------------------------------
 	  for (ParamNameIterator ani(edge->paramBindings, ActualNameSet); 
-	       ani.Current(); ani++) {
+	       ani.Current(); ++ani) {
 	    const char *actual = ani.Current();
 	    
 	    //------------------------------------------------------------
@@ -894,7 +887,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
 	    // -- JMC 1/93
 	    //------------------------------------------------------------
 	    if (syn_binding->a_class == APC_ProcConstant) {
-	      for (; syn_binding = bi.Current(); bi++) {
+	      for (; syn_binding = bi.Current(); ++bi) {
 		
 		//--------------------------------------------------------
 		// get the single-valued forward binding of 
@@ -922,7 +915,7 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
 	    // which we have a newly discovered binding -- JMC 1/93
 	    //-----------------------------------------------------------
 	    else if (strcmp(actual, elt->formalName) == 0) {
-	      for (; syn_binding = bi.Current(); bi++) { 
+	      for (; syn_binding = bi.Current(); ++bi) { 
 		
 		//--------------------------------------------------------
 		// get the single-valued forward binding of 
@@ -964,8 +957,8 @@ static int ResolveProcedureVars(CallGraph *cg, ProcSummaryTable *pst)
 	      //----------------------------------------------------------------
 	      // for each binding of the passed procedure variable -- JMC 1/93
 	      //----------------------------------------------------------------
-	      for (;  procName = ppbi.Current(); ppbi++) {
-		for (; syn_binding = bi.Current(); bi++) {
+	      for (;  procName = ppbi.Current(); ++ppbi) {
+		for (; syn_binding = bi.Current(); ++bi) {
 		  
 		  //--------------------------------------------------------
 		  // get the single-valued forward binding of 

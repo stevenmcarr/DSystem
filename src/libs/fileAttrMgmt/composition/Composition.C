@@ -1,4 +1,4 @@
-/* $Id: Composition.C,v 1.1 1997/03/11 14:27:47 carr Exp $ */
+/* $Id: Composition.C,v 1.2 1997/03/27 20:31:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -45,15 +45,6 @@
 //*******************************************************************
 // declarations 
 //*******************************************************************
-
-struct CompositionS {
-  NeedProvCompAttr *npcAttr;
-  CompositionS() { npcAttr = 0; };
-  ~CompositionS() { 
-    if (npcAttr) npcAttr->uplinkToFile->DetachAttribute(npcAttr);
-  };
-};
-
 
 //**********************
 // forward declarations
@@ -201,7 +192,7 @@ time_t Composition::GetLastModificationTime()
   
   CompComponentsIterator components(this); 
   AttributedFile *attrFile;
-  for (; attrFile = components.Current(); components++) {
+  for (; attrFile = components.Current(); ++components) {
     time_t tmp = attrFile->GetLastModificationTime();
     if (tmp == 0) return 0;
     else lmtime = time_t_max(tmp, lmtime);
@@ -219,7 +210,7 @@ Module *Composition::GetModule(const char *name)
   else {
     // the hard way -- module is component of nested composition
     CompModulesIterator modules(this);
-    for(; module = modules.Current(); modules++)
+    for(; module = modules.Current(); ++modules)
       if (strcmp(module->ReferenceFilePathName(), name) == 0) return module;
   }
 
@@ -260,7 +251,7 @@ OrderedSetOfStrings *Composition::LookupModuleNameBySuffix(const char *name)
 
   CompModulesIterator modules(this);
   Module *module;
-  for(; module = modules.Current(); modules++) {
+  for(; module = modules.Current(); ++modules) {
     const char *modulePath  = module->ReferenceFilePathName();
     int compareOffset = strlen(modulePath) - nameLen;
     if (compareOffset >= 0  && (strcmp(name, modulePath + compareOffset) == 0))

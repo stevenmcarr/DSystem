@@ -1,4 +1,9 @@
-/* $Id: mem_util.C,v 1.23 1996/12/05 17:02:20 rcrowell Exp $ */ 
+/* $Id: mem_util.C,v 1.24 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
@@ -8,25 +13,25 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <general.h>
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <mem_util.h>
-#include <mh_config.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/Memoria/include/mh_config.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <strings.h>
 
 #ifndef gi_h
-#include <fort/gi.h>
+#include <libs/frontEnd/include/gi.h>
 #endif
 
-#include <pt_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 
 EXTERN(double, ceil, (double x));
 
-#include <UniformlyGeneratedSets.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
 AST_INDEX ut_GetSubprogramStmtList(AST_INDEX stmt)
 

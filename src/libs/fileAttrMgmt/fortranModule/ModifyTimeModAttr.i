@@ -1,4 +1,4 @@
-/* $Id: ModifyTimeModAttr.i,v 1.1 1997/03/11 14:27:59 carr Exp $ */
+/* $Id: ModifyTimeModAttr.i,v 1.2 1997/03/27 20:31:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,12 +17,42 @@
 #ifndef Attribute_h
 #include <libs/fileAttrMgmt/attributedFile/Attribute.h>
 #endif
+#include <libs/support/file/FileUtilities.h>
+#include <libs/support/file/FormattedFile.h>
 
 class ModifyTimeSet; // minimal external declaration
 
+//***************************************************************************
+// class ModTimeEntry interface operations 
+//***************************************************************************
+
+
+class ModTimeEntry : public NamedObjectIO {
+public:
+  time_t modTime;
+  ModTimeEntry(const char *name, time_t modTime);
+  ModTimeEntry();
+  ~ModTimeEntry();
+  int NamedObjectReadUpCall(FormattedFile *ffile);
+  int NamedObjectWriteUpCall(FormattedFile *ffile);
+};
+
+
+class ModInfoTable : public NamedObjectTableIO {
+  NamedObjectIO *NewEntry() {return new ModTimeEntry; }
+};
+
+
+class ModifyTimeModAttrS {
+public:
+  ModInfoTable ht;
+  ModifyTimeModAttrS() { };
+  ~ModifyTimeModAttrS() { ht.Destroy(); };
+};
+
 class ModifyTimeModAttr : public Attribute {
 private:
-  struct ModifyTimeModAttrS *hidden;
+  ModifyTimeModAttrS *hidden;
 public:
 
   ModifyTimeModAttr();

@@ -1,4 +1,4 @@
-/* $Id: ComputeModRef.C,v 1.1 1997/03/11 14:27:54 carr Exp $ */
+/* $Id: ComputeModRef.C,v 1.2 1997/03/27 20:31:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -157,7 +157,7 @@ static void CollectPairs(char *entry_name, SymDescriptor d, StringSet *vars,
   unsigned size, vtype;
   
   StringSetIterator mods(&vars[which]);
-  for(; name = mods.Current(); mods++) {
+  for(; name = mods.Current(); ++mods) {
     if (entry_name_symdesc_name_To_leader_offset_size_vtype
 	(entry_name, d, name, &leader, &offset, &size, &vtype)) {
       (GetEntry(summary, leader, vtype))->pairs[which].AddPair

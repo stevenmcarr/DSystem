@@ -1,4 +1,9 @@
-/* $Id: mark.C,v 1.10 1995/04/17 14:31:36 carr Exp $ */
+/* $Id: mark.C,v 1.11 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 
 /****************************************************************************/
@@ -10,12 +15,12 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <general.h>
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <mark.h>
-#include <dialogs/message.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/include/mark.h>
+#include <libs/graphicInterface/oldMonitor/include/dialogs/message.h>
 
 
 /****************************************************************************/

@@ -1,4 +1,4 @@
-/* $Id: FortDHash.C,v 1.23 1997/03/11 14:28:41 carr Exp $ */
+/* $Id: FortDHash.C,v 1.24 1997/03/27 20:33:11 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -800,7 +800,7 @@ void FortranDInfo::WriteCallInfo(IPinfoTreeNode* tree, FormattedFile& port)
                                     it.Current() != 0; ++it)
    {
       CallSitesIterator callsites(((IPinfoTreeNode*)it.Current())->calls);
-      for(CallSite *c_entry; c_entry = callsites.Current(); callsites++) {
+      for(CallSite *c_entry; c_entry = callsites.Current(); ++callsites) {
          port.Write((Generic)c_entry->Id());
          alist = c_entry->GetActuals();
 
@@ -846,7 +846,7 @@ void FortranDInfo::ReadCallInfo(IPinfoTreeNode *tree, FormattedFile& port)
                                     it.Current() != 0; ++it)
    {
       CallSitesIterator callsites(((IPinfoTreeNode*)it.Current())->calls);
-      for(CallSite *c_entry; c_entry = callsites.Current(); callsites++) {
+      for(CallSite *c_entry; c_entry = callsites.Current(); ++callsites) {
          if(c_entry->Id() == callsite_id) {
    	    alist = c_entry->GetActuals();
    	    port.Read(alist_count);

@@ -1,9 +1,9 @@
-/* $Id: ArrayNameInfo.C,v 1.1 1997/03/11 14:28:53 carr Exp $ */
+/* $Id: ArrayNameInfo.C,v 1.2 1997/03/27 20:34:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// $Id: ArrayNameInfo.C,v 1.1 1997/03/11 14:28:53 carr Exp $ -*-c++-*-
+// $Id: ArrayNameInfo.C,v 1.2 1997/03/27 20:34:10 carr Exp $ -*-c++-*-
 //**************************************************************************
 // Definitions for class ArrayNameInfo
 //
@@ -297,7 +297,7 @@ ArrayNameIterator::~ArrayNameIterator()
 
 void ArrayNameIterator::operator ++()
 {
-    (*infoTableIterator)++;
+    ++(*infoTableIterator);
     SetCurFields(infoTableIterator);
 }
 

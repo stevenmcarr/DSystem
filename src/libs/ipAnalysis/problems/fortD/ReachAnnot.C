@@ -1,4 +1,4 @@
-/* $Id: ReachAnnot.C,v 1.4 1997/03/11 14:35:03 carr Exp $ */
+/* $Id: ReachAnnot.C,v 1.5 1997/03/27 20:41:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -158,7 +158,7 @@ void FD_Reach_Annot::Union(CallGraphNode *node1, CallGraphEdge *edge1, FD_Reach_
  // for each actual parameter passed at the callsite 
  //--------------------------------------------------------------
  for (ParamNameIterator ani(edge1->paramBindings, ActualNameSet);
-      ani.Current(); ani++) {
+      ani.Current(); ++ani) {
       actual = ani.Current();
 
  //-----------------------------------------------------------------
@@ -168,7 +168,7 @@ void FD_Reach_Annot::Union(CallGraphNode *node1, CallGraphEdge *edge1, FD_Reach_
          edge1->paramBindings.GetForwardBindings(actual);
        int formal_count = 0;
        for (ParamBindingsSetIterator bi(bindings); 
-            formal_bi = bi.Current(); bi++)
+            formal_bi = bi.Current(); ++bi)
           {
           if(formal_count > 0) {
            // cout<<form(" The Fortran D compiler does not handle aliases \n");

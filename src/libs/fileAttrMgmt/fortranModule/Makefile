@@ -1,7 +1,8 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:27:58 carr Exp $
+# $Id: Makefile,v 1.2 1997/03/27 20:31:44 carr Exp $
 
 HERE = libs/fileAttrMgmt/fortranModule
 
+#	ScanFile.C 
 SRCS = \
 	AFormalModAttr.C \
 	CollectLocalInfo.C \
@@ -19,7 +20,6 @@ SRCS = \
 	ProcSummariesFortModAttr.C \
 	RefTextModAttr.C \
 	ScalarModRefModAttr.C \
-	ScanFile.C \
 	StandardModuleAttributes.C
 
 ARCHIVE = FileAttrMgmt-$(DSYSTEM_OS)-g.a

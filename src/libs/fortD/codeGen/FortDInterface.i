@@ -1,4 +1,4 @@
-/* $Id: FortDInterface.i,v 1.4 1997/03/11 14:28:11 carr Exp $ */
+/* $Id: FortDInterface.i,v 1.5 1997/03/27 20:32:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,8 +11,17 @@
   FortDInterface.i   Private data structures for Fortran D data abstractions
 
 */
+#ifndef FortDInterface_i
+#define FortDInterface_i
+
 
 #include <libs/fortD/codeGen/private_dc.h>
+
+class FortDAstSet;
+class FortDMesgSet;
+class FortDRsdSet;
+class FortDMesg;
+class FortDRsd;
 
 typedef enum
 {
@@ -148,3 +157,4 @@ struct findNonlocalParams {
 };
 
 
+#endif

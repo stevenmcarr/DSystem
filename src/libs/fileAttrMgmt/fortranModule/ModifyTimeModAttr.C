@@ -1,4 +1,4 @@
-/* $Id: ModifyTimeModAttr.C,v 1.1 1997/03/11 14:27:59 carr Exp $ */
+/* $Id: ModifyTimeModAttr.C,v 1.2 1997/03/27 20:31:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -43,22 +43,6 @@ static time_t ComputeModificationTime(NamedObjectTable *ht);
 
 
 
-//***************************************************************************
-// class ModTimeEntry interface operations 
-//***************************************************************************
-
-
-class ModTimeEntry : public NamedObjectIO {
-public:
-  time_t modTime;
-  ModTimeEntry(const char *name, time_t modTime);
-  ModTimeEntry();
-  ~ModTimeEntry();
-  int NamedObjectReadUpCall(FormattedFile *ffile);
-  int NamedObjectWriteUpCall(FormattedFile *ffile);
-};
-
-
 ModTimeEntry::ModTimeEntry() : NamedObjectIO(0), modTime(0) 
 {
 }
@@ -95,17 +79,6 @@ int ModTimeEntry::NamedObjectWriteUpCall(FormattedFile *file)
 //***************************************************************************
 // class ModifyTimeModAttr interface operations 
 //***************************************************************************
-
-class ModInfoTable : public NamedObjectTableIO {
-  NamedObjectIO *NewEntry() {return new ModTimeEntry; }
-};
-
-
-struct ModifyTimeModAttrS {
-  ModInfoTable ht;
-  ModifyTimeModAttrS() { };
-  ~ModifyTimeModAttrS() { ht.Destroy(); };
-};
 
 
 ModifyTimeModAttr::ModifyTimeModAttr()
@@ -195,7 +168,7 @@ static time_t ComputeModificationTime(NamedObjectTable *ht)
 
   NamedObjectTableIterator noti(ht);
   ModTimeEntry *mte;
-  for (; mte = (ModTimeEntry *) noti.Current(); noti++) {
+  for (; mte = (ModTimeEntry *) noti.Current(); ++noti) {
     time_t lmt = FileLastModificationTime(mte->name);
     if (lmt == 0) return 0;
     else if (mte->modTime != lmt) return 0;

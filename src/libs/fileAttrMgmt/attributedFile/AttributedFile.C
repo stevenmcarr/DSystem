@@ -1,4 +1,4 @@
-/* $Id: AttributedFile.C,v 1.1 1997/03/11 14:27:43 carr Exp $ */
+/* $Id: AttributedFile.C,v 1.2 1997/03/27 20:31:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,6 +21,10 @@
 #include <assert.h>
 #include <sys/param.h>
 
+#ifdef OSF1
+#include <include/realpath.h>
+#endif
+
 #include <libs/support/msgHandlers/Changes.h>
 
 #include <libs/support/strings/rn_string.h>
@@ -32,7 +36,6 @@
 #include <libs/fileAttrMgmt/attributedFile/AttributeTable.h>
 #include <libs/fileAttrMgmt/attributedFile/Attribute.h>
 #include <libs/fileAttrMgmt/attributedFile/RepositoryContext.i>
-#include <libs/fileAttrMgmt/attributedFile/FileTimeStamp.i>
 
 
 
@@ -45,19 +48,6 @@
 
 // prefix for attribute files to avoid name conflicts with timestamp files
 #define ATTR_PREFIX    ":"     
-
-struct AttributedFileS {
-  int attributeCachingEnabledIfZero; 
-  int flushOnDetachIfPositive;
-  char *referenceFilePathName;
-  AttributedFile *parent;
-  RepositoryContext reposContext;
-  AttributeTable *attrTable;
-  int closeInProgress;
-
-  FileTimeStamp timeStamp;
-  int revision;
-};
 
 
 //****************************************************************************
@@ -373,7 +363,7 @@ int AttributedFile::SaveAllNewAttributes()
   int code = 0;
   AttributeTableIterator attributes(attributedFileRepr->attrTable);
   Attribute *attr;
-  for(; attr = attributes.Current(); attributes++) {
+  for(; attr = attributes.Current(); ++attributes) {
     // save only up-to-date attributes
     if (attr->GetRevision() == GetRevision()) {
       if (SaveAttribute(attr) < 0) {
@@ -391,7 +381,7 @@ void AttributedFile::AttributesNeedSaving()
 {
   AttributeTableIterator attributes(attributedFileRepr->attrTable);
   Attribute *attr;
-  for(; attr = attributes.Current(); attributes++) attr->SetNeedsSaving();
+  for(; attr = attributes.Current(); ++attributes) attr->SetNeedsSaving();
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: AnnotationSet.C,v 1.1 1997/03/11 14:36:27 carr Exp $ */
+/* $Id: AnnotationSet.C,v 1.2 1997/03/27 20:53:54 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -68,7 +68,7 @@ int AnnotationSet::Write(FormattedFile *file, ClassInstanceRegistry *registry)
   if (code) return code;
 
   AnnotationSetIterator annots(this);
-  for(Annotation *annot; annot = annots.Current(); annots++) {
+  for(Annotation *annot; annot = annots.Current(); ++annots) {
     int code = WriteAnnotation(file, registry, annot);
     if (code < 0) return code;
   }

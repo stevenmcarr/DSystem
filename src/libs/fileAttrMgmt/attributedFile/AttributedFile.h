@@ -1,4 +1,4 @@
-/* $Id: AttributedFile.h,v 1.1 1997/03/11 14:27:43 carr Exp $ */
+/* $Id: AttributedFile.h,v 1.2 1997/03/27 20:31:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -22,8 +22,18 @@
 #include <include/ClassName.h>
 #endif
 
+#ifndef RepositoryContext_i
+#include <libs/fileAttrMgmt/attributedFile/RepositoryContext.i>
+#endif
 
-class AttributeTables;
+#ifndef AttributeTable_h
+#include <libs/fileAttrMgmt/attributedFile/AttributeTable.h>
+#endif
+
+#ifndef FileTimeStamp_i
+#include <libs/fileAttrMgmt/attributedFile/FileTimeStamp.i>
+#endif
+
 class AttributeConstructorRegistry;
 class Attribute;
 
@@ -32,6 +42,18 @@ class Attribute;
 //--------------------------------------------------------------------
 enum CacheFlushSpec {CACHE_FLUSH_LRU, CACHE_FLUSH_IMMEDIATE};
 
+struct AttributedFileS {
+  int attributeCachingEnabledIfZero; 
+  int flushOnDetachIfPositive;
+  char *referenceFilePathName;
+  AttributedFile *parent;
+  RepositoryContext reposContext;
+  AttributeTable *attrTable;
+  int closeInProgress;
+
+  FileTimeStamp timeStamp;
+  int revision;
+};
 
 //--------------------------------------------------------------------
 // class AttributedFile

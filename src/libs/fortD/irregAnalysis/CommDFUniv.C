@@ -1,4 +1,4 @@
-/* $Id: CommDFUniv.C,v 1.8 1997/03/11 14:28:26 carr Exp $ */
+/* $Id: CommDFUniv.C,v 1.9 1997/03/27 20:32:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -9,7 +9,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: CommDFUniv.C,v $
- * Revision 1.8  1997/03/11 14:28:26  carr
+ * Revision 1.9  1997/03/27 20:32:56  carr
+ * Alpha
+ *
+ * Revision 1.8  1997/03/11  14:28:26  carr
  * newly checked in as revision 1.8
  *
 Revision 1.8  94/03/21  14:19:12  patton
@@ -485,7 +488,7 @@ RefsKeys::catKeysStr(const VectorSet &set, ostrstream &refs_buf,
 {
   Boolean not_first = false;
 
-  for( VectorSetI i(&set); i.test(); i++ )
+  for( VectorSetI i(&set); i.test(); ++i )
   {
     if (not_first) {
       refs_buf << ", ";
@@ -541,7 +544,7 @@ RefsKeys::star(const VectorSet &set) const
 {
   VectorSet result;
 
-  for(VectorSetI i(&set); i.test(); i++)
+  for(VectorSetI i(&set); i.test(); ++i)
   {
     result |= star(i.elem);
   }
@@ -636,7 +639,7 @@ RefsKeys::no_duplicates(const VectorSet &set) const
   RefsKey_ptr refs_key;
   VectorSetI  iter(&set);
 
-  for (; iter.test(); iter++)
+  for (; iter.test(); ++iter)
   {
     p        = iter.elem;
     refs_key = getRefsKey(p);

@@ -1,4 +1,4 @@
-/* $Id: PointerStack.C,v 1.1 1997/03/11 14:37:26 carr Exp $ */
+/* $Id: PointerStack.C,v 1.2 1997/03/27 20:52:11 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,12 +19,6 @@
 #include <libs/support/misc/general.h>
 #include <libs/support/stacks/PointerStack.h>
 #include <libs/support/stacks/xstack.h>
-
-struct PointerStackS {
-  Stack pstack;
-  PointerStackS() { pstack = stack_create(sizeof(void *)); };
-  ~PointerStackS() { stack_destroy(pstack); };
-};
 
 
 

@@ -1,4 +1,4 @@
-/* $Id: dc_loops.ansi.c,v 1.9 1997/03/11 14:28:15 carr Exp $ */
+/* $Id: dc_loops.ansi.c,v 1.10 1997/03/27 20:32:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -201,8 +201,8 @@ dc_loop_info(dh)
 
         fli->iset = dc_alloc_iter_set(dh);
         fli->iset->allproc = true;
-        bcopy(get_info(dh->ped, dh->doloops[i], type_ref), 
-              &fli->iset->set, sizeof(Loop_list)); 
+        bcopy((const char *)get_info(dh->ped, dh->doloops[i], type_ref), 
+              (char *)&fli->iset->set, sizeof(Loop_list)); 
         fli->bksize = 0;
         fli->localized = false;
         fli->dist_type = FD_DIST_LOCAL;

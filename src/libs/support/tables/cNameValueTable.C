@@ -1,4 +1,4 @@
-/* $Id: cNameValueTable.C,v 1.5 1997/03/11 14:37:38 carr Exp $ */
+/* $Id: cNameValueTable.C,v 1.6 1997/03/27 20:52:45 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -107,7 +107,7 @@ void NameValueTableForAll (cNameValueTable nvt,
 
    anIterator.Reset();
 
-   for (int i = 0; i < NameValueTableNumPairs(nvt); i++, anIterator++)
+   for (int i = 0; i < NameValueTableNumPairs(nvt); i++, ++anIterator)
       {
       currentName  = anIterator.name;
       currentValue = anIterator.value;
@@ -129,7 +129,7 @@ void NameValueTableForAllV (cNameValueTable nvt,
 
    anIterator.Reset();
 
-   for (int i = 0; i < NameValueTableNumPairs(nvt); i++, anIterator++)
+   for (int i = 0; i < NameValueTableNumPairs(nvt); i++, ++anIterator)
       {
       va_start (argList, UserForAll);
       currentName  = anIterator.name;

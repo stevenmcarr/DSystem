@@ -1,4 +1,4 @@
-/* $Id: CallSiteParamBindings.h,v 1.3 1997/03/11 14:34:34 carr Exp $ */
+/* $Id: CallSiteParamBindings.h,v 1.4 1997/03/27 20:40:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -23,6 +23,9 @@
 #ifndef iptypes_h
 #include <libs/ipAnalysis/ipInfo/iptypes.h>
 #endif
+
+#include <libs/support/misc/dict.h>
+#include <libs/support/lists/SinglyLinkedList.h>
 
 typedef unsigned ActualParamClass;
 
@@ -67,12 +70,19 @@ typedef struct ParamBindingS {
 typedef void *ParamBindingsSet;
 
 
+class ParamNameIteratorS {
+public:
+  ParamNameIteratorS(Dict *d) : iterator(d) {};
+  DictI iterator;
+};
+
+
 //--------------------------------------------------------------------------
 // an iterator to enumerate the names of formals or actuals involved in
 // parameter bindings 
 //--------------------------------------------------------------------------
 class ParamNameIterator {
-  struct ParamNameIteratorS *hidden;
+  ParamNameIteratorS *hidden;
 public:
   ParamNameIterator(CallSiteParamBindings &b, ParamNameSet s);
   ~ParamNameIterator();
@@ -82,11 +92,18 @@ public:
 };
 
 
+class ParamBindingsSetIteratorS {
+public:
+  ParamBindingsSetIteratorS(ParamBindingsSet *s) : 
+  iterator((SinglyLinkedList *) s) {};
+  SinglyLinkedListIterator iterator;
+};
+
 //--------------------------------------------------------------------------
 // an iterator that enumerates the set bindings for an actual
 //--------------------------------------------------------------------------
 class ParamBindingsSetIterator {
-  struct ParamBindingsSetIteratorS *hidden;
+  ParamBindingsSetIteratorS *hidden;
 public:
   ParamBindingsSetIterator(ParamBindingsSet *s);
   ~ParamBindingsSetIterator();
@@ -96,12 +113,20 @@ public:
 };
 
 
+class CallSiteParamBindingsS {
+public:
+  CallSiteParamBindingsS() : forward(cmpstr, hashstr, 0), 
+  reverse(cmpstr, hashstr, 0) {};
+  Dict forward;
+  Dict reverse;
+};
+
 //--------------------------------------------------------------------------
 // a bidirectional map that relates actual parameters <--> formal parameters
 // at for a callsite
 //--------------------------------------------------------------------------
 class CallSiteParamBindings {
-  struct CallSiteParamBindingsS *hidden;
+  CallSiteParamBindingsS *hidden;
 public:
   
   CallSiteParamBindings(); 

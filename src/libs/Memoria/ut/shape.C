@@ -1,4 +1,9 @@
-/* $Id: shape.C,v 1.8 1994/07/20 11:33:31 carr Exp $ */
+/* $Id: shape.C,v 1.9 1997/03/27 20:29:09 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
@@ -10,12 +15,12 @@
 /****************************************************************************/
 
 
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <shape.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/include/shape.h>
 
-#include <pt_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #include <strings.h>
 
 

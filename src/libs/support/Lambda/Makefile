@@ -1,6 +1,6 @@
 
 HERE = libs/support/Lambda
-ARCHIVE		= Lambda-$(RN_ARCH)$(ENV_FLAG).a
+ARCHIVE	= ../Support-$(DSYSTEM_OS)-g.a
 
 SYSNAME=`uname|sed -e 's/-/_/'`
 
