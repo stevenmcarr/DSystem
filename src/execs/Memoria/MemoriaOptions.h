@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.h,v 1.1 1997/03/27 20:14:26 carr Exp $ */
+/* $Id: MemoriaOptions.h,v 1.2 1997/04/08 13:41:20 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -35,6 +35,6 @@
 #define MC_DEAD_FLAG          'D'
 
 EXTERN(int, MemoriaInitOptions,(int argc, char **argv));
-EXTERN(void, MemoriaOptionsUsage(char *pgm_name));
+EXTERN(void, MemoriaOptionsUsage,(char *pgm_name));
 
 #endif
