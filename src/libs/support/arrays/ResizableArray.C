@@ -1,4 +1,4 @@
-/* $Id: ResizableArray.C,v 1.7 1997/06/27 17:44:46 carr Exp $ */
+/* $Id: ResizableArray.C,v 1.8 2001/09/17 01:42:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -96,8 +96,9 @@ void Array::remove( uint where )
 //------------------------------find-----------------------------------------
 uint Array::operator []( void *datum ) const
 {
+ uint i;
   assert( len == 4 );		// Convience for arrays of pointers
-  for( uint i=0; i<count; i++ ) {
+  for(i=0; i<count; i++ ) {
     if( datum == ((void **)data)[i] )
       return i;
   }
@@ -107,8 +108,9 @@ uint Array::operator []( void *datum ) const
 //------------------------------find-----------------------------------------
 uint Array::operator []( char &datum ) const
 {
+  uint i;
   char *home = data;
-  for( uint i=0; i<count; i++ ) {
+  for( i=0; i<count; i++ ) {
     if( !bcmp(&datum,home,len) )
       return i;
     home += len;

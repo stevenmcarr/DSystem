@@ -1,4 +1,4 @@
-# $Id: Makeinclude,v 1.5 2000/02/01 19:53:06 carr Exp $
+# $Id: Makeinclude,v 1.6 2001/09/17 01:41:00 carr Exp $
 ###########################################################################
 #
 # File:
@@ -83,13 +83,13 @@ include Makeinclude.config
 # appropriate convention to pass the flags through to the linker
 #-----------------------------------------------------------------
 
-LINK.prefix = $(CXX) $(TARGET_ARCH)
+LINK_prefix = $(CXX) $(TARGET_ARCH)
 
-COMPILE.ACC = $(ACC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
+COMPILE_ACC = $(ACC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
 
-COMPILE.CC = $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
+COMPILE_CC = $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
 
-COMPILE.CXX = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
+COMPILE_CXX = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
 
 #-----------------------------------------------------------------
 # Override gnumake's default compilation strategy of specifying an
@@ -111,9 +111,9 @@ OUTPUT_OPTION :=
 # specify our implicit rule for compiling .ansi.c (ANSI C) files
 %.ansi.o: %.ansi.c
 ifeq "$(EXTRACT)" "no"
-	$(COMPILE.ACC) -c $< $(OUTPUT_OPTION)
+	$(COMPILE_ACC) -c $< $(OUTPUT_OPTION)
 else # "$(EXTRACT)" neq "no"
-	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE.ACC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
+	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE_ACC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
 endif # "$(EXTRACT)" "no"
 
 # remove any existing implicit rule for compiling .c files
@@ -122,9 +122,9 @@ endif # "$(EXTRACT)" "no"
 # specify our implicit rule for compiling .c files
 %.o: %.c
 ifeq "$(EXTRACT)" "no"
-	$(COMPILE.CC) -c $< $(OUTPUT_OPTION)
+	$(COMPILE_CC) -c $< $(OUTPUT_OPTION)
 else # "$(EXTRACT)" neq "no"
-	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE.CC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
+	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE_CC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
 endif # "$(EXTRACT)" "no"
 
 # remove any existing implicit rule for compiling .C (C++) files
@@ -133,24 +133,24 @@ endif # "$(EXTRACT)" "no"
 # specify our implicit rule for compiling .C (C++) files
 %.o: %.C
 ifeq "$(EXTRACT)" "no"
-	$(COMPILE.CXX) -c $< $(OUTPUT_OPTION)
+	$(COMPILE_CXX) -c $< $(OUTPUT_OPTION)
 else # "$(EXTRACT)" neq "no"
-	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE.CXX) -c $< $(OUTPUT_OPTION)" $(ARCHIVE)
+	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE_CXX) -c $< $(OUTPUT_OPTION)" $(ARCHIVE)
 endif # "$(EXTRACT)" "no"
 
 # rules for getting C and C++ preprocessor output
 %.cpp: %.C
-	$(COMPILE.CXX) -E $< > $@
+	$(COMPILE_CXX) -E $< > $@
 
 %.ansi.cpp: %.ansi.c
-	$(COMPILE.ACC) -E $< > $@
+	$(COMPILE_ACC) -E $< > $@
 
 %.cpp: %.c
-	$(COMPILE.CC) -E $< > $@
+	$(COMPILE_CC) -E $< > $@
 
 # C++ compiler source output
 %.cfront: %.C
-	$(COMPILE.CXX) -F $< > $@
+	$(COMPILE_CXX) -F $< > $@
 
 # rules for getting 'includes' C and C++ include files raw output
 %.includes: %.C
@@ -386,13 +386,13 @@ endif # "$(DSYSTEM_OS)" "SunOS-5.x"
 ifneq "$(DSYSTEM_OS)" "AIX-3.x"
 ifeq "$(PURIFY)" "yes"
 
-LINK.prefix := unset GCC_EXEC_PREFIX ; \
-	$(PURE) -cache-dir=$(DSYSTEM_OBJ)/purifycache -first-only $(LINK.prefix)
+LINK_prefix := unset GCC_EXEC_PREFIX ; \
+	$(PURE) -cache-dir=$(DSYSTEM_OBJ)/purifycache -first-only $(LINK_prefix)
 
 endif # "$(PURIFY)" "yes"
 endif # "$(DSYSTEM_OS)" "AIX-3.x"
 
-#	$(PURE) -cache-dir=$(DSYSTEM_OBJ)/purifycache -first-only -collector=$(DSYSTEM_GCC_LIB)/ld $(LINK.prefix)
+#	$(PURE) -cache-dir=$(DSYSTEM_OBJ)/purifycache -first-only -collector=$(DSYSTEM_GCC_LIB)/ld $(LINK_prefix)
 
 #-----------------------------------------------------------------
 # GNU-ism: augment LINK.prefix with the compiler-appropriate 
@@ -400,13 +400,13 @@ endif # "$(DSYSTEM_OS)" "AIX-3.x"
 #-----------------------------------------------------------------
 ifneq "$(CXX)" "$(GXX)"
 
-LINK.CXX.g = $(LINK.prefix) -g $(LDFLAGS)
-LINK.CXX.ng = $(LINK.prefix) $(LDFLAGS)
+LINK_CXX_g = $(LINK_prefix) -g $(LDFLAGS)
+LINK_CXX_ng = $(LINK_prefix) $(LDFLAGS)
 
 else # "$(CXX)" "$(GXX)"
 
-LINK.CXX.g = $(LINK.prefix) -g $(addprefix -Xlinker ,$(LDFLAGS))
-LINK.CXX.ng = $(LINK.prefix) $(addprefix -Xlinker ,$(LDFLAGS))
+LINK_CXX_g = $(LINK_prefix) -g $(addprefix -Xlinker ,$(LDFLAGS))
+LINK_CXX_ng = $(LINK_prefix) $(addprefix -Xlinker ,$(LDFLAGS))
 
 endif # "$(CXX)" "$(GXX)"
 
@@ -935,7 +935,7 @@ ifdef ARCHIVE
 ifneq "$(STUB_OBJS)" ""
 	$(SANITIZE); $(MAKE) $(STUB_OBJS)
 endif # "$(STUB_OBJS)" ""
-	$(LINK.CXX.g) -o $@ $^ $(LOCAL_LIBS) $(ARCH_LIBS)
+	$(LINK_CXX_g) -o $@ $^ $(LOCAL_LIBS) $(ARCH_LIBS)
 ifdef LOADERCONFIG
 	$(LOADERCONFIG) $@
 endif
@@ -951,7 +951,7 @@ ifeq "$(STRIPPED_EXECS)" "yes"
 ifneq "$(STUB_OBJS)" ""
 	@$(SANITIZE); $(MAKE) $(STUB_OBJS)
 endif # "$(STUB_OBJS)" ""
-	$(LINK.CXX.ng) -o $@ $^ $(LOCAL_LIBS) $(ARCH_LIBS)
+	$(LINK_CXX_ng) -o $@ $^ $(LOCAL_LIBS) $(ARCH_LIBS)
 
 endif # "$(STRIPPED_EXECS)" "yes"
 
@@ -964,7 +964,7 @@ else # ARCHIVE
 ifneq "$(STUB_OBJS)" ""
 	$(SANITIZE); $(MAKE) $(STUB_OBJS)
 endif # "$(STUB_OBJS)" ""
-	$(LINK.CXX.g) -o $@ $(filter-out .d_%,$^) $(LOCAL_LIBS) $(ARCH_LIBS) 
+	$(LINK_CXX_g) -o $@ $(filter-out .d_%,$^) $(LOCAL_LIBS) $(ARCH_LIBS) 
 ifndef STRIPPED_ARCHIVES
 	$(RM) $(word 2,$^)
 endif # STRIPPED_ARCHIVES
@@ -976,7 +976,7 @@ ifeq "$(STRIPPED_EXECS)" "yes"
 ifneq "$(STUB_OBJS)" ""
 	@$(SANITIZE); $(MAKE) $(STUB_OBJS)
 endif # "$(STUB_OBJS)" ""
-	$(LINK.CXX.ng) -o $@ $(filter-out .d_%,$^) $(LOCAL_LIBS) $(ARCH_LIBS) 
+	$(LINK_CXX_ng) -o $@ $(filter-out .d_%,$^) $(LOCAL_LIBS) $(ARCH_LIBS) 
 	$(RM) $(word 2,$^)
 
 endif # "$(STRIPPED_EXECS)" "yes"
