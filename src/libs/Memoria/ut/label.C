@@ -1,4 +1,14 @@
-/* $Id: label.C,v 1.3 1992/12/11 11:25:49 carr Exp $ */
+/* $Id: label.C,v 1.4 1993/06/15 14:05:13 carr Exp $ */
+
+/****************************************************************************/
+/*                                                                          */
+/*    File:  label.C                                                        */
+/*                                                                          */
+/*    Description:  Functions for getting new statement labels and          */
+/*                  updating them after copying an AST.                     */
+/*                                                                          */
+/****************************************************************************/
+  
 #include <general.h>
 #include <sr.h>
 #include <mh_ast.h>
@@ -8,6 +18,18 @@
 
 #include <mem_util.h>
 #include <pt_util.h>
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_symtab_get_label_str                                 */
+/*                                                                          */
+/*    Input:        symtab - symbol table                                   */
+/*                                                                          */
+/*    Description:  Create a new label and put it in the symbol table       */
+/*                                                                          */
+/****************************************************************************/
+  
 
 char *ut_symtab_get_label_str(SymDescriptor symtab)
 
@@ -26,6 +48,22 @@ char *ut_symtab_get_label_str(SymDescriptor symtab)
    fst_PutFieldByIndex(symtab,index,SYMTAB_STORAGE_CLASS,SC_STMT_LABEL);
    return(sval);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     chk_labels                                              */
+/*                                                                          */
+/*    Input:        stmt - AST index of a statement                         */
+/*                  level - nesting level of stmt                           */
+/*                  symtab - symbol table                                   */
+/*                                                                          */
+/*    Description:  Replace old labels with new ones.  At a label def,      */
+/*                  create a new one.  At a label ref, replace it with the  */
+/*                  newly created one.                                      */
+/*                                                                          */
+/****************************************************************************/
+  
 
 static int chk_labels(AST_INDEX     stmt,
 		      int           level,
@@ -96,6 +134,20 @@ static int chk_labels(AST_INDEX     stmt,
 					  NEW_LBL_INDEX),SYMTAB_NAME)));
      return(WALK_CONTINUE);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_update_labels                                        */
+/*                                                                          */
+/*    Input:        stmt - list of stmts                                    */
+/*                  symtab - symbol table                                   */
+/*                                                                          */
+/*    Description:   Walk a list of statements backwards to update the      */
+/*                   statement labels with new ones.                        */
+/*                                                                          */
+/****************************************************************************/
+  
 
 void ut_update_labels(AST_INDEX     stmt,
 		      SymDescriptor symtab)

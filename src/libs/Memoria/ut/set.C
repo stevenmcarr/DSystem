@@ -1,25 +1,27 @@
-/* $Id: set.C,v 1.4 1992/12/11 11:25:53 carr Exp $ */
+/* $Id: set.C,v 1.5 1993/06/15 14:05:32 carr Exp $ */
 /*
  *  An implementation of sets as bit-vectors
  *	(part of the Rn Module Compiler code generator)
- */
-
-/*
- *  The plan:
- *
- * 	This implementation of sets is based on a bit vector paradigm.
- *	It supports the following operations:
- *
- *	  create_set()			allocates
- *
- *	  set_is_empty(set)		true if set has no members
- *
+ *   Copied from code developed by Preston Brigs.
  */
 
 #include <general.h>
 #include <cgen_set.h>
 #include <memory.h>
 #include <stdio.h>
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_create_set                                           */
+/*                                                                          */
+/*    Input:        ar - arena for memory allocation                        */
+/*                  n  - which arena to allocate in                         */
+/*                  size - size of the set                                  */
+/*                                                                          */
+/*    Description:  Create a bit vector with "size" elements                */
+/*                                                                          */
+/****************************************************************************/
 
 
 Set ut_create_set(arena_type *ar,
@@ -34,6 +36,17 @@ Set ut_create_set(arena_type *ar,
     }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_set_is_empty                                         */
+/*                                                                          */
+/*    Input:        s - bit vector set                                      */
+/*                                                                          */
+/*    Description:  Determine if the set has no elements                    */
+/*                                                                          */
+/****************************************************************************/
+
+
 Bool ut_set_is_empty(Set	s)
     {	int *p = &s->word[0];
 	int *e = p + s->words;
@@ -43,6 +56,17 @@ Bool ut_set_is_empty(Set	s)
 	} while (p < e);
 	return tr;
     }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_union121                                             */
+/*                                                                          */
+/*    Input:        s1,s2 - bit vector sets                                 */
+/*                                                                          */
+/*    Description:  Unions s1 and s2 and store result in s1.                */
+/*                                                                          */
+/****************************************************************************/
 
 
 void ut_union121(Set s1, 
@@ -56,6 +80,17 @@ void ut_union121(Set s1,
     }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_intersect121                                         */
+/*                                                                          */
+/*    Input:        s1,s2 - bit vector sets                                 */
+/*                                                                          */
+/*    Description:  Intersect s1 and s2 and store result in s1              */
+/*                                                                          */
+/****************************************************************************/
+
+
 void ut_intersect121(Set s1, 
 		     Set s2)
     {	int *ppb1 = &s1->word[0];
@@ -65,6 +100,18 @@ void ut_intersect121(Set s1,
 	    ppb1++; ppb2++;
 	} while (ppb1 < ppb3);
     }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_difference121                                        */
+/*                                                                          */
+/*    Input:        s1,s2 - bit vector sets                                 */
+/*                                                                          */
+/*    Description:  Compute the difference of s1 and s2 and store result in */
+/*                  s1.                                                     */
+/*                                                                          */
+/****************************************************************************/
 
 	
 void ut_difference121(Set s1,
@@ -78,6 +125,17 @@ void ut_difference121(Set s1,
     }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_complement                                           */
+/*                                                                          */
+/*    Input:        s - bit vector set                                      */
+/*                                                                          */
+/*    Description:  Complement the set s.                                   */
+/*                                                                          */
+/****************************************************************************/
+
+
 void ut_complement(Set s)
     {	int *ppb1 = &s->word[0];
 	int *ppb2 = ppb1 + s->words;
@@ -85,6 +143,18 @@ void ut_complement(Set s)
 	    ppb1++;
 	} while (ppb1 < ppb2);
     }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_set1u2i3                                             */
+/*                                                                          */
+/*    Input:        s1,s2,s3 - bit vector sets                              */
+/*                                                                          */
+/*    Description:  Union s1 with the intersection of s2 and s3 and store   */
+/*                  the result in s1.                                       */
+/*                                                                          */
+/****************************************************************************/
 
 
 void ut_set1u2i3(Set s1, 
@@ -99,8 +169,20 @@ void ut_set1u2i3(Set s1,
 	} while (ppb1 < ppb4);
     }
 
-
 #ifndef INLINE
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_add_number                                           */
+/*                                                                          */
+/*    Input:        s - bit vector set                                      */
+/*                  n - element index                                       */
+/*                                                                          */
+/*    Description:  Add the element indexed by "n" to "s".                  */
+/*                                                                          */
+/****************************************************************************/
+
 
 void ut_add_number(Set s,
 		   int n)
@@ -109,6 +191,18 @@ if (n < 0) fprintf(stderr, "AddNumber: negative argument");
 if (n > s->words*32) fprintf(stderr, "AddNumber: large argument");
 	s->word[n>>LOGBITS] |= 1<<(n & (NBITS-1));
     }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_delete_number                                        */
+/*                                                                          */
+/*    Input:        s - bit vector set                                      */
+/*                  n - element index                                       */
+/*                                                                          */
+/*    Description:  Delete the element indexed by "n" from "s".             */
+/*                                                                          */
+/****************************************************************************/
 
 
 void ut_delete_number(Set s,
@@ -120,6 +214,18 @@ if (n > s->words*32) fprintf(stderr, "DeleteNumber: large argument");
     }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_member_number                                        */
+/*                                                                          */
+/*    Input:        s - bit vector set                                      */
+/*                  n - element index                                       */
+/*                                                                          */
+/*    Description:  Determine if the element indexed by "n" is in "s".      */
+/*                                                                          */
+/****************************************************************************/
+
+
 Bool ut_member_number(Set s,
 		      int n)
     {
@@ -129,6 +235,15 @@ if (n > s->words*32) fprintf(stderr, "MemberNumber: large argument");
     }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_clear_set                                            */
+/*                                                                          */
+/*    Input:        s - bit vector set                                      */
+/*                                                                          */
+/*    Description:  Make a set empty                                        */
+/*                                                                          */
+/****************************************************************************/
 
 
 void ut_clear_set(Set s)
@@ -136,10 +251,32 @@ void ut_clear_set(Set s)
     }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_copy12                                               */
+/*                                                                          */
+/*    Input:        s1,s2 - bit vector sets                                 */
+/*                                                                          */
+/*    Description:  Copy s1 into s2.                                        */
+/*                                                                          */
+/****************************************************************************/
+
+
 void ut_copy12(Set s1, 
 	       Set s2)
     {	bcopy(&s2->word[0], &s1->word[0], s1->words*BYTES);
     }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     ut_sets_differ                                          */
+/*                                                                          */
+/*    Input:        s1,s2 - bit vector sets                                 */
+/*                                                                          */
+/*    Description:  Determine if s1 and s2 are different.                   */
+/*                                                                          */
+/****************************************************************************/
 
 
 Bool ut_sets_differ(Set s1, 

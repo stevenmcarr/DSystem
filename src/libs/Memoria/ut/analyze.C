@@ -1,9 +1,15 @@
-/* $Id: analyze.C,v 1.7 1992/12/11 11:25:35 carr Exp $ */
+/* $Id: analyze.C,v 1.8 1993/06/15 14:05:06 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
+/*    File:   analyze.C                                                     */
+/*                                                                          */
+/*    Description:  Analyze a loop nest.  Create a tree to represent the    */
+/*                  loop structure and store information for the loops in   */
+/*                  nodes.                                                  */
 /*                                                                          */
 /****************************************************************************/
+
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -29,15 +35,24 @@
 #include <mem_util.h>
 #include <pt_util.h>
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     build_pre                                               */
+/*                                                                          */
+/*    Input:        stmt - AST index of a statement                         */
+/*                  level - nesting level of stmt                           */
+/*                  build_info - structure containing loop information.     */
+/*                                                                          */
+/*    Description:  Create a loop structure entry for each do loop and      */
+/*                  initialize the information.                             */
+/*                                                                          */
+/****************************************************************************/
+
+
 static int build_pre(AST_INDEX       stmt,
 		     int             level,
 		     build_info_type *build_info)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
   {
    AST_INDEX upb,step,lval,lwb;
    int       loop_num,upb_v,step_v,lwb_v;
@@ -49,6 +64,9 @@ static int build_pre(AST_INDEX       stmt,
 	build_info->loop_data[loop_num].next_loop = -1;
 	build_info->loop_data[loop_num].tri_loop = -1;
 	build_info->loop_data[loop_num].trap_loop = -1;
+
+	   /* link parent and child in loop structure */
+
 	if (build_info->last_loop == 0)
 	  if (build_info->parent != -1)
             build_info->loop_data[build_info->parent].inner_loop = loop_num;
@@ -56,6 +74,7 @@ static int build_pre(AST_INDEX       stmt,
 	else 
           build_info->loop_data[build_info->last_loop].next_loop = loop_num;
 	build_info->loop_data[loop_num].parent = build_info->parent;  
+
 	build_info->loop_data[loop_num].node = stmt;
 	build_info->loop_data[loop_num].level = level;
 	build_info->loop_data[loop_num].transform = true;
@@ -76,6 +95,9 @@ static int build_pre(AST_INDEX       stmt,
 	build_info->loop_data[loop_num].GroupList = 
 	                                util_list_alloc((Generic)NULL,NULL);
 	build_info->loop_data[loop_num].OutermostLvl = 0;
+
+	  /* determine maximum unroll amount based on loop iterations */
+
 	step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(stmt));
 	if (!pt_eval(step,&step_v) || step == AST_NIL)
 	  {
@@ -104,10 +126,16 @@ static int build_pre(AST_INDEX       stmt,
 	          util_list_alloc((Generic)NULL,"split-list");
 	build_info->last_stack[++build_info->stack_top] = loop_num;
 	build_info->last_loop = 0;
+
+	   /* new parent as we move in a level */
+
 	build_info->parent = loop_num;
        }
      else
        {
+
+	   /* this loop contains non-do statements */
+
 	build_info->loop_data[build_info->last_stack[build_info->stack_top]].
                                                                 stmts = true;
 	if (is_assignment(stmt))
@@ -125,14 +153,24 @@ static int build_pre(AST_INDEX       stmt,
      return(WALK_CONTINUE);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     build_post                                              */
+/*                                                                          */
+/*    Input:        stmt - AST index of a statement                         */
+/*                  level - nesting level of stmt                           */
+/*                  build_info - structure containing loop information.     */
+/*                                                                          */
+/*    Description:  If we are at a do, we have moved out one level.  Update */
+/*                  parent pointer for this.                                */
+/*                                                                          */
+/****************************************************************************/
+
+
 static int build_post(AST_INDEX       stmt,
 		      int             level,
 		      build_info_type *build_info)
- 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
  
   {
    if (is_do(stmt))
@@ -143,17 +181,26 @@ static int build_post(AST_INDEX       stmt,
    return(WALK_CONTINUE);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     check_uj_preventing                                     */
+/*                                                                          */
+/*    Input:        loop_data - loops structure                             */
+/*                  loop - index of loop to be checked                      */
+/*                  edge - dependence edge to be checked                    */
+/*                                                                          */
+/*    Description:  Determine if edge prevents unroll-and-jam or limits it  */
+/*                                                                          */
+/****************************************************************************/
+
+
 static void check_uj_preventing(model_loop *loop_data,
 				int        loop,
 				DG_Edge    edge)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
   {
-   Boolean less = false;
+   Boolean illegal = false;
    int     dist,
            i;
    int     do1,do2;
@@ -166,32 +213,32 @@ static void check_uj_preventing(model_loop *loop_data,
      else if (edge.type != dg_input)
        {
 	i = edge.level + 1;
-	while(i <= gen_get_dt_LVL(&edge) && !less)
+	while(i <= gen_get_dt_LVL(&edge) && !illegal)
 	  {
 	   dist = gen_get_dt_DIS(&edge,i);
 	   switch(dist) {
-	     case DDATA_GE:
-	     case DDATA_GT: break;
-
-	     case DDATA_LT:
 	     case DDATA_LE:
-	     case DDATA_NE:  less = true;
+	     case DDATA_LT: break;
+
+	     case DDATA_GT:
+	     case DDATA_GE:
+	     case DDATA_NE:  illegal = true;
 	                     break;
 
 	     case DDATA_ANY: if (edge.consistent != consistent_SIV || 
 				 edge.symbolic)
-	                       less = true;
+	                       illegal = true;
 	                     break;
 
 	     case DDATA_ERROR: break;
 
 	     default:
 	       if (dist < 0)
-	         less = true;
+	         illegal = true;
 	    }
 	   i++;
 	  }
-	if (less)
+	if (illegal)
 	  {
 	   loop_data[loop].interchange = false;
 	   dist = gen_get_dt_DIS(&edge,edge.level);
@@ -203,16 +250,28 @@ static void check_uj_preventing(model_loop *loop_data,
        }
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:      check_backwards_dep                                    */
+/*                                                                          */
+/*    Input:         loop - loop structure entry                            */
+/*                   dg  - dependence graph                                 */
+/*                   edge - dependence edge index                           */
+/*                   ped - info handle                                      */
+/*                   symtab - symbol table                                  */
+/*                                                                          */
+/*    Description:   Determine if an edge crosses loop boundaries and       */
+/*                   prevents distribution.                                 */
+/*                                                                          */
+/****************************************************************************/
+
+
 static void check_backwards_dep(model_loop *loop,
 				DG_Edge    *dg,
 				int        edge,
 				PedInfo    ped,
 				SymDescriptor symtab)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
 
   {
    stmt_info_type *sptr1,*sptr2;
@@ -233,6 +292,20 @@ static void check_backwards_dep(model_loop *loop,
       else
         dg_delete_free_edge( PED_DG(ped),edge);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     crossing_loop                                           */
+/*                                                                          */
+/*    Input:        loop_data - loop structure                              */
+/*                  loop1, loop2 - indices for loops                        */
+/*                                                                          */
+/*    Description:  Determine the innermost common surrounding loop for two */
+/*                  loops within a nest                                     */
+/*                                                                          */
+/****************************************************************************/
+
 
 static int crossing_loop(model_loop *loop_data,
 			 int        loop1,
@@ -255,30 +328,39 @@ static int crossing_loop(model_loop *loop_data,
   }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     check_crossing_dep                                      */
+/*                                                                          */
+/*    Input:        loop_data - loop structure                              */
+/*                  dg - dependence graph                                   */
+/*                  edge - edge index                                       */
+/*                  ped - various info                                      */
+/*                  symtab - symbol table                                   */
+/*                                                                          */
+/*    Description:  Determine if scalar expansion is necessary.             */
+/*                                                                          */
+/****************************************************************************/
+
+
 static void check_crossing_dep(model_loop *loop_data,
-			       int        *stack,
 			       DG_Edge    *dg,
 			       int        edge,
 			       PedInfo    ped,
 			       SymDescriptor symtab)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
   {
    stmt_info_type *sptr1,*sptr2;
    int loop;
 
+      if (fst_GetField(symtab,gen_get_text(dg[edge].src),SYMTAB_NUM_DIMS) != 0)
+        return;
       sptr1 = get_stmt_info_ptr(ut_get_stmt(dg[edge].src));
       sptr2 = get_stmt_info_ptr(ut_get_stmt(dg[edge].sink));
       if (sptr1 != (Generic)NULL && sptr2 != (Generic)NULL)
         if (sptr1->surrounding_do != sptr2->surrounding_do)
 	  {
-	   if (dg[edge].type == dg_true && 
-	       fst_GetField(symtab,gen_get_text(dg[edge].src),SYMTAB_NUM_DIMS)
-	       == 0)
+	   if (dg[edge].type == dg_true) 
 	     {
 	      loop = crossing_loop(loop_data,sptr1->surrounding_do,
 				   sptr2->surrounding_do);
@@ -297,15 +379,26 @@ static void check_crossing_dep(model_loop *loop_data,
         dg_delete_free_edge( PED_DG(ped),edge);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:      build_edge_pre                                         */
+/*                                                                          */
+/*    Input:        stmt - AST index of a statement                         */
+/*                  level - nesting level of stmt                           */
+/*                  build_info - structure containing loop information.     */
+/*                                                                          */
+/*                                                                          */
+/*    Description:  Walk the dependence graph and check the edges to see    */
+/*                  if unroll-and-jam and distribution are legal            */
+/*                                                                          */
+/****************************************************************************/
+
+
 static int build_edge_pre(AST_INDEX       stmt,
 			  int             level,
 			  build_info_type *build_info)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
- 
   {
    DG_Edge *dg;
    EDGE_INDEX edge,
@@ -336,8 +429,14 @@ static int build_edge_pre(AST_INDEX       stmt,
 	     fst_GetField(build_info->symtab,gen_get_text(dg[edge].src),
 			  SYMTAB_NUM_DIMS) > 0)
 	   {
+
+	         /* is uj legal? */
+
 	    check_uj_preventing(build_info->loop_data,
 				build_info->last_stack[lvl],dg[edge]);
+
+	         /* compute interlock */
+
 	    if (stmt == ut_get_stmt(dg[edge].sink) && dg[edge].type == dg_true)
 	      {
 
@@ -368,6 +467,9 @@ static int build_edge_pre(AST_INDEX       stmt,
 	       build_info->loop_data[build_info->last_stack[lvl]].
 	                                        scalar_array_refs++;
 	      }
+
+	         /* is distribution legal? */
+
 	    check_backwards_dep(&build_info->loop_data[build_info->
 	                        last_stack[lvl]],dg,edge,build_info->ped,
 				build_info->symtab);
@@ -379,6 +481,9 @@ static int build_edge_pre(AST_INDEX       stmt,
 	   }
 	}
      }
+
+      /* check for scalar expansion */
+
    for (edge = dg_first_src_stmt( PED_DG(build_info->ped),vector,
 				 LOOP_INDEPENDENT);
 	edge != END_OF_LIST;
@@ -387,8 +492,8 @@ static int build_edge_pre(AST_INDEX       stmt,
       next_edge = dg_next_src_stmt( PED_DG(build_info->ped),edge);
       if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 	  dg[edge].type == dg_input || dg[edge].type == dg_output)
-        check_crossing_dep(build_info->loop_data,build_info->last_stack,
-			   dg,edge,build_info->ped,build_info->symtab);
+        check_crossing_dep(build_info->loop_data,dg,edge,build_info->ped,
+			   build_info->symtab);
      }
    for (edge = dg_first_sink_stmt( PED_DG(build_info->ped),vector,
 				  LOOP_INDEPENDENT);
@@ -398,8 +503,8 @@ static int build_edge_pre(AST_INDEX       stmt,
       next_edge = dg_next_sink_stmt( PED_DG(build_info->ped),edge);
       if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 	  dg[edge].type == dg_input || dg[edge].type == dg_output)
-        check_crossing_dep(build_info->loop_data,build_info->last_stack,
-			   dg,edge,build_info->ped,build_info->symtab);
+        check_crossing_dep(build_info->loop_data,dg,edge,build_info->ped,
+			   build_info->symtab);
      }
    if (is_do(stmt))
      {
@@ -410,28 +515,48 @@ static int build_edge_pre(AST_INDEX       stmt,
    return(WALK_CONTINUE);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     build_edge_post                                         */
+/*                                                                          */
+/*    Input:        stmt - AST index of a statement                         */
+/*                  level - nesting level of stmt                           */
+/*                  build_info - structure containing loop information.     */
+/*                                                                          */
+/*                                                                          */
+/*    Description:  update the parent point because we go out a level       */
+/*                                                                          */
+/****************************************************************************/
+
+
 static int build_edge_post(AST_INDEX       stmt,
 			   int             level,
 			   build_info_type *build_info)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
- 
   {
    if (is_do(stmt))
      build_info->parent = build_info->loop_data[build_info->parent].parent;
    return(WALK_CONTINUE);
   }
 
-static Boolean propogate_transform(model_loop *loop_data,
-				   int        loop)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:     propogate_transform                                     */
+/*                                                                          */
+/*    Input:        loop_data - loop structure                              */
+/*                  loop - loop index                                       */
+/*                                                                          */
+/*    Description:  If inner loops can't be transformed because of an       */
+/*                  inductive dependence, than outer loops can't be either. */
+/*                  Propogate this fact up the tree.                        */
 /*                                                                          */
 /****************************************************************************/
+
+
+static Boolean propogate_transform(model_loop *loop_data,
+				   int        loop)
 
   {
    Boolean can_transform;
@@ -459,33 +584,23 @@ static Boolean propogate_transform(model_loop *loop_data,
      return(can_transform);
   }
 
-static void walk_loop(model_loop *loop_data,
-		      int        loop,
-		      int        outer_stmts,
-		      int        *inner_stmts)
 
-  {
-   int next;
+/****************************************************************************/
+/*                                                                          */
+/*    Function:      ut_analyze_loop                                        */
+/*                                                                          */
+/*    Input:         root - AST index of a do-loop                          */
+/*                   loop_data - loop structure                             */
+/*                   level - nesting level of root                          */
+/*                   ped - dependence graph handle                          */
+/*                   symtab - symbol table                                  */
+/*                                                                          */
+/*    Description:   Create a tree structure representing a loop nest.      */
+/*                   Loops at the same level are siblings, inner loops are  */
+/*                   children.                                              */
+/*                                                                          */
+/****************************************************************************/
 
-     loop_data[loop].outer_stmts = outer_stmts;
-     if (loop_data[loop].inner_loop != -1)
-       {
-	if (loop_data[loop].stmts)
-          outer_stmts = loop_data[loop].level;
-	walk_loop(loop_data,loop_data[loop].inner_loop,outer_stmts,
-		  inner_stmts);
-       }
-     else
-       *inner_stmts = MAXLOOP;
-     for (next = loop_data[loop].next_loop;
-	  next != -1;
-	  next = loop_data[next].next_loop)
-       walk_loop(loop_data,next,outer_stmts,inner_stmts);
-     loop_data[loop].inner_stmts = *inner_stmts;
-     if (loop_data[loop].stmts && loop_data[loop].level < *inner_stmts &&
-	 loop_data[loop].inner_loop != -1);
-       *inner_stmts = loop_data[loop].level;
-  }
 
 
 void ut_analyze_loop(AST_INDEX  root,
@@ -494,15 +609,9 @@ void ut_analyze_loop(AST_INDEX  root,
 		     PedInfo    ped,
 		     SymDescriptor symtab)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
   {
    build_info_type build_info;
    AST_INDEX       upb;
-   int             inner_stmt;
 
      build_info.parent = -1;
      build_info.last_loop = 0;
@@ -513,7 +622,13 @@ void ut_analyze_loop(AST_INDEX  root,
      build_info.symtab = symtab;
      build_info.last_stack[0] = 0;
      loop_data[0].parent = -1;
+
+             /* initialize loop structure and link together entries */
+
      walk_statements(root,level,build_pre,build_post,(Generic)&build_info);
+            
+             /* examine dependence graph and check legality */
+
      walk_statements(root,level,build_edge_pre,build_edge_post,
 		     (Generic)&build_info);
      if (loop_data[0].inner_loop != -1)
@@ -521,5 +636,4 @@ void ut_analyze_loop(AST_INDEX  root,
 						    loop_data[0].inner_loop);
      else
        loop_data[0].transform = false;
-     walk_loop(loop_data,0,-1,&inner_stmt);
   }

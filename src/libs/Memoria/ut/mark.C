@@ -1,4 +1,14 @@
-/* $Id: mark.C,v 1.5 1992/12/11 11:25:50 carr Exp $ */
+/* $Id: mark.C,v 1.6 1993/06/15 14:05:14 carr Exp $ */
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    File:         mark.C                                                  */
+/*                                                                          */
+/*    Description:  Store surrounding do information in statement and       */
+/*                  subscript nodes.                                        */
+/*                                                                          */
+/****************************************************************************/
 
 #include <general.h>
 #include <mh.h>
@@ -7,14 +17,23 @@
 #include <mark.h>
 #include <dialogs/message.h>
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     set_surrounding_do                                      */
+/*                                                                          */
+/*    Input:        node - AST index of a subscript                         */
+/*                  pre_info - structure containing various info            */
+/*                                                                          */
+/*    Description:  Create a subscript_info_type structure and store the    */
+/*                  pointer in the AST scratch field.  Set the surrounding  */
+/*                  DO-loop of the node.                                    */
+/*                                                                          */
+/****************************************************************************/
+
+
 static int set_surrounding_do(AST_INDEX       node,
 			      pre_info_type   *pre_info)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
   {
    subscript_info_type *sptr;
 
@@ -32,14 +51,24 @@ static int set_surrounding_do(AST_INDEX       node,
      return(WALK_CONTINUE);
   }
 
-int ut_mark_do_pre(AST_INDEX       stmt,
-		   int             level,
-		   Generic         pre_info)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:     ut_mark_do_pre                                          */
+/*                                                                          */
+/*    Input:        stmt - AST index of a statement                         */
+/*                  level - nesting level of stmt                           */
+/*                  pre_info - structure containing various info            */
+/*                                                                          */
+/*    Description:  Set the surrounding do of a statement and walk the      */
+/*                  statement to set it for the subscript nodes.            */
 /*                                                                          */
 /****************************************************************************/
+
+
+int ut_mark_do_pre(AST_INDEX       stmt,
+		   int             level,
+		   Generic         pre_info)
 
   {
    create_stmt_info_ptr(stmt,((pre_info_type *)pre_info)->ar);
@@ -103,14 +132,23 @@ int ut_mark_do_pre(AST_INDEX       stmt,
    return(WALK_CONTINUE);
   }
 
-int ut_mark_do_post(AST_INDEX       stmt,
-		    int             level,
-		    Generic         pre_info)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:     ut_mark_do_post                                         */
+/*                                                                          */
+/*    Input:        stmt - AST index of a statement                         */
+/*                  level - nesting level of stmt                           */
+/*                  pre_info - structure containing various info            */
+/*                                                                          */
+/*    Description:  Update surrounding do info when we move out a level     */
 /*                                                                          */
 /****************************************************************************/
+
+
+int ut_mark_do_post(AST_INDEX       stmt,
+		    int             level,
+		    Generic         pre_info)
 
   {
    if (is_do(stmt))
