@@ -1,4 +1,4 @@
-/* $Id: f2i_options.h,v 1.5 1998/07/07 20:26:43 carr Exp $ */
+/* $Id: f2i_options.h,v 1.6 1999/04/22 14:31:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,6 +17,7 @@
 #define F2I_CONSTANTS_FLAG    'C'
 #define F2I_DEBUG_FLAG        'd'
 #define F2I_ENREGGLOBALS_FLAG 'E'
+#define F2I_GENFETCH_FLAG     'f'
 #define F2I_FATALS_FLAG       'F'
 #define F2I_GENERATE_FLAG     'g'
 #define F2I_MESSAGEID_FLAG    'I'
