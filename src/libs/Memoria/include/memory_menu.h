@@ -1,4 +1,4 @@
-/* $Id: memory_menu.h,v 1.15 1997/06/30 18:43:10 carr Exp $ */
+/* $Id: memory_menu.h,v 1.16 1998/07/07 19:39:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -18,7 +18,7 @@
 #define MEM_ALL			6 
 #define PREFETCH                7
 #define ANNOTATE                8
-#define CACHE_ANALYSIS          9
+#define F2I_ANALYSIS            9
 #define LI_STATS                10
 #define UJ_STATS                11
 #define SR_STATS                12
