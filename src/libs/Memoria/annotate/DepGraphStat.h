@@ -1,11 +1,12 @@
-#ifndef CacheAnalysis_h
-#define CacheAnalysis_h
+#ifndef DepGraphStat_h
+#define DepGraphStat_h
 
-#include <general.h>
-#include <mh.h>
-#include <dp.h>
-#include <dg.h>
-#include <misc/list.h>
+
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
+#include <libs/support/lists/list.h>
 #include <malloc.h>
 
 typedef struct DependenceInfoStruct {
