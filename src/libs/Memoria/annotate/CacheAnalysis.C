@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.26 1999/09/20 14:29:55 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.27 2000/01/12 23:00:41 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -235,31 +235,44 @@ static int CreateDepInfo(AST_INDEX node,
 static int StoreCacheInfo(AST_INDEX     node,
 			  CacheInfoType *CacheInfo)
 			  
-  {
-     if (is_subscript(node))
-      {
-       DepInfoPtr(node)->Locality = CacheInfo->ReuseModel->GetNodeReuseType(node);
+{
+    if (is_subscript(node))
+    {
+        DepInfoPtr(node)->Locality = CacheInfo->ReuseModel->GetNodeReuseType(node);
 
-       //
-       // Identify the load that should bring in two cache lines
-       // to eliminate misses associated with self-spatial loads
-       // The load should have self-spatial reuse or group-spatial
-       // with the self-spatial property and be a trailer in 
-       // group-spatial set.
-       //
+        //
+        // Identify the load that should bring in two cache lines
+        // to eliminate misses associated with self-spatial loads
+        // The load should have self-spatial reuse or group-spatial
+        // with the self-spatial property and be a trailer in 
+        // group-spatial set.
+        //
+//        printf ("Testing\n");
+        if (aiSpecialCache && 
+            NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
+            CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
+        {
+//            printf("Self Spacial\n");
+            DepInfoPtr(node)->UsePrefetchingLoad = 
+                CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
+        }
+        else if (DepInfoPtr(node)->Locality == NONE && 
+                 IsConstantStride(node, *(CacheInfo->IVar)) == true)
+        {
+            // Add support for constant stride, non self-spacial referances.
+//            printf("Constant stride\n");
+            DepInfoPtr(node)->UsePrefetchingLoad = true;
+        }
+        else
+        {
+            DepInfoPtr(node)->UsePrefetchingLoad = false;
+        }
+    }
+     
+    return(WALK_CONTINUE);
+      
+}
 
-       if (aiSpecialCache && 
-	   NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
-	   CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
-	 {
-	   DepInfoPtr(node)->UsePrefetchingLoad = 
-	     CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
-	 }
-       else
-	 DepInfoPtr(node)->UsePrefetchingLoad = false;
-      }
-     return(WALK_CONTINUE);
-  }
 
 
 static Boolean IsPrefetch(AST_INDEX Stmt)
@@ -604,30 +617,318 @@ static int CyclesPerIteration(AST_INDEX Node,
       return(CycleInfo.FPCycles);
   }
 
+// The size of a dimension is ub - lb + 1. If they are both constants
+// it is easy to compute. If we have an AST then use
+//
+//        pt_gen_add(pt_gen_sub(ub,lb),pt_gen_int(1))
+//
+// use tree_copy_with_type(AST_INDEX) to make a copy of the ASTs returned 
+// from GetArrayBound so that we don't have links into the ASTs stored
+// in the symbol table (bad idea, dude). The copy routine returns an AST_INDEX.
+// to generate an AST for a constant use pt_gen_int(int). You will need to pass
+// an AST to the f2i code generation routines to generate the expressions to
+// compute symbolic array bound sizes so that the we have a register to use
+// in the PFLD instruction. If you have a constant, we can just 
+// generate a PFLDI instruction and put the constant value directly in the
+// instruction. When you get to the point of needing to have f2i generate the
+// proper ILOC, let me know. At that time I'll figure out what needs to be
+// done. For now, a constant offset goes in
+//     
+//        DepInfoPtr(node)->PrefetchingDistance
+//
+// where node is a subscript node int the AST (is_subscript(node)). An AST
+// offset goes in
+//
+//        DepInfoPtr(node)->PrefetchOffsetAST
+//
+// If the offset is a constant, set PrefetchOffsetAST to AST_NIL.
+
+void GetArrayBound(SymDescriptor   Symtab,
+		   char*           ArrayName,
+		   int             SubscriptPosition, // zero-based
+                   ArrayBoundEnum& UpperBoundType,
+                   ArrayBoundEnum& LowerBoundType,
+		   int&            UpperBoundConstValue,
+		   int&            LowerBoundConstValue,
+		   AST_INDEX&      UpperBoundASTValue,
+		   AST_INDEX&      LowerBoundASTValue)
+
+{
+ ArrayBound *BoundsInformation = (ArrayBound *)fst_GetField(Symtab,ArrayName,
+                                                            SYMTAB_DIM_BOUNDS);
+
+ if (fst_bound_is_const_ub(BoundsInformation[SubscriptPosition]))
+   {
+    UpperBoundType = constant;
+    UpperBoundConstValue = 
+	BoundsInformation[SubscriptPosition].ub.value.const_val;
+   }
+ else
+   {
+    UpperBoundType = symbolic_expn_ast_index;
+    UpperBoundASTValue = 
+	BoundsInformation[SubscriptPosition].ub.value.ast;
+   }
+
+ if (fst_bound_is_const_lb(BoundsInformation[SubscriptPosition]))
+   {
+    LowerBoundType = constant;
+    LowerBoundConstValue = 
+	BoundsInformation[SubscriptPosition].lb.value.const_val;
+   }
+ else
+   {
+    LowerBoundType = symbolic_expn_ast_index;
+    LowerBoundASTValue = 
+	BoundsInformation[SubscriptPosition].lb.value.ast;
+   }
+
+}
+
+
+// Utility functions for creating valid ast_node stuff
+AST_INDEX MakeIntConstant(int con)
+{
+    AST_INDEX p;
+    
+    p = pt_gen_int(con);
+    gen_put_real_type(p, TYPE_INTEGER);
+    gen_put_converted_type(p, TYPE_INTEGER);
+
+    return p;
+}
+
+AST_INDEX MakeMul(AST_INDEX n1, AST_INDEX n2)
+{
+    AST_INDEX p;
+    
+    p = pt_gen_mul(n1, n2);
+    gen_put_real_type(p, TYPE_INTEGER);
+    gen_put_converted_type(p, TYPE_INTEGER);
+
+    return p;
+}
+
+AST_INDEX MakeAdd(AST_INDEX n1, AST_INDEX n2)
+{
+    AST_INDEX p;
+    
+    p = pt_gen_add(n1, n2);
+    gen_put_real_type(p, TYPE_INTEGER);
+    gen_put_converted_type(p, TYPE_INTEGER);
+
+    return p;
+}
+
+AST_INDEX MakeSub(AST_INDEX n1, AST_INDEX n2)
+{
+    AST_INDEX p;
+    
+    p = pt_gen_sub(n1, n2);
+    gen_put_real_type(p, TYPE_INTEGER);
+    gen_put_converted_type(p, TYPE_INTEGER);
+
+    return p;
+}
+
+void CalcPrefetchingLoadDistance(AST_INDEX Node,
+                                 SymDescriptor Symtab,
+                                 char* IVar,
+                                 AST_INDEX& ASTDistance,
+                                 int& ConstVal)
+{
+    // LOTS of variables for the PFLD stuff.
+    AST_INDEX ArrayNameAST,
+        SubList,
+        Sub,
+        UpperBoundAST,
+        LowerBoundAST;
+    int Coeff,
+        Which = 0,
+        UpperBoundConst,
+        LowerBoundConst;
+    Boolean ASTValue = false,
+        Linear,
+        Done = false;
+    ArrayBoundEnum UpperBoundType,
+        LowerBoundType;
+    char *ArrayName;
+    
+    ASTDistance = AST_NIL;
+    ConstVal = 1;
+    
+//    printf("CalcPrefetchingDistance:\n");
+    
+    ArrayNameAST = gen_SUBSCRIPT_get_name(Node);
+    ArrayName = gen_get_text(ArrayNameAST);
+    
+//    printf("   Array Name: %s\n", ArrayName);
+    
+    // New stuff (MJB)
+    SubList = gen_SUBSCRIPT_get_rvalue_LIST(Node);
+
+    for (Sub = list_first(SubList);
+         (Sub != AST_NIL) && (Done != true);
+         Sub = list_next(Sub))
+    {
+        pt_get_coeff(Sub, IVar, &Linear, &Coeff);
+
+        if (Coeff != 0)
+        {
+            // Last one. Either mul by 8, or gen mul by 8.
+
+//            printf("    Found the IVar: %s  Coeff: %d\n", IVar, Coeff);
+            
+            if (ASTValue)
+            {
+                // Tack it on to the AST.
+//                printf("        Adding to AST.\n");
+                ASTDistance = MakeMul(MakeIntConstant(Coeff), ASTDistance);
+            }
+            else
+            {
+//                printf("        Constant.\n");
+                ConstVal *= Coeff;
+            }
+            Done = true;
+            
+        }
+        else
+        {
+            // Find the bounds. I hope that the list and the number are the same...
+//            printf("    Getting bounds for %d:\n", Which);
+        
+            GetArrayBound(Symtab, ArrayName, Which, UpperBoundType, LowerBoundType,
+                          UpperBoundConst, LowerBoundConst, UpperBoundAST, 
+                          LowerBoundAST);
+
+            // First AST value?
+            if (ASTValue == false)
+            {
+                if (UpperBoundType == symbolic_expn_ast_index ||
+                    LowerBoundType == symbolic_expn_ast_index)
+                {
+//                    printf("        One of the bounds is AST.\n");
+                
+                    ASTDistance = MakeIntConstant(ConstVal);
+                    ASTValue = true;
+                }
+            }
+        
+            // Calc it
+            if (ASTValue == true)
+            {
+                // We need to convert everything to ast.
+                if (UpperBoundType == constant)
+                {
+//                    printf("        Converting upper bound: %d\n", UpperBoundConst);
+                
+                    UpperBoundAST = MakeIntConstant(UpperBoundConst);
+                }
+                else
+                {
+                    // Do the tree copy thing.
+                    UpperBoundAST = tree_copy_with_type(UpperBoundAST);
+                }
+            
+            
+                if (LowerBoundType == constant)
+                {
+//                    printf("        Converting lower bound: %d\n", LowerBoundConst);
+                
+                    LowerBoundAST = MakeIntConstant(LowerBoundConst);
+                }
+                else
+                {
+                    // Do the tree copy thing.
+                    LowerBoundAST = tree_copy_with_type(LowerBoundAST);   
+                }
+            
+                // I know, Ug...
+                ASTDistance = MakeMul( MakeAdd( MakeSub(UpperBoundAST, 
+                                                        LowerBoundAST),
+                                                MakeIntConstant(1)),
+                                       ASTDistance);
+
+            }
+            else
+            {
+                ConstVal *= (UpperBoundConst - LowerBoundConst + 1);
+//                printf("        New ConstVal: %d\n", ConstVal);
+            }
+        }
+        
+        Which++;
+    }
+
+    // Have to mul by (8?)
+    if (ASTValue == false)
+    {
+        ConstVal *= 8;
+    }
+    else
+    {
+        ASTDistance = MakeMul(ASTDistance, MakeIntConstant(8));
+    }
+    
+                
+}
+
+
 static int SetDistance(AST_INDEX Node,
 		       PrefetchDataType *PrefetchData)
 
 {
-  if (is_subscript(Node))
+    AST_INDEX ASTDistance;
+    int ConstVal;
+    
+    if (is_subscript(Node))
     {
-       if (DepInfoPtr(Node)->UsePrefetchingLoad)
-	 {
-	   DepInfoPtr(Node)->PrefetchDistance =
-	     ceil_ab(PrefetchData->PrefetchLatency,
-		     PrefetchData->LoopCycles*(PrefetchData->LineSize >> 3)) * 
-	         PrefetchData->LineSize;
-           DepInfoPtr(Node)->PrefetchOffsetAST = AST_NIL;
-         }
-       else
-	 DepInfoPtr(Node)->PrefetchDistance = 0;
+        if (DepInfoPtr(Node)->UsePrefetchingLoad)
+        {
+             
+            if (DepInfoPtr(Node)->Locality == SELF_SPATIAL)
+            {                 
+                DepInfoPtr(Node)->PrefetchDistance =
+                    ceil_ab(PrefetchData->PrefetchLatency,
+                            PrefetchData->LoopCycles*(PrefetchData->LineSize >> 3)) * 
+                    PrefetchData->LineSize;
+                DepInfoPtr(Node)->PrefetchOffsetAST = AST_NIL;
+            }
+            else if (DepInfoPtr(Node)->Locality == NONE)
+            {
+                CalcPrefetchingLoadDistance(Node, PrefetchData->symtab,
+                                            PrefetchData->IVar,
+                                            ASTDistance,
+                                            ConstVal);
+                
+                if (ASTDistance != AST_NIL)
+                {
+                    DepInfoPtr(Node)->PrefetchOffsetAST = ASTDistance;
+                    DepInfoPtr(Node)->PrefetchDistance = -1;
+                }
+                else
+                {
+                    DepInfoPtr(Node)->PrefetchOffsetAST = AST_NIL;
+                    DepInfoPtr(Node)->PrefetchDistance = ConstVal;
+                }    
+            }
+             
+                 
+        }
+        else
+            DepInfoPtr(Node)->PrefetchDistance = 0;
     }
-  return (WALK_CONTINUE);
+    return (WALK_CONTINUE);
 }
 
+// Modified for prefetching load (non self-spacial).
 static void SetPrefetchLoadDistance(AST_INDEX LoopHeader,
 				    DataReuseModel *ReuseModel,
 				    int NumberOfAddressSets,
-				    PedInfo ped)
+				    PedInfo ped,
+                                    char *IVar,
+                                    SymDescriptor symtab)
 {
   PrefetchDataType PrefetchData;
   
@@ -645,6 +946,10 @@ static void SetPrefetchLoadDistance(AST_INDEX LoopHeader,
 
 
   PrefetchData.LineSize = ((config_type *) PED_MH_CONFIG(ped))->line;
+
+  // New stuff (MJB)
+  PrefetchData.IVar = IVar;
+  PrefetchData.symtab = symtab;
 
   walk_expression(gen_DO_get_stmt_LIST(LoopHeader),(WK_EXPR_CLBACK)SetDistance,
 		  (WK_EXPR_CLBACK)NOFUNC,(Generic)&PrefetchData);
@@ -697,10 +1002,15 @@ static void walk_loops(CacheInfoType  *CacheInfo,
 	    walk_expression(CacheInfo->loop_data[loop].node,
 			    (WK_EXPR_CLBACK)BuildGroupSpatialDependenceList,
 			    NOFUNC,(Generic)CacheInfo->ReuseModel);
+
+            // Need the symbol table now, and the IVar. (PFLD)
 	    SetPrefetchLoadDistance(CacheInfo->loop_data[loop].node,
 				    CacheInfo->ReuseModel,
 				    CacheInfo->AECS->GetSize(),
-				    CacheInfo->ped);
+				    CacheInfo->ped,
+                                    CacheInfo->IVar[loop],
+                                    CacheInfo->symtab);
+        
 	    delete CacheInfo->AECS;
 	  }
 	      

@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.h,v 1.18 1999/07/22 18:08:52 carr Exp $ */
+/* $Id: CacheAnalysis.h,v 1.19 2000/01/12 23:00:44 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -55,10 +55,13 @@ typedef struct cachecycleinfostruct {
     DataReuseModel *ReuseModel;
 } CacheCycleInfoType;
 
+// Add a couple things for PFLD
 typedef struct prefetchdatatypestruct {
    int LoopCycles;
    int PrefetchLatency;
    int LineSize;
+    char *IVar;
+    SymDescriptor symtab;
 } PrefetchDataType;
 
 #define DepInfoPtr(n) \
