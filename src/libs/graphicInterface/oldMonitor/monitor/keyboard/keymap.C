@@ -1,4 +1,4 @@
-/* $Id: keymap.C,v 1.1 1997/06/25 14:49:10 carr Exp $ */
+/* $Id: keymap.C,v 1.2 1997/06/26 18:47:36 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -207,8 +207,8 @@ static void keymap_deepen_map(Keymap *map, short depth)
 		 * Must diddle the (circular) queue, in case it is currently wrapped back to 0.
 		 * Push the queued stuff that lies before the wrap out to the new end of the queue array.
 		 */
-		bcopy(map->queue+map->queue_front,
-		      map->queue+map->queue_front+(depth-olddepth),
+		bcopy((const char *)map->queue+map->queue_front,
+		      (char *)map->queue+map->queue_front+(depth-olddepth),
 		      (olddepth-map->queue_front)*sizeof(KbChar));
 		map->queue_front += (depth-olddepth);
 		map->queue_front %= depth;
