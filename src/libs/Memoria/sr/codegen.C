@@ -42,7 +42,7 @@ static void insert_load(block_type *block,
 
      sprintf(reg,"%s$%d$0",gen_get_text(gen_SUBSCRIPT_get_name(
 				          table_entry.node)),table_entry.def);
-     array_ref = tree_copy(table_entry.node);
+     array_ref = tree_copy_with_type(table_entry.node);
      new_stmt = gen_ASSIGNMENT(AST_NIL,ut_gen_ident(symtab,reg,
 			       gen_get_converted_type(table_entry.node)),
 			       array_ref);
@@ -220,7 +220,7 @@ static int check_def(AST_INDEX node,
 	   if (!scalar_info->no_store)
 	     if (!scalar_info->scalar || code_info->do_stmt != AST_NIL)
 	       {
-		array_ref = tree_copy(node);
+		array_ref = tree_copy_with_type(node);
 		/* set_scratch_to_NULL(gen_SUBSCRIPT_get_name(array_ref)); */
 		new_stmt = gen_ASSIGNMENT(AST_NIL,array_ref,
 					  ut_gen_ident(code_info->symtab,
@@ -290,7 +290,7 @@ static int check_use(AST_INDEX node,
 					  gen_get_converted_type(node)));
 	   if (!scalar_info->scalar || code_info->load_scalar)
 	    {
-	     array_ref = tree_copy(node);
+	     array_ref = tree_copy_with_type(node);
 	     /* set_scratch_to_NULL(gen_SUBSCRIPT_get_name(array_ref)); */
 	     new_stmt = gen_ASSIGNMENT(AST_NIL,
 				       ut_gen_ident(code_info->symtab,reg_name,
@@ -326,7 +326,7 @@ static int check_use(AST_INDEX node,
 		  }
 		if (gen_get_label(code_info->stmt) != AST_NIL)
 		  {
-		   gen_ASSIGNMENT_put_lbl_def(new_stmt,tree_copy(gen_get_label(
+		   gen_ASSIGNMENT_put_lbl_def(new_stmt,tree_copy_with_type(gen_get_label(
                                               code_info->stmt)));
 		   pt_tree_replace(gen_get_label(code_info->stmt),AST_NIL);
 		  }
@@ -470,26 +470,26 @@ static void peel_iterations(AST_INDEX root,
      code_info->do_stmt = AST_NIL;
      for (i = 0; i < peel_amt; i++)
        {
-	newa = tree_copy(stmts);
+	newa = tree_copy_with_type(stmts);
 	code_info->iteration = i;
 	walk_statements(newa,level,replace_references,NOFUNC,
 			(Generic)code_info);
-	iteration = pt_simplify_expr(pt_gen_add(tree_copy(lwb),
+	iteration = pt_simplify_expr(pt_gen_add(tree_copy_with_type(lwb),
 						pt_gen_mul(pt_gen_int(i),
-							   tree_copy(step))));
+							   tree_copy_with_type(step))));
 	pt_var_replace(newa,ivar,iteration);
 	insert_transfers(newa,code_info->glist,i+1,code_info->symtab);
 	ut_update_labels(newa,code_info->symtab);
 	if (pt_eval(step,&step_v))
-	  condition = gen_BINARY_GT(pt_gen_mul(pt_gen_sub(tree_copy(upb),
-							 tree_copy(iteration)),
+	  condition = gen_BINARY_GT(pt_gen_mul(pt_gen_sub(tree_copy_with_type(upb),
+							 tree_copy_with_type(iteration)),
 					       pt_gen_func1("sign",step)),
 				    pt_gen_int(0));
 	else
 	  if (step_v > 0)
-	    condition = gen_BINARY_GT(tree_copy(iteration),tree_copy(upb));
+	    condition = gen_BINARY_GT(tree_copy_with_type(iteration),tree_copy_with_type(upb));
 	  else
-	    condition = gen_BINARY_LT(tree_copy(iteration),tree_copy(upb));
+	    condition = gen_BINARY_LT(tree_copy_with_type(iteration),tree_copy_with_type(upb));
 	go_to = gen_GOTO(AST_NIL,pt_gen_label_ref(target));
 	log_if = gen_LOGICAL_IF(AST_NIL,condition,go_to);
 	(void) list_insert_before(list_first(newa),log_if);
@@ -508,9 +508,9 @@ static void peel_iterations(AST_INDEX root,
 	  }
 	code_info->load_scalar = false;
        }
-      pt_tree_replace(lwb,pt_simplify_expr(pt_gen_add(tree_copy(lwb),
+      pt_tree_replace(lwb,pt_simplify_expr(pt_gen_add(tree_copy_with_type(lwb),
 					   pt_gen_mul(pt_gen_int(peel_amt),
-						      tree_copy(step)))));
+						      tree_copy_with_type(step)))));
   }
 
 static int create_pre_loop(AST_INDEX  root,
@@ -565,7 +565,7 @@ static int create_pre_loop(AST_INDEX  root,
        }
      if (need_pre_loop)
        {
-	new_loop = tree_copy(root);
+	new_loop = tree_copy_with_type(root);
 	walk_statements(new_loop,level,replace_references,NOFUNC,
 			(Generic)code_info);
 	/* walk_expression(new_loop,null_scratch,NOFUNC,NULL); */
@@ -629,7 +629,7 @@ void sr_generate_code(AST_INDEX        root,
 	ivar = gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(root)));
 	for (i = 1; i < unroll_amt; i++)
 	  {
-	   new_body = tree_copy(stmt_list);
+	   new_body = tree_copy_with_type(stmt_list);
 	   code_info.copy = i;
 	   walk_statements(new_body,level,replace_references,NOFUNC,
 			   (Generic)&code_info);
@@ -638,7 +638,7 @@ void sr_generate_code(AST_INDEX        root,
 	   ut_update_labels(new_body,symtab);
 	   new_list = list_append(new_list,new_body);
 	  }
-	new_body = tree_copy(stmt_list);
+	new_body = tree_copy_with_type(stmt_list);
 	code_info.copy = unroll_amt;
 	walk_statements(new_body,level,replace_references,NOFUNC,
 			(Generic)&code_info);

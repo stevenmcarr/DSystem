@@ -145,7 +145,7 @@ static void determine_loop_type(model_loop *loop_data,
 	    {     /* right side */
 	     pt_separate_linear(inner2,outervar,&lin1,&fac,&con);
 	     loop_data[outer].tri_coeff = coeff2;
-	     loop_data[outer].tri_const = tree_copy(con);
+	     loop_data[outer].tri_const = tree_copy_with_type(con);
 	     if (coeff2 > 0)
 	       loop_data[outer].type = TRI_LR;
 	     else 
@@ -156,7 +156,7 @@ static void determine_loop_type(model_loop *loop_data,
 	    {                /* left side */
 	     pt_separate_linear(inner1,outervar,&lin1,&fac,&con);
 	     loop_data[outer].tri_coeff = coeff1;
-	     loop_data[outer].tri_const = tree_copy(con);
+	     loop_data[outer].tri_const = tree_copy_with_type(con);
 	     if (coeff1 > 0) 
 	       loop_data[outer].type = TRI_UL;
 	     else

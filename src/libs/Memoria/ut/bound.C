@@ -51,46 +51,46 @@ void ut_update_bounds(AST_INDEX loop,
 	  die_with_message("create_pre_loop: symbolic step,shouldn't be here");
 	if (step_v == 1)
 	  mod = pt_gen_mod(pt_simplify_expr(pt_gen_add(
-                                                pt_gen_sub(tree_copy(upb),
-							   tree_copy(lwb)),
+                                                pt_gen_sub(tree_copy_with_type(upb),
+							   tree_copy_with_type(lwb)),
 							 pt_gen_int(1))),
 			   pt_simplify_expr(pt_gen_mul(pt_gen_int(step_v),
 						       pt_gen_int(val+1))));
 	else if (step_v == -1)
 	  mod = pt_gen_mod(pt_simplify_expr(pt_gen_add(
-                                                pt_gen_sub(tree_copy(lwb),
-							   tree_copy(upb)),
+                                                pt_gen_sub(tree_copy_with_type(lwb),
+							   tree_copy_with_type(upb)),
 							 pt_gen_int(1))),
 			   pt_simplify_expr(pt_gen_mul(pt_gen_int(-step_v),
 						       pt_gen_int(val+1))));
 	else if (step_v > 0)
 	  mod = pt_gen_mod(pt_simplify_expr(pt_gen_div(pt_gen_add(
                                                            pt_gen_sub(
-								tree_copy(upb),
-							       tree_copy(lwb)),
+								tree_copy_with_type(upb),
+							       tree_copy_with_type(lwb)),
 							   pt_gen_int(1)),
-							 tree_copy(step))),
+							 tree_copy_with_type(step))),
 			   pt_simplify_expr(pt_gen_mul(pt_gen_int(step_v),
 						       pt_gen_int(val+1))));
 	else 
 	  mod = pt_gen_mod(pt_simplify_expr(pt_gen_div(pt_gen_sub(
                                                           pt_gen_sub(
-								tree_copy(upb),
-							       tree_copy(lwb)),
+								tree_copy_with_type(upb),
+							       tree_copy_with_type(lwb)),
 							   pt_gen_int(1)),
-							 tree_copy(step))),
+							 tree_copy_with_type(step))),
 			   pt_simplify_expr(pt_gen_mul(pt_gen_int(-step_v),
 						       pt_gen_int(val+1))));
 	pt_tree_replace(upb_c,pt_simplify_expr(
-                              pt_gen_add(pt_gen_mul(tree_copy(mod),
-						    tree_copy(step)),
-					 pt_gen_sub(tree_copy(lwb),
-						    tree_copy(step)))));
+                              pt_gen_add(pt_gen_mul(tree_copy_with_type(mod),
+						    tree_copy_with_type(step)),
+					 pt_gen_sub(tree_copy_with_type(lwb),
+						    tree_copy_with_type(step)))));
 	pt_tree_replace(ph1,pt_gen_add(
-                              pt_simplify_expr(pt_gen_mul(tree_copy(mod),
-							  tree_copy(step))),
+                              pt_simplify_expr(pt_gen_mul(tree_copy_with_type(mod),
+							  tree_copy_with_type(step))),
 			      lwb));
-	pt_tree_replace(ph2,pt_simplify_expr(pt_gen_mul(tree_copy(step),
+	pt_tree_replace(ph2,pt_simplify_expr(pt_gen_mul(tree_copy_with_type(step),
 							 pt_gen_int(val+1))));
        }
   }

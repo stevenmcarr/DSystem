@@ -40,7 +40,7 @@ int change_logical_to_block_if(AST_INDEX stmt,
 	stmt_list = gen_LOGICAL_IF_get_stmt_LIST(stmt);
 	tree_replace(stmt_list,AST_NIL);
 	guard = gen_GUARD(AST_NIL,rvalue,stmt_list);
-	block_if = gen_IF(tree_copy(gen_get_label(stmt)),AST_NIL,
+	block_if = gen_IF(tree_copy_with_type(gen_get_label(stmt)),AST_NIL,
 			  list_create(guard));
 	pt_tree_replace(stmt,block_if);
        }

@@ -45,55 +45,56 @@ int ut_init_copies(AST_INDEX node,
      return(WALK_CONTINUE);
   }
 
-AST_INDEX ut_tree_copy(AST_INDEX node,
+AST_INDEX ut_tree_copy_with_type(AST_INDEX node,
 		       int       index,
 		       arena_type *ar)
+	{
+	AST_INDEX from;
+	AST_INDEX result;
+	Generic   i, num_of_sons;
+	AST_INDEX temp;
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
+	if (node == ast_null_node) return ast_null_node;
 
-  {
-   AST_INDEX from;
-   AST_INDEX result;
-   Generic   i;	
-   AST_INDEX temp,
-             temp1;
+	if (is_list(node))
+		{
+		result = list_create(ast_null_node);
 
-     if (node == ast_null_node) return ast_null_node;
-     if (is_list(node))
-       {
-	result = list_create(ast_null_node);
-	ast_put_meta_type(result, ast_get_meta_type(node));
-	ast_put_status(result, ast_get_status(node));
-	temp = list_first(node);
-	while(temp != ast_null_node)
-	  {
-	   (void) list_insert_last(result, ut_tree_copy(temp,index,ar));
-	   temp = list_next(temp);
-	  }
-       }
-     else
-       {
-	result = ast_copy(node);
-	for(i=1; i <= AST_MAX_SON; i++)
-	  {
-	   from = ast_get_son_n(node,i);
-	   if (from != AST_NIL)
-	      ast_put_son_n(result,i,ut_tree_copy(from,index,ar));
-	  }
-	if (is_identifier(node))
-	  if (get_subscript_ptr(node) != NULL &&
-	      is_subscript(tree_out(node)))
-	    {
-	     get_subscript_ptr(node)->copies[index] = result;
-	     create_subscript_ptr(result,ar);
-	     get_subscript_ptr(result)->original = node;
-	    }
-       }
-     return result;
-  }
+		/* Since result is an AST_LIST_OF_NODES, it will not */
+		/* have a meta_type or status field */
+		/* ast_put_meta_type(result, ast_get_meta_type(node)); */
+		/* ast_put_status(result, ast_get_status(node)); */
+
+		temp = list_first(node);
+		while(temp != ast_null_node)
+			{
+			 (void) list_insert_last(result, 
+						 ut_tree_copy_with_type(temp,index,ar));
+			temp = list_next(temp);
+			}
+		}
+	else
+		{
+		result = ast_copy_with_type(node);
+		num_of_sons = ast_get_son_count(node);
+		for(i=1; i <= num_of_sons; i++)
+			{
+			from = ast_get_son_n(node,i);
+ 			if (from != AST_NIL)
+			  ast_put_son_n(result,i,ut_tree_copy_with_type(from,index,ar));
+			}
+		if (is_identifier(node))
+		  if (get_subscript_ptr(node) != NULL &&
+		      is_subscript(tree_out(node)))
+		    {
+		     get_subscript_ptr(node)->copies[index] = result;
+		     create_subscript_ptr(result,ar);
+		     get_subscript_ptr(result)->original = node;
+		    }
+		}
+
+	return result;
+	}
 
 void ut_new_tail(listnode   *list,
 		 EDGE_INDEX edge,

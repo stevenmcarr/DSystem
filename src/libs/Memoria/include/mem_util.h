@@ -35,7 +35,7 @@ typedef struct {
 
 
 EXTERN_FUNCTION(AST_INDEX ut_get_stmt,(AST_INDEX node));
-EXTERN_FUNCTION(AST_INDEX ut_tree_copy,(AST_INDEX node,int index,
+EXTERN_FUNCTION(AST_INDEX ut_tree_copy_with_type,(AST_INDEX node,int index,
 					arena_type *ar));
 EXTERN_FUNCTION(void ut_new_tail,(listnode *list,EDGE_INDEX edge,
 				  arena_type *ar));

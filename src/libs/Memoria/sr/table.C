@@ -75,7 +75,7 @@ static int add_elements(AST_INDEX         node,
 	if (prelim_info->array_table[scalar_info->table_index].node == NULL)
 	  {
 	   prelim_info->array_table[scalar_info->table_index].node = 
-	                                                    tree_copy(node);
+	                                                    tree_copy_with_type(node);
 	   prelim_info->array_table[scalar_info->table_index].def =
 	                           prelim_info->def_num++;
 	   prelim_info->array_table[scalar_info->table_index].profit = 0.0;

@@ -55,7 +55,7 @@ static void distribute_loop(model_loop    *loop_data,
 	i++;
        }
      tree_free(gen_DO_get_stmt_LIST(loop_data[loop].node));
-     do_template = tree_copy(loop_data[loop].node);
+     do_template = tree_copy_with_type(loop_data[loop].node);
      prev = loop;
      prev_do = loop_data[loop].node;
      gen_DO_put_stmt_LIST(loop_data[loop].node,stmt_list[0]);
@@ -63,7 +63,7 @@ static void distribute_loop(model_loop    *loop_data,
      loop_data[loop_data[loop].inner_loop].next_loop = -1;
      for (j = 1; j < i; j++)
        {
-	new_do = tree_copy(do_template);
+	new_do = tree_copy_with_type(do_template);
 	gen_DO_put_stmt_LIST(new_do,stmt_list[j]);
 	list_insert_after(prev_do,new_do);
         loop_data[*num_loops] = loop_data[loop];

@@ -153,7 +153,7 @@ static void replicate_statements(AST_INDEX     stmt_list,
 		     cnode != list_prev(start_node);
 		     cnode = list_prev(cnode))
 		  {
-		   new_node = ut_tree_copy(cnode,i-1,ar);
+		   new_node = ut_tree_copy_with_type(cnode,i-1,ar);
 		   walk_expression(new_node,update_refs,NOFUNC,
 				   (Generic)&ref_info);
 		   /* set_scratch_to_NULL(new_node); */
@@ -290,7 +290,7 @@ static int update_rdx_var(AST_INDEX     stmt,
 	     sprintf(new_var,"%s_%d_0",var,upd_info->val);
 	     pt_var_replace(stmt,var,mh_gen_ident(upd_info->symtab,new_var,
 						  gen_get_real_type(lval),
-						  tree_copy(lval)));
+						  tree_copy_with_type(lval)));
 	    }
 	  else if (is_subscript(lval))
 	    {
@@ -299,7 +299,7 @@ static int update_rdx_var(AST_INDEX     stmt,
 		  fix this! */
 
 	     name = gen_SUBSCRIPT_get_name(lval);
-	     copy = tree_copy(lval);
+	     copy = tree_copy_with_type(lval);
 	     /* set_scratch_to_NULL(gen_SUBSCRIPT_get_name(copy)); */
 	     subp = get_subscript_ptr(get_subscript_ptr(name)->original);
 	     if (subp->is_scalar[2] && !subp->prev_sclr[2])
@@ -308,8 +308,8 @@ static int update_rdx_var(AST_INDEX     stmt,
 			upd_info->val);
 		tree_free(mh_gen_ident(upd_info->symtab,rep_info.new_var,
 				       gen_get_real_type(copy),
-				       tree_copy(copy)));
-		rep_info.array = tree_copy(copy);
+				       tree_copy_with_type(copy)));
+		rep_info.array = tree_copy_with_type(copy);
 		rep_info.ped = upd_info->ped;
 		walk_expression(stmt,NOFUNC,replace_array,(Generic)&rep_info);
 		tree_free(rep_info.array);
@@ -611,7 +611,7 @@ static void replicate_body(AST_INDEX     stmt_list,
      ref_info.surrounding_do = surrounding_do;
      for (i = 0; i < val-1; i++)
        {
-	new_code[i] = ut_tree_copy(stmt_list,i,ar);
+	new_code[i] = ut_tree_copy_with_type(stmt_list,i,ar);
 	ref_info.val  = i;
 	walk_expression(new_code[i],update_refs,NOFUNC,(Generic)&ref_info);
 	/* set_stmt_ptrs_to_NULL(new_code[i]); */
@@ -619,7 +619,7 @@ static void replicate_body(AST_INDEX     stmt_list,
 	set_level_vectors(stmt_list,new_code[i],ped);
 	ut_update_labels(new_code[i],symtab);
        }
-     new_code[val-1] = ut_tree_copy(stmt_list,val-1,ar);
+     new_code[val-1] = ut_tree_copy_with_type(stmt_list,val-1,ar);
      ref_info.val = val-1;
      walk_expression(new_code[val-1],update_refs,NOFUNC,(Generic)&ref_info);
      /* set_stmt_ptrs_to_NULL(new_code[val-1]); */
@@ -779,7 +779,7 @@ static void unroll_triangular(model_loop    *loop_data,
      copy_info.symtab = symtab;
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_init_copies,
 		     NOFUNC,(Generic)&copy_info);
-     loop_copy = ut_tree_copy(loop_data[loop].node,0,ar);
+     loop_copy = ut_tree_copy_with_type(loop_data[loop].node,0,ar);
      ut_update_labels(loop_copy,symtab);
      control1 = gen_DO_get_control(loop_data[loop].node);
      ivar = gen_INDUCTIVE_get_name(gen_DO_get_control(loop_data[uloop].node));
@@ -791,24 +791,24 @@ static void unroll_triangular(model_loop    *loop_data,
      control2 = gen_DO_get_control(loop_copy);
      switch(loop_data[uloop].type) {
        case TRI_UL:
-         gen_INDUCTIVE_put_rvalue1(new_control,tree_copy(ivar));
-	 gen_INDUCTIVE_put_rvalue2(new_control,pt_gen_add(tree_copy(ivar),
+         gen_INDUCTIVE_put_rvalue1(new_control,tree_copy_with_type(ivar));
+	 gen_INDUCTIVE_put_rvalue2(new_control,pt_gen_add(tree_copy_with_type(ivar),
 				   pt_gen_int(loop_data[uloop].val-1)));
 	 pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control2),pt_simplify_expr(
 			 pt_gen_add(
 			   pt_gen_mul(pt_gen_int(loop_data[uloop].tri_coeff),
 				      pt_gen_ident(new_ivar)),
-			   tree_copy(loop_data[uloop].tri_const))));
-	 arg_list =list_create(tree_copy(gen_INDUCTIVE_get_rvalue2(control2)));
+			   tree_copy_with_type(loop_data[uloop].tri_const))));
+	 arg_list =list_create(tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(control2)));
 	 arg_list = list_insert_last(arg_list,pt_simplify_expr(
 			 pt_gen_add(
 			   pt_gen_mul(
                              pt_gen_int(loop_data[uloop].tri_coeff),
 			     pt_gen_add(
-                               tree_copy(ivar),
+                               tree_copy_with_type(ivar),
                                pt_gen_int(loop_data[uloop].val))),
                            pt_gen_sub(
-			     tree_copy(loop_data[uloop].tri_const),
+			     tree_copy_with_type(loop_data[uloop].tri_const),
 			     pt_gen_int(1)))));
 	 min = gen_INVOCATION(pt_gen_ident("min"),arg_list);
 	 pt_tree_replace(gen_INDUCTIVE_get_rvalue2(control2),min);
@@ -817,25 +817,25 @@ static void unroll_triangular(model_loop    *loop_data,
 			   pt_gen_mul(
                              pt_gen_int(loop_data[uloop].tri_coeff),
 			     pt_gen_add(
-                               tree_copy(ivar),
+                               tree_copy_with_type(ivar),
                                pt_gen_int(loop_data[uloop].val))),
-			   tree_copy(loop_data[uloop].tri_const))));
+			   tree_copy_with_type(loop_data[uloop].tri_const))));
 	 (void)list_insert_before(loop_data[loop].node,new_do);
          break;
        case TRI_LL:
-         gen_INDUCTIVE_put_rvalue1(new_control,tree_copy(ivar));
-	 gen_INDUCTIVE_put_rvalue2(new_control,pt_gen_add(tree_copy(ivar),
+         gen_INDUCTIVE_put_rvalue1(new_control,tree_copy_with_type(ivar));
+	 gen_INDUCTIVE_put_rvalue2(new_control,pt_gen_add(tree_copy_with_type(ivar),
 				   pt_gen_int(loop_data[uloop].val-1)));
-	 arg_list =list_create(tree_copy(gen_INDUCTIVE_get_rvalue1(control2)));
+	 arg_list =list_create(tree_copy_with_type(gen_INDUCTIVE_get_rvalue1(control2)));
 	 arg_list = list_insert_last(arg_list,pt_simplify_expr(
 			 pt_gen_add(
 			   pt_gen_mul(
                              pt_gen_int(loop_data[uloop].tri_coeff),
 			     pt_gen_add(
-                               tree_copy(ivar),
+                               tree_copy_with_type(ivar),
                                pt_gen_int(loop_data[uloop].val))),
                            pt_gen_add(
-			     tree_copy(loop_data[uloop].tri_const),
+			     tree_copy_with_type(loop_data[uloop].tri_const),
 			     pt_gen_int(1)))));
          max = gen_INVOCATION(pt_gen_ident("max"),arg_list);
          pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control2),max);
@@ -844,54 +844,54 @@ static void unroll_triangular(model_loop    *loop_data,
 			   pt_gen_mul(
 			     pt_gen_int(loop_data[uloop].tri_coeff),
 			     pt_gen_ident(new_ivar)),
-			   tree_copy(loop_data[uloop].tri_const))));
+			   tree_copy_with_type(loop_data[uloop].tri_const))));
 	 pt_tree_replace(gen_INDUCTIVE_get_rvalue2(control1),pt_simplify_expr(
 			 pt_gen_add(
 			   pt_gen_mul(
                              pt_gen_int(loop_data[uloop].tri_coeff),
 			     pt_gen_add(
-                               tree_copy(ivar),
+                               tree_copy_with_type(ivar),
                                pt_gen_int(loop_data[uloop].val))),
-			   tree_copy(loop_data[uloop].tri_const))));
+			   tree_copy_with_type(loop_data[uloop].tri_const))));
 	 (void)list_insert_after(loop_data[loop].node,new_do);
          break;
        case TRI_UR:
-         gen_INDUCTIVE_put_rvalue1(new_control,pt_gen_add(tree_copy(ivar),
+         gen_INDUCTIVE_put_rvalue1(new_control,pt_gen_add(tree_copy_with_type(ivar),
 							  pt_gen_int(1)));
-         gen_INDUCTIVE_put_rvalue2(new_control,pt_gen_add(tree_copy(ivar),
+         gen_INDUCTIVE_put_rvalue2(new_control,pt_gen_add(tree_copy_with_type(ivar),
 				   pt_gen_int(loop_data[uloop].val)));
 	 pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control2),pt_simplify_expr(
 			 pt_gen_add(
 			   pt_gen_mul(
                              pt_gen_int(loop_data[uloop].tri_coeff),
                              pt_gen_ident(new_ivar)),
-			   tree_copy(loop_data[uloop].tri_const))));
-	 arg_list =list_create(tree_copy(gen_INDUCTIVE_get_rvalue2(control2)));
+			   tree_copy_with_type(loop_data[uloop].tri_const))));
+	 arg_list =list_create(tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(control2)));
 	 arg_list = list_insert_last(arg_list,pt_simplify_expr(
 			 pt_gen_add(
 			   pt_gen_mul(
 			     pt_gen_int(loop_data[uloop].tri_coeff),
-			     tree_copy(ivar)),
+			     tree_copy_with_type(ivar)),
 			   pt_gen_sub(
-                             tree_copy(loop_data[uloop].tri_const),
+                             tree_copy_with_type(loop_data[uloop].tri_const),
 			     pt_gen_int(1)))));
 	 min = gen_INVOCATION(pt_gen_ident("min"),arg_list);
          pt_tree_replace(gen_INDUCTIVE_get_rvalue2(control2),min);
 	 (void)list_insert_before(loop_data[loop].node,new_do);
          break;
        case TRI_LR:
-         gen_INDUCTIVE_put_rvalue1(new_control,pt_gen_add(tree_copy(ivar),
+         gen_INDUCTIVE_put_rvalue1(new_control,pt_gen_add(tree_copy_with_type(ivar),
 							  pt_gen_int(1)));
-         gen_INDUCTIVE_put_rvalue2(new_control,pt_gen_add(tree_copy(ivar),
+         gen_INDUCTIVE_put_rvalue2(new_control,pt_gen_add(tree_copy_with_type(ivar),
 				   pt_gen_int(loop_data[uloop].val)));
-         arg_list =list_create(tree_copy(gen_INDUCTIVE_get_rvalue1(control2)));
+         arg_list =list_create(tree_copy_with_type(gen_INDUCTIVE_get_rvalue1(control2)));
          arg_list = list_insert_last(arg_list,pt_simplify_expr(
 				pt_gen_add(
 				  pt_gen_add(
 			            pt_gen_mul(
 				      pt_gen_int(loop_data[uloop].tri_coeff),
-				      tree_copy(ivar)),
-			            tree_copy(loop_data[uloop].tri_const)),
+				      tree_copy_with_type(ivar)),
+			            tree_copy_with_type(loop_data[uloop].tri_const)),
 				  pt_gen_int(1))));
          max = gen_INVOCATION(pt_gen_ident("max"),arg_list);
          pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control2),max);
@@ -900,7 +900,7 @@ static void unroll_triangular(model_loop    *loop_data,
 			   pt_gen_mul(
 			     pt_gen_int(loop_data[uloop].tri_coeff),
 			     pt_gen_ident(new_ivar)),
-			   tree_copy(loop_data[uloop].tri_const))));
+			   tree_copy_with_type(loop_data[uloop].tri_const))));
 	 (void)list_insert_after(loop_data[loop].node,new_do);
          break;
       }
@@ -1056,20 +1056,20 @@ static model_loop *split_trap_upb(model_loop    *loop_data,
        }
      tree_replace(upb,pt_simplify_expr(pt_gen_add(pt_gen_mul(
 							 pt_gen_int(coeff1),
-							 tree_copy(ivar)),
-						  tree_copy(con1))));
-     loop_copy = ut_tree_copy(loop_data[uloop].node,0,ar);
+							 tree_copy_with_type(ivar)),
+						  tree_copy_with_type(con1))));
+     loop_copy = ut_tree_copy_with_type(loop_data[uloop].node,0,ar);
      ut_update_labels(loop_copy,symtab);
      control2 = gen_DO_get_control(loop_copy);
-     arg_list =list_create(tree_copy(gen_INDUCTIVE_get_rvalue2(control2)));
+     arg_list =list_create(tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(control2)));
      arg_list=list_insert_last(arg_list,pt_simplify_expr(
-			       pt_gen_div(pt_gen_sub(tree_copy(con2),
-						     tree_copy(con1)),
-					  tree_copy(pt_gen_int(coeff1)))));
+			       pt_gen_div(pt_gen_sub(tree_copy_with_type(con2),
+						     tree_copy_with_type(con1)),
+					  tree_copy_with_type(pt_gen_int(coeff1)))));
      min = gen_INVOCATION(pt_gen_ident("min"),arg_list);
-     pt_tree_replace(gen_INDUCTIVE_get_rvalue2(control1),tree_copy(con2));
-     arg_list = list_create(pt_gen_add(tree_copy(min),pt_gen_int(1)));
-     arg_list = list_insert_first(arg_list,tree_copy(gen_INDUCTIVE_get_rvalue1(
+     pt_tree_replace(gen_INDUCTIVE_get_rvalue2(control1),tree_copy_with_type(con2));
+     arg_list = list_create(pt_gen_add(tree_copy_with_type(min),pt_gen_int(1)));
+     arg_list = list_insert_first(arg_list,tree_copy_with_type(gen_INDUCTIVE_get_rvalue1(
 								   control2)));
      pt_tree_replace(gen_INDUCTIVE_get_rvalue2(control2),min);
      control2 = gen_DO_get_control(loop_data[uloop].node);
@@ -1150,22 +1150,22 @@ static model_loop *split_trap_lwb(model_loop    *loop_data,
        }
      tree_replace(lwb,pt_simplify_expr(pt_gen_add(pt_gen_mul(
 							 pt_gen_int(coeff1),
-							 tree_copy(ivar)),
-						  tree_copy(con1))));
-     loop_copy = ut_tree_copy(loop_data[uloop].node,0,ar);
-     pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control1),tree_copy(con2));
+							 tree_copy_with_type(ivar)),
+						  tree_copy_with_type(con1))));
+     loop_copy = ut_tree_copy_with_type(loop_data[uloop].node,0,ar);
+     pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control1),tree_copy_with_type(con2));
      ut_update_labels(loop_copy,symtab);
      control2 = gen_DO_get_control(loop_data[uloop].node);
-     arg_list =list_create(tree_copy(gen_INDUCTIVE_get_rvalue2(control2)));
+     arg_list =list_create(tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(control2)));
      arg_list=list_insert_last(arg_list,pt_simplify_expr(
-			       pt_gen_div(pt_gen_sub(tree_copy(con2),
-						     tree_copy(con1)),
-					  tree_copy(pt_gen_int(coeff1)))));
+			       pt_gen_div(pt_gen_sub(tree_copy_with_type(con2),
+						     tree_copy_with_type(con1)),
+					  tree_copy_with_type(pt_gen_int(coeff1)))));
      min = gen_INVOCATION(pt_gen_ident("min"),arg_list);
-     arg_list = list_create(pt_gen_add(tree_copy(min),pt_gen_int(1)));
+     arg_list = list_create(pt_gen_add(tree_copy_with_type(min),pt_gen_int(1)));
      pt_tree_replace(gen_INDUCTIVE_get_rvalue2(control2),min);
      control2 = gen_DO_get_control(loop_copy);
-     arg_list = list_insert_first(arg_list,tree_copy(gen_INDUCTIVE_get_rvalue1(
+     arg_list = list_insert_first(arg_list,tree_copy_with_type(gen_INDUCTIVE_get_rvalue1(
 								   control2)));
      max = gen_INVOCATION(pt_gen_ident("max"),arg_list);
      pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control2),max);
@@ -1267,7 +1267,7 @@ static void create_pre_loop(model_loop    *loop_data,
 	copy_info.symtab = symtab;
 	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 			ut_init_copies,NOFUNC,(Generic)&copy_info);
-	new_loop = ut_tree_copy(loop_data[loop].node,0,ar);
+	new_loop = ut_tree_copy_with_type(loop_data[loop].node,0,ar);
 	set_level_vectors(gen_DO_get_stmt_LIST(loop_data[loop].node),
 			  gen_DO_get_stmt_LIST(new_loop),ped);
         walk_expression(loop_data[loop].node,mh_copy_edges,NOFUNC,
@@ -1353,10 +1353,10 @@ static void insert_stmts(SymDescriptor  symtab,
 	new_var = (char *)fst_GetFieldByIndex(symtab,index,SYMTAB_NAME);
 	list_insert_first(rdx_stmts->prev,
 			  gen_ASSIGNMENT(AST_NIL,pt_gen_ident(new_var),
-					 tree_copy(rval)));
+					 tree_copy_with_type(rval)));
         list_insert_first(rdx_stmts->post,
-			  gen_ASSIGNMENT(AST_NIL,tree_copy(rval),
-					 pt_gen_add(tree_copy(rval),
+			  gen_ASSIGNMENT(AST_NIL,tree_copy_with_type(rval),
+					 pt_gen_add(tree_copy_with_type(rval),
 						    pt_gen_ident(new_var))));
        }
   }
@@ -1397,7 +1397,7 @@ static void unroll_reduction(model_loop      *loop_data,
          loop_data[loop].val = loop_data[loop].max;
      if (loop_data[loop].val < 1)
        return;
-     step = tree_copy(gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
+     step = tree_copy_with_type(gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
                       loop_data[loop].node)));
      create_pre_loop(loop_data,loop,0,1,ped,symtab,ar);
      copy_info.val = loop_data[loop].val;
@@ -1513,7 +1513,7 @@ static void walk_loops(model_loop    *loop_data,
        {
 	walk_statements_reverse(loop_data[loop].node,loop_data[loop].level,
 				NOFUNC,check_labels,(Generic)&label_info);
-	step = tree_copy(gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
+	step = tree_copy_with_type(gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
                          loop_data[loop].node)));
 	create_pre_loop(loop_data,loop,num_loops-loops_unrolled,loops_unrolled,
 			ped,symtab,ar); 
