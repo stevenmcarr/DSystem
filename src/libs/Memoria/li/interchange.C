@@ -1,4 +1,4 @@
-/* $Id: interchange.C,v 1.10 1994/01/18 14:25:17 carr Exp $ */
+/* $Id: interchange.C,v 1.11 1994/04/13 14:20:16 carr Exp $ */
 
 /****************************************************************/
 /*                                                              */
@@ -63,10 +63,34 @@
 #include	<dg.h>		/* dg_add_edge()		*/
 #endif
 
+#include <MemoryOrder.h>
+#include <FDgraph.h>
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   set_scratch                                                */
+/*                                                                          */
+/*   Input:      node - a node in the AST                                   */
+/*               dummy - anything                                           */
+/*                                                                          */
+/*   Description: This function is called by walk_expression on each AST    */
+/*                node.  It sets the scratch field to NULL so no spurrious  */
+/*                pointers to space exist.                                  */
+/*                                                                          */
+/****************************************************************************/
+
+static int set_scratch(AST_INDEX node,
+		       int       dummy)
+
+  {
+   set_scratch_to_NULL(node);
+   return(WALK_CONTINUE);
+  }
 
 /****************************************************************/
 /*                                                              */
-/*   Function:   remove_edges                                   */
+/*   Function:   Remove_Edges                                   */
 /*                                                              */
 /*   Input:      stmt - statement in AST                        */
 /*               level - nesting level of stmt                  */
@@ -78,8 +102,7 @@
 /*                                                              */
 /****************************************************************/
 
-
-static int remove_edges(AST_INDEX stmt,
+static int RemoveEdges(AST_INDEX stmt,
 			int       level,
 			PedInfo   ped)
 
@@ -131,7 +154,10 @@ static int remove_edges(AST_INDEX stmt,
        {
 	next_edge = dg_next_src_stmt( PED_DG(ped),edge);
 	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	    dg[edge].type == dg_call || dg[edge].type == dg_control)
+	    dg[edge].type == dg_call || dg[edge].type == dg_control ||
+	    dg[edge].src == dg[edge].sink ||
+	    (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink) &&
+	     dg[edge].type == dg_true))
 	  dg_delete_free_edge( PED_DG(ped),edge);
        }
 
@@ -143,267 +169,149 @@ static int remove_edges(AST_INDEX stmt,
        {
 	next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
 	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	    dg[edge].type == dg_call || dg[edge].type == dg_control)
+	    dg[edge].type == dg_call || dg[edge].type == dg_control ||
+	    dg[edge].src == dg[edge].sink ||
+	    (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink) &&
+	     dg[edge].type == dg_true))
 	   dg_delete_free_edge( PED_DG(ped),edge);
        }
      return(WALK_CONTINUE);
   }
 
-/****************************************************************/
-/*                                                              */
-/*   Function:      heapify                                     */
-/*                                                              */
-/*   Input:     heap - array of loops and their memory cost     */
-/*              i - beginning index of heap                     */
-/*              j - ending index of heap                        */
-/*              n - size of the array                           */
-/*                                                              */
-/*   Description:  Create a heap out of the array of loops      */
-/*                 based on memory cost                         */
-/*                                                              */
-/****************************************************************/
-
-static void heapify(heap_type *heap,
-		    int       i,
-		    int       j,
-		    int       n)
-
+static model_loop *PrepareLoopForInterchange(PedInfo       ped,
+					     AST_INDEX     root,
+					     int           level,
+					     SymDescriptor symtab,
+					     arena_type    *ar)
 
   {
-   int k,i1,i2,
-       temp_index,
-       temp_stride;
+   model_loop *loop_data;
+   pre_info_type pre_info;
 
-     if (i < ((j+1) >> 1))
-       {
-	i1 = (i << 1) + 1;
-	i2 = (i << 1) + 2;
-	if (i2 > n) 
-	  i2 = i1;
-	if ((heap[i1].stride < heap[i].stride || 
-	     (heap[i1].stride == heap[i].stride &&
-	      heap[i1].index > heap[i].index)) ||
-	    (heap[i2].stride < heap[i].stride ||
-	     (heap[i2].stride == heap[i].stride &&
-	      heap[i2].index > heap[i].index)))
-	  {
-	   if (heap[i1].stride < heap[i2].stride)
-	     k = i1;
-	   else
-	     k = i2;
-	   temp_index = heap[i].index;
-	   temp_stride = heap[i].stride;
-	   heap[i].index = heap[k].index;
-	   heap[i].stride = heap[k].stride;
-	   heap[k].index = temp_index;
-	   heap[k].stride = temp_stride;
-	   heapify(heap,k,j,n);
-	  }
-       }
-  }
-     
+     pre_info.stmt_num = 0;
+     pre_info.loop_num = 0;
+     pre_info.surrounding_do = -1;
+     pre_info.abort = false;
+     pre_info.ped = ped;
+     pre_info.symtab = symtab;
+     pre_info.ar = ar;
 
-/****************************************************************/
-/*                                                              */
-/*   Function:     order_loops_for_stride                       */
-/*                                                              */
-/*   Input:        loop_data - loop structure                   */
-/*                 num_loops - number of loops in the nest      */
-/*                 outermost_lvl - outermost level that can     */
-/*                                 be permuted                  */
-/*                 ped - dependence graph handle                */
-/*                 symtab - symbol table                        */
-/*                 loop_list - list of loops in the perfect     */
-/*                             nest                             */
-/*                 heap - order of loops after interchange      */
-/*                                                              */
-/*   Description:  Perform a heap sort on the list of loops     */
-/*                 based upon their memory cost.                */
-/*                                                              */
-/****************************************************************/
+     walk_expression(root,set_scratch,NOFUNC,(Generic)NULL);
 
-static void order_loops_for_stride(model_loop *loop_data,
-				   int        num_loops,
-				   int        outermost_lvl,
-				   PedInfo    ped,
-				   SymDescriptor symtab,
-				   UtilList      *loop_list,
-				   heap_type     *heap)
+       /* prepare nest for analyzing, record surrounding do information */
 
-  {
-   int           i,pos;
-   int           temp_index,temp_stride;
-   upd_info_type upd_info;
-   Boolean       do_interchange = false;
-   UtilNode      *node;
-   int           *loop_order;
+     walk_statements(root,level,(WK_STMT_CLBACK)ut_mark_do_pre,
+		     (WK_STMT_CLBACK)ut_mark_do_post,(Generic)&pre_info);
+     if (pre_info.abort)
+       return NULL;;
 
-     for (node = UTIL_HEAD(loop_list),i = 0;
-	  node != NULLNODE;
-	  node = UTIL_NEXT(node),i++)
-       {
-	if (loop_data[UTIL_NODE_ATOM(node)].level < outermost_lvl)
+             /* remove dependence edges not wanted */
 
-	    /* ensure that levels where interchange is illegal remain
-	       in their same position */
+     walk_statements(root,level,RemoveEdges,NOFUNC,(Generic)ped);
 
-	  {
-	   heap[i].index = UTIL_NODE_ATOM(node);
-	   heap[i].stride = MAXINT - i;
-	  }
-	else
-	  {
-	   heap[i].index = UTIL_NODE_ATOM(node);
-	   heap[i].stride = loop_data[heap[i].index].stride;
-	  }
-       }
-     for (i = (num_loops-1) >> 1; i >= 0; i--)
-       heapify(heap,i,num_loops-1,num_loops-1);
-     for (i = num_loops-1; i > 0; i--)
-       {
-	temp_index = heap[i].index;
-	temp_stride = heap[i].stride;
-	heap[i].index = heap[0].index;
-	heap[i].stride = heap[0].stride;
-	heap[0].index = temp_index;
-	heap[0].stride = temp_stride;
-	heapify(heap,0,i-1,i-1);
-       }
-  }
+     loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
+					 pre_info.loop_num*sizeof(model_loop));
+       /* create loop structure */
+
+     ut_analyze_loop(root,loop_data,level,ped,symtab);
+     ut_check_shape(loop_data,0);
 
 
-/****************************************************************/
-/*                                                              */
-/*   Function:     check_interchange                            */
-/*                                                              */
-/*   Input:        loop_data - loop structure                   */
-/*                 loop      - innermost loop index             */
-/*                 num_loops - number of loops in nest          */
-/*                 outermost_lvl - outermost level where        */
-/*                                 permuation is legal.         */
-/*                 symtab    - symbol table                     */
-/*                 ped       - handle to dependence graph       */
-/*                 loop_list - list of loops in a perfect nest  */
-/*                 heap      - loop order after permutation     */
-/*                                                              */
-/*   Description:  Compute the best order of a perfect loop     */
-/*                 nest with regard to cache performance        */
-/*                                                              */
-/****************************************************************/
-
-
-static void check_interchange(model_loop    *loop_data,
-			      int           loop,
-			      int           num_loops,
-			      int           outermost_lvl,
-			      SymDescriptor symtab,
-			      PedInfo       ped,
-			      UtilList      *loop_list,
-			      heap_type     *heap)
-
-  {
-   StatsInfoType StatsInfo;
-   UtilNode      *lnode;
-
-     StatsInfo.ped = ped;
-     StatsInfo.mops = 0.0;
-     StatsInfo.flops = 0.0;
-     StatsInfo.loop_data = loop_data;
-     StatsInfo.UseCache = true;        
-     for (lnode = UTIL_HEAD(loop_list);
-	  lnode != NULLNODE;
-	  lnode = UTIL_NEXT(lnode))
-       {
-	StatsInfo.loop = (int)UTIL_NODE_ATOM(lnode);
-
-	   /* compute the cost in memory cycles of one iteration of a loop as if it
-	      were innermost */
-
-	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)ut_ComputeBalance,
-			NOFUNC,(Generic)&StatsInfo);
-	loop_data[StatsInfo.loop].stride = (int)(StatsInfo.mops * 100.0);
-       }
-
-        /* compute memory order */
-
-     order_loops_for_stride(loop_data,num_loops,outermost_lvl,ped,symtab,loop_list,heap);
-  }
+       /* determine order of each perfect loop nest */
+      
+     li_ComputeMemoryOrder(loop_data,symtab,ped,ar);
    
+     return loop_data;
+  }
 
-/****************************************************************/
-/*                                                              */
-/*   Function:     walk_loops                                   */
-/*                                                              */
-/*   Input:        loop_data - loop structure                   */
-/*                 loop      - innermost loop index             */
-/*                 outermost_lvl - outermost level where        */
-/*                 num_loops - number of loops in nest          */
-/*                 loop_list - list of loops in a perfect nest  */
-/*                 heap      - loop order after permutation     */
-/*                                 permuation is legal.         */
-/*                 symtab    - symbol table                     */
-/*                 ped       - handle to dependence graph       */
-/*                 ar        - arena for memory allocation      */
-/*                                                              */
-/*   Description:  Walk the loop structure build a list of      */
-/*                 each possible perfect loop nest.  Then       */
-/*                 determine memory order for that perfect      */
-/*                 nest.                                        */
-/*                                                              */
-/****************************************************************/
+static void WalkLoopsToCheckForFuse(model_loop *loop_data,
+				    int        loop,
+				    int        num_loops,
+				    Boolean    *Interchange,
+				    Boolean    *Imperfect)
 
-
-static void walk_loops(model_loop    *loop_data,
-		       int           loop,
-		       int           outermost_lvl,
-		       int           num_loops,
-		       UtilList      *loop_list,
-		       heap_type     *heap,
-		       SymDescriptor symtab,
-		       PedInfo       ped,
-		       arena_type    *ar)
-		       
   {
-   int next;
-
-     util_append(loop_list,util_node_alloc(loop,"loop node"));
-     fst_PutField(symtab,(fst_index_t)gen_get_text(gen_INDUCTIVE_get_name(
-		  gen_DO_get_control(loop_data[loop].node))),INDEX,loop);
-     if (!loop_data[loop].transform || !loop_data[loop].interchange ||
-	 !loop_data[loop].distribute || loop_data[loop].type == COMPLEX ||
-	 loop_data[loop].type == TRAP)
-
-          /* we have found a level where interchange is illegal, note that
-	     fact in outermost_lvl */
-
-       outermost_lvl = loop_data[loop].level+1;
+   int next,i;
+   
      if (loop_data[loop].inner_loop == -1)
-       check_interchange(loop_data,loop,num_loops,outermost_lvl,symtab,
-			 ped,loop_list,heap);
+       for (i = 0; i < num_loops; i++)
+         if (loop_data[loop].FinalOrder[i] != loop_data[loop].MemoryOrder[i])
+	   *Interchange = true;
+	 else;
      else
        {
 	next = loop_data[loop].inner_loop;
 	while (next != -1)
 	  {
-	   walk_loops(loop_data,next,outermost_lvl,num_loops+1,loop_list,heap,
-		      symtab,ped,ar);
-	   next = loop_data[next].next_loop;
-	   if (next != -1)
-
-	      /* whenever there are multiple loops at a single level, there
-		 will be multiple perfect nests.  Keep a heap for each perfect
-		 nest at the point where the multiple nests originate.  */
-
-	     {
-	      loop_data[next].heap=(heap_type *)ar->arena_alloc_mem(LOOP_ARENA,
-								    MAXLOOP * 
-							   sizeof(heap_type));
-	      heap = loop_data[next].heap;
-	     }
+	   WalkLoopsToCheckForFuse(loop_data,next,num_loops+1,Interchange,
+				   Imperfect);
+	   if ((next = loop_data[next].next_loop) != -1)
+	     *Imperfect = true;
 	  }
        }
-     util_pluck(UTIL_TAIL(loop_list));
   }
+
+
+static void WalkLoopsToPerformFusion(model_loop    *loop_data,
+				     int           loop,
+				     PedInfo       ped,
+				     SymDescriptor symtab,
+				     arena_type    *ar,
+				     Boolean       *Fuse)
+
+  {
+   Boolean any,all,Imperfect = false;
+   FDGraph *problem;
+   int next;
+   
+     next = loop_data[loop].inner_loop;
+     while (next != -1)
+       {
+	WalkLoopsToPerformFusion(loop_data,next,ped,symtab,ar,Fuse);
+	if ((next = loop_data[next].next_loop) != -1)
+	  Imperfect = true;
+       }
+     if (Imperfect)
+       if ((problem = fdBuildFusion(ped,loop_data[loop_data[loop].inner_loop].node,
+				    false)) != NULL)
+	 {
+	  fdGreedyFusion(ped,problem,true,&all,&any);
+	  if (all)
+	    {
+	     fprintf(stderr,"Fusion Candidates = %d\n",problem->size);
+	     fprintf(stderr,"Fusion Applied = %d\n",problem->types);
+	     fdDoFusion(ped,problem,loop_data[0].node);
+	     fdDestroyProblem(problem);
+	     *Fuse = true;
+	    }
+	  else
+	    fdDestroyProblem(problem);
+	 }
+  }
+
+
+static model_loop *TryFusionToEnableInterchange(model_loop    *loop_data,
+						PedInfo       ped,
+						SymDescriptor symtab,
+						arena_type    *ar)
+
+  {
+   Boolean Interchange = false, Imperfect = false, Fuse = false;
+
+     WalkLoopsToCheckForFuse(loop_data,0,1,&Interchange,&Imperfect);
+     if (Interchange && Imperfect)
+       {
+	WalkLoopsToPerformFusion(loop_data,0,ped,symtab,ar,&Fuse);
+	if (Fuse)
+	  {
+	   fprintf(stderr,"Fusion Has Been Performed To Enable Interchange\n");
+	   return(PrepareLoopForInterchange(ped,loop_data[0].node,
+					    loop_data[0].level,symtab,ar));
+	  }
+       }
+     return loop_data;
+  }
+
 
 
 /****************************************************************/
@@ -575,10 +483,11 @@ static int update_edges(AST_INDEX node,
 
 
 static void distribute_loop(model_loop    *loop_data,
-			     int           loop,
-			     PedInfo       ped,
-			     SymDescriptor symtab,
-			     arena_type    *ar)
+			    int           loop,
+			    PedInfo       ped,
+			    SymDescriptor symtab,
+			    arena_type    *ar,
+			    Boolean       Fusion)
   {
    AST_INDEX stmt,
              stmt_list[MAXLOOP],
@@ -617,6 +526,7 @@ static void distribute_loop(model_loop    *loop_data,
 	  }
 	i++;
        }
+     fprintf(stderr,"Loop at level %d has been distributed around %d statement blocks\n",loop_data[loop].level,i);
      info.ped = ped;
      info.level = loop_data[loop].level;
      tree_free(gen_DO_get_stmt_LIST(loop_data[loop].node));
@@ -633,12 +543,12 @@ static void distribute_loop(model_loop    *loop_data,
 
 	   /* perform interchange on each new nest */
 
-	memory_loop_interchange(ped,new_do,loop_data[loop].level,symtab,ar);
+	memory_loop_interchange(ped,new_do,loop_data[loop].level,symtab,ar,Fusion);
        }
      walk_expression(stmt_list[0],(WK_EXPR_CLBACK)update_edges,NOFUNC,(Generic)&info);
      gen_DO_put_stmt_LIST(loop_data[loop].node,stmt_list[0]);
      memory_loop_interchange(ped,loop_data[loop].node,loop_data[loop].level,
-			     symtab,ar);
+			     symtab,ar,Fusion);
   }
 
 
@@ -1100,10 +1010,10 @@ static Boolean outer_levels_ok(heap_type *heap,
 
 
 static Boolean levels_in_order(heap_type *heap,
-			       model_loop *loop_data,
-			       int        loop,
-			       int        chk_level,
-			       int        outermost)
+			      model_loop *loop_data,
+			      int        loop,
+			      int        chk_level,
+			      int        outermost)
 
   {
    int i,level_val;
@@ -1152,7 +1062,8 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 				      heap_type  *heap,
 				      SymDescriptor symtab,
 				      PedInfo    ped,
-				      arena_type *ar)
+				      arena_type *ar,
+				      Boolean    Fusion)
   {
    int next,temp;
    AST_INDEX stmt_list[MAXLOOP];
@@ -1173,7 +1084,7 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 	if (loop_data[loop].inner_loop != -1)
 	  walk_loops_to_interchange(loop_data,loop_data[loop].inner_loop,
 				    loop_data[loop].inner_loop,num_loops+1,
-				    heap,symtab,ped,ar);
+				    heap,symtab,ped,ar,Fusion);
 	for (next = loop_data[loop].next_loop;
 	     next != -1;
 	     next = temp)
@@ -1187,7 +1098,7 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 
 	   heap = loop_data[next].heap;
 	   walk_loops_to_interchange(loop_data,next,next,num_loops,heap,symtab,
-				     ped,ar);
+				     ped,ar,Fusion);
 	   loop_data[next].next_loop = temp;
 	  }
 	}  
@@ -1203,10 +1114,11 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 	    perform_interchange(loop_data,heap,loop,num_loops,symtab,ped,ar);
 	  else
 	    walk_loops_to_interchange(loop_data,loop_data[loop].inner_loop,
-				     outermost,num_loops+1,heap,symtab,ped,ar);
+				      outermost,num_loops+1,heap,symtab,ped,ar,
+				      Fusion);
 	 }
        else
-	 distribute_loop(loop_data,loop,ped,symtab,ar);
+	 distribute_loop(loop_data,loop,ped,symtab,ar,Fusion);
      else
        {
 
@@ -1215,7 +1127,7 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 
 	if (NOT(levels_in_order(heap,loop_data,loop_data[loop].parent,
 				loop_data[loop].level-1,outermost)))
-	  distribute_loop(loop_data,loop_data[loop].parent,ped,symtab,ar);
+	  distribute_loop(loop_data,loop_data[loop].parent,ped,symtab,ar,Fusion);
 	else
 	  {
 
@@ -1232,7 +1144,7 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 	      loop_data[next].next_loop = -1;
 
 	      walk_loops_to_interchange(loop_data,next,next,num_loops,
-					heap,symtab,ped,ar);	   
+					heap,symtab,ped,ar,Fusion);	   
 	      loop_data[next].next_loop = temp;
 	      next = temp;
 	      heap = loop_data[next].heap;
@@ -1262,52 +1174,20 @@ void memory_loop_interchange(PedInfo       ped,
 			     AST_INDEX     root,
 			     int           level,
 			     SymDescriptor symtab,
-			     arena_type    *ar)
+			     arena_type    *ar,
+			     Boolean       Fusion)
 
   {
-   pre_info_type pre_info;
-   model_loop    *loop_data;
-   UtilList      *loop_list;
+   model_loop *loop_data;
 
-     pre_info.stmt_num = 0;
-     pre_info.loop_num = 0;
-     pre_info.surrounding_do = -1;
-     pre_info.abort = false;
-     pre_info.ped = ped;
-     pre_info.symtab = symtab;
-     pre_info.ar = ar;
-
-       /* prepare nest for analyzing, record surrounding do information */
-
-     walk_statements(root,level,(WK_STMT_CLBACK)ut_mark_do_pre,(WK_STMT_CLBACK)ut_mark_do_post,
-		     (Generic)&pre_info);
-     if (pre_info.abort)
+     if ((loop_data = PrepareLoopForInterchange(ped,root,level,symtab,ar)) == NULL)
        return;
-
-       /* remove unnecessary dependence edges */
-
-     walk_statements(root,level,(WK_STMT_CLBACK)remove_edges,NOFUNC,(Generic)ped);
-     loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
-					 pre_info.loop_num*sizeof(model_loop));
-       /* create loop structure */
-
-     ut_analyze_loop(root,loop_data,level,ped,symtab);
-     ut_check_shape(loop_data,0);
-
-     fst_InitField(symtab,INDEX,-1,0);
-     loop_list = util_list_alloc((Generic)NULL,"loop-list");
-     loop_data[0].heap = (heap_type *)ar->arena_alloc_mem(LOOP_ARENA,
-							  MAXLOOP*
-							  sizeof(heap_type));
-
-       /* determine order of each perfect loop nest */
-
-     walk_loops(loop_data,0,0,1,loop_list,loop_data[0].heap,symtab,ped,ar);
-     util_list_free(loop_list);
-     fst_KillField(symtab,INDEX);
+     if (Fusion)
+       loop_data = TryFusionToEnableInterchange(loop_data,ped,symtab,ar);
 
        /* reorder loop nests as necessary */
 
      walk_loops_to_interchange(loop_data,0,0,1,loop_data[0].heap,symtab,ped,
-			       ar);
+			       ar,Fusion);
+
   }
