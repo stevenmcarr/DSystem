@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.7 1992/12/11 11:19:50 carr Exp $ */
+/* $Id: mh.h,v 1.8 1992/12/11 14:08:46 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -33,6 +33,9 @@
 #ifndef groups_h
 #include <fort/groups.h>             /* for binary node tests */
 #endif 
+#ifndef header_h
+#include <header.h>
+#endif
 
 #define  MAX_LEVEL  20
 

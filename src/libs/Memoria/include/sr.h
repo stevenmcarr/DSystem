@@ -1,4 +1,4 @@
-/* $Id: sr.h,v 1.7 1992/12/11 11:20:13 carr Exp $ */
+/* $Id: sr.h,v 1.8 1992/12/11 14:09:02 carr Exp $ */
 
 /*-------------------------------------------------------------
 
@@ -26,6 +26,9 @@
 #endif 
 #ifndef block_h
 #include <block.h>
+#endif
+#ifndef header_h
+#include <header.h>
 #endif
 
 typedef enum {BOGUS,LIAV,LIPAV,LCAV,LCPAV} GenTypes;
