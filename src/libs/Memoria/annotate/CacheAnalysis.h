@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.h,v 1.10 1997/03/27 20:22:30 carr Exp $ */
+/* $Id: CacheAnalysis.h,v 1.11 1997/10/30 15:09:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -12,6 +12,7 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #include <libs/support/lists/list.h>
+#include <libs/Memoria/include/la.h>
 #include <malloc.h>
 
 typedef struct CacheInfoStruct {
@@ -23,12 +24,14 @@ typedef struct CacheInfoStruct {
   arena_type *ar;
   char       **IVar;
   Boolean    HasSelfSpatial;
+  DataReuseModel *ReuseModel;
  } CacheInfoType;
 
 typedef struct DepInfoStruct {
   int ReferenceNumber;
   UtilList *DependenceList;
   LocalityType Locality;
+  Boolean IsGroupSpatialLeader;
  } DepInfoType;         /* copy in a2i_lib/ai.h */
 
 typedef struct depstruct {
@@ -44,4 +47,5 @@ typedef struct depstruct {
    ast_put_scratch(n,(SCRATCH)malloc(sizeof(DepInfoType)))
 
 extern int aiCache;
+extern int aiSpecialCache;
 #endif

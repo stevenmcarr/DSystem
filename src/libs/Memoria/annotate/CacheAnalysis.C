@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.12 1997/06/25 15:22:25 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.13 1997/10/30 15:09:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -12,7 +12,7 @@
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/Memoria/include/mh_config.h>
-#include <libs/Memoria/include/Memoria_label.h>
+#include <libs/Memoria/include/label.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #include <libs/Memoria/include/bound.h>
 #include <libs/frontEnd/include/walk.h>
@@ -22,6 +22,7 @@
 #include <libs/Memoria/include/mem_util.h>
 #include <libs/Memoria/annotate/CacheAnalysis.h>
 #include <libs/Memoria/annotate/DirectivesInclude.h>
+#include <libs/Memoria/include/la.h>
 
 static int RefCount = 0;
 
@@ -186,7 +187,10 @@ static int CreateDepInfo(AST_INDEX node,
 	     PutDirectiveInfoPtr(node,Dir);
 	   }
 	 else
-	   delete Dir;
+	   {
+	    PutDirectiveInfoPtr(node,NULL);
+	    delete Dir;
+	   }
        }
      else
        walkIDsInStmt(node,(WK_IDS_CLBACK_V)CreateDepInfoSubscript,Symtab);
@@ -204,17 +208,23 @@ static int StoreCacheInfo(AST_INDEX     node,
          ut_GetReferenceType(node,CacheInfo->loop_data,CacheInfo->loop,
 			     CacheInfo->ped,NULL);
        if (DepInfoPtr(node)->Locality == SELF_SPATIAL)
-	 CacheInfo->HasSelfSpatial = true;
+	 {
+	   CacheInfo->HasSelfSpatial = true;
+	   if (aiSpecialCache)
+	     DepInfoPtr(node)->IsGroupSpatialLeader = 
+	       CacheInfo->ReuseModel->IsGroupSpatialLeader(node);
+	 }
       }
      return(WALK_CONTINUE);
   }
+
 
 static Boolean IsPrefetch(AST_INDEX Stmt)
 
 {
   if (is_comment(Stmt))
     if (DirectiveInfoPtr(Stmt) != NULL)
-      return (BOOL(DirectiveInfoPtr(Stmt)->Instr == PrefetchInstruction));
+      return BOOL(DirectiveInfoPtr(Stmt)->Instr == PrefetchInstruction);
   return false;
 }
 
@@ -223,7 +233,7 @@ static Boolean IsDead(AST_INDEX Stmt)
 {
   if (is_comment(Stmt))
     if (DirectiveInfoPtr(Stmt) != NULL)
-      return (BOOL(DirectiveInfoPtr(Stmt)->Instr == FlushInstruction));
+      return BOOL(DirectiveInfoPtr(Stmt)->Instr == FlushInstruction);
   return false;
 }
 
@@ -361,6 +371,8 @@ static void walk_loops(CacheInfoType  *CacheInfo,
 
   {
    int i;
+   int *LIS;
+   UniformlyGeneratedSets *UGS;
 
      CacheInfo->IVar[CacheInfo->loop_data[loop].level-1] = 
           gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
@@ -368,11 +380,28 @@ static void walk_loops(CacheInfoType  *CacheInfo,
      if (CacheInfo->loop_data[loop].inner_loop == -1)
        {
 	CacheInfo->loop = loop;
+	if (aiSpecialCache)
+	  {
+	    LIS = new int[CacheInfo->loop_data[loop].level];
+	    for (i = 0; i < CacheInfo->loop_data[loop].level-1; i++)
+		LIS[i] = 0;
+	    LIS[CacheInfo->loop_data[loop].level-1] = 1;
+	    UGS = new UniformlyGeneratedSets(CacheInfo->loop_data[loop].node,
+					     CacheInfo->loop_data[loop].level,
+					     CacheInfo->IVar,LIS);
+	    CacheInfo->ReuseModel = new DataReuseModel(UGS);
+	  }
 	walk_expression(CacheInfo->loop_data[loop].node,(WK_EXPR_CLBACK)StoreCacheInfo,
 			NOFUNC,(Generic)CacheInfo);
 	walk_expression(CacheInfo->loop_data[loop].node,
 			(WK_EXPR_CLBACK)BuildDependenceList,NOFUNC,(Generic)CacheInfo);
 	BuildPrefetchDependenceList(CacheInfo);
+	if (aiSpecialCache)
+	  {
+	    delete CacheInfo->ReuseModel;
+	    delete UGS;
+	    delete LIS;
+	  }
        }
      else
        {
