@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.7 1992/12/16 11:34:49 carr Exp $ */
+/* $Id: mh_walk.C,v 1.8 1993/06/15 14:03:46 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -36,6 +36,9 @@
 #ifndef message_h
 #include <dialogs/message.h>
 #endif
+
+#include <fort/FortTextTree.h>
+#include <ArrayTable.h>
 
 static walk_info_type memory_walk_info;  /* permutation statistics for an
 					    entire composition or list of
@@ -91,6 +94,73 @@ static int remove_do_labels(AST_INDEX stmt,
 
 /****************************************************************************/
 /*                                                                          */
+/*   Function:   MakeInitList                                               */
+/*                                                                          */
+/*   Input:  TableInfo - Table of array reference names to initialize the   */
+/*                       name table used by the cache simulator on          */
+/*                       code annotated with calls to the simulator         */
+/*                                                                          */
+/*   Description: Create a declaration of a table of array reference        */
+/*                strings used as output of the cache simulator.            */
+/*                                                                          */
+/****************************************************************************/
+
+
+static AST_INDEX MakeInitList(TableInfoType *TableInfo)
+
+  {
+   AST_INDEX list,node;
+   int i;
+   char TextConstant[80];
+
+     list = list_create(AST_NIL);
+     for (i = 0; i < TableInfo->count; i++)
+       if (TableInfo->ArrayTable[i].node != AST_NIL)
+	 {
+	  node = gen_CONSTANT();
+	  sprintf(TextConstant,"'%s\\0'",TableInfo->ArrayTable[i].Text);
+	  gen_put_text(node,TextConstant,STR_TEXT_STRING);
+	  list_insert_last(list,node);
+	 }
+       else
+	 {
+	  node = gen_CONSTANT();
+	  sprintf(TextConstant,"'%s\\0'","");
+	  gen_put_text(node,TextConstant,STR_TEXT_STRING);
+	  list_insert_last(list,node);
+	 }
+     return(list);
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function: CreateTableDecls                                             */
+/*                                                                          */
+/*   Input:      StmtList - list of statements in a subroutine              */
+/*               TableInfo - Table of array reference names                 */
+/*                                                                          */
+/*   Description: Create a type statement for the table of array reference  */
+/*                strings.                                                  */
+/*                                                                          */
+/****************************************************************************/
+
+static void CreateTableDecls(AST_INDEX StmtList,
+			     TableInfoType *TableInfo)
+
+  {
+   list_insert_first(StmtList,gen_TYPE_STATEMENT(AST_NIL,
+	gen_TYPE_LEN(gen_CHARACTER(),pt_gen_int(TableInfo->MaxLength)),
+                     list_create(
+                         gen_ARRAY_DECL_LEN(
+                             pt_gen_ident("array$table"),AST_NIL,
+                             list_create(pt_gen_int(TableInfo->count)),
+			     MakeInitList(TableInfo)))));
+   ft_SetComma(list_first(StmtList),false);
+  }
+
+/****************************************************************************/
+/*                                                                          */
 /*   Function:  pre_walk                                                    */
 /*                                                                          */
 /*   Input:     stmt - statement in the AST                                 */
@@ -109,25 +179,61 @@ static int pre_walk(AST_INDEX      stmt,
 		    walk_info_type *walk_info)
 
   {
-   if (is_program(stmt))
-     {
-      walk_info->symtab = ft_SymGetTable(walk_info->ft,
-				     gen_get_text(gen_PROGRAM_get_name(stmt)));
-      fst_InitField(walk_info->symtab,NEW_VAR,false,0);
-     }
-   else if (is_subroutine(stmt))
-     {
-      walk_info->symtab = ft_SymGetTable(walk_info->ft,
-				  gen_get_text(gen_SUBROUTINE_get_name(stmt)));
-      fst_InitField(walk_info->symtab,NEW_VAR,false,0);
-     }
-   else if (is_function(stmt))
-     {
-      walk_info->symtab = ft_SymGetTable(walk_info->ft,
-				  gen_get_text(gen_FUNCTION_get_name(stmt)));
-      fst_InitField(walk_info->symtab,NEW_VAR,false,0);
-     }
-   return(WALK_CONTINUE);
+   AST_INDEX node1;
+   char      TextConstant[80];
+
+     if (is_program(stmt))
+       {
+	walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
+	walk_info->routine = gen_get_text(gen_PROGRAM_get_name(stmt));
+	walk_info->symtab = ft_SymGetTable(walk_info->ft,walk_info->routine);
+	fst_InitField(walk_info->symtab,NEW_VAR,false,0);
+	if (walk_info->selection == ANNOTATE)
+	  {
+	   memory_BuildArrayTableInfo(stmt,LEVEL1,&walk_info->TableInfo,
+				      walk_info->ar);
+	   CreateTableDecls(gen_PROGRAM_get_stmt_LIST(stmt),
+			    &walk_info->TableInfo);
+	  }
+       }
+     else if (is_subroutine(stmt))
+       {
+	walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
+	walk_info->routine = gen_get_text(gen_SUBROUTINE_get_name(stmt));
+	walk_info->symtab = ft_SymGetTable(walk_info->ft,walk_info->routine);
+	fst_InitField(walk_info->symtab,NEW_VAR,false,0);
+	if (walk_info->selection == ANNOTATE)
+	  {
+	   memory_BuildArrayTableInfo(stmt,LEVEL1,&walk_info->TableInfo,
+				      walk_info->ar);
+	   CreateTableDecls(gen_SUBROUTINE_get_stmt_LIST(stmt),
+			    &walk_info->TableInfo);
+	  }
+       }
+     else if (is_function(stmt))
+       {
+	walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
+	walk_info->routine = gen_get_text(gen_FUNCTION_get_name(stmt));
+	walk_info->symtab = ft_SymGetTable(walk_info->ft,walk_info->routine);
+	fst_InitField(walk_info->symtab,NEW_VAR,false,0);
+	if (walk_info->selection == ANNOTATE)
+	  {
+	   memory_BuildArrayTableInfo(stmt,LEVEL1,&walk_info->TableInfo,
+				      walk_info->ar);
+	   CreateTableDecls(gen_FUNCTION_get_stmt_LIST(stmt),
+			    &walk_info->TableInfo);
+	  }
+       }
+     else if ((is_stop(stmt) || is_return(stmt)) && 
+	      walk_info->selection == ANNOTATE)
+       {
+	node1 = gen_CONSTANT();
+	sprintf(TextConstant,"%%val(%d)",walk_info->TableInfo.MaxLength);
+	gen_put_text(node1,TextConstant,STR_TEXT_STRING);
+	list_insert_before(stmt,pt_gen_call("fortran_cache_report",
+	  list_insert_last(list_create(pt_gen_ident("array$table")),node1)));
+       }
+     return(WALK_CONTINUE);
   }
 
 
@@ -152,6 +258,8 @@ static void InterchangeStats(AST_INDEX      stmt,
    memory_interchange_stats(walk_info->ped,stmt,
 			    LEVEL1,
 			    &walk_info->LoopStats,
+			    walk_info->routine,
+			    walk_info->program,
 			    walk_info->symtab,
 			    walk_info->ar);
 
@@ -215,8 +323,7 @@ static void ScalarReplacement(AST_INDEX      stmt,
 			      walk_info_type *walk_info)
   {
      /* perform scalar replacement */
-   memory_scalar_replacement(walk_info->ped,stmt,
-			     walk_info->symtab,
+   memory_scalar_replacement(walk_info->ped,stmt,level,walk_info->symtab,
 			     walk_info->ar);
 
      /* re-initialize scratch field (no dangling pointers) */
@@ -264,6 +371,80 @@ static AST_INDEX UnrollAndJam(AST_INDEX      stmt,
   }
 
 
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:     SoftwarePrefetch                                         */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description:  Call the function to perform software prefetching.       */
+/*                                                                          */
+/****************************************************************************/
+
+
+static void SoftwarePrefetch(AST_INDEX      stmt,
+			     int            level,
+			     walk_info_type *walk_info)
+  {
+      /* perform loop interchange */
+   memory_software_prefetch(walk_info->ped,stmt,
+			    LEVEL1,walk_info->symtab,
+			    walk_info->ar);
+
+     /* re-initialize scratch field (no dangling pointers) */
+   walk_expression(stmt,set_scratch,NOFUNC,
+		   (Generic)NULL);
+
+     /* free up space used */
+   walk_info->ar->arena_deallocate(LOOP_ARENA);
+  }
+
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:     AnnotateCodeForCache                                     */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description:  Call function to annotate the fortran code with calls to */
+/*                 the cache simulator                                      */
+/*                                                                          */
+/****************************************************************************/
+
+
+static void AnnotateCodeForCache(AST_INDEX      stmt,
+				 int            level,
+				 walk_info_type *walk_info)
+  {
+   AST_INDEX node1,node2;
+   char TextConstant[80];
+
+     if (walk_info->LoopStats.Nests == 1)
+       {
+
+	  /* initialize the simulator before the first loop nest */
+
+	node1 = gen_CONSTANT();
+	sprintf(TextConstant,"%%val(%d)",walk_info->TableInfo.count);
+	gen_put_text(node1,TextConstant,STR_TEXT_STRING);
+	node2 = gen_CONSTANT();
+	sprintf(TextConstant,"%%val(%d)",walk_info->TableInfo.LineNum);
+	gen_put_text(node2,TextConstant,STR_TEXT_STRING);
+	list_insert_before(stmt,pt_gen_call("cache_init",
+					   list_insert_last(list_create(node1),
+							    node2)));
+       }
+     memory_AnnotateWithCacheCalls(stmt,level, walk_info->routine,
+				   &walk_info->TableInfo,walk_info->ftt);
+  }
+
+
 /****************************************************************************/
 /*                                                                          */
 /*   Function:   post_walk                                                  */
@@ -289,7 +470,6 @@ static int post_walk(AST_INDEX      stmt,
      {
       walk_info->LoopStats.Nests++;
       walk_info->LoopStats.Perfect = true;
-      walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
       switch(walk_info->selection) {
 	case INTERSTATS:     InterchangeStats(stmt,level,walk_info);
 	                     break;
@@ -337,6 +517,10 @@ static int post_walk(AST_INDEX      stmt,
 				new_stmt = list_next(new_stmt);
 			       }
 			     ScalarReplacement(stmt,level,walk_info);
+	                     break;
+	case PREFETCH:       SoftwarePrefetch(stmt,level,walk_info);
+	                     break;
+	case ANNOTATE:       AnnotateCodeForCache(stmt,level,walk_info);
 	                     break;
        }
       return(WALK_FROM_OLD_NEXT);
@@ -903,7 +1087,6 @@ void mh_walk_ast(int          selection,
      if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
 	 selection == INTERSTATS)
        {
-	/* what should memory_folder be? */
 	sprintf(fn,"%s.STATSLOG", ctxLocation(mod_context));
 	((config_type *)PED_MH_CONFIG(ped))->logfile = fopen(fn,"w");
        }
@@ -911,7 +1094,11 @@ void mh_walk_ast(int          selection,
      walk_info.selection = selection;
      walk_info.ped = ped;
      walk_info.ft = ft;
+     walk_info.ftt = PED_FTT(ped);
+     walk_info.TableInfo.ftt = walk_info.ftt;
      walk_info.ar = ar;
+     walk_info.program = ctxLocation(mod_context); 
+     walk_info.LoopStats.Nests = 0;
 
      if (selection == INTERSTATS)
        {
@@ -931,7 +1118,6 @@ void mh_walk_ast(int          selection,
 	walk_info.LoopStats.NeedsScalarExpansion = 0;
 	walk_info.LoopStats.TimeStepPreventedMemoryOrder = 0;
 	walk_info.LoopStats.TooComplex = 0;
-	walk_info.LoopStats.Nests = 0;
 	walk_info.LoopStats.Imperfect = 0;
 	walk_info.LoopStats.OriginalLocalityMatrix.SingleGroups.Invariant = 0;
 	walk_info.LoopStats.OriginalLocalityMatrix.SingleGroups.Spatial = 0;
