@@ -1144,53 +1144,56 @@ static void ComputeLegalOrder(model_loop *loop_data,
 	  {
 	   if (!ut_member_number(LoopChosen,j))
 	     if (outermost_lvl > i+1)
+	       {
 
 	        /* all levels outside of "outermost_lvl" must
 		   remain in original order to preserve correctness */
 
-	       if (loop_data[new_heap[j].index].level == i+1)
-		 {
-		  heap[i] =  new_heap[j];
-		  loop_not_chosen = false;
-		  ut_add_number(LoopChosen,j);
-		  CleanEdgeList(EdgeList,ped,i+1);
-		 }
-	       else if (NOT(LegalPosition(EdgeList,ped,i+1,
-					  loop_data[new_heap[j].index].level)))
-		 {
-		    /* this is checked for stats only */
-
-		  loop_data[loop].interchange = false;
-		  ut_add_number(loop_data[loop].PreventLvl[i],
-				loop_data[new_heap[j].index].level);
-		 }
-	       else;
-
-	         /* check if placement at level "i" does not change the
-		    direction of a dependence */
-
-	     else 
-	       {
-		Legal = LegalPosition(EdgeList,ped,i+1,
-				      loop_data[new_heap[j].index].level);
-		if (NOT(Legal))
-		  Legal = li_LoopReversal(loop_data,new_heap[j].index,EdgeList,
-					  ped);
-		if (Legal)
+		if (loop_data[new_heap[j].index].level == i+1)
 		  {
 		   heap[i] =  new_heap[j];
 		   loop_not_chosen = false;
 		   ut_add_number(LoopChosen,j);
-		   CleanEdgeList(EdgeList,ped,
-				 loop_data[new_heap[j].index].level);
+		   CleanEdgeList(EdgeList,ped,i+1);
 		  }
-		else
+		if (NOT(LegalPosition(EdgeList,ped,i+1,
+				      loop_data[new_heap[j].index].level)) ||
+		    NOT(loop_data[new_heap[j].index].DependencesHandled))
+		    /*set false in analyze.C if dependence not handled*/ 
 		  {
+		    /* this is checked for stats only */
+
 		   loop_data[loop].interchange = false;
 		   ut_add_number(loop_data[loop].PreventLvl[i],
 				 loop_data[new_heap[j].index].level);
 		  }
 	       }
+
+	   /* check if placement at level "i" does not change the */
+	   /* direction of a dependence */
+
+	   else 
+	     {
+	      Legal = LegalPosition(EdgeList,ped,i+1,
+				    loop_data[new_heap[j].index].level);
+	      if (NOT(Legal))
+	        Legal = li_LoopReversal(loop_data,new_heap[j].index,EdgeList,
+					ped);
+	      if (Legal && loop_data[new_heap[j].index].DependencesHandled)
+		{
+		 heap[i] =  new_heap[j];
+		 loop_not_chosen = false;
+		 ut_add_number(LoopChosen,j);
+		 CleanEdgeList(EdgeList,ped,
+				 loop_data[new_heap[j].index].level);
+		}
+	      else
+		{
+		 loop_data[loop].interchange = false;
+		 ut_add_number(loop_data[loop].PreventLvl[i],
+			       loop_data[new_heap[j].index].level);
+		}
+	     }
 	   j++;
 	  }
        }

@@ -1,4 +1,4 @@
-/* $Id: mh_config.h,v 1.1 1994/01/18 15:22:32 memoria Exp $ */
+/* $Id: mh_config.h,v 1.2 1994/07/11 13:34:35 carr Exp $ */
 
 /*************************************************************************
 
@@ -40,4 +40,4 @@ typedef struct {
 
 EXTERN(void, mh_get_config,(config_type *config,char *filename));
 
-#endif mh_config_h
+#endif 
