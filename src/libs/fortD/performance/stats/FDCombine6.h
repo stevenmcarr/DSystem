@@ -1,4 +1,4 @@
-/* $Id: FDCombine6.h,v 1.1 1997/03/11 14:29:09 carr Exp $ */
+/* $Id: FDCombine6.h,v 1.2 2001/09/14 18:34:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -791,7 +791,7 @@ class LineStatCell {
       fprintf( ofd, "    excProc: (" );
       max = INT_MIN; min = INT_MAX; 
       sum = 0; var = 0;
-      for ( i = 0; i < nnode; i++ ) {
+      for ( int i = 0; i < nnode; i++ ) {
          thisTime = nodes[i].second.procExclude;
          fprintf( ofd, "  %8.6f", thisTime );
          if ( max < thisTime )
@@ -810,7 +810,7 @@ class LineStatCell {
       fprintf( ofd, "    incMesg: (" );
       max = INT_MIN; min = INT_MAX; 
       sum = 0; var = 0;
-      for ( i = 0; i < nnode; i++ ) {
+      for ( int i = 0; i < nnode; i++ ) {
          thisTime = nodes[i].second.mesgInclude;
          fprintf( ofd, "  %8.6f", thisTime );
          if ( max < thisTime )
@@ -829,7 +829,7 @@ class LineStatCell {
       fprintf( ofd, "    excMesg: (" );
       max = INT_MIN; min = INT_MAX; 
       sum = 0; var = 0;
-      for ( i = 0; i < nnode; i++ ) {
+      for ( int i = 0; i < nnode; i++ ) {
          thisTime = nodes[i].second.mesgExclude;
          fprintf( ofd, "  %8.6f", thisTime );
          if ( max < thisTime )
