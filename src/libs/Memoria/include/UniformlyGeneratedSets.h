@@ -105,6 +105,10 @@ public:
   Boolean SingleNodeHasSelfSpatialReuse();
   Boolean SameUniformlyGeneratedSet(AST_INDEX node,la_matrix nodeH);
   void InterchangeRows(int *IV);
+  la_vect getLocal() { return LocalizedIterationSpace;};
+  int getNestl() { return NestingLevel;};
+  int getSubs() { return Subscripts;};
+  la_matrix getH() { return H;};
  };
 
 
