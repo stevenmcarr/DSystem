@@ -1,4 +1,4 @@
-/* $Id: pt_util.ansi.c,v 1.4 1995/08/18 10:33:37 trsuchyt Exp $ */
+/* $Id: pt_util.ansi.c,v 1.5 1995/08/22 15:55:08 yguan Exp $ */
 /*-----------------------------------------------------------------------
 
 	pt_util.c		Utility routines for pt
@@ -90,20 +90,6 @@ STATIC(int, pt_walk_mul,(AST_INDEX expr, Pt_walk_parms *parms));
 STATIC(int, pt_walk_clear_info,(AST_INDEX expr, Generic info_side_array));
 STATIC(int, pt_stmt_refs,(AST_INDEX stmt, int lvl, Pt_ref_params *refs));
 STATIC(int, pt_expr_uses,(AST_INDEX expr, Pt_ref_params *refs));
-
-
-char*
-pt_get_stmt_text(PedInfo ped, AST_INDEX num)
-{
-	static char 	text[512];
-	char		*p;
-
-	if (num == 0)
-		return ("");
-	strcpy(text, (ped->GetLine) (PED_ED_HANDLE(ped), num));
-	for (p = text; (*p == ' ') || (*p == '\t'); p++);
-	return (p);
-}
 
 
 /*-------------------------------------------------------------------------
@@ -1221,7 +1207,10 @@ pt_get_constant(AST_INDEX expr, int *constant)
    AST_INDEX node;
 
      pt_get_constant_walk(expr,&node);
-     (void)pt_eval(node,constant);
+     if (node == AST_NIL)
+       *constant = 0;
+     else
+       (void)pt_eval(node,constant);
   }
 
 /*************************************************************

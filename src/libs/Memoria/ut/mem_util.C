@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.14 1995/08/21 15:13:02 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.15 1995/08/22 15:53:37 yguan Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -48,10 +48,9 @@ int ut_change_logical_to_block_if(AST_INDEX stmt,
      if (is_logical_if(stmt))
        {
 	rvalue = gen_LOGICAL_IF_get_rvalue(stmt);
-	gen_LOGICAL_IF_put_rvalue(stmt,AST_NIL);
 	stmt_list = gen_LOGICAL_IF_get_stmt_LIST(stmt);
-	gen_LOGICAL_IF_put_stmt_LIST(stmt,AST_NIL);
-	guard = gen_GUARD(AST_NIL,rvalue,stmt_list);
+	guard = gen_GUARD(AST_NIL,tree_copy_with_type(rvalue),
+			  tree_copy_with_type(stmt_list));
 	block_if = gen_IF(tree_copy_with_type(gen_get_label(stmt)),AST_NIL,
 			  list_create(guard));
 	pt_tree_replace(stmt,block_if);
@@ -976,4 +975,44 @@ int ut_CyclesPerIteration(AST_INDEX Node,
      else
        return(CycleInfo.FlopCycles);
   }
+
+static int CountSize(AST_INDEX     Node,
+		       CycleInfoType *CycleInfo)
+
+  {
+   subscript_info_type *sptr;
+
+     if (is_subscript(Node))
+       {
+	sptr = get_subscript_ptr(gen_SUBSCRIPT_get_name(Node));
+	if (sptr->Locality == NONE || sptr->Locality == SELF_SPATIAL ||
+	    sptr->Locality == GROUP_SPATIAL)
+	  CycleInfo->MemCycles += 1;
+       }
+     else if (is_binary_op(Node))
+	CycleInfo->FlopCycles += 1;
+     return(WALK_CONTINUE);
+  }
+
+int ut_LoopSize(AST_INDEX Node,
+                          PedInfo   ped)
+
+  {
+   CycleInfoType CycleInfo;
+  
+     CycleInfo.MemCycles = 0;
+     CycleInfo.FlopCycles = 0;
+     CycleInfo.ped = ped;
+     walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountSize,NOFUNC,
+                     (Generic)&CycleInfo);
+     /********
+     if (CycleInfo.MemCycles >= CycleInfo.FlopCycles)
+       return(CycleInfo.MemCycles);
+     else
+       return(CycleInfo.FlopCycles);
+     *******/
+      return(CycleInfo.FlopCycles + CycleInfo.MemCycles); 
+
+  }
+
 
