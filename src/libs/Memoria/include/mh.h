@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.17 1995/08/18 10:13:58 trsuchyt Exp $ */
+/* $Id: mh.h,v 1.18 1995/08/22 14:21:03 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -41,7 +41,7 @@
 #endif
 #include <UniformlyGeneratedSets.h>
 
-static Boolean mc_extended_cache = false;
+extern Boolean mc_extended_cache;
 
 #define  MAX_LEVEL  20
 
