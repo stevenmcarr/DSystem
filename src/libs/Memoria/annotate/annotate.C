@@ -11,7 +11,7 @@
 #include <header.h>
 #include <annotate.h>
 #include <std.h>
-#include <cgen_set.h>
+#include <mem_util.h>
 
 #include <Arena.h>
 
@@ -144,7 +144,8 @@ static int add_elements(AST_INDEX      node,
 	  {
 	   TableInfo->ArrayTable[index].node = tree_copy_with_type(node);
 	   TableInfo->ArrayTable[index].node = tree_copy_with_type(node);
-	   TableInfo->ArrayTable[index].Text = ftt_NodeToStr(TableInfo->ftt,node);
+	   TableInfo->ArrayTable[index].Text = malloc(sizeof(char)*80);
+	   ut_GetSubscriptText(node,TableInfo->ArrayTable[index].Text);
            TableInfo->MaxLength = 
 	    (strlen(TableInfo->ArrayTable[index].Text) > TableInfo->MaxLength ?
 	     strlen(TableInfo->ArrayTable[index].Text) : TableInfo->MaxLength);
@@ -322,6 +323,5 @@ void memory_AnnotateWithCacheCalls(AST_INDEX    root,
 
      CallInfo.routine = routine;
      CallInfo.TableInfo = TableInfo;
-     CallInfo.ftt = ftt;
      walk_statements(root,level,InsertCacheCalls,NOFUNC,(Generic)&CallInfo);
   }
