@@ -1,0 +1,76 @@
+  class FormattedFile
+  class OrderedSetOfStrings : private PointerVector
+  class StringBuffer
+  class FormattedFile
+  class StringSet: private NamedObjectTableIO
+  class StringSetIterator: private NamedObjectTableIterator
+  
+
+/* $Id: tmp,v 1.3 1997/03/11 14:37:47 carr Exp $ */
+
+//******************************************************************
+// OrderedSetOfStrings.C: 
+//
+//  a vector of strings that can be read and written to a file
+//
+/* $Id: tmp,v 1.3 1997/03/11 14:37:47 carr Exp $ */
+
+//************************************************************************
+// StringBuffer.C -- a simple utility for building strings of arbitrary
+//                   length through a sequence of Append operations.
+//
+/* $Id: tmp,v 1.3 1997/03/11 14:37:47 carr Exp $ */
+
+//*****************************************************************
+//                                                           
+// StringIO 
+//
+//   simple interface to read/write ascii strings 
+/* $Id: tmp,v 1.3 1997/03/11 14:37:47 carr Exp $ */
+
+//*************************************************************************** 
+// StringSet.C                                                January 1994  
+//
+// Author: John Mellor-Crummey                                             
+//                                                                        
+// Each entry in the set contains a pointer to a string.                  
+//                                                                         
+// If automatic cleanup of the strings is needed (i
+//*****************************************************************
+//                                                           
+// StringIO 
+//
+//   simple interface to read/write ascii strings .e. they were allocated
+// dynamically), then the StringSet can be passed a pointer to the        
+// cleanup function when it is created.  This cleanup function will then  
+// be used on each string in the StringSet.
+
+/* $Id: tmp,v 1.3 1997/03/11 14:37:47 carr Exp $ */
+
+//******************************************************************
+// OrderedSetOfStrings.h: 
+//
+//  a vector of strings that can be read and written to a file
+//
+//************************************************************************
+// StringBuffer.h -- a simple utility for building strings of arbitrary
+//                   length through a sequence of Append operations.
+//
+//*************************************************************************** 
+// StringSet.h                                                January 1994  
+//
+// Author: John Mellor-Crummey                                             
+//                                                                        
+// Each entry in the set contains a pointer to a string. Strings will be
+// freed with sfree (see rn_string.h) if deallocation on cleanup is requested. 
+//                                                  
+
+
+
+
+
+
+
+
+
+
