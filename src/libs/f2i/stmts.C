@@ -1,4 +1,4 @@
-/* $Id: stmts.C,v 1.9 2000/03/21 15:10:20 carr Exp $ */
+/* $Id: stmts.C,v 1.10 2002/02/20 16:18:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -208,6 +208,8 @@ void aiStmtList(AST_INDEX StmtList)
 	    /* generate declaratory statements only if labelled */
 	    generate(0, COMMENT, 0, 0, 0, line);
 	}
+      else if (IsDirective && aiStatementIsCluster(Stmt))
+	aiCurrentCluster = GET_DIRECTIVE_INFO(Stmt)->Cluster;
 	  
       switch(StmtType)
       {
@@ -257,6 +259,7 @@ void aiStmtList(AST_INDEX StmtList)
 			ERROR("aiStmtList", "unknown loop type", FATAL);
 			break;
 		}
+		aiCurrentCluster = -1;
 		break;
 
 	case GEN_GOTO:
@@ -893,7 +896,8 @@ Boolean aiDirectiveIsInComment(AST_INDEX Stmt)
   {
     if (GET_DIRECTIVE_INFO(Stmt) != NULL)
       return (BOOL(GET_DIRECTIVE_INFO(Stmt)->Instr == PrefetchInstruction ||
-		   GET_DIRECTIVE_INFO(Stmt)->Instr == FlushInstruction));
+		   GET_DIRECTIVE_INFO(Stmt)->Instr == FlushInstruction ||
+	           GET_DIRECTIVE_INFO(Stmt)->Instr == Cluster));
     else
       return false;
   }
@@ -916,6 +920,14 @@ Boolean aiStatementIsFlush(AST_INDEX Stmt)
       return false;
   }
 
+Boolean aiStatementIsCluster(AST_INDEX Stmt)
+
+  {
+    if (GET_DIRECTIVE_INFO(Stmt) != NULL && is_comment(Stmt))
+      return (BOOL(GET_DIRECTIVE_INFO(Stmt)->Instr == Cluster));
+    else
+      return false;
+  }
 
 
 

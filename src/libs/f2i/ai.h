@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.16 2001/10/12 19:35:52 carr Exp $ */
+/* $Id: ai.h,v 1.17 2002/02/20 16:18:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -57,6 +57,7 @@
     extern int aiSpecialCache; /* make self spatial gs leaders cache misses */
     extern int aiLongIntegers; /* use 64-bit integers */
     extern int aiDoubleReals; /* use double precision only*/
+    extern int aiGenClusters;
 
     extern int aiAlignDoubles; /* set by various machine preferences	*/
 
@@ -77,6 +78,8 @@
     extern int  aiStackSize;
     extern int  aiExpressionStackSpace;
     extern int  aiNextReg;
+
+    extern int aiCurrentCluster;
 
     extern char 	*proc_name;
     extern char	*proc_text;
@@ -434,6 +437,7 @@ EXTERN(Boolean, isParameterExpr,(AST_INDEX));
 EXTERN(Boolean, aiDirectiveIsInComment,(AST_INDEX));
 EXTERN(Boolean, aiStatementIsPrefetch,(AST_INDEX));
 EXTERN(Boolean, aiStatementIsFlush,(AST_INDEX));
+EXTERN(Boolean, aiStatementIsCluster,(AST_INDEX));
 EXTERN(void,aiStmtList,(AST_INDEX ));
 EXTERN(int,ai_isExecutable,(int ));
 EXTERN(void,ArrayDeclLenList,(AST_INDEX  , int  , int ));

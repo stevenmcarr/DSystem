@@ -1,4 +1,4 @@
-/* $Id: ai.C,v 1.5 1999/02/23 19:04:40 carr Exp $ */
+/* $Id: ai.C,v 1.6 2002/02/20 16:18:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -227,6 +227,8 @@ static void aiInit(void)
   aiNumInstructions	= 0;
   aiEpilogue		= aiNextLabel++;
   aiNextReg             = 2;
+
+  aiCurrentCluster      = -1;
 
   SymHaveSeenASave        = 0;
   SymHaveSeenAnEquivalence= 0;

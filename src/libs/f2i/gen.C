@@ -1,4 +1,4 @@
-/* $Id: gen.C,v 1.12 2000/05/08 14:23:55 carr Exp $ */
+/* $Id: gen.C,v 1.13 2002/02/20 16:18:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,14 +39,19 @@ static char	complex_buffer[128];
 
 
 /* generate a single iloc instruction with no more than three arguments */
-void generate(int label, int op, Generic r1, Generic r2, Generic r3, char *comment)
+void generate(int label, int op, Generic r1, Generic r2, Generic r3, char *InitialComment)
 //   char *comment;
 //   int label, op, r1, r2, r3;
 {
+    char comment[80];
     /* return if no output is to be generated */
     if (aiGenerate != 0)
      return;
 
+    if (aiGenClusters)
+      sprintf(comment,"%s &cluster %d",InitialComment,aiCurrentCluster);
+    else
+      strcpy(comment,InitialComment); 
     /* print debugging output, as necessary */
     if (aiDebug > 0)
      (void) fprintf(stdout, "Generate(%d, %s(%d), %d, %d, %d, '%s');\n",
@@ -214,14 +219,21 @@ void generate(int label, int op, Generic r1, Generic r2, Generic r3, char *comme
 
 /* generate a single iloc instruction with no more than three arguments */
 void generate_long(int label, int op, Generic r1, Generic r2, Generic r3, 
-		   Generic r4, Generic r5, Generic r6, Generic r7, char *comment)
+		   Generic r4, Generic r5, Generic r6, Generic r7, char *InitialComment)
 //   char *comment;
 //   int label, op, r1, r2, r3, r4, r5, r6, r7;
 {
+
+  char comment[80];
+
   /* return if no output is to be generated */
   if (aiGenerate != 0)
      return;
 
+  if (aiGenClusters)
+    sprintf(comment,"%s &cluster %d",InitialComment,aiCurrentCluster);
+  else
+    strcpy(comment,InitialComment); 
   /* print debugging output, as necessary */
   if (aiDebug > 0)
      (void) fprintf(stdout, "Generate(%d, %s(%d), %d, %d, %d, '%s');\n",
