@@ -1,4 +1,4 @@
-/* $Id: pick.C,v 1.6 1993/09/06 14:55:08 carr Exp $ */
+/* $Id: pick.C,v 1.7 1994/07/07 16:00:13 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -187,7 +187,7 @@ static int get_gen(AST_INDEX         node,
 					 psrc->array_num) ||
 		     !ut_member_number(pick_info->exit_block->LC_rgen_out_if_1,
 				       psrc->array_num) || dist != 1))
-		   /* dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
+		    dg_delete_free_edge( PED_DG(pick_info->ped),edge) ;
 		 else
 		   {
 		    if (ut_member_number(pick_info->exit_block->LC_avail_out,
@@ -305,7 +305,7 @@ static int get_gen(AST_INDEX         node,
 		   /* loop-independent edge */
 
 		 if (!ut_member_number(pick_info->LI_rgen,psrc->array_num)) 
-		/*   dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
+		   dg_delete_free_edge( PED_DG(pick_info->ped),edge) ;
 		 else if (ut_member_number(pick_info->LI_avail,
 					   psrc->table_index))
 		   if (psink->gen_type == LIAV && psink->is_consistent &&
