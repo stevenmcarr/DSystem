@@ -138,7 +138,9 @@ static int InsertIncrements(AST_INDEX     stmt,
 		       (Generic)IncInfo);
      else if (is_if(stmt) || is_continue(stmt) || is_goto(stmt) ||
 	      is_computed_goto(stmt) || is_call(stmt) || 
-	      is_format(stmt) || is_return(stmt));
+	      is_format(stmt) || is_return(stmt) || is_data(stmt) || is_entry(stmt) ||
+	      is_close(stmt) || is_open(stmt) || is_rewind_short(stmt) ||
+	      is_rewind_long(stmt));
      else if (is_stop(stmt))
        if (IncInfo->MainProgram)
          AddPrints(stmt);
