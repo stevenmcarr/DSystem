@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.19 1998/07/07 19:28:33 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.20 1998/08/05 19:32:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -221,12 +221,9 @@ static int StoreCacheInfo(AST_INDEX     node,
 
        if (aiSpecialCache && 
 	   NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
-	   (DepInfoPtr(node)->Locality == SELF_SPATIAL ||
-	    ((DepInfoPtr(node)->Locality == GROUP_SPATIAL ||
-	      DepInfoPtr(node)->Locality == GROUP_TEMPORAL) &&
-	     CacheInfo->ReuseModel->HasSelfSpatialReuse(node))))
-	 DepInfoPtr(node)->IsGroupSpatialTrailer = 
-	   CacheInfo->ReuseModel->IsGroupSpatialTrailer(node);
+	   CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
+	 DepInfoPtr(node)->UseSpecialSelfSpatialLoad = 
+	   CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
       }
      return(WALK_CONTINUE);
   }
@@ -460,7 +457,7 @@ static int BuildGroupSpatialDependenceList(AST_INDEX     node,
 			  
   {
      if (is_subscript(node))
-       if (DepInfoPtr(node)->IsGroupSpatialTrailer)
+       if (DepInfoPtr(node)->UseSpecialSelfSpatialLoad)
 	 ReuseModel->AddSpatialDependences(node);
      return(WALK_CONTINUE);
   }
