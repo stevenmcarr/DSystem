@@ -1,4 +1,4 @@
-/* $Id: gen.C,v 1.10 2000/01/12 23:05:38 mjbedy Exp $ */
+/* $Id: gen.C,v 1.11 2000/04/09 20:21:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -318,6 +318,7 @@ void generate_long(int label, int op, Generic r1, Generic r2, Generic r3,
       case cCONor:
       case qCONor:
       case dPFLDI:
+      case iPFLDI:
 	r4 = fst_my_GetFieldByIndex(ft_SymTable, r4, SYMTAB_REG);
 	r5 = fst_my_GetFieldByIndex(ft_SymTable, r5, SYMTAB_REG);
 	(void) fprintf(stdout, "\t%-8.8s\t%s\t%d\t%d\tr%d\t=>\tr%d",
@@ -326,6 +327,7 @@ void generate_long(int label, int op, Generic r1, Generic r2, Generic r3,
 	
     // Added for dPFLD  MJB
         case dPFLD:
+        case iPFLD:
 
 	r3 = fst_my_GetFieldByIndex(ft_SymTable, r3, SYMTAB_REG);
 	r4 = fst_my_GetFieldByIndex(ft_SymTable, r4, SYMTAB_REG);
@@ -812,15 +814,23 @@ void generate_pfload(int sink, int addr, int PrefetchDistance,
   tag = getTag(Index);
 
   if (OffsetAST == AST_NIL) // Offset is a compile-time constant
-    generate_long(0, dPFLDI, (Generic) tag, PrefetchDistance, 0, addr, sink, 0,
-		  0, Locality);
+    if (type == TYPE_DOUBLE_PRECISION)
+      generate_long(0, dPFLDI, (Generic) tag, PrefetchDistance, 0, addr, sink, 0,
+		    0, Locality);
+    else
+      generate_long(0, iPFLDI, (Generic) tag, PrefetchDistance, 0, addr, sink, 0,
+		    0, Locality);
   else
     {
         // Change to generate the offset iloc. MJB
         aiPrePass(OffsetAST);
         reg = getExprInReg(OffsetAST);
-    generate_long(0, dPFLD, (Generic) tag, 8, reg, addr, sink, 0,
-		  0, Locality);        
+	if (type == TYPE_DOUBLE_PRECISION)
+	  generate_long(0, dPFLD, (Generic) tag, 8, reg, addr, sink, 0,
+			0, Locality);        
+	else
+	  generate_long(0, iPFLD, (Generic) tag, 4, reg, addr, sink, 0,
+			0, Locality);        
 
     }
 }
