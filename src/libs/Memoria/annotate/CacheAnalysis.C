@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.34 2000/05/16 18:49:51 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.35 2000/06/15 14:15:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -33,6 +33,7 @@ extern int aiOptimizeAddressCode;
 extern int aiParseComments;
 extern int aiLongIntegers;
 extern int aiDoubleReals;
+extern Boolean Memoria_ConservativeSelfSpatial;
 
 static int RefCount = 0;
 
@@ -263,7 +264,15 @@ static int StoreCacheInfo(AST_INDEX     node,
       else if (CacheInfo->LogMaxBytesPerWord < 2)
 	CacheInfo->LogMaxBytesPerWord = 2;
 	
-      DepInfoPtr(node)->Locality = CacheInfo->ReuseModel->GetNodeReuseType(node);
+      DepInfoPtr(node)->Locality = 
+	CacheInfo->ReuseModel->GetNodeReuseType(node);
+
+      /* HACK for handling self-spatial references after unrolling */
+
+      if (Memoria_ConservativeSelfSpatial &&
+	  DepInfoPtr(node)->Locality == GROUP_SPATIAL &&
+	  CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
+	DepInfoPtr(node)->Locality = NONE;
       
       //
       // Identify the load that should bring in two cache lines
