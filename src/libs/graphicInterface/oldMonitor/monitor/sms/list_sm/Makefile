@@ -1,8 +1,8 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:34:01 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 14:57:52 carr Exp $
 
 HERE = libs/graphicInterface/oldMonitor/monitor/sms/list_sm
 VERSIONS = monX
-SRCS	= list.ansi.c
+SRCS	= list.C
 ARCHIVE_monX = ../../monX-$(DSYSTEM_OS)-g.a
 
 include Makeinclude

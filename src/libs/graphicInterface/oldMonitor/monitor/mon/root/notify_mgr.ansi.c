@@ -1,4 +1,4 @@
-/* $Id: notify_mgr.ansi.c,v 1.6 1997/03/11 14:33:48 carr Exp $ */
+/* $Id: notify_mgr.ansi.c,v 1.7 1997/06/25 14:52:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,28 +10,33 @@
 /*                                                                      */
 /************************************************************************/
 
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+
 #include <libs/graphicInterface/oldMonitor/include/mon/sm_def.h>
+#include <libs/graphicInterface/oldMonitor/include/mon/dialog.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/manager.h>
 #include <libs/graphicInterface/oldMonitor/monitor/mon/root/desk_sm.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/notify.h>
 #include <libs/graphicInterface/oldMonitor/monitor/mon/root/notify_mgr.h>
 #include <libs/support/strings/rn_string.h>
-#include <string.h>
-#include <stdio.h>
 
+typedef FUNCTION_POINTER(void,HandlerFunc,(Generic,Generic,char *, int));
+typedef FUNCTION_POINTER(void,CRHandlerFunc,(Generic,int,union wait *));
 
     /*** CHILD PROCESS REGISTRATION ***/
 
 struct  cp_reg  {                       /* PROCESS REGISTRATION LIST    */
     int                 pid;            /* the child process id         */
     Generic	        owner;          /* instance which owns pid      */
-    PFV			handler;	/* the handler function		*/
+    CRHandlerFunc	handler;	/* the handler function		*/
     struct  cp_reg      *next;          /* next process registration    */
                 };
 
 struct  fd_reg  {                       /* FD REGISTRATION LIST         */
     Generic	        owner;          /* instance which owns fd       */
-    PFV			handler;	/* the handler function		*/
+    HandlerFunc handler;	/* the handler function		*/
                 };
 
 
@@ -50,7 +55,7 @@ STATIC(Generic, notify_mgr_create,(Generic manager_id));
                                           /* manager create routine       */
 STATIC(void,    notify_mgr_event,(aNfyMgr *m)); /* manager event handler        */
 STATIC(Point,   notify_mgr_window_tile,(aNfyMgr *m, Window *w, Generic info,
-                                        Point ulc, Boolean new));
+                                        Point ulc, Boolean New));
                                            /* manager window tiler        */
 STATIC(void,    notify_mgr_destroy,(aNfyMgr *m)); /* manager destroy routine      */
 STATIC(void,    notify_mgr_finish,(void)); /* manager finish routine       */
@@ -60,9 +65,9 @@ aManager        notify_manager = {      /* MANAGER DECLARATION          */
                         0,
                         notify_mgr_start,
                         notify_mgr_create,
-                        notify_mgr_event,
-                        notify_mgr_window_tile,
-                        notify_mgr_destroy,
+                        (ManagerEventFunc)notify_mgr_event,
+                        (ManagerWindowTileFunc)notify_mgr_window_tile,
+                        (ManagerDestroyFunc)notify_mgr_destroy,
                         notify_mgr_finish
                 };
 
@@ -72,7 +77,7 @@ aManager        notify_manager = {      /* MANAGER DECLARATION          */
 
 /* Add a file descriptor to the notification list.			*/
 void
-notify_register_async_fd(short fd, Generic owner, PFV handler, 
+notify_register_async_fd(short fd, Generic owner, HandlerFunc handler, 
                          Boolean read, Boolean urgent)
 {
     if ((fd < 0) || (fd >= getdtablesize()))
@@ -82,7 +87,7 @@ notify_register_async_fd(short fd, Generic owner, PFV handler,
             fd
         );
     }
-    else if (current_notify_mgr->fd_list[fd].handler != (PFV) 0)
+    else if (current_notify_mgr->fd_list[fd].handler != (HandlerFunc) 0)
     {/* this is not a valid request */
         die_with_message("notify_register_async_fd():  Duplicate registration.");
     }
@@ -106,7 +111,7 @@ notify_unregister_async_fd(short fd)
             fd
         );
     }
-    else if (current_notify_mgr->fd_list[fd].handler == (PFV) 0)
+    else if (current_notify_mgr->fd_list[fd].handler == (HandlerFunc) 0)
     {/* there is not a registration */
         die_with_message(
             "notify_unregister_async_fd():  File descriptor not registered."
@@ -115,7 +120,7 @@ notify_unregister_async_fd(short fd)
     else
     {/* perform the request */
         current_notify_mgr->fd_list[fd].owner   = 0;
-        current_notify_mgr->fd_list[fd].handler = (PFV) 0;
+        current_notify_mgr->fd_list[fd].handler = (HandlerFunc) 0;
         sm_desk_unregister_fd(fd, (aMgrInst*)current_notify_mgr->manager_id);
     }
 }
@@ -123,7 +128,7 @@ notify_unregister_async_fd(short fd)
 
 /* Add a process from which to accept child signals.                    */
 void
-notify_register_process(int pid, Generic owner, PFV handler, Boolean urgent)
+notify_register_process(int pid, Generic owner, CRHandlerFunc handler, Boolean urgent)
 {
 struct  cp_reg  *current;               /* current child registration   */
     
@@ -216,7 +221,7 @@ aNfyMgr         *m;                     /* manager instance structure   */
         for (i = 0; i < num_files; i++)
         {/* clear out each potential asynchronous regitration */
             m->fd_list[i].owner   = 0;
-            m->fd_list[i].handler = (PFV) 0;
+            m->fd_list[i].handler = (HandlerFunc) 0;
         }
 
     return ((Generic) m);
@@ -237,7 +242,7 @@ struct  cp_reg  **crpp;                 /* child registration ptr ptr   */
 	num_files = getdtablesize();
         for (i = 0; i < num_files; i++)
         {/* check to see if all async registrations have been removed */
-            if (m->fd_list[i].handler != (PFV) 0)
+            if (m->fd_list[i].handler != (HandlerFunc) 0)
             {/* there is a registration left */
                 message(
                         "Programming error:\nNotify client did not unregister\
@@ -245,7 +250,7 @@ struct  cp_reg  **crpp;                 /* child registration ptr ptr   */
                         i
                 );
                 m->fd_list[i].owner   = 0;
-                m->fd_list[i].handler = (PFV) 0;
+                m->fd_list[i].handler = (HandlerFunc) 0;
                 sm_desk_unregister_fd(i, (aMgrInst*)m->manager_id);
             }
         }
@@ -256,7 +261,7 @@ struct  cp_reg  **crpp;                 /* child registration ptr ptr   */
         while (*crpp)
         {/* walk down the child registration stack */
             cr = *crpp;
-            if (cr->handler != (PFV) 0)
+            if (cr->handler != (CRHandlerFunc) 0)
             {/* cr is the unregistered node--delete it */
                 message(
                         "Programming error:\nNotify client did not unregister\
@@ -312,7 +317,7 @@ struct  cp_reg  *cr;                    /* current child registration   */
 static
 Point
 notify_mgr_window_tile(aNfyMgr *m, Window *w, Generic info, 
-                       Point ulc, Boolean new)
+                       Point ulc, Boolean New)
 {
     return Origin;
 }

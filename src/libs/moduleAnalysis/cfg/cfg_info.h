@@ -1,4 +1,4 @@
-/* $Id: cfg_info.h,v 3.3 1997/03/11 14:35:29 carr Exp $ */
+/* $Id: cfg_info.h,v 3.4 1997/06/25 15:03:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -36,7 +36,7 @@ typedef enum {
  *  Add an info item for an AST_INDEX
  */
 EXTERN(void, cfg_put_map,
-		(CfgInstance cfg, AST_INDEX a, int i, CfgInfoType type));
+		(CfgInstance cfg, AST_INDEX a, Generic i, CfgInfoType type));
 
 /*
  *  From AST node (a statement) to correspoinding CFG/SSA object.

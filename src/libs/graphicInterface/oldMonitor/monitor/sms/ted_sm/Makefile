@@ -1,27 +1,27 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:34:08 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 14:59:44 carr Exp $
 
 HERE = libs/graphicInterface/oldMonitor/monitor/sms/ted_sm
 VERSIONS = monX
 SRCS	= \
-	  bind.ansi.c \
-	  buffers.ansi.c \
-	  ctype.ansi.c \
-	  delete.ansi.c \
-	  display.ansi.c \
-	  dot.ansi.c \
-	  iflex.ansi.c \
-	  insert.ansi.c \
-	  menu.ansi.c \
-	  misc.ansi.c \
-	  mode.ansi.c \
-	  move.ansi.c \
-	  scroll.ansi.c \
-	  search.ansi.c \
-	  sm_ted.ansi.c \
-	  undo.ansi.c \
-	  undo_dialog.ansi.c \
-	  win.ansi.c \
-	  window.ansi.c
+	  bind.C \
+	  buffers.C \
+	  ctype.C \
+	  delete.C \
+	  display.C \
+	  dot.C \
+	  iflex.C \
+	  insert.C \
+	  menu.C \
+	  misc.C \
+	  mode.C \
+	  move.C \
+	  scroll.C \
+	  search.C \
+	  sm_ted.C \
+	  undo.C \
+	  undo_dialog.C \
+	  win.C \
+	  window.C
 
 ARCHIVE_monX = ../../monX-$(DSYSTEM_OS)-g.a
 

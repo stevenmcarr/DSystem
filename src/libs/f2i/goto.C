@@ -1,4 +1,4 @@
-/* $Id: goto.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: goto.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -161,7 +161,7 @@ void HandleComputedGoto( AST_INDEX node )
 		addr = TempReg(base, offset, iADD, TYPE_INTEGER);
 		generate(0, iADD, base, offset, addr, NOCOMMENT);
 		contents = StrTempReg("!", addr, TYPE_INTEGER);
-		generate_long(0, iCONor, (int) buffer, 4, 0, addr, contents, 0, 0, NOCOMMENT);
+		generate_long(0, iCONor, (Generic) buffer, 4, 0, addr, contents, 0, 0, NOCOMMENT);
 
 		/* generate list of potential labels */
 		list_element = list_first (list);
@@ -176,7 +176,7 @@ void HandleComputedGoto( AST_INDEX node )
 		  }
 
 	    /*  generate branch to label in the computed goto table  */
-		generate(0, JMPr, contents, (int) label_list, 0, NOCOMMENT);
+		generate(0, JMPr, contents, (Generic) label_list, 0, NOCOMMENT);
 
 	    /*  generate DATA statements for computed goto table  */
 		generate(0, NOP, 0, 0, 0, "Computed GOTO table");
@@ -286,6 +286,6 @@ void HandleAssignedGoto( AST_INDEX node )
   }
   
   /* at this point, target contains the address to which we should branch */
-  generate(0, JMPr, target, (int) label_list, 0, "assigned goto");
+  generate(0, JMPr, target, (Generic) label_list, 0, "assigned goto");
 
 } /* HandleAssignedGoto */

@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:35:56 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:09:30 carr Exp $
 
 HERE = libs/moduleAnalysis/dependence/edgeList
 
 SRCS = \
-	   el.ansi.c \
-	   el_view.ansi.c 
+	   el.C \
+	   el_view.C 
 
 ARCHIVE	= ../ModuleAnalysis-$(DSYSTEM_OS)-g.a
 

@@ -1,4 +1,4 @@
-/* $Id: set.C,v 1.8 1997/03/27 20:29:09 carr Exp $ */
+/* $Id: set.C,v 1.9 1997/06/25 15:25:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -270,7 +270,7 @@ void ut_clear_set(Set s)
 
 void ut_copy12(Set s1, 
 	       Set s2)
-    {	memcpy((const char *)&s1->word[0], (char *)&s2->word[0], s1->words*BYTES);
+    {	memcpy((char *)&s1->word[0], (char *)&s2->word[0], s1->words*BYTES);
     }
 
 

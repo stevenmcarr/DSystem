@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:37:13 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:18:48 carr Exp $
 
 HERE = libs/support/queues
 
 SRCS = \
-	   queue.ansi.c
+	   queue.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

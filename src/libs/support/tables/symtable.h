@@ -1,4 +1,4 @@
-/* $Id: symtable.h,v 1.8 1997/03/11 14:37:39 carr Exp $ */
+/* $Id: symtable.h,v 1.9 1997/06/25 15:20:35 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,20 +19,20 @@ EXTERN(int, SymMaxIndex, (SymTable ip));
 EXTERN(int, SymIndex, (SymTable ip, char *name));
 EXTERN(int, SymQueryIndex, (SymTable ip, char *name));
 
-EXTERN(int, SymGetFieldByIndex, (SymTable ip, int index, char *field));
-EXTERN(int, SymGetField, (SymTable ip, char *name, char *field));
+EXTERN(Generic, SymGetFieldByIndex, (SymTable ip, int index, char *field));
+EXTERN(Generic, SymGetField, (SymTable ip, char *name, char *field));
 
-EXTERN(void, SymPutFieldByIndex, (SymTable ip, int index, char *field, int val));
-EXTERN(void, SymPutField, (SymTable ip, char *name, char *field, int val));
+EXTERN(void, SymPutFieldByIndex, (SymTable ip, int index, char *field, Generic val));
+EXTERN(void, SymPutField, (SymTable ip, char *name, char *field, Generic val));
 
-typedef FUNCTION_POINTER(void, SymCleanupFunc, (int val));
-EXTERN(void, SymInitField, (SymTable ip, char *field, int val, SymCleanupFunc cleanup));
+typedef FUNCTION_POINTER(void, SymCleanupFunc, (Generic val));
+EXTERN(void, SymInitField, (SymTable ip, char *field, Generic val, SymCleanupFunc cleanup));
 EXTERN(void, SymKillField, (SymTable ip, char *field));
 
 EXTERN(int, SymFieldExists, (SymTable ip, char *field));
 
 typedef FUNCTION_POINTER(void, SymIteratorFunc, (SymTable ip, int index, Generic extra_arg));
-EXTERN(void, SymForAll, (SymTable ip, SymIteratorFunc func, int extra_arg));
+EXTERN(void, SymForAll, (SymTable ip, SymIteratorFunc func, Generic extra_arg));
 
 EXTERN(void, SymDumpEntryByIndex,(SymTable ip, int index));
 EXTERN(void, SymDump, (SymTable ip));

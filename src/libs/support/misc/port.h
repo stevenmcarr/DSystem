@@ -1,4 +1,4 @@
-/* $Id: port.h,v 1.13 1997/03/11 14:36:57 carr Exp $ */
+/* $Id: port.h,v 1.14 1997/06/25 15:16:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -63,7 +63,7 @@ inline long abs( long x ) { return x < 0 ? -x : x; }
 #  endif
 #endif
 
-#else  All other machines
+#else 
 
 #define volatile
 #define huge
@@ -89,4 +89,4 @@ typedef unsigned long uint32;
 int32 gcd( int32 x, int32 y );
 
 
-#endif port_h
+#endif

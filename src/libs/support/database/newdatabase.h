@@ -1,4 +1,4 @@
-/* $Id: newdatabase.h,v 1.4 1997/03/11 14:36:34 carr Exp $ */
+/* $Id: newdatabase.h,v 1.5 1997/06/25 15:14:04 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -26,7 +26,6 @@ class File;
 
 EXTERN(DB_FP *, db_convert_fp_to_db_fp, (FILE *fp));
 EXTERN(Generic, db_buffered_close, (DB_FP *fp));
-EXTERN(int, db_buffered_close, (DB_FP *fp));
 EXTERN(int, db_buffered_write,
        (DB_FP *fp, char *object, Generic size));
 EXTERN(int, db_buffered_read,

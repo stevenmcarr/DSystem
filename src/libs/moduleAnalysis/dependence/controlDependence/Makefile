@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:35:42 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:05:47 carr Exp $
 
 HERE = libs/moduleAnalysis/dependence/controlDependence
 
 SRCS = \
-	   cdg_cd.ansi.c \
-	   cfg_dgcd.ansi.c \
-	   control.ansi.c
+	   cdg_cd.C \
+	   cfg_dgcd.C \
+	   control.C
 
 ARCHIVE	= ../ModuleAnalysis-$(DSYSTEM_OS)-g.a
 

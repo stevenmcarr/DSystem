@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.C,v 1.5 1997/03/27 20:29:09 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.C,v 1.6 1997/06/25 15:25:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -487,7 +487,7 @@ void UniformlyGeneratedSets::Append(la_matrix nodeH, AST_INDEX node,
 					 LocalizedIterationSpace,
          				 uniform);
      (*e) += node;
-     (*this) += (int)e;
+     (*this) += (Generic)e;
   }
 
 int UniformlyGeneratedSets::GetIndex(char *ivar)
@@ -690,4 +690,4 @@ UniformlyGeneratedSets::UniformlyGeneratedSets(AST_INDEX loop,int NL,char **IV,l
      //for (AstIter AIter(loop,false,true); (node = AIter()) != AST_NIL;)
        //if (is_subscript(node))
          //AddNode(node);
-  };
+  }

@@ -1,4 +1,4 @@
-/* $Id: gtd_inc.h,v 1.6 1997/03/11 14:33:59 carr Exp $ */
+/* $Id: gtd_inc.h,v 1.7 1997/06/25 15:00:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -8,71 +8,7 @@
 #include <libs/support/strings/rn_string.h>
 #include <string.h>
 
-/*static void 	free_internals();
-static TREE_INDEX   xy_to_node();
-static char     *get_predicate();
-static char 	*get_format();
-static char 	*eval_str_func();
-static PFI 	linear_lookup();
-
-static void	free_line_data(),
-		unparse(),
-		unparse_internal(),
-		display_half(),
-		display_rest(),
-		display_statement(),
-		display_bracket(),
-		check_cursor(),
-		uncheck_cursor(),
-		find_Nroot(),
-		MarkNode(),
-		UnmarkNode(),
-		mark_out(),
-		display_open(),
-		display_close(),
-		display_simple(),
-		display_ellipsis(),
-		display(),
-		toggle_invert(),
-		toggle_half(),
-		toggle_underline(),
-		start_highlight(),
-		end_highlight(),
-		clear_line_data(),
-		clear_line_data_line(),
-		do_string(),
-		line_map_shift_left(),
-		map_string(),
-		draw_screen(),
-		set_line(),
-		set_node(),
-		map_start(),
-		map_shift_left(),
-		map_shuffle(),
-		line_swap(),
-		map_fmt(),
-		do_unparse(),
-		new_shape();
-
-static Generic  get_unparse_info(),
-		structure_indent_level(),
-		find_row_data(),
-		find_col_data(),
-		getnum_from_menu(),
-		tree_depth();
-
-static Boolean 	should_print(),
-		under_mark(),
-		is_highlighted(),
-		WithinCursor(),
-		part_highlighted(),
-		is_near_cursor(),
-		AroundCursor(),
-		just_one_simple_statement(),
-		OnPathToRoot(),
-		NodeIsMarked(),
-		eval_predicate();*/
-
+struct tdi;
 	/* local datatype */
 struct	gtd_info	{
 	Pane	       *op;			/* the optim slave pane	*/
@@ -111,12 +47,17 @@ struct  line_data {
         TREE_INDEX topnode; /* statement node that caused output */
         };
 
+typedef FUNCTION_POINTER(int, UnpIntFunc,(Pane*,Generic,TREE_INDEX));
+typedef FUNCTION_POINTER(int, UnpIntFunc4,(Pane*,Generic,TREE_INDEX,Generic));
+typedef FUNCTION_POINTER(char*, UnpStringFunc,(Pane*,Generic,TREE_INDEX));
+
 struct  unp_routines {
-        PFI  In,In_to_end,Out,Next,Prev,Getson,Getfirst,
-	     Is_simple,Is_statement,Indent_delta,
-	     Mark_type,Mark_set,Mark_get,Get_node_type;
-        PFS  Get_text;
-        };
+  UnpIntFunc  In,In_to_end,Out,Next,Prev,Getfirst,
+    Is_simple,Is_statement,Indent_delta,
+    Mark_type,Mark_get,Get_node_type;
+  UnpIntFunc4 Mark_set,Getson;
+  UnpStringFunc  Get_text;
+};
 
 struct  tdi {
         Generic pane_length,pane_width;

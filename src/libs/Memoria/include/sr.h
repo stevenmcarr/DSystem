@@ -1,4 +1,4 @@
-/* $Id: sr.h,v 1.11 1997/03/20 15:49:33 carr Exp $ */
+/* $Id: sr.h,v 1.12 1997/06/25 15:23:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -70,7 +70,7 @@ typedef struct stmtinfotype {
 #define LOOP_ARENA 0
 
 #define create_scalar_info_ptr(n,ar) \
-  ast_put_scratch(n,(int) ar->arena_alloc_mem_clear(LOOP_ARENA,sizeof(scalar_info_type)))
+  ast_put_scratch(n,(Generic) ar->arena_alloc_mem_clear(LOOP_ARENA,sizeof(scalar_info_type)))
 
 #define get_scalar_info_ptr(n) \
   ((scalar_info_type *)ast_get_scratch(n))
@@ -79,7 +79,7 @@ typedef struct stmtinfotype {
   ast_put_scratch(n,(Generic)NULL)
 
 #define create_stmt_info_ptr(n,ar) \
-  ast_put_scratch(n,(int) ar->arena_alloc_mem_clear(LOOP_ARENA,sizeof(stmt_info_type)))
+  ast_put_scratch(n,(Generic) ar->arena_alloc_mem_clear(LOOP_ARENA,sizeof(stmt_info_type)))
 
 #define get_stmt_info_ptr(n) \
   ((stmt_info_type *)ast_get_scratch(n))
@@ -91,7 +91,7 @@ typedef struct stmtinfotype {
   ast_put_scratch(n,i)
 
 #define get_label_sym_index(n) \
-  ((int)ast_get_scratch(n))
+  ((Generic)ast_get_scratch(n))
 
 #define REFS          "sr: refs"
 #define LBL_STMT      "sr: lbl_stmt"

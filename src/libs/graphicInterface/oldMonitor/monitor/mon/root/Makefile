@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:33:44 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 14:52:22 carr Exp $
 
 HERE = libs/graphicInterface/oldMonitor/monitor/mon/root
 
@@ -8,9 +8,9 @@ VERSIONS = \
 
 SRCS = \
 	   cp_mgr.ansi.c \
-	   menu_mgr.ansi.c \
+	   menu_mgr.C \
 	   notify_mgr.ansi.c \
-	   root.ansi.c \
+	   root.C \
 	   stand_alone.ansi.c
 
 LOCAL_LINT = \
@@ -25,9 +25,9 @@ LOCAL_LINT = \
 # X windows version
 SRCS_monX = \
 	        cp_mgr.ansi.c \
-	        menu_mgr.ansi.c \
+	        menu_mgr.C \
 	        notify_mgr.ansi.c \
-	        root.ansi.c
+	        root.C
 
 DIRS_monX = \
 	        desk_sm \
@@ -48,10 +48,10 @@ ARCHIVE_monN = ../../monN-$(DSYSTEM_OS)-g.a
 include Makeinclude
 
 # Handle lint specially (non-version specific)
-lint_mgr: menu_mgr.ansi.c cp_mgr.ansi.c notify_mgr.ansi.c
+lint_mgr: menu_mgr.C cp_mgr.ansi.c notify_mgr.ansi.c
 	$(LINT.c) $^ llib-lfor_mgrs.ln -lc
 
-lint_desk: root.ansi.c
+lint_desk: root.C
 	$(LINT.c) $^ llib-ldesk_sm.ln  -lc
 
 lint_sa: notify_mgr.ansi.c stand_alone.ansi.c

@@ -1,4 +1,4 @@
-/* $Id: gen.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: gen.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -38,7 +38,7 @@ static char	complex_buffer[128];
 
 
 /* generate a single iloc instruction with no more than three arguments */
-void generate(int label, int op, int r1, int r2, int r3, char *comment)
+void generate(int label, int op, Generic r1, Generic r2, Generic r3, char *comment)
 //   char *comment;
 //   int label, op, r1, r2, r3;
 {
@@ -212,8 +212,8 @@ void generate(int label, int op, int r1, int r2, int r3, char *comment)
 
 
 /* generate a single iloc instruction with no more than three arguments */
-void generate_long(int label, int op, int r1, int r2, int r3, int r4, int r5, int r6, 
-		   int r7, char *comment)
+void generate_long(int label, int op, Generic r1, Generic r2, Generic r3, 
+		   Generic r4, Generic r5, Generic r6, Generic r7, char *comment)
 //   char *comment;
 //   int label, op, r1, r2, r3, r4, r5, r6, r7;
 {
@@ -441,7 +441,7 @@ int convert_opcode( int type1, int type2 )
 /* the instruction is a character string and, as a result,      */
 /* cannot easily be produced by generate().  This function is   */
 /* rarely required.                                             */
-void generate_string(char *label, int op, int r1, int r2, int r3, char *comment)
+void generate_string(char *label, int op, Generic r1, Generic r2, Generic r3, char *comment)
 //   char *comment;
 //   char *label;
 //   int op, r1, r2, r3;
@@ -553,23 +553,23 @@ void generate_load(int sink, int addr, int type, int Index, char *Locality)
     switch(type)
     {
       case TYPE_CHARACTER:
-	generate_long(0, bCONor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, bCONor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_LOGICAL:
       case TYPE_INTEGER:
-	generate_long(0, iCONor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, iCONor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_REAL:
-	generate_long(0, fCONor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, fCONor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_DOUBLE_PRECISION:
-	generate_long(0, dCONor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, dCONor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_COMPLEX:
-	generate_long(0, cCONor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, cCONor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_DOUBLE_COMPLEX:
-	generate_long(0, qCONor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, qCONor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       default:
 	(void) fprintf(stdout, "\tMISSING CASE\n");
@@ -581,23 +581,23 @@ void generate_load(int sink, int addr, int type, int Index, char *Locality)
     switch(type)
     {
       case TYPE_CHARACTER:
-	generate_long(0, bSLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, bSLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_LOGICAL:
       case TYPE_INTEGER:
-	generate_long(0, iSLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, iSLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_REAL:
-	generate_long(0, fSLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, fSLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_DOUBLE_PRECISION:
-	generate_long(0, dSLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, dSLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_COMPLEX:
-	generate_long(0, cSLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, cSLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_DOUBLE_COMPLEX:
-	generate_long(0, qSLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, qSLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       default:
 	(void) fprintf(stdout, "\tMISSING CASE\n");
@@ -609,23 +609,23 @@ void generate_load(int sink, int addr, int type, int Index, char *Locality)
     switch(type)
     {
       case TYPE_CHARACTER:
-	generate_long(0, bLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, bLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_LOGICAL:
       case TYPE_INTEGER:
-	generate_long(0, iLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, iLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_REAL:
-	generate_long(0, fLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, fLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_DOUBLE_PRECISION:
-	generate_long(0, dLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, dLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_COMPLEX:
-	generate_long(0, cLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, cLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       case TYPE_DOUBLE_COMPLEX:
-	generate_long(0, qLDor, (int) tag, alignment, 0, addr, sink, 0, 0, Locality);
+	generate_long(0, qLDor, (Generic) tag, alignment, 0, addr, sink, 0, 0, Locality);
 	break;
       default:
 	(void) fprintf(stdout, "\tMISSING CASE\n");
@@ -657,23 +657,23 @@ void generate_store( int addr, int source, int type, int Index, char *Locality)
      switch(type)
       {
         case TYPE_CHARACTER:
-	  generate_long(0, bSSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, bSSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_LOGICAL:
         case TYPE_INTEGER:
-	  generate_long(0, iSSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, iSSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_REAL:
-	  generate_long(0, fSSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, fSSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_DOUBLE_PRECISION:
-	  generate_long(0, dSSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, dSSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_COMPLEX:
-	  generate_long(0, cSSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, cSSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_DOUBLE_COMPLEX:
-	  generate_long(0, qSSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, qSSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         default:
 	  (void) fprintf(stdout, "\tMISSING CASE\n");
@@ -685,23 +685,23 @@ void generate_store( int addr, int source, int type, int Index, char *Locality)
      switch(type)
       {
         case TYPE_CHARACTER:
-	  generate_long(0, bSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, bSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_LOGICAL:
         case TYPE_INTEGER:
-	  generate_long(0, iSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, iSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_REAL:
-	  generate_long(0, fSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, fSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_DOUBLE_PRECISION:
-	  generate_long(0, dSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, dSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_COMPLEX:
-	  generate_long(0, cSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, cSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         case TYPE_DOUBLE_COMPLEX:
-	  generate_long(0, qSTor, (int) tag, alignment, 0, addr, source, 0, 0, Locality);
+	  generate_long(0, qSTor, (Generic) tag, alignment, 0, addr, source, 0, 0, Locality);
 	  break;
         default:
 	  (void) fprintf(stdout, "\tMISSING CASE\n");
@@ -1070,11 +1070,11 @@ void generate_cache_op(int addr, int Index, Directive *Dir)
 
   switch(Dir->Instr) {
     case PrefetchInstruction:
-         generate_long(0, FETCHor, (int) tag, alignment, 0, addr, 0, 0, 0, 
+         generate_long(0, FETCHor, (Generic) tag, alignment, 0, addr, 0, 0, 0, 
 		       GenDepCommentForStmt(Dir));
 	 break;
     case FlushInstruction:
-	 generate_long(0, FLUSHor, (int) tag, alignment, 0, addr, 0, 0, 0,
+	 generate_long(0, FLUSHor, (Generic) tag, alignment, 0, addr, 0, 0, 0,
 		       GenDepCommentForStmt(Dir));
 	 break;
 	}

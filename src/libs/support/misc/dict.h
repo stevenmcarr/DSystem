@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.8 1997/03/11 14:36:56 carr Exp $ */
+/* $Id: dict.h,v 1.9 1997/06/25 15:16:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,13 +19,13 @@
 
 #ifndef string_h
 #include <string.h>
-#endif	string_h
+#endif	
 #ifndef _PORT_
 #include <libs/support/misc/port.h>
-#endif _PORT_
+#endif 
 #ifndef _MEMORY_
 #include <libs/support/memMgmt/libmem.h>
-#endif	_MEMORY_
+#endif
 class ostream;
 
 // These dictionaries define a key-value mapping.  They can be inserted to,
@@ -36,21 +36,21 @@ class ostream;
 // instead.  A nice string hash function is included.
 class Dict;
 typedef int32 (*CmpKey)(const void *key1, const void *key2);
-typedef int  (*Hash)(const void *key);
+typedef Generic (*Hash)(const void *key);
 typedef void (*FuncDict)(const void *key, const void *val, Dict *d);
 
 // Hashing functions
-int hashstr(const void *s);	   // Nice string hash
+EXTERN(Generic, hashstr,(const void *s));	   // Nice string hash
 // Slimey cheap hash function; no guarenteed performance.  Better than the
 // default for pointers, especially on MS-DOS machines.
-int hashptr(const void *key);
+EXTERN(Generic, hashptr,(const void *key));
 // Slimey cheap hash function; no guarenteed performance.
-int hashkey(const void *key);
+EXTERN(Generic, hashkey,(const void *key));
 
 // Key comparators
-int32 cmpstr(const void *k1, const void *k2);
+EXTERN(int32,cmpstr,(const void *k1, const void *k2));
 // Slimey cheap key comparator.
-int32 cmpkey(const void *key1, const void *key2);
+EXTERN(int32, cmpkey,(const void *key1, const void *key2));
 
 class Dict {			// Dictionary structure
  private:
@@ -145,4 +145,4 @@ class DictI {
 
 #define endDict }}}
 
-#endif _DICT_
+#endif

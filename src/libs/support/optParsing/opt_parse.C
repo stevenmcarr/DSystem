@@ -1,4 +1,4 @@
-/* $Id: opt_parse.C,v 1.8 1997/03/27 20:51:23 carr Exp $ */
+/* $Id: opt_parse.C,v 1.9 1997/06/25 15:18:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -50,8 +50,7 @@ static char *get_optstr(Options *opts); // forward declaration
  */
 int opt_parse_argv (Options *opts, void *handle, int argc, char **argv)
 {
-  // extern int		 getopt();
-  extern char		*optarg;
+
   extern int		 optind;
   extern int		 opterr;
   
@@ -70,6 +69,7 @@ int opt_parse_argv (Options *opts, void *handle, int argc, char **argv)
   
   opterr = 0;
   optind = 1; /*index to argc of curent option to parse */
+
   while ( (c = getopt(argc, argv, optstr)) != -1  ) {
 
     OptionsIterator oi(opts);

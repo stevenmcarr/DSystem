@@ -1,4 +1,4 @@
-/* $Id: desk_sm.ansi.c,v 1.11 1997/03/11 14:33:51 carr Exp $ */
+/* $Id: desk_sm.ansi.c,v 1.12 1997/06/25 14:49:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,13 +11,14 @@
 /************************************************************************/
 
 #include <string.h>
+#include <unistd.h>
 
 #include <libs/graphicInterface/oldMonitor/include/mon/sm_def.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/manager.h>
 #include <libs/graphicInterface/oldMonitor/monitor/mon/root/desk_sm.h>
 #include <libs/graphicInterface/oldMonitor/monitor/mon/root/desk_sm/title_sm.h>
 
-
+typedef FUNCTION_POINTER(void,DestroyFunc,(Generic));
     /*** OPTION REGISTRATION ***/
 
 typedef
@@ -56,14 +57,15 @@ struct amgrinst{                               /* A MANAGER INSTANCE           *
 
     /*** PANE INFORMATION ***/
 
+
 struct  desk_pane_info {                /* PANE INFORMATION STRUCTURE   */
     Generic             reg_id;         /* registration id for this pane*/
-    PFV                 run_again;      /* call to make to run us again */
-    PFV                 async_reg;      /* asynchronous io registrar    */
-    PFV                 async_unreg;    /* asynchronous io unregistrar  */
+    RunAgainFunc         run_again;      /* call to make to run us again */
+    AsyncRegFunc                 async_reg;      /* asynchronous io registrar    */
+    AsyncUnregFunc                 async_unreg;    /* asynchronous io unregistrar  */
     aMgrInst            **fd_owners;	/* registered file owners	*/
-    PFV                 child_reg;      /* child signal registrar       */
-    PFV                 child_unreg;    /* child signal unregistrar     */
+    ChildRegFunc                 child_reg;      /* child signal registrar       */
+    ChildUnregFunc                 child_unreg;    /* child signal unregistrar     */
     struct  cp_reg      *reg_stack;     /* process registration stack   */
     struct  opt_reg     *opt_stack;     /* the option registration stack*/
     short               num_opts;       /* the number of options        */
@@ -148,7 +150,7 @@ STATIC(void,    desk_create,(Pane *p)); /* sm create routine            */
 STATIC(void,    desk_destroy,(Pane *p));/* sm destroy routine           */
 STATIC(void,    desk_input,(Pane *p, Rectangle r));     
                                          /* sm input handler routine     */
-STATIC(void,    desk_window_tile,(Window *w, Generic info, Boolean new)); 
+STATIC(void,    desk_window_tile,(Window *w, Generic info, Boolean New)); 
                                          /* sm window tile routine       */
 STATIC(void,    desk_window_destroy,(Window *w));/* sm window destroy routine    */
 
@@ -264,11 +266,11 @@ short           i;                      /* file list index              */
     );
     num_files = getdtablesize();
     REG_ID(p)      = 0;
-    RUN_AGAIN(p)   = (PFV) 0;
-    ASYNC_REG(p)   = (PFV) 0;
-    ASYNC_UNREG(p) = (PFV) 0;
-    CHILD_REG(p)   = (PFV) 0;
-    CHILD_UNREG(p) = (PFV) 0;
+    RUN_AGAIN(p)   = (RunAgainFunc) 0;
+    ASYNC_REG(p)   = (AsyncRegFunc) 0;
+    ASYNC_UNREG(p) = (AsyncUnregFunc) 0;
+    CHILD_REG(p)   = (ChildRegFunc) 0;
+    CHILD_UNREG(p) = (ChildUnregFunc) 0;
     FD_OWNERS(p)   = (aMgrInst **) get_mem(sizeof(aMgrInst *) * num_files, "desk_sm: file list");
     for (i = 0; i < num_files; i++)
     {/* zero out the file descriptor owners */
@@ -590,15 +592,15 @@ Point           min_size;               /* the minimum resize allowed   */
 #define         BORDER      2           /* the border of the window     */
 /* Window create entry point.  Handle the creation of a new window.     */
 static
-void desk_window_tile(Window* w, Generic info, Boolean new)
+void desk_window_tile(Window* w, Generic info, Boolean New)
 /* the new window               */
 /* the information parameter    */
 /* true if a new window         */
 {
 Point           size;                   /* size of the resultant window */
-Point           (*tiler)();             /* the tiling routine           */
+Point           (*tiler)(Generic,Window*,Generic,Point,Boolean);             /* the tiling routine           */
 
-    if (new)
+    if (New)
     {/* set up the window and title pane */
         w->window_information = info;
         TITLE_PANE(w) = newPane(
@@ -616,12 +618,12 @@ Point           (*tiler)();             /* the tiling routine           */
             w,
             INFO(w),
             makePoint(BORDER, BORDER + TITLE_PANE(w)->size.y),
-            new
+            New
     );
     TITLE_PANE(w)->size.x = size.x;
     size.x += BORDER * 2;
     size.y += BORDER * 2 + TITLE_PANE(w)->size.y;
-    w->border = (new)
+    w->border = (New)
         ? bounceRectInRect(
                 makeRectFromSize(mon_event.loc, size),
                 makeRectFromSize(Origin, w->parent->size)
@@ -651,7 +653,7 @@ void handle_root_menu(Pane* p, Boolean force)
 {
 aMenuDef        md;                     /* the current menu definition  */
 aChoiceDef      *choices;               /* the temporary choice list    */
-short           this;                   /* the current choice index     */
+short           This;                   /* the current choice index     */
 struct  opt_reg *opt_reg;               /* the current option registr.  */
 Generic         selection;              /* the selection off the menu   */
 static
@@ -669,21 +671,21 @@ anOptionDef     standard[] =    {       /* standard menu options        */
                     sizeof(aChoiceDef) * (NUM_OPTS(p) + NUM_STDS),
                     "new menu choices"
             );
-            this = NUM_OPTS(p) + NUM_STDS - 1;
+            This = NUM_OPTS(p) + NUM_STDS - 1;
             for (opt_reg = OPT_STACK(p); opt_reg; opt_reg = opt_reg->next)
             {/* load up the array backwards */
-                choices[this].id          = (Generic) opt_reg;
-		choices[this].kb_code	  = toKbChar(0);
-                choices[this].num_options = 1;
-                choices[this].option_list = &opt_reg->opt;
-                this--;
+                choices[This].id          = (Generic) opt_reg;
+		choices[This].kb_code	  = toKbChar(0);
+                choices[This].num_options = 1;
+                choices[This].option_list = &opt_reg->opt;
+                This--;
             }
-            for (this = 0; this < NUM_STDS; this++)
+            for (This = 0; This < NUM_STDS; This++)
             {/* install the standard options */
-                choices[this].id          = this;
-		choices[this].kb_code	  = toKbChar(0);
-                choices[this].num_options = 1;
-                choices[this].option_list = standard + this;
+                choices[This].id          = This;
+		choices[This].kb_code	  = toKbChar(0);
+                choices[This].num_options = 1;
+                choices[This].option_list = standard + This;
             }
             md.title       = "Root menu";
             md.size        = makePoint(1, NUM_OPTS(p) + NUM_STDS);
@@ -1153,8 +1155,8 @@ short sm_desk_get_index()
 
 /* Initalize the desk pane.                                             */
 void
-sm_desk_initialize(Pane* p, Generic reg_id, PFV run_again, PFV fd_reg, 
-                   PFV fd_unreg, PFV cp_reg, PFV cp_unreg)
+sm_desk_initialize(Pane* p, Generic reg_id, RunAgainFunc run_again, AsyncRegFunc fd_reg, 
+                   AsyncUnregFunc fd_unreg, ChildRegFunc cp_reg, ChildUnregFunc cp_unreg)
 /* the desk pane                */
 /* use in following calls       */
 /* call to make to run us again */

@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:36:52 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:16:37 carr Exp $
 
 HERE = libs/support/memMgmt
 
 SRCS = \
 	   Arena.C \
 	   libmem.C \
-	   mem.ansi.c
+	   mem.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

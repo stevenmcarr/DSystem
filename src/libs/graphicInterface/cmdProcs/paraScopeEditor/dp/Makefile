@@ -1,28 +1,28 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:31:02 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 14:38:24 carr Exp $
 
 HERE = libs/graphicInterface/cmdProcs/paraScopeEditor/dp
 
 
 SRCS = \
-	   ali_d.ansi.c \
-	   align_d.ansi.c \
-	   distrib_d.ansi.c \
-	   dtype_d.ansi.c \
-	   edge_d.ansi.c \
-	   fusion_d.ansi.c \
-	   loop_d.ansi.c \
-	   peel_d.ansi.c \
-	   perf_d.ansi.c \
-	   rename_d.ansi.c \
-	   sexpand_d.ansi.c \
-	   shared_d.ansi.c \
-	   skew_d.ansi.c \
-	   split_d.ansi.c \
-	   sreplace_d.ansi.c \
-	   statement_d.ansi.c \
-	   strip_d.ansi.c \
-	   trans_menu.ansi.c \
-	   unroll_d.ansi.c
+	   ali_d.C \
+	   align_d.C \
+	   distrib_d.C \
+	   dtype_d.C \
+	   edge_d.C \
+	   fusion_d.C \
+	   loop_d.C \
+	   peel_d.C \
+	   perf_d.C \
+	   rename_d.C \
+	   sexpand_d.C \
+	   shared_d.C \
+	   skew_d.C \
+	   split_d.C \
+	   sreplace_d.C \
+	   statement_d.C \
+	   strip_d.C \
+	   trans_menu.C \
+	   unroll_d.C
 
 ARCHIVE	= ped-$(DSYSTEM_OS)-g.a
 

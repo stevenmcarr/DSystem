@@ -1,4 +1,4 @@
-/* $Id: dt_info.h,v 1.7 1997/03/11 14:35:54 carr Exp $ */
+/* $Id: dt_info.h,v 1.8 1997/06/25 15:08:54 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -49,8 +49,8 @@ struct Rsd_vector_struct;
 typedef struct Rsd_vector_struct Rsd_vector;
 
 EXTERN(DT_info *, dt_create_info, (void));
-EXTERN(int, dt_finalize_info, (DT_info *dt));
-EXTERN(int, dt_reset_info, (DT_info *dt));
+EXTERN(void, dt_finalize_info, (DT_info *dt));
+EXTERN(void, dt_reset_info, (DT_info *dt));
 EXTERN(Rsd_section*, dt_alloc_rsd, (DT_info *dt));
 EXTERN(Rsd_vector*, dt_alloc_rsd_vector, (DT_info *dt));
 

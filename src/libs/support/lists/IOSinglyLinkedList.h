@@ -1,4 +1,4 @@
-/* $Id: IOSinglyLinkedList.h,v 1.1 1997/03/11 14:36:48 carr Exp $ */
+/* $Id: IOSinglyLinkedList.h,v 1.2 1997/06/25 15:16:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -73,4 +73,4 @@ public:
   virtual int WriteUpCall(FormattedFile& port);
 };
 
-#endif SinglyLinkedListIO_h
+#endif 

@@ -1,4 +1,4 @@
-/* $Id: CObject.h,v 1.2 1997/03/11 14:32:30 carr Exp $ */
+/* $Id: CObject.h,v 1.3 1997/06/25 14:43:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -64,6 +64,7 @@
 
 
 struct Object_Repr_struct;
+class Trace;
 
 
 
@@ -72,7 +73,7 @@ class Object
 {
 public:
 
-  Object_Repr_struct * Object_repr;
+  struct Object_Repr_struct * Object_repr;
 
 
 public:
@@ -108,7 +109,6 @@ public:
   virtual void			NoteChange(Object * ob, int kind, void * change);
 
 /* tracing  */
-  class Trace;
   static void			TraceEnable(Boolean on);
 
 };

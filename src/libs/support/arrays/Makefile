@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:36:31 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:13:37 carr Exp $
 
 HERE = libs/support/arrays
 
 SRCS = \
-	   ExtendingArray.ansi.c \
-	   ExtensibleArray.ansi.c \
-	   FlexibleArray.ansi.c \
+	   ExtendingArray.C \
+	   ExtensibleArray.C \
+	   FlexibleArray.C \
 	   ResizableArray.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a

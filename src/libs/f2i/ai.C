@@ -1,4 +1,4 @@
-/* $Id: ai.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: ai.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -203,7 +203,7 @@ static void fixItems(AST_INDEX node)
 
 
 /* initialize global ai variables */
-static void aiInit()
+static void aiInit(void)
 {
   aiStmtCount 	 	= 0;
   aiNextRegister 	= 3;	/* 3 => avoid unitialized vars		*/

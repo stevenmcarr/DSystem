@@ -1,4 +1,4 @@
-/* $Id: val_ht.C,v 1.8 1997/03/27 20:47:09 carr Exp $ */
+/* $Id: val_ht.C,v 1.9 1997/06/25 15:13:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -27,11 +27,11 @@ ValTable::ValTable() : HashTable()
     HashTable::Create(sizeof(ValEntry*), 8);
 
         //  Structure of value entries assumes...
-    if (!((sizeof(ValField) == sizeof(float)) && 
-	  (sizeof(ValField) == sizeof(void*))))
-      {
-  	die_with_message("ValTable: ValFields have different sizes\n");
-      }
+//    if (!((sizeof(ValField) == sizeof(float)) && 
+//	  (sizeof(ValField) == sizeof(void*))))
+//      {
+//	 die_with_message("ValTable: ValFields have different sizes\n");
+//   	}
         //  These should be the first values allocated, so that they
         //  have the same indices for every value table.
     add_entry(val_new(VAL_BOT_TYPE));	// should have index VAL_BOTTOM

@@ -1,4 +1,4 @@
-/* $Id: Estimate.C,v 1.4 1997/04/11 15:26:36 carr Exp $ */
+/* $Id: Estimate.C,v 1.5 1997/06/25 15:25:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,7 +19,7 @@
 #include <libs/support/sorts/QuickSort.h>
 extern "C"{
 #include <math.h>
-};
+}
 
 
 static int intcompare(const void *i, const void *j)

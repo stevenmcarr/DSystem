@@ -1,4 +1,4 @@
-/* $Id: cfgval_build.C,v 1.14 1997/03/11 14:35:37 carr Exp $ */
+/* $Id: cfgval_build.C,v 1.15 1997/06/25 15:05:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -14,7 +14,7 @@
 
 STATIC(ValNumber, build_list_val, (CfgInstance cfg, SsaNodeId node));
 STATIC(ValNumber, build_array_val, (CfgInstance cfg, SsaNodeId node));
-STATIC(void, unbuild_iterative, (CfgInstance cfg, SsaNodeId node, int level));
+STATIC(void, unbuild_iterative, (CfgInstance cfg, SsaNodeId node, SsaNodeId level));
 STATIC(Boolean, loop_var_search, (CfgInstance cfg, SsaNodeId sn, SsaNodeId phi));
 STATIC(void, const_stats, (CfgInstance cfg));
 
@@ -621,7 +621,11 @@ ValNumber cfgval_build(CfgInstance cfg, SsaNodeId ssaId)
 
 	      args = (ValNumber *) get_mem(nArgs * sizeof(ValNumber),
 					   "cfgval_build.c: gamma args array");
-	      int_set(args, nArgs, VAL_TOP);
+#ifdef LONG_POINTER
+	      long_set(args, nArgs, (Generic)VAL_TOP);
+#else
+	      int_set(args, nArgs, (Generic)VAL_TOP);
+#endif
 
 	      for (edge = SSA_node(cfg,ssaId)->defsIn;
 		   edge != SSA_NIL;

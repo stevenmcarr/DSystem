@@ -1,4 +1,4 @@
-/* $Id: Text.h,v 1.4 1997/03/11 14:32:55 carr Exp $ */
+/* $Id: Text.h,v 1.5 1997/06/25 14:43:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -55,8 +55,8 @@ typedef struct
 
 extern ColorPair Text_DefaultColorPair;
 
-EXTERN (void, Text_DefaultData, (TextData &data))
-EXTERN (void, Text_MultiColoredData, (TextData &data))
+EXTERN (void, Text_DefaultData, (TextData &data));
+EXTERN (void, Text_MultiColoredData, (TextData &data));
 
 
 

@@ -1,4 +1,4 @@
-/* $Id: gfx.h,v 1.12 1997/03/11 14:33:16 carr Exp $ */
+/* $Id: gfx.h,v 1.13 1997/06/25 14:46:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -450,4 +450,6 @@ typedef	struct		{			/* an image file header			*/
 	int		if_cm_length;		/* the image colormap length (0 only)	*/
 			} ifHeader;
 
+EXTERN(void, start_gfx,(void));
+EXTERN(void,finish_gfx,(void));
 #endif

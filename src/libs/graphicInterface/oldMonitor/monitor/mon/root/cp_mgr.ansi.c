@@ -1,4 +1,4 @@
-/* $Id: cp_mgr.ansi.c,v 1.8 1997/03/11 14:33:44 carr Exp $ */
+/* $Id: cp_mgr.ansi.c,v 1.9 1997/06/25 14:52:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,6 +10,7 @@
 /*                                                                      */
 /************************************************************************/
 
+#include <unistd.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -123,7 +124,7 @@ STATIC(void, give_cp_event, (anInstance* cp));
 STATIC(void, cp_mgr_destroy, (aCpMgr* m));
 STATIC(void, cp_mgr_event, (aCpMgr* m));
 STATIC(Point, cp_mgr_window_tile, (aCpMgr* m, Window* w, aTilingDesc* td, 
-                                   Point ulc, Boolean new));
+                                   Point ulc, Boolean New));
 
 
 aManager        cp_manager = {          /* MANAGER DECLARATION          */
@@ -131,9 +132,9 @@ aManager        cp_manager = {          /* MANAGER DECLARATION          */
                         0,
                         cp_mgr_start,
                         cp_mgr_create,
-                        cp_mgr_event,
-                        cp_mgr_window_tile,
-                        cp_mgr_destroy,
+                        (ManagerEventFunc)cp_mgr_event,
+                        (ManagerWindowTileFunc)cp_mgr_window_tile,
+                        (ManagerDestroyFunc)cp_mgr_destroy,
                         cp_mgr_finish
                 };
 
@@ -218,50 +219,50 @@ addToMessageQ(MessageQ* mq, Generic receiver, Generic sender, Point info, Generi
 /* info - the information point field  */
 /* msg - the information pointer field*/
 {
-struct  mq_node *new;                   /* the new queue entry          */
+struct  mq_node *New;                   /* the new queue entry          */
 
     /* get a new structure */
         if (mq->freed_oldest == NULL_MQ)
         {/* there is no structure on the freed queue--create another */
-            new = (struct mq_node *) get_mem(
+            New = (struct mq_node *) get_mem(
                         sizeof(struct mq_node),
                         "addToMessageQ(): new message queue entry created"
             );
         }
         else
         {/* remove the oldest entry from the freed list */
-            new = mq->freed_oldest;
-            if (new == mq->freed_newest)
+            New = mq->freed_oldest;
+            if (New == mq->freed_newest)
             {/* we just took the last entry off of the freed list */
                 mq->freed_oldest = NULL_MQ;
                 mq->freed_newest = NULL_MQ;
             }
             else
             {/* fix up the freed queue */
-                mq->freed_oldest = new->newer;
+                mq->freed_oldest = New->newer;
                 mq->freed_oldest->older = NULL_MQ;
             }
         }
 
     /* initialize the new structure */
-        new->receiver = receiver;
-        new->sender   = sender;
-        new->info     = info;
-        new->msg      = msg;
-        new->older    = NULL_MQ;
-        new->newer    = NULL_MQ;
+        New->receiver = receiver;
+        New->sender   = sender;
+        New->info     = info;
+        New->msg      = msg;
+        New->older    = NULL_MQ;
+        New->newer    = NULL_MQ;
 
     /* put the structure on the new end of the valid list */
         if (mq->valid_newest == NULL_MQ)
         {/* the valid queue is empty so make new the only entry */
-            mq->valid_oldest = new;
+            mq->valid_oldest = New;
         }
         else
         {/* the new entry is just one of many */
-            new->older = mq->valid_newest;
-            mq->valid_newest->newer = new;
+            New->older = mq->valid_newest;
+            mq->valid_newest->newer = New;
         }
-        mq->valid_newest = new;
+        mq->valid_newest = New;
 }
 
 
@@ -338,41 +339,41 @@ cp_new(anInstance* creator, short cp_index, Generic arg)
 /* cp_index - index of cp to create        */
 /* arg - the argument to send to it   */
 {
-anInstance      *new = NULL_INSTANCE;   /* the new cp instance          */
+anInstance      *New = NULL_INSTANCE;   /* the new cp instance          */
 anInstance      *ancestor;              /* the current ancestor of new  */
 
     if (cp_assert_need(creator->cp_mgr, cp_index))
     {/* the command processor can be started */
-        new = (anInstance *) get_mem(sizeof(anInstance), "cp instance");
-        new->cp_mgr        = creator->cp_mgr;
-        new->parent        = creator;
-        new->sibling       = creator->child;
-        new->child         = NULL_INSTANCE;
-        new->cp_num        = cp_index;
-        new->family_count  = 0;
-        new->message_count = 0;
-        creator->child     = new;
-        for (ancestor = new; ancestor; ancestor = ancestor->parent)
+        New = (anInstance *) get_mem(sizeof(anInstance), "cp instance");
+        New->cp_mgr        = creator->cp_mgr;
+        New->parent        = creator;
+        New->sibling       = creator->child;
+        New->child         = NULL_INSTANCE;
+        New->cp_num        = cp_index;
+        New->family_count  = 0;
+        New->message_count = 0;
+        creator->child     = New;
+        for (ancestor = New; ancestor; ancestor = ancestor->parent)
         {/* increment the decendant count of the ancestors & new child */
             ancestor->family_count++;
         }
 
-        new->instance_info = 
+        New->instance_info = 
                 (creator->cp_mgr->processors[cp_index]->create_instance)(
                     (Generic)creator,
-                    (Generic)new,
+                    (Generic)New,
                     arg);
-        if (new->instance_info == UNUSED)
+        if (New->instance_info == UNUSED)
         {/* the command processor aborted the startup */
-            while (new)
+            while (New)
             {/* propagate death through all ancestors */
-                new->family_count--;
-                new = new->parent;
+                New->family_count--;
+                New = New->parent;
             }
-            new = NULL_INSTANCE;
+            New = NULL_INSTANCE;
         }
     }
-    return ((Generic) new);
+    return ((Generic) New);
 }
 
 
@@ -627,11 +628,11 @@ Point           size;		    /* some size amount			*/
 
     if (td->is_pane)
     {/* the description is a pane--set the position */
-        if ((int) *td->tile.area_pane_ptr < MAX_SMs)
+        if ((Generic) (*td->tile.area_pane_ptr) < MAX_SMs)
         {/* the pane has not been created yet */
             *td->tile.area_pane_ptr = newPane(
                     w,
-                    (short)((int)*td->tile.area_pane_ptr),
+                    (short)((Generic)*td->tile.area_pane_ptr),
                     position,
                     td->size,
                     1
@@ -780,11 +781,11 @@ short           i;                      /* space counter                */
     }
     else if (td->is_pane)
     {/* the description is for a pane */
-        if ((int) *td->tile.area_pane_ptr < MAX_SMs)
+        if ((Generic) *td->tile.area_pane_ptr < MAX_SMs)
         {/* the pane has not been created yet */
             (void) printf(
                     "Uncreated pane: %d (%d x %d) (td = %#x)\n",
-                    (int) *td->tile.area_pane_ptr,
+                    (Generic) *td->tile.area_pane_ptr,
                     td->size.x,
                     td->size.y,
                     td
@@ -1304,7 +1305,7 @@ Generic          cp_id;                 /* temporary storage            */
     {/* a selection from the option list */
         cp_id = mon_event.msg;
         (m->processors[cp_id]->root_starter)(
-                (int)m->adam_cp,
+                (Generic)m->adam_cp,
                 cp_id);
         if (m->processors[cp_id]->status == CP_CANNOT_START)
         {/* the cp couldn't be started--remove it from options */
@@ -1382,7 +1383,7 @@ Generic          cp_id;                 /* temporary storage            */
 /* Handle the creation of a new window.  Return desired size.           */
 static
 Point
-cp_mgr_window_tile(aCpMgr* m, Window* w, aTilingDesc* td, Point ulc, Boolean new)
+cp_mgr_window_tile(aCpMgr* m, Window* w, aTilingDesc* td, Point ulc, Boolean New)
 /* m - the manager information      */
 /* w - the new window               */
 /* td - a tiling description         */
@@ -1468,6 +1469,6 @@ cp_mgr_run(aCpMgr* m, short startup)
 {
     if ((0 <= startup) && (startup < m->num_processors))
     {/* start the initial command processor */
-        (m->processors[startup]->root_starter)((int)m->adam_cp, startup);
+        (m->processors[startup]->root_starter)((Generic)m->adam_cp, startup);
     }
 }

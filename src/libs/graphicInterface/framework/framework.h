@@ -1,4 +1,4 @@
-/* $Id: framework.h,v 1.3 1997/03/11 14:32:58 carr Exp $ */
+/* $Id: framework.h,v 1.4 1997/06/25 14:43:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -107,10 +107,10 @@
 /* alerts */
 
 
-EXTERN (void, notImplemented, (char * what))
+EXTERN (void, notImplemented, (char * what));
 
 
-EXTERN (void, CHECK, (int what))
+EXTERN (void, CHECK, (int what));
 
 
 
@@ -119,11 +119,11 @@ EXTERN (void, CHECK, (int what))
 
 
 EXTERN (void, setRect, (Rectangle *r, int left, int top, int right, 
-			int bottom))
+			int bottom));
 
 
 EXTERN (void, setRectSize, (Rectangle *r, int left, int top, int width, 
-			    int height))
+			    int height));
 
 
 
@@ -131,7 +131,7 @@ EXTERN (void, setRectSize, (Rectangle *r, int left, int top, int width,
 /* mouse */
 
 
-EXTERN (Boolean, stillDown, (Point *mousePt))
+EXTERN (Boolean, stillDown, (Point *mousePt));
 
 
 

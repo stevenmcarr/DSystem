@@ -1,4 +1,4 @@
-/* $Id: cfg_private.h,v 3.12 1997/03/11 14:35:32 carr Exp $ */
+/* $Id: cfg_private.h,v 3.13 1997/06/25 15:03:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -37,8 +37,8 @@ typedef short TinyInt;
 #include <stdlib.h>
 #include <string.h>
 
-#define SSA_WORK_SLOTS 7
-#define VAL_WORK_SLOTS 7
+#define SSA_WORK_SLOTS 10
+#define VAL_WORK_SLOTS 8
 
 typedef struct cfg_generic_list_struct {
     Generic stuff;

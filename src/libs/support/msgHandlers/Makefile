@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:37:00 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:17:31 carr Exp $
 
 HERE = libs/support/msgHandlers
 
@@ -8,9 +8,9 @@ SRCS = \
 	   ErrorMsgHandler.C \
 	   MsgHandler.C \
 	   TraceMsgHandler.C \
-	   interact.ansi.c \
-	   log_msg.ansi.c \
-	   log_msg_dlg.ansi.c
+	   interact.C \
+	   log_msg.C \
+	   log_msg_dlg.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

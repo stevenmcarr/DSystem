@@ -1,4 +1,4 @@
-/* $Id: val_ip.h,v 1.6 1997/03/27 20:47:09 carr Exp $ */
+/* $Id: val_ip.h,v 1.7 1997/06/25 15:13:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -38,4 +38,4 @@ class ValIP {
     void Dump();
 };
 
-#endif val_ip_h
+#endif 

@@ -1,4 +1,4 @@
-/* $Id: dg_header.h,v 1.7 1997/03/27 20:46:14 carr Exp $ */
+/* $Id: dg_header.h,v 1.8 1997/06/25 15:06:11 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -347,10 +347,10 @@ EXTERN( Boolean,	dg_get_input_dependences, ( DG_Instance	*dg ));
 
 /*********************************************************************/
 
-EXTERN(Boolean, readgraph, (FILE *gfile_ptr, MapInfoOpaque *map, DG_Instance *DG,
+EXTERN(Boolean, readgraph, (FILE *gfile_ptr, MapInfoOpaque map, DG_Instance *DG,
                             DT_info *dt, SideInfo *infoPtr, FortTextTree ftt));
 
-EXTERN(void, readrsd, (FILE *rsdptr, MapInfoOpaque *map, DG_Instance *dg,
+EXTERN(void, readrsd, (FILE *rsdptr, MapInfoOpaque map, DG_Instance *dg,
                        DT_info *dt, SideInfo *infoPtr, FortTextTree ftt));
 
 EXTERN(DepType, get_dtype, (char dchar));

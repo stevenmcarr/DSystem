@@ -1,4 +1,4 @@
-/* $Id: val.h,v 2.23 1997/03/11 14:36:17 carr Exp $ */
+/* $Id: val.h,v 2.24 1997/06/25 15:13:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -200,7 +200,7 @@ EXTERN(ValNumber, val_sym_step,  (Values Vp, ValNumber v) );
 /*
  *  Get constant bounds, alignment, stride all in one package
  */
-EXTERN(int, val_get_const_range, (Values Vp, ValNumber v));
+EXTERN(ValNumber, val_get_const_range, (Values Vp, ValNumber v));
 
 /*
  *  These support many tree operations and implicit functions.

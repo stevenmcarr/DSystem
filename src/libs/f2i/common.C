@@ -1,4 +1,4 @@
-/* $Id: common.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: common.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -109,7 +109,7 @@ void aiGenerateCommon(SymDescriptor SymTab, fst_index_t i, Generic dummy)
       }
       (void) sprintf(buffer, "_%s_", aiGetCommonBlockName(i, space));
 
-      generate(0, NAME, (int) buffer, 0, 0, "Common block name");
+      generate(0, NAME, (Generic) buffer, 0, 0, "Common block name");
       generate_string(buffer, BYTES,
 		Align(fst_GetFieldByIndex(ft_SymTable, i, SYMTAB_SIZE)), 0, 0,
 		"and its space");

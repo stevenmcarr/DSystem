@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:36:05 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:10:31 carr Exp $
 
 HERE = libs/moduleAnalysis/expnSimplifier
 
 SRCS = \
-	   normal.c \
-	   simple.ansi.c
+	   normal.C \
+	   simple.C
 
 ARCHIVE = ExpnSimplifier-$(DSYSTEM_OS)-g.a
 

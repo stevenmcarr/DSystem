@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:36:02 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:10:07 carr Exp $
 
 HERE = libs/moduleAnalysis/dependence/utilities
 
 SRCS = \
-	   read_util.ansi.c \
-	   side_info.ansi.c \
-	   strong.ansi.c
+	   read_util.C \
+	   side_info.C \
+	   strong.C
 
 ARCHIVE	= ../ModuleAnalysis-$(DSYSTEM_OS)-g.a
 

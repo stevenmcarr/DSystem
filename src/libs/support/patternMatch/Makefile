@@ -1,12 +1,12 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:37:09 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:18:28 carr Exp $
 
 HERE = libs/support/patternMatch
 
 SRCS = \
-	   bmsearch.ansi.c \
-	   regerror.ansi.c \
-	   regexp.ansi.c \
-	   regsub.ansi.c
+	   bmsearch.C \
+	   regerror.C \
+	   regexp.C \
+	   regsub.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

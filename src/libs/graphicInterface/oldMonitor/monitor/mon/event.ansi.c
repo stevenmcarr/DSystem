@@ -1,4 +1,4 @@
-/* $Id: event.ansi.c,v 1.12 1997/03/11 14:33:39 carr Exp $ */
+/* $Id: event.ansi.c,v 1.13 1997/06/25 14:53:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,11 +13,13 @@
 
 #include <fcntl.h>
 #include <signal.h>
+#include <vfork.h>
 #include <stdio.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <unistd.h>
 
 #include <libs/support/misc/general.h>
 
@@ -28,9 +30,11 @@
 
 #include <libs/graphicInterface/oldMonitor/include/mon/event_codes.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/event.h>
+#include <libs/graphicInterface/oldMonitor/include/mon/standalone.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/system.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/gfx.h>
 
+#include <libs/graphicInterface/oldMonitor/monitor/mon/mach.h>
 
 	/* LOCAL SPECIAL VARIABLES */
 
@@ -42,15 +46,6 @@ static	anEvent		saved_event;		/* the saved mon_event (redo)		*/
 static	Boolean		last_was_mouse = true;	/* true if last event was a mouse event	*/
 
 
-	/* SCREEN EVENT INFORMATION */
-
-extern	void		startScreenEvents();	/* initialize the screen and keyboard	*/
-extern	Boolean		readyScreenEvent();	/* return true if there are events	*/
-extern	void		getScreenEvent();	/* screen and keyboard event handler	*/
-extern	Boolean		flushScreenEvents();	/* forget pending screen events		*/
-extern	void		stopScreenEvents();	/* finalize the screen and keyboard	*/
-extern	void		resizeRoot();		/* change the size of the root pane/win	*/
-extern	void		redrawRootRectList();	/* fix damaged areas			*/
 
 
 	/* CHILD PROCESS INFORMAION */
@@ -66,7 +61,8 @@ struct	cr_node	{				/* CHILD REGISTRATION NODE (for 1-list)	*/
 static	struct	cr_node	*cr_list;		/* the child registration list head	*/
 static	short		boring_childs;		/* the number of non-urgent child procs	*/
 static	short		urgent_childs;		/* the number of urgent child proc.	*/
-typedef	PFV		SignalHandler;		/* signal handler type			*/
+
+typedef FUNCTION_POINTER(void,SignalHandler,(int));
 
 
 	/* ASYNCHRONOUS IO INFORMATION */
@@ -167,15 +163,15 @@ stopChildProcessEvents(void)
 void
 registerChildProcess(int pid, Generic owner, Boolean urgent)
 {
-register struct	cr_node	*new;			/* the new head of registration list	*/
+register struct	cr_node	*New;			/* the new head of registration list	*/
 
-	new = (struct cr_node *) get_mem(sizeof(struct cr_node), "registerChildProcess():  child process registration");
-	new->pid    = pid;
-	new->owner  = owner;
-	new->urgent = urgent;
-	new->next   = cr_list;
-	new->ready  = false;
-	cr_list     = new;
+	New = (struct cr_node *) get_mem(sizeof(struct cr_node), "registerChildProcess():  child process registration");
+	New->pid    = pid;
+	New->owner  = owner;
+	New->urgent = urgent;
+	New->next   = cr_list;
+	New->ready  = false;
+	cr_list     = New;
 }
 
 
@@ -453,7 +449,7 @@ struct	itimerval	time;			/* the time to put on the alarm		*/
 
 /* Handle an alarm signal going off.							*/
 static int
-handleAlarm(void)
+handleAlarm(int dummy)
 {
 	if (timerisset(&sleep_left))
 	{/* decrement the sleep time */

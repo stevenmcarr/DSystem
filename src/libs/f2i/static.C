@@ -1,4 +1,4 @@
-/* $Id: static.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: static.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -44,7 +44,7 @@ void aiGenerateStaticArea()
     generate(0, NAME,
 	     (int) fst_my_GetFieldByIndex(ft_SymTable, st, SYMTAB_NAME), 
 	     0, 0, NOCOMMENT);
-    generate(0, NAME, (int) proc_name, 0, 0, NOCOMMENT);
+    generate(0, NAME, (Generic) proc_name, 0, 0, NOCOMMENT);
   }
 
   /*  open a temporary file and process data statements  */
@@ -213,7 +213,7 @@ void OutputData( FILE *fd )
 	(void) sprintf(label, "_%s_", temp_name);
 	name	= label;
 	length	= fst_GetFieldByIndex(ft_SymTable, area, SYMTAB_SIZE);
-	generate(0, NAME, (int) name, 0, 0, NOCOMMENT);
+	generate(0, NAME, (Generic) name, 0, 0, NOCOMMENT);
 	new_name= 1;
       }
       else
@@ -240,10 +240,10 @@ void OutputData( FILE *fd )
     }
 	
       if (new_name == 0)	   /* OUTPUT the data item	 	*/
-	 generate(0, bDATA, (int) text, 1, DataFlagFromIType(new_type), NOCOMMENT);
+	 generate(0, bDATA, (Generic) text, 1, DataFlagFromIType(new_type), NOCOMMENT);
       else
       {
-	generate_string(name, bDATA, (int) text, 1, DataFlagFromIType(new_type), 
+	generate_string(name, bDATA, (Generic) text, 1, DataFlagFromIType(new_type), 
 		 	NOCOMMENT);
 	new_name = 0;
       }

@@ -1,4 +1,4 @@
-/* $Id: xstack.h,v 1.7 1997/03/11 14:37:28 carr Exp $ */
+/* $Id: xstack.h,v 1.8 1997/06/25 15:19:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -56,7 +56,7 @@ EXTERN(int, stack_depth, (Stack stack));
  * retrieves the deepest element on the stack.
  */
 
-EXTERN(Generic *, stack_addr, (Stack stack, int depth));
+EXTERN(int *, stack_addr, (Stack stack, int depth));
 /*
  * Returns a true pointer to the element on the stack at depth "depth".
  * This pointer may be invalidated by calls to stack_push() and
@@ -65,7 +65,7 @@ EXTERN(Generic *, stack_addr, (Stack stack, int depth));
  * returned.
  */
 
-EXTERN(Generic *, stack_on,
+EXTERN(int *, stack_on,
  (Stack stack, Generic *elt, stack_on_func eq));
 /*
  * Returns a true pointer to the first element which successfully

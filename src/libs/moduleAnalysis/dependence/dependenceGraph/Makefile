@@ -1,17 +1,17 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:35:44 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:06:11 carr Exp $
 
 HERE = libs/moduleAnalysis/dependence/dependenceGraph
 
 SRCS = \
-	   dg_all.ansi.c \
-	   dg_instance.ansi.c \
-	   dg_read.ansi.c \
-	   edges_dg.ansi.c \
-	   ref_dg.ansi.c \
-       save_dg.ansi.c \
-	   util_dg.ansi.c \
-	   vector_dg.ansi.c \
-	   walk_dg.ansi.c 
+	   dg_all.C \
+	   dg_instance.C \
+	   dg_read.C \
+	   edges_dg.C \
+	   ref_dg.C \
+       save_dg.C \
+	   util_dg.C \
+	   vector_dg.C \
+	   walk_dg.C 
 
 ARCHIVE	= ../ModuleAnalysis-$(DSYSTEM_OS)-g.a
 

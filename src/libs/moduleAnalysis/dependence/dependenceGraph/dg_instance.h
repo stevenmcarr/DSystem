@@ -1,4 +1,4 @@
-/* $Id: dg_instance.h,v 1.9 1997/03/11 14:35:46 carr Exp $ */
+/* $Id: dg_instance.h,v 1.10 1997/06/25 15:06:11 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -25,6 +25,7 @@
 
 **************************************************************************/
 
+#include <libs/support/misc/general.h>
 
 #define NIL		 -1
 #define END_OF_LIST      -1
@@ -54,7 +55,7 @@ typedef	struct struct_carried_deps	Carried_deps;
 /*----------------------------------------------*/
 /* Type of the dependence edge indices.		*/
 
-typedef int	EDGE_INDEX;
+typedef Generic	EDGE_INDEX;
 
 
 /*--------------------------------------------------------------*/

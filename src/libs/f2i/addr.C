@@ -1,4 +1,4 @@
-/* $Id: addr.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: addr.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -178,7 +178,7 @@ static int constantBounds( AST_INDEX var, int index, int dims, AST_INDEX *args )
 	else 
 	  {
 	    /* we know the length */
-	    temp = getConstantInRegFromInt(fst_my_GetFieldByIndex
+	    temp = getConstantInRegFromInt((int)fst_my_GetFieldByIndex
 			(ft_SymTable, index, SYMTAB_CHAR_LENGTH));
 	    present = TempReg(past, temp, iMUL, TYPE_INTEGER);
 	  }
@@ -415,16 +415,17 @@ int getValueInReg( int index )
   if (fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_OBJECT_CLASS) &
 		OC_IS_DATA)
   {
-    SC = fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_STORAGE_CLASS);
+    SC = (int)fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_STORAGE_CLASS);
     if (SC & SC_NO_MEMORY)
        reg = index;
     else if (SC & SC_CONSTANT)
-       reg = getConstantInRegFromIndex(index,
-		  fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_TYPE));
+       reg = getConstantInRegFromIndex(index, (int)fst_my_GetFieldByIndex(ft_SymTable, 
+									  index, 
+									  SYMTAB_TYPE));
     else if (SC & (SC_GLOBAL | SC_STACK | SC_STATIC))
     {
       AReg = getAddressInRegister(index);
-      type = fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_TYPE);
+      type = (int)fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_TYPE);
       DReg = StrTempReg("!", AReg, type);
       generate_load(DReg, AReg, type, index,"&unknown");
       generate_move(index, DReg, type);
@@ -504,7 +505,7 @@ char *BaseAddressName(int i)
   unsigned int CTsize;
   char *p;
 
-  SC = fst_my_GetFieldByIndex(ft_SymTable, i, SYMTAB_STORAGE_CLASS);
+  SC = (int)fst_my_GetFieldByIndex(ft_SymTable, i, SYMTAB_STORAGE_CLASS);
 
   if (SC & SC_STATIC || SC & SC_CONSTANT)
   {
@@ -553,7 +554,7 @@ int BaseIndex(int i)
   int CTi, CToffset;
   unsigned int CTsize;
 
-  SC = fst_my_GetFieldByIndex(ft_SymTable, i, SYMTAB_STORAGE_CLASS);
+  SC = (int)fst_my_GetFieldByIndex(ft_SymTable, i, SYMTAB_STORAGE_CLASS);
 
   if (SC & SC_STATIC || SC & SC_CONSTANT)
   {

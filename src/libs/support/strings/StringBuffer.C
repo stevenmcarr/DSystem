@@ -1,4 +1,4 @@
-/* $Id: StringBuffer.C,v 1.6 1997/03/11 14:37:30 carr Exp $ */
+/* $Id: StringBuffer.C,v 1.7 1997/06/25 15:20:20 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -107,9 +107,9 @@ char *StringBuffer::Finalize()
 
 static char *carefulRealloc(char *buffer, unsigned int newSize)
 {
-	assert(buffer);
+	assert(buffer != NULL);
 	char *newbuf = (char *) realloc(buffer, newSize);
-	assert(newbuf);
+	assert(newbuf != NULL);
 
 	return newbuf;
 }

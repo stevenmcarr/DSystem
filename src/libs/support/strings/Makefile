@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 1997/03/27 21:08:47 carr Exp $
+# $Id: Makefile,v 1.4 1997/06/25 15:20:20 carr Exp $
 
 HERE = libs/support/strings
 
@@ -7,7 +7,7 @@ SRCS = \
 	   StringBuffer.C \
 	   StringIO.C \
 	   StringSet.C \
-	   rn_string.ansi.c
+	   rn_string.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

@@ -1,4 +1,4 @@
-/* $Id: RefGroups.C,v 1.3 1997/03/27 20:29:09 carr Exp $ */
+/* $Id: RefGroups.C,v 1.4 1997/06/25 15:25:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -483,7 +483,7 @@ void RefGroupSet::BuildRefGroupsWithUGS()
 		       RefGroup->SetGroupSpatial();
 		     }
 	       DoCompare = false;
-	       (*this) += (int)RefGroup;
+	       (*this) += (Generic)RefGroup;
 	     }
        }
   }
@@ -620,7 +620,7 @@ static int PartitionNames(AST_INDEX   node,
 	if (sptr->visited != RefInfo->VisitedMark)
 	  {
 	   RG = new RefGroupMember;
-	   (*RefInfo->RGS) += (int)RG;
+	   (*RefInfo->RGS) += (Generic)RG;
 	   RefInfo->RGS->DoPartition(name,RG,RefInfo->dg,RefInfo->ped,
 		       RefInfo->level,RefInfo->loop_data[0].level,
 		       RefInfo->VisitedMark,RefInfo->loop_data);
@@ -710,4 +710,4 @@ RefGroupSet::RefGroupSet(AST_INDEX loop, int NL,RefInfoType& RefInfo,
 	    NOT(RefGroup->HasGroupTemporal()))
 	   RefInfo.NoneCost += 1.0;
        }
-   };
+   }

@@ -1,4 +1,4 @@
-/* $Id: dep_dt.h,v 1.23 1997/03/11 14:35:50 carr Exp $ */
+/* $Id: dep_dt.h,v 1.24 1997/06/25 15:08:54 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -15,7 +15,10 @@
 
 /* RCS Revision history:
  * $Log: dep_dt.h,v $
- * Revision 1.23  1997/03/11 14:35:50  carr
+ * Revision 1.24  1997/06/25 15:08:54  carr
+ * Support 64-bit Pointers
+ *
+ * Revision 1.23  1997/03/11  14:35:50  carr
  * newly checked in as revision 1.23
  *
  * Revision 1.23  93/12/22  09:46:25  curetonk
@@ -171,8 +174,8 @@ typedef struct		   /* data for single loop 			 */
 	Expr up;                 /* loop upper bound */
 	Expr step;               /* loop step        */
 
-	int lo_val;        		 /* value number for lower bound */
-	int up_val;              /* value number for upper bound */
+	Generic lo_val;        		 /* value number for lower bound */
+	Generic up_val;              /* value number for upper bound */
 
 	int *lo_vec;             /* vector of coeffs in trapezoidal loop nest */
 	int *up_vec;             /* vector of coeffs in trapezoidal loop nest */

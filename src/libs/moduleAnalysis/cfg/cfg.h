@@ -1,4 +1,4 @@
-/* $Id: cfg.h,v 3.12 1997/03/11 14:35:26 carr Exp $ */
+/* $Id: cfg.h,v 3.13 1997/06/25 15:03:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -38,8 +38,8 @@ struct cfg_instance_struct;
 typedef struct cfg_instance_struct *CfgInstance;
 
 
-typedef int CfgEdgeId;
-typedef int CfgNodeId;
+typedef Generic CfgEdgeId;
+typedef Generic CfgNodeId;
 typedef CfgEdgeId CfgCdId;
 #define CFG_NIL (-1)
 #define CFG_NO_LABEL (0)

@@ -1,4 +1,4 @@
-/* $Id: simple.h,v 1.8 1997/03/11 14:36:07 carr Exp $ */
+/* $Id: simple.h,v 1.9 1997/06/25 15:10:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -40,6 +40,9 @@ typedef char	**nest_level_type;
 #define	MAX_NEST_LEVEL_TYPE	20	
 
 
+typedef FUNCTION_POINTER(tableau_entry *,ProcessTermFunc,(AST_INDEX,int,nest_level_type,
+							  SymDescriptor));
+
 /********************************************************************/
 /* Locally defined functions exported by the simplifier		    */
 /********************************************************************/
@@ -67,7 +70,7 @@ EXTERN(int, get_term_count, (AST_INDEX passed_node));
 EXTERN(int, get_factor_count, (AST_INDEX passed_node));
 
 EXTERN(void, make_tableau, (AST_INDEX root, tableau_type tableau, int tableau_size,
-                            tableau_entry *(*process)(), int left_op, 
+                            ProcessTermFunc process_term, int left_op, 
                             nest_level_type nesting_level_array, SymDescriptor D));
 
 EXTERN(tableau_entry*, process_term, (AST_INDEX root, int op, 

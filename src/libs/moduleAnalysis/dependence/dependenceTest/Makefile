@@ -1,13 +1,13 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:35:50 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:08:54 carr Exp $
 
 HERE = libs/moduleAnalysis/dependence/dependenceTest
 
 SRCS = \
-	   dt.ansi.c \
-	   dt_analyze.ansi.c \
-	   dt_build.ansi.c \
-	   dt_info.ansi.c \
-	   rsd.ansi.c \
+	   dt.C \
+	   dt_analyze.C \
+	   dt_build.C \
+	   dt_info.C \
+	   rsd.C \
 	   dt_build2.C
 
 ARCHIVE	= ../ModuleAnalysis-$(DSYSTEM_OS)-g.a

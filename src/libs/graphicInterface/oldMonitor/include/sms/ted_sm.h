@@ -1,4 +1,4 @@
-/* $Id: ted_sm.h,v 1.6 1997/03/11 14:33:25 carr Exp $ */
+/* $Id: ted_sm.h,v 1.7 1997/06/25 15:26:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -79,7 +79,7 @@ EXTERN(void, sm_ted_buf_set_text, (Pane *p, char *text, int len));
 EXTERN(void, sm_ted_buf_use_file, (Pane *p, char *fname));
 
 
-EXTERN(int, sm_ted_buf_erase, (Pane *p));
+EXTERN(void, sm_ted_buf_erase, (Pane *p));
 /* Erase the buffer for p */
 
 
@@ -182,13 +182,13 @@ EXTERN(int, sm_ted_buf_written, (Pane *p));
 EXTERN(Generic, sm_ted_get_buf, (Pane *p));
 EXTERN(void, sm_ted_set_buf, (Pane *p, Generic buf));
 EXTERN(int, sm_ted_buf_insert_file, (Pane *p));
-EXTERN(int, sm_ted_buf_mark_modify, (Pane *p));
+EXTERN(void, sm_ted_buf_mark_modify, (Pane *p));
 EXTERN(int, sm_ted_buf_reread_current_buffer, (Pane *p));
 EXTERN(void, sm_ted_win_create, (Pane *p));
 EXTERN(void, sm_ted_win_destroy, (Pane *p));
 EXTERN(Generic, sm_ted_get_win, (Pane *p));
 EXTERN(void, sm_ted_set_win, (Pane *p, Generic win));
-EXTERN(int, sm_ted_find_dialog_create, (Pane *p));
+EXTERN(void, sm_ted_find_dialog_create, (Pane *p));
 EXTERN(Boolean, sm_ted_modified, (Pane *p));
 typedef FUNCTION_POINTER(void, sm_ted_modify_callback, (Generic owner));
 EXTERN(void, sm_ted_register_mod_callback, (Pane *p, sm_ted_modify_callback func));

@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.3 1997/04/09 20:40:17 carr Exp $ */
+/* $Id: f2i_options.C,v 1.4 1997/06/25 15:25:53 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -489,4 +489,5 @@ int f2i_init_options(int argc, char **argv)
       return -1;
     }
     
+  return 0;
 }

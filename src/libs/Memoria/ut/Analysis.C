@@ -1,4 +1,4 @@
-/* $Id: Analysis.C,v 1.3 1997/03/27 20:29:09 carr Exp $ */
+/* $Id: Analysis.C,v 1.4 1997/06/25 15:25:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -20,7 +20,7 @@
 
 extern "C" {
 #include <stdlib.h>
-};
+}
 
 int BlockSize;
 

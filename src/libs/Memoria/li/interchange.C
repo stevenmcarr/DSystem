@@ -1,4 +1,4 @@
-/* $Id: interchange.C,v 1.16 1997/04/09 18:37:17 carr Exp $ */
+/* $Id: interchange.C,v 1.17 1997/06/25 15:24:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -86,7 +86,7 @@
 /****************************************************************************/
 
 static int set_scratch(AST_INDEX node,
-		       int       dummy)
+		       Generic   dummy)
 
   {
    set_scratch_to_NULL(node);

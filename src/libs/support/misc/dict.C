@@ -1,4 +1,4 @@
-/* $Id: dict.C,v 1.8 1997/03/11 14:36:55 carr Exp $ */
+/* $Id: dict.C,v 1.9 1997/06/25 15:16:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -57,7 +57,7 @@ Dict::Dict(CmpKey initcmp, Hash inithash, uint initsize)
   size = initsize;		// Size is next smallest power of 2
   cnt = 0;
   bin = (const void ***)calloc(size,sizeof(void **));
-  assert(bin);			// Check for out-of-memory
+  assert(bin != NULL);			// Check for out-of-memory
 }
 
 Dict::~Dict()          // Delete hash table guts
@@ -87,7 +87,7 @@ void Dict::doubhash(void)
   j = size;			// Fast size access
   k = j << 1;			// New mask value
   nb = (const void ***)malloc(k*sizeof(void **));
-  assert(nb);			// Check for out-of-memory
+  assert(nb != NULL);			// Check for out-of-memory
   for( i=0; i < j; i++) {	// For complete OLD table do
     ptr = bin[i];		// Get list of key-value pairs
     nb[i] = ptr;		// New table uses 1/2 of same list
@@ -96,7 +96,7 @@ void Dict::doubhash(void)
       bcnt = *(int32 *)ptr++;	// Get count of items
       // Allocate worst-case space
       nb[i+j] = (const void **)malloc((uint)((bcnt+bcnt+1)*sizeof(void *)));
-      assert(nb[i+j]);		// Check for out-of-memory
+      assert(nb[i+j] != NULL);		// Check for out-of-memory
       h = nb[i+j]+1;
       l = ptr;			// Start at head of list
       lcnt = hcnt = 0;		// Reset new counts
@@ -134,14 +134,14 @@ void Dict::doubhash(void)
 Dict::Dict( Dict &d ) : size(d.size), cnt(d.cnt), hash(d.hash), cmp(d.cmp)
 {
   bin = (const void ***)calloc(size,sizeof(void **));
-  assert(bin);			 // OOM check
+  assert(bin != NULL);			 // OOM check
   for( register uint i=0; i<size; i++ ) {
     const void **ptr = d.bin[i]; // Get list of key-value pairs
     if( ptr ) { 		 // Anything in old dictionary?
       int32 bcnt = *(int32 *)ptr;// Get count of key/value pairs
       int32 len = (bcnt+bcnt+1)*sizeof(void*); // Length in bytes
       bin[i] = (const void **)malloc((uint)len);
-      assert(bin[i]);		 // OOM check
+      assert(bin[i] != NULL);		 // OOM check
       bcopy(ptr, bin[i], (int)len);// Copy key-value pairs
     }
   }
@@ -159,14 +159,14 @@ Dict &Dict::operator =( Dict &d )
   *(Hash*)(&hash) = d.hash;
   *(CmpKey*)(&cmp) = d.cmp;
   bin = (const void ***)calloc(size,sizeof(void **));
-  assert(bin);			 // OOM check
+  assert(bin != NULL);			 // OOM check
   for( i=0; i<size; i++ ) {
     const void **ptr = d.bin[i]; // Get list of key-value pairs
     if( ptr ) { 		 // Anything in old dictionary?
       int32 bcnt = *(int32 *)ptr;// Get count of key/value pairs
       int32 len = (bcnt+bcnt+1)*sizeof(void*); // Length in bytes
       bin[i] = (const void **)malloc((uint)len);
-      assert(bin[i]);		 // OOM check
+      assert(bin[i] != NULL);		 // OOM check
       bcopy(ptr, bin[i], (int)len);// Copy key-value pairs
     }
   }
@@ -189,7 +189,7 @@ void *Dict::Insert(const void *key, const void *val)
   ptr = bin[i]; 		// Point to hash table
   if( !ptr ) {			// Bucket empty?
     ptr = bin[i] = (const void **)malloc(3*sizeof(void *));
-    assert(ptr);		// Check for out-of-memory
+    assert(ptr != NULL);		// Check for out-of-memory
     *ptr = NULL;		// Make a small empty bucket
   }
   j = bcnt = (int)(*(int32 *)ptr++);// Get size of bucket
@@ -212,7 +212,7 @@ void *Dict::Insert(const void *key, const void *val)
   }				// While not at list end do...
   bcnt++;			// Get size of bucket plus 1 pair
   bin[i] = (const void **)realloc( (char *) bin[i], (bcnt+bcnt+1)*sizeof(void *) );
-  assert( bin[i] );		// Check for out-of-memory
+  assert( bin[i] != NULL );		// Check for out-of-memory
   ptr = bin[i]; 		// Point to head of list
   *(int32 *)ptr++ = bcnt;	// Raise count in bucket
   ptr += (int)(bcnt+bcnt-2);	// Point to end of list
@@ -401,7 +401,7 @@ void Dict::print()
 // be in the range 0-127 (I double & add 1 to force oddness).  Keys are
 // limited to MAXID characters in length.  Experimental evidence on 150K of
 // C text shows excellent spreading of values for any size hash table.
-int hashstr(const void *t)
+Generic hashstr(const void *t)
 {
   register char c, k = 0;
   register int32 sum = 0;
@@ -411,25 +411,25 @@ int hashstr(const void *t)
     c = (c<<1)+1;		// Characters are always odd!
     sum += c + (c<<shft[k++]);	// Universal hash function
   }
-  return (int)((sum+xsum[k]) >> 1); // Hash key, un-modulo'd table size
+  return (Generic)((sum+xsum[k]) >> 1); // Hash key, un-modulo'd table size
 }
 
 //------------------------------hashptr--------------------------------------
 // Slimey cheap hash function; no guarenteed performance.  Better than the
 // default for pointers, especially on MS-DOS machines.
-int hashptr(const void *key)
+Generic hashptr(const void *key)
 {
 #ifdef __TURBOC__
-    return (int)((const int32)key >> 16);
+    return (Generic)((const int32)key >> 16);
 #else  __TURBOC__
-    return (int)((const int32)key >> 2);
+    return (Generic)((const int32)key >> 2);
 #endif
 }
 
 // Slimey cheap hash function; no guarenteed performance.
-int hashkey(const void *key)
+Generic hashkey(const void *key)
 {
-  return (int)key;
+  return (Generic)key;
 }
 
 //------------------------------Key Comparator Functions---------------------

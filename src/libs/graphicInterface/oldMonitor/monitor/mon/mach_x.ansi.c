@@ -1,4 +1,4 @@
-/* $Id: mach_x.ansi.c,v 1.18 1997/04/07 15:22:03 carr Exp $ */
+/* $Id: mach_x.ansi.c,v 1.19 1997/06/25 14:53:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,9 +17,15 @@
 #include <string.h>
 #include <memory.h>
 #include <sys/param.h>
+#include <unistd.h>
 
 #include <include/bstring.h>
 #include <libs/support/misc/general.h>
+
+#ifdef OSF1
+EXTERN(void, gtty, (int, struct sgttyb *));
+#endif
+
 
 #include <libs/graphicInterface/oldMonitor/monitor/keyboard/kb.h>
 #include <libs/graphicInterface/support/graphics/point.h>
@@ -33,6 +39,7 @@
 #include <libs/graphicInterface/oldMonitor/include/mon/sm.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/event_codes.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/event.h>
+#include <libs/graphicInterface/oldMonitor/monitor/mon/mach.h>
 
 #define	Window		XWindow		/* rename X's window type		*/
 #define	Pixmap		XPixmap		/* rename X's pixmap type		*/
@@ -120,11 +127,10 @@ static	XWindow		x_window;		/* the root window			*/
 static	short		inhibit_flush = 0;	/* nonzero when we cannot flush events	*/
 #define	INHIBIT_FLUSH()	inhibit_flush++		/* prevent a flush events		*/
 #define OK_TO_FLUSH()	inhibit_flush--		/* allow events to be flushed again	*/
-STATIC(void,		(*root_resizer),());	/* resize the root window		*/
-STATIC(void,		(*root_redrawer),());	/* redraw the root window		*/
-STATIC(void,		(*char_handler),());	/* handle a new character		*/
-EXTERN(void,		add_select_mask,());	/* add a file descriptor to select bitmap	*/
-EXTERN(void,		remove_select_mask,());	/* remv a file descriptor fm select bitmap*/
+ResizeFunc root_resizer;	/* resize the root window		*/
+RedrawFunc root_redrawer;	/* redraw the root window		*/
+CharHandlerFunc char_handler;	/* handle a new character		*/
+
 static	Boolean		outside_window = true;	/* mouse is outside the window		*/
 static	short		button_pushed = 0;	/* the button number that is down	*/
 static	Boolean		need_exit_event = false;/* need to give a faked exit event	*/
@@ -134,8 +140,8 @@ Boolean			flushScreenEvents();	/* forget any accumulated screen events	*/
 						/* depth of our pixmaps			*/
 #define BITMAP_DEPTH	(1 << 0)		/* depth of our bitmaps			*/
 #define	FLAT_PLANE_BITMAP	(1L << 0)		/* plane bitmap for flat pixmaps		*/
-typedef	PFV		SignalHandler;		/* signal handler type			*/
 
+typedef FUNCTION_POINTER(void,SignalHandler,(int));
 
 	/* CURSOR STUFF */
 
@@ -528,7 +534,7 @@ Generic			c;			/* color in hash table			*/
 			Generic xcol = (Generic)get_mem(sizeof(XColor), "color (%s) XColor",
                                                         name);
 			strcpy(cname, name);
-			bcopy((void*)&col, (void*)xcol, sizeof(XColor));
+			bcopy((const char*)&col, (char*)xcol, sizeof(XColor));
 			NameValueTableAddPair(colorHashTable, (Generic)cname, xcol, (Generic*)0);
 			return (Color)xcol;
 		  }
@@ -1306,14 +1312,14 @@ MouseCursorP		mcp = (MouseCursorP) mc;/* the cursor				*/
 
 /* Install a new cursor and return the old cursor.					*/
 MouseCursor
-CURSOR(MouseCursor new)
+CURSOR(MouseCursor New)
 {
 MouseCursor		previous;		/* the previous cursor number		*/
-MouseCursorP		nw = (MouseCursorP) new;/* the new cursor			*/
+MouseCursorP		nw = (MouseCursorP) New;/* the new cursor			*/
 
-	if (new == current_cur)
+	if (New == current_cur)
 	{/* the cursor hasn't really changed */
-		return (new);
+		return (New);
 	}
 	else
 	{/* change the cursor */
@@ -1323,7 +1329,7 @@ MouseCursorP		nw = (MouseCursorP) new;/* the new cursor			*/
 		OK_TO_FLUSH();
 
 		previous = current_cur;
-		current_cur  = new;
+		current_cur  = New;
 		return (previous);
 	}
 }
@@ -1770,7 +1776,7 @@ int errorHandler(XDisplay *display, XErrorEvent *err)
 
 /* Create the root window and fire up the root screen module, run it, and fire down.	*/
 void
-startScreenEvents(void (*resize)(), void (*redraw)(), void (*handler)())
+startScreenEvents(ResizeFunc resize, RedrawFunc redraw, CharHandlerFunc handler)
 {
 struct	sgttyb		terminal_status;	/* terminal keyboard status settings	*/
 unsigned int		c_width, c_height;	/* best cursor width, height		*/
@@ -1804,7 +1810,7 @@ XSetWindowAttributes	wwAttr;			/* window attributes for root window	*/
 		char_handler  = handler;
 
 	/* check for swapping DEL & BS */
-		(void) gtty(0, &terminal_status);
+		gtty(0, &terminal_status);
 		kb_swap_bs_del = BOOL(terminal_status.sg_erase == '\177');
 
 	/* open and initialize the display */

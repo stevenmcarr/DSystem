@@ -1,4 +1,4 @@
-/* $Id: IdGenerator.C,v 1.1 1997/03/11 14:36:54 carr Exp $ */
+/* $Id: IdGenerator.C,v 1.2 1997/06/25 15:16:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -52,7 +52,7 @@ void IdGenerator::Destroy()
 
 unsigned int IdGenerator::GetHighWaterMark()
 {
-  assert(freedIds); // active instance
+  assert(freedIds != NULL); // active instance
 
   return idHighWaterMark;
 }
@@ -61,7 +61,7 @@ unsigned int IdGenerator::GetHighWaterMark()
 unsigned int IdGenerator::AcquireId()
 {
   unsigned int id;
-  assert(freedIds);  // active instance
+  assert(freedIds != NULL);  // active instance
 
   unsigned long freedCount = freedIds->NumberOfEntries();
   if (freedCount > 0) {
@@ -75,7 +75,7 @@ unsigned int IdGenerator::AcquireId()
 
 void IdGenerator::ReleaseId(unsigned int id)
 {
-  assert(freedIds);  // active instance
+  assert(freedIds != NULL);  // active instance
 
   freedIds->Add(id);
 }

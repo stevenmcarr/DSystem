@@ -1,4 +1,4 @@
-/* $Id: cp_mgr.h,v 1.4 1997/03/11 14:33:45 carr Exp $ */
+/* $Id: cp_mgr.h,v 1.5 1997/06/25 14:52:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,7 +21,7 @@
 
 extern aManager cp_manager;             /* the cp manager               */
 
-EXTERN(Generic, cp_mgr_use, ());
+EXTERN(Generic, cp_mgr_use, (Generic));
 /* set the cp manager to use  */
 /* Takes one parameter:  (Generic mgr) the manager specific information */
 /* field.  All cp manipulation subsequent to this call use the mentioned*/

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:37:18 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:19:03 carr Exp $
 
 HERE = libs/support/sets
 
@@ -8,9 +8,9 @@ SRCS = \
 	   Sparse_Set.C \
 	   VectorSet.C \
 	   WordSet.C \
-	   ex_sets.ansi.c \
-	   set.ansi.c \
-	   tuple.ansi.c
+	   ex_sets.C \
+	   set.C \
+	   tuple.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

@@ -1,4 +1,4 @@
-/* $Id: desk_sm.h,v 1.6 1997/03/11 14:33:45 carr Exp $ */
+/* $Id: desk_sm.h,v 1.7 1997/06/25 14:52:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,8 +21,16 @@
 #include <libs/graphicInterface/oldMonitor/include/mon/sm.h>
 #endif
 
+#include <libs/graphicInterface/oldMonitor/include/mon/manager.h>
+
 struct amgrinst;
 typedef struct amgrinst aMgrInst;
+
+typedef FUNCTION_POINTER(void, RunAgainFunc,(Generic));
+typedef FUNCTION_POINTER(void,AsyncRegFunc,(short,Generic,Boolean,Boolean));
+typedef FUNCTION_POINTER(void,AsyncUnregFunc,(short,Generic));
+typedef FUNCTION_POINTER(void,ChildRegFunc,(int,Generic,Boolean));
+typedef FUNCTION_POINTER(void,ChildUnregFunc,(int,Generic));
 
 /**************************** EVENT CALLBACKS ***************************/
 
@@ -161,7 +169,8 @@ EXTERN(short, sm_desk_get_index,(void));/* get the index of the desk sm */
 /* Takes no parameters.  Returns the installed screen module index	*/
 /* number for the desk screen module.					*/
 
-void		sm_desk_initialize();	/* initialize the desk manager	*/
+EXTERN(void,sm_desk_initialize,(Pane*, Generic, RunAgainFunc,AsyncRegFunc,
+				AsyncUnregFunc,ChildRegFunc,ChildUnregFunc));	/* initialize the desk manager	*/
 /* Takes seven parameters:  (Pane *p) the desk pane, (Generic id) the 	*/
 /* id to use in the following calls, (PFV run_me) a one parameter call	*/
 /* which runs the desk again, (PFV register_fd) a three parameter call	*/
@@ -170,12 +179,17 @@ void		sm_desk_initialize();	/* initialize the desk manager	*/
 /* register_child, unregister_child) two parameter calls which register	*/
 /* and unregister child processes.					*/
 
-Generic		sm_desk_use_manager();	/* install a new manager	*/
+EXTERN(Generic,	sm_desk_use_manager,(Pane *,aManager*));	/* install a new manager	*/
 /* Takes two parameters:  (Pane *p) the desk manager pane and (aManager	*/
 /* *mgr) a pointer to the manager structure routines to install.	*/
 /* Returns a handle to the manager instance which may be used in manager*/
 /* callbacks.								*/
 
+typedef FUNCTION_POINTER(void,RedrawFunc, (void));
+typedef FUNCTION_POINTER(void,QuitFunc, (void));
+
+typedef FUNCTION_POINTER(int,OptsProcessFunc,(int,char**));
+typedef FUNCTION_POINTER(int,RootStartupFunc,(int,char**));
 
 EXTERN(void, resixeRoot, (Point size));
 
@@ -183,9 +197,10 @@ EXTERN(void, quit_environment, (void));
 
 EXTERN(void, redrawRottRectList, (RectList rl));
 
-EXTERN(int, runRoot, (int argc, char **argv, PFI opts_process, PFI startup_func));
+EXTERN(int, runRoot, (int argc, char **argv, OptsProcessFunc opts_process, 
+		      RootStartupFunc startup_func));
 
-EXTERN(void, root_load_funcs, (PFV *redrawptr, PFV *shutdownptr));
+EXTERN(void, root_load_funcs, (RedrawFunc *redrawptr, QuitFunc *shutdownptr));
 
 EXTERN(Boolean, root_can_circulate, (void));
 

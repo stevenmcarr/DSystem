@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:31:12 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 14:40:38 carr Exp $
 
 HERE = libs/graphicInterface/cmdProcs/paraScopeEditor/el
 
 SRCS = \
-	   ped_el.ansi.c 
+	   ped_el.C 
 
 ARCHIVE	= ped-$(DSYSTEM_OS)-g.a
 

@@ -1,4 +1,4 @@
-/* $Id: File.h,v 1.5 1997/03/27 20:49:09 carr Exp $ */
+/* $Id: File.h,v 1.6 1997/06/25 15:14:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -36,6 +36,8 @@ SeekRefPt;
 struct FileS {
   FILE *fp;
 };
+
+struct stat;
 
 class File {
   struct FileS *hidden;

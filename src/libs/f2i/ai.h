@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.4 1997/04/28 20:16:30 carr Exp $ */
+/* $Id: ai.h,v 1.5 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -273,15 +273,16 @@ EXTERN(int,HandleExponent,(AST_INDEX ));
      /* gen.ansi.c */
 EXTERN(char*, GenDepComment,(AST_INDEX));
 EXTERN(char*,GenDepCommentForStmt,(Directive*));
-EXTERN(void,generate,(int, int, int, int, int, char*));
+EXTERN(void,generate,(int, int, Generic, Generic, Generic, char*));
 EXTERN(void,generate_store,( int, int, int, int, char*));
 EXTERN(void,generate_move,( int, int, int));
 EXTERN(void, generate_branch,(int, int, int, int, int, int, int, char*));
-EXTERN(void,generate_string,(char*, int, int, int, int, char*));
+EXTERN(void,generate_string,(char*, int, Generic, Generic, Generic, char*));
 EXTERN(void,generate_load,(int, int, int, int, char*));
 EXTERN(void, generate_cache_op,(int, int, Directive *));
 EXTERN(void,PrintData,(int  , int  , int  , int ));
-EXTERN(void,generate_long,(int, int, Generic, int, int, int, int  , int  , int  , char * ));
+EXTERN(void,generate_long,(int, int, Generic, Generic, Generic, 
+			   Generic,Generic,Generic, Generic, char * ));
 EXTERN(int,convert_opcode,(int  , int ));
 EXTERN(int,getAlignment,(int ));
 EXTERN(char *,getTag,(int ));

@@ -1,4 +1,4 @@
-/* $Id: UserFilterDef.C,v 1.9 1997/03/11 14:32:56 carr Exp $ */
+/* $Id: UserFilterDef.C,v 1.10 1997/06/25 14:43:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -145,7 +145,7 @@ static int the_c;				/* next char of 'uvfp_code' to write */
 
 static char * the_codePtr;
 static int the_pc;
-static int the_stack[32];
+static Generic the_stack[32];
 static int the_sp;
 
 
@@ -155,11 +155,11 @@ static int the_sp;
 # define pop_i(x)       {x = the_stack[--the_sp];}
 # define pop2_i(x,y)    {pop_i(y);  pop_i(x);}
 
-# define push_b(x)      {the_stack[the_sp++] = (int) x;}
+# define push_b(x)      {the_stack[the_sp++] = (Generic) x;}
 # define pop_b(x)       {x = BOOL(the_stack[--the_sp]);}
 # define pop2_b(x,y)    {pop_b(y);  pop_b(x);}
 
-# define push_s(x)      {the_stack[the_sp++] = (int) x;}
+# define push_s(x)      {the_stack[the_sp++] = (Generic) x;}
 # define pop_s(x)       {x = (char *) the_stack[--the_sp];}
 
 

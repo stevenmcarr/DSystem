@@ -1,4 +1,4 @@
-/* $Id: regs.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: regs.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -65,9 +65,9 @@ int getAddressInRegister( int index )
     (void) sprintf(space, "_%s_",
 		(char *) fst_my_GetFieldByIndex(ft_SymTable, index, SYMTAB_NAME));
     if (aiSparc > 0)
-       generate(0, iLDI, (int) space, index, GEN_STRING, "Code address");
+       generate(0, iLDI, (Generic) space, index, GEN_STRING, "Code address");
     else
-       generate(0, iLDI, (int) space, index, GEN_STRING, "Static data area address");
+       generate(0, iLDI, (Generic) space, index, GEN_STRING, "Static data area address");
     TReg = index;
   }
   else                 /** the case for the majority **/
@@ -102,7 +102,7 @@ int getAddressInRegister( int index )
 
       (void) sprintf(space, "_%s_", aiGetCommonBlockName(CTIndex, space2));
 
-      generate(0, iLDI, (int) space, BReg, GEN_STRING, "Load Common base addr");
+      generate(0, iLDI, (Generic) space, BReg, GEN_STRING, "Load Common base addr");
 
       TReg = TempReg(AReg, BReg, iADD, TYPE_INTEGER);
       generate(0, iADD, AReg, BReg, TReg, "Common base");

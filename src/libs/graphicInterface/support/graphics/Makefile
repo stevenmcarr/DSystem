@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.1 1997/06/02 19:41:26 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:02:25 carr Exp $
 
 HERE = libs/graphicInterface/support/graphics
 
 SRCS = \
-	   point.ansi.c \
-	   rect.ansi.c \
-	   rect_list.ansi.c
+	   point.C \
+	   rect.C \
+	   rect_list.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

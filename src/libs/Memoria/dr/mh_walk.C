@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.44 1997/04/09 18:33:13 carr Exp $ */
+/* $Id: mh_walk.C,v 1.45 1997/06/25 15:22:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -71,7 +71,7 @@ static LoopStatsType *LoopStats = NULL;
 /****************************************************************************/
 
 static int set_scratch(AST_INDEX node,
-		       int       dummy)
+		       Generic   dummy)
 
   {
    set_scratch_to_NULL(node);
@@ -1532,7 +1532,7 @@ void ApplyMemoryCompiler(int         selection,
    
    if (!PED_MH_CONFIG(ped))
      {
-      PED_MH_CONFIG(ped) = (int) new config_type;
+      PED_MH_CONFIG(ped) = (Generic) new config_type;
       mh_get_config((config_type *)PED_MH_CONFIG(ped),config_file);
      }
    if (LoopStats == NULL)

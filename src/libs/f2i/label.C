@@ -1,4 +1,4 @@
-/* $Id: label.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: label.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,7 +21,9 @@
 
 static int LabelGetInternal (STR_TEXT,int*,AST_INDEX,int);
 
+#ifndef OSF1
 extern "C" void bzero(void *s, size_t n);
+#endif
 
 /************************************************************************/
 /* local & global variables             				*/

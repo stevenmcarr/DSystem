@@ -1,4 +1,4 @@
-/* $Id: sm.h,v 1.11 1997/03/11 14:33:19 carr Exp $ */
+/* $Id: sm.h,v 1.12 1997/06/25 14:46:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -28,6 +28,9 @@
 #define	FRST_NEXT	0			/* the first/next entry on the list	*/
 #define	LAST_PREV	1			/* the last/previous entry on the list	*/
 #define OTHER_DIR(x)	(!x)			/* the other direction			*/
+
+struct pane;
+struct window;
 
 struct	pane	{				/* GENERAL PANE STRUCTURE		*/
 	struct	window	*parent;		/* the enclosing window			*/

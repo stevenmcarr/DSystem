@@ -1,4 +1,4 @@
-/* $Id: mem.h,v 1.5 1997/03/11 14:36:54 carr Exp $ */
+/* $Id: mem.h,v 1.6 1997/06/25 15:16:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -63,17 +63,17 @@ EXTERN(void, set_zap_mem, (void));
 
 	/* Memory Statistics */
 
-extern	int total_rn_memory_in_use;	/* amount of memory in use		*/
+extern	Generic total_rn_memory_in_use;	/* amount of memory in use		*/
 /* This read-only variable indicates the running amount of memory currently allocated	*/
 /* by get_mem(), reget_mem(), and free_mem().  The value is incremented or decremented	*/
 /* based on the actual size of the block of memory rather than the size of the requests.*/
 
-extern	int other_memory_in_use;	/* non-rn memory in use			*/
+extern	Generic other_memory_in_use;	/* non-rn memory in use			*/
 /* This read-only variable indicates the estimated amount of memory allocated outside	*/
 /* of the rn memory usage.  (This estimate is made at the first rn allocation and	*/
 /* does not change.)									*/
 
-EXTERN(int, rn_size_of_brkable_region, (void));
+EXTERN(Generic, rn_size_of_brkable_region, (void));
 /* Takes no parameters.  Returns an estimate of the amount of additional free memory	*/
 /* that can be obtained by using sbrk().						*/
 

@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.11 1997/03/27 20:22:30 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.12 1997/06/25 15:22:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -142,7 +142,7 @@ static int BuildDependenceList(AST_INDEX node,CacheInfoType *CacheInfo)
 		       Dep->Distance = 1;
 		   }
 		 util_append(DepInfoPtr(node)->DependenceList,
-			     util_node_alloc((int)Dep,NULL));
+			     util_node_alloc((Generic)Dep,NULL));
 	       }
 	  }
        }
@@ -266,7 +266,7 @@ static void AddDependencesToDirective(Directive *Dir,
 	Dep->ReferenceNumber = DepInfoPtr(UTIL_NODE_ATOM(Ref))->ReferenceNumber;
 	Dep->DType = 'c';
 	Dep->Distance = 0;
-	util_append(Dir->DependenceList,util_node_alloc((int)Dep,NULL));
+	util_append(Dir->DependenceList,util_node_alloc((Generic)Dep,NULL));
       }
 }
 
@@ -287,7 +287,7 @@ static void AddDependencesToReferences(Directive *Dir,
 	Dep->DType = 'c';
 	Dep->Distance = 0;
 	util_append(DepInfoPtr((AST_INDEX)UTIL_NODE_ATOM(Ref))->DependenceList,
-		    util_node_alloc((int)Dep,NULL));
+		    util_node_alloc((Generic)Dep,NULL));
       }
 }
 

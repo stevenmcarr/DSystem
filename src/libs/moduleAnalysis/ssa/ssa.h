@@ -1,4 +1,4 @@
-/* $Id: ssa.h,v 3.9 1997/03/11 14:36:11 carr Exp $ */
+/* $Id: ssa.h,v 3.10 1997/06/25 15:10:55 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,8 +19,8 @@
 #include <libs/support/misc/general.h>
 #endif
 
-typedef int SsaNodeId;
-typedef int SsaEdgeId;
+typedef Generic SsaNodeId;
+typedef Generic SsaEdgeId;
 
 #define SSA_NIL (-1)
 

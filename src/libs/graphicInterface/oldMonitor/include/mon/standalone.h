@@ -1,4 +1,4 @@
-/* $Id: standalone.h,v 1.8 1997/03/11 14:33:20 carr Exp $ */
+/* $Id: standalone.h,v 1.9 1997/06/25 14:46:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -29,6 +29,8 @@
 #include <libs/graphicInterface/support/graphics/rect_list.h>
 #endif
 
+typedef FUNCTION_POINTER(int,OptsProcessFunc,(int,char**));
+typedef FUNCTION_POINTER(int,RootStartupFunc,(int,char**));
 
 EXTERN(void, sm_desk_register_fd, ( 
 	short fd        /* file descriptor being registered */,

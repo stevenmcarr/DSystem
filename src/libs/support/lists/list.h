@@ -1,4 +1,4 @@
-/* $Id: list.h,v 1.7 1997/03/11 14:36:51 carr Exp $ */
+/* $Id: list.h,v 1.8 1997/06/25 15:16:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -9,6 +9,8 @@
 #ifndef general_h
 #include <libs/support/misc/general.h>
 #endif
+
+struct UtilList_struct;
 
 typedef struct UtilNode_struct {
     struct UtilNode_struct *next;

@@ -1,4 +1,4 @@
-/* $Id: ionudtree.h,v 1.9 1997/03/11 14:34:49 carr Exp $ */
+/* $Id: ionudtree.h,v 1.10 1997/06/25 15:03:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -57,6 +57,6 @@ public:
   virtual int WriteUpCall(FormattedFile& port) = 0;
 };
 
-#endif ionudtree_h
+#endif
 
 

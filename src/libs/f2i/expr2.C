@@ -1,4 +1,4 @@
-/* $Id: expr2.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: expr2.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -432,34 +432,34 @@ void GenerateCall( struct CallTemplate *ct )
      {
       case TYPE_CHARACTER:
         /* ignore the "return" of a character function */
-        generate_long(0, JSRr, reg, aiStackBase(), (int) parms,
-		(int) refs, (int) mods, 0, 0, "jump to character function");
+        generate_long(0, JSRr, reg, aiStackBase(), (Generic) parms,
+		(Generic) refs, (Generic) mods, 0, 0, "jump to character function");
 	break;
 
       case TYPE_LOGICAL:
       case TYPE_INTEGER:
-	generate_long(0, iJSRr, reg, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, 0, "jump to logical/integer function");
+	generate_long(0, iJSRr, reg, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, 0, "jump to logical/integer function");
 	break;
 
       case TYPE_REAL:
-	generate_long(0, fJSRr, reg, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, 0,  "jump to real function");
+	generate_long(0, fJSRr, reg, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, 0,  "jump to real function");
 	break;
 
       case TYPE_DOUBLE_PRECISION:
-	generate_long(0, dJSRr, reg, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, 0, "jump to double precision function");
+	generate_long(0, dJSRr, reg, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, 0, "jump to double precision function");
 	break;
 
       case TYPE_COMPLEX:
-	generate_long(0, cJSRr, reg, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, 0, "jump to complex function");
+	generate_long(0, cJSRr, reg, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, 0, "jump to complex function");
 	break;
 
       case TYPE_DOUBLE_COMPLEX:
-	generate_long(0, qJSRr, reg, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, 0, "jump to double complex function");
+	generate_long(0, qJSRr, reg, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, 0, "jump to double complex function");
 	break;
 
       default:
@@ -467,8 +467,8 @@ void GenerateCall( struct CallTemplate *ct )
 	break;
      }
     else
-      generate_long(0, JSRr, reg, aiStackBase(), (int) parms,
-		(int) refs, (int) mods, 0, 0, "jump to subroutine");
+      generate_long(0, JSRr, reg, aiStackBase(), (Generic) parms,
+		(Generic) refs, (Generic) mods, 0, 0, "jump to subroutine");
 
   }
   else	/* the normal case */
@@ -498,34 +498,34 @@ void GenerateCall( struct CallTemplate *ct )
      {
       case TYPE_CHARACTER:
         /* ignore the "return" of a character function */
-        generate_long(0, JSRl, (int) code_name, aiStackBase(), (int) parms,
-		(int) refs, (int) mods, 0, GEN_STRING, "jump to character function");
+        generate_long(0, JSRl, (Generic) code_name, aiStackBase(), (Generic) parms,
+		(Generic) refs, (Generic) mods, 0, GEN_STRING, "jump to character function");
 	break;
 
       case TYPE_LOGICAL:
       case TYPE_INTEGER:
-	generate_long(0, iJSRl, (int) code_name, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, GEN_STRING, "jump to logical/integer function");
+	generate_long(0, iJSRl, (Generic) code_name, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, GEN_STRING, "jump to logical/integer function");
 	break;
 
       case TYPE_REAL:
-	generate_long(0, fJSRl, (int) code_name, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, GEN_STRING,  "jump to real function");
+	generate_long(0, fJSRl, (Generic) code_name, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, GEN_STRING,  "jump to real function");
 	break;
 
       case TYPE_DOUBLE_PRECISION:
-	generate_long(0, dJSRl, (int) code_name, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, GEN_STRING, "jump to double precision function");
+	generate_long(0, dJSRl, (Generic) code_name, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, GEN_STRING, "jump to double precision function");
 	break;
 
       case TYPE_COMPLEX:
-	generate_long(0, cJSRl, (int) code_name, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, GEN_STRING, "jump to complex function");
+	generate_long(0, cJSRl, (Generic) code_name, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, GEN_STRING, "jump to complex function");
 	break;
 
       case TYPE_DOUBLE_COMPLEX:
-	generate_long(0, qJSRl, (int) code_name, aiStackBase(), (int) parms, t.ReturnReg,
-		(int) refs, (int) mods, GEN_STRING, "jump to double complex function");
+	generate_long(0, qJSRl, (Generic) code_name, aiStackBase(), (Generic) parms, t.ReturnReg,
+		(Generic) refs, (Generic) mods, GEN_STRING, "jump to double complex function");
 	break;
 
       default:
@@ -533,8 +533,8 @@ void GenerateCall( struct CallTemplate *ct )
 	break;
      }
     else
-      generate_long(0, JSRl, (int) code_name, aiStackBase(), (int) parms,
-		(int) refs, (int) mods, 0, GEN_STRING, "jump to subroutine");
+      generate_long(0, JSRl, (Generic) code_name, aiStackBase(), (Generic) parms,
+		(Generic) refs, (Generic) mods, 0, GEN_STRING, "jump to subroutine");
 
    }
 

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:36:49 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:16:14 carr Exp $
 
 HERE = libs/support/lists
 
@@ -6,7 +6,7 @@ SRCS = \
 	   DoublyLinkedList.C \
 	   IOSinglyLinkedList.C \
 	   SinglyLinkedList.C \
-	   list.ansi.c
+	   list.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

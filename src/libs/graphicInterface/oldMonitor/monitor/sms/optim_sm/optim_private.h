@@ -1,4 +1,4 @@
-/* $Id: optim_private.h,v 1.6 1997/03/11 14:34:05 carr Exp $ */
+/* $Id: optim_private.h,v 1.7 1997/06/25 14:58:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -23,7 +23,7 @@ typedef enum {
  */
 typedef struct {
     TextChar	*old;		/* the line's previous contents (what is on the screen)					*/
-    TextChar	*new;		/* the line's new contents (what will be on the screen after calling sm_optim_touch)	*/
+    TextChar	*New;		/* the line's new contents (what will be on the screen after calling sm_optim_touch)	*/
     short       ohash;		/* Hash value of oline.									*/
     short       nhash;		/* Hash value of nline.									*/
     UtilNode	olist;		/* For placing osm_line in the 'actual'  list of a hash bucket.				*/
@@ -32,7 +32,7 @@ typedef struct {
     short       first_mod;	/* first pos (inclusive) on this line that has changed since last update		*/
     short       last_mod;	/* last  pos (inclusive) on this line that has changed since last update		*/
     linestatus  info;
-    UtilNode	class;		/* For placing this osm_line in one of several lists (picked via info) during update	*/
+    UtilNode	Class;		/* For placing this osm_line in one of several lists (picked via info) during update	*/
 } osm_line;
 
 /*
@@ -94,7 +94,7 @@ struct optim {
 EXTERN(void, optim_clear_line,(register TextChar *line, register int length,
                                TextChar clear));
 EXTERN(short, optim_advance,(register short start, register short stop, register
-                             TextChar *old, register TextChar *new));
+                             TextChar *old, register TextChar *New));
 EXTERN(short, optim_retreat,(register short start, register short stop, register
-                             TextChar *old, register TextChar *new));
+                             TextChar *old, register TextChar *New));
 extern Boolean optim_debugging;		/* set this flag to true for additional runtime checking */

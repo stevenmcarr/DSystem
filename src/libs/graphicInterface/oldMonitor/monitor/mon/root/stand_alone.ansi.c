@@ -1,4 +1,4 @@
-/* $Id: stand_alone.ansi.c,v 1.9 1997/03/11 14:33:49 carr Exp $ */
+/* $Id: stand_alone.ansi.c,v 1.10 1997/06/25 14:52:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,15 +11,21 @@
 /************************************************************************/
 
 #include <stdio.h>
+#include <unistd.h>
+
 #include <libs/graphicInterface/oldMonitor/include/mon/sm_def.h>
+#include <libs/graphicInterface/oldMonitor/include/mon/event.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/manager.h>
 #include <libs/graphicInterface/oldMonitor/monitor/mon/root/notify_mgr.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/standalone.h>
+#include <libs/config/config.h>
+
 
 extern	char    D_copyright[];		/* the copyright message	*/
 
     /*** CHILD PROCESS REGISTRATION ***/
 
+struct amgrinst;
 typedef
 struct  cp_reg  {                       /* PROCESS REGISTRATION STACK   */
     int                 pid;            /* child process id             */
@@ -281,7 +287,7 @@ databaseWaitNotification()
  */
 
 int
-runRoot(int argc, char **argv, PFI opts_process, PFI startup_func)
+runRoot(int argc, char **argv, OptsProcessFunc opts_process, RootStartupFunc startup_func)
 {
   int  ret;
 

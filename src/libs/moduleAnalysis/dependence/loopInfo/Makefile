@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:36:00 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:09:47 carr Exp $
 
 HERE = libs/moduleAnalysis/dependence/loopInfo
 
 SRCS = \
-	   li.ansi.c \
-	   li_read.ansi.c \
-	   li_save.ansi.c
+	   li.C \
+	   li_read.C \
+	   li_save.C
 
 ARCHIVE	= ../ModuleAnalysis-$(DSYSTEM_OS)-g.a
 

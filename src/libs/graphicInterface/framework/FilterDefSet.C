@@ -1,4 +1,4 @@
-/* $Id: FilterDefSet.C,v 1.8 1997/03/11 14:32:40 carr Exp $ */
+/* $Id: FilterDefSet.C,v 1.9 1997/06/25 14:43:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -69,7 +69,7 @@ typedef struct FilterDefSet_Repr_struct
       DiaDesc *		textItem;
 
     /* status */
-      int		selectedNum;
+      Generic		selectedNum;
       int		curNum;
       char *		curName;
       char *		curText;

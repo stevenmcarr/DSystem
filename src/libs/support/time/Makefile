@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:37:44 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:21:03 carr Exp $
 
 HERE = libs/support/time
 
 SRCS = \
 	   stopwatch.C \
-	   timer.ansi.c
+	   timer.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

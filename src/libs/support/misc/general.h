@@ -1,4 +1,4 @@
-/* $Id: general.h,v 1.12 1997/03/11 14:36:57 carr Exp $ */
+/* $Id: general.h,v 1.13 1997/06/25 15:16:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -111,12 +111,20 @@
 #define general_h
 
 /* Commonly used types */
-
+#if defined(__GNUC__)
+typedef bool Boolean;   /* BOOLEAN DATATYPE             */
+#else
 typedef	enum { false, true } Boolean;	/* BOOLEAN DATATYPE		*/
+#endif
 #define	NOT(x)	((Boolean) !(x))	/* negate an int or bool	*/
 #define	BOOL(x)	((Boolean)((x) ? 1 : 0))/* convert an int to a boolean	*/
 
+#ifdef LONG_POINTER
+typedef	long	Generic;		/* GENERIC DATATYPE		*/
+#else
 typedef	int	Generic;		/* GENERIC DATATYPE		*/
+#endif
+typedef	int	SmallGeneric;		/* GENERIC DATATYPE		*/
 typedef enum { Unordered, PreOrder, PostOrder,
 	       ReversePreOrder, ReversePostOrder, PreAndPostOrder } TraversalOrder;
 
@@ -125,7 +133,7 @@ typedef enum { Unordered, PreOrder, PostOrder,
 
 /* C++ Definitions */
 
-#define EXTERN(rettype, name, arglist) extern "C" { rettype name arglist; }
+#define EXTERN(rettype, name, arglist) extern "C" rettype name arglist
 #define STATIC(rettype, name, arglist) static rettype name arglist
 #define FUNCTION_POINTER(rettype, name, arglist) rettype(*name)arglist
 

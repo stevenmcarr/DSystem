@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 1997/03/27 21:08:18 carr Exp $
+# $Id: Makefile,v 1.4 1997/06/25 15:20:35 carr Exp $
 
 HERE = libs/support/tables
 
@@ -14,7 +14,7 @@ SRCS = \
 	   NameValueTable.C \
 	   PointerMap.C \
 	   StringHashTable.C \
-	   symtable.ansi.c
+	   symtable.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

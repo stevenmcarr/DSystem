@@ -1,4 +1,4 @@
-/* $Id: event.h,v 1.6 1997/03/11 14:33:15 carr Exp $ */
+/* $Id: event.h,v 1.7 1997/06/25 14:46:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -67,5 +67,10 @@ EXTERN(void, unregisterChildProcess, (int pid, Generic owner));
 /* (Generic owner) the identification associated with the file descriptor.		*/
 
 extern	anEvent		mon_event;		/* the current input event		*/
+
+EXTERN(void,add_select_mask,(int fd));
+EXTERN(void,remove_select_mask,(int fd));
+EXTERN(void,startEvents,(void));
+EXTERN(void,stopEvents,(void));
 
 #endif

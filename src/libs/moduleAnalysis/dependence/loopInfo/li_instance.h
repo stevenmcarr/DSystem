@@ -1,4 +1,4 @@
-/* $Id: li_instance.h,v 1.10 1997/03/11 14:36:01 carr Exp $ */
+/* $Id: li_instance.h,v 1.11 1997/06/25 15:09:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -149,7 +149,7 @@ EXTERN( Boolean, li_save_index, (FortTextTree ftt, LI_Instance * LI,
  * readindex() returns the LI_Instance read from the ifile_ptr.
  * -- generally used when also restoring a DG_Instance and EL_Instance
  */
-EXTERN( LI_Instance *,  readindex, (FILE	* ifile_ptr, MapInfoOpaque * map) );
+EXTERN( LI_Instance *,  readindex, (FILE	* ifile_ptr, MapInfoOpaque map) );
 
 
 /**********************************************

@@ -1,4 +1,4 @@
-/* $Id: routine.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: routine.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -23,7 +23,6 @@
 
 /* forward declarations */
 static void GenerateLoadForEachStaticOrGlobalVar (SymDescriptor,fst_index_t,Generic);
-int  aiStackSize;
 
 
 
@@ -116,7 +115,7 @@ void aiProcedurePrologue ( AST_INDEX parm_list )
   }
   
    /* generate frame instruction  */
-     generate_string(proc_name, FRAME, aiStackSize, (int) parms, 0,
+     generate_string(proc_name, FRAME, aiStackSize, (Generic) parms, 0,
 		"Procedure Prologue Code");
 
    /* load the parameter values */

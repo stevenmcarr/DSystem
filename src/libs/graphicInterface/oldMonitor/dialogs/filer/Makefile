@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:33:02 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 14:44:32 carr Exp $
 
 HERE = libs/graphicInterface/oldMonitor/dialogs/filer
 
 SRCS = \
-	   filer_dia.ansi.c \
-	   table_item.ansi.c \
-	   table_sm.ansi.c
+	   filer_dia.C \
+	   table_item.C \
+	   table_sm.C
 
 ARCHIVE = ../dialogs-$(DSYSTEM_OS)-g.a
 

@@ -1,4 +1,4 @@
-/* $Id: procs.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: procs.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -421,11 +421,11 @@ void aiExit(int reg, char *message)
   (void) sprintf(list, "r%d", address_reg);
 
   /* declare the name */
-  generate(0, NAME, (int) code, 0, 0, NOCOMMENT);
+  generate(0, NAME, (Generic) code, 0, 0, NOCOMMENT);
 
   /* generate the subroutine call for the exit */
-  generate_long(0, JSRl, (int) code, aiStackBase(), (int) list, 
-		(int) /*refs*/ "?", (int) "", 0, GEN_STRING, NOCOMMENT);
+  generate_long(0, JSRl, (Generic) code, aiStackBase(), (Generic) list, 
+		(Generic) /*refs*/ "?", (Generic) "", 0, GEN_STRING, NOCOMMENT);
 } /* aiExit */
 
 

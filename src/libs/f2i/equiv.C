@@ -1,4 +1,4 @@
-/* $Id: equiv.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: equiv.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -26,7 +26,9 @@
 static void compute_size(AST_INDEX, int*, int*);
 static void CheckConflict(void);
 
+#ifndef OSF1
 extern "C" void bzero(void *s, size_t n);
+#endif
 
 /* An implementation of the equivalence handling algorithm given in
  * "Principles of Compiler Design" by Aho and Ullman

@@ -1,4 +1,4 @@
-/* $Id: libmem.h,v 1.6 1997/03/11 14:36:53 carr Exp $ */
+/* $Id: libmem.h,v 1.7 1997/06/25 15:16:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -22,7 +22,7 @@
 typedef char *malloc_t;
 #ifndef stdlib_h
 #include <stdlib.h>
-#endif	stdlib_h
+#endif
 
 #elif defined  __TURBOC__
 
@@ -30,10 +30,10 @@ typedef char *malloc_t;
 // over-ride prior declarations.
 #ifndef __STDLIB_H
 #include <stdlib.h>
-#endif	__STDLIB_H
+#endif
 #ifndef __ALLOC_H
 #include <alloc.h>
-#endif	__ALLOC_H
+#endif
 #define malloc_t     void*
 #define malloc(s)    farmalloc(s)
 #define calloc(n,s)  farcalloc(n,s)
@@ -45,7 +45,7 @@ typedef char *malloc_t;
 
 #include <stdlib.h>
 
-#else  All other machines
+#else 
 
 #include <memory.h>
 
@@ -54,4 +54,4 @@ typedef char *malloc_t;
 #define close_heap() (0)
 #define heapstats() (0)
 
-#endif _MEMORY_
+#endif

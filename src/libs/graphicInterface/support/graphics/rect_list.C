@@ -1,4 +1,4 @@
-/* $Id: rect_list.C,v 1.1 1997/06/02 19:40:07 carr Exp $ */
+/* $Id: rect_list.C,v 1.2 1997/06/25 15:02:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,15 +10,14 @@
 		/* 							*/
 		/********************************************************/
 
+#include <libs/support/memMgmt/mem.h>
 #include <libs/graphicInterface/support/graphics/point.h>
 #include <libs/graphicInterface/support/graphics/rect.h>
 #include <libs/graphicInterface/support/graphics/rect_list.h>
 
-#include <libs/support/memMgmt/mem.h>
-
 static	RectList	free_list;		/* the list of freed rectangle nodes	*/
 
-static RectList newRectListNode  (void);
+STATIC(RectList, newRectListNode, (void));
 
 /* Initialize the free list of rectangles.						*/
 void startRectLists(void)

@@ -1,4 +1,4 @@
-/* $Id: runtime.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: runtime.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -28,8 +28,8 @@ void aiRunTimeError( char *message, int number )
   len = Align(strlen(buffer));
   label = LABEL_NEW;
 
-  generate(label, bDATA, (int) buffer, 1, DATA_CHARACTER, "Error message");
-  generate(0,     iDATA, (int) "0",    1, DATA_INTEGER, NOCOMMENT);
+  generate(label, bDATA, (Generic) buffer, 1, DATA_CHARACTER, "Error message");
+  generate(0,     iDATA, (Generic) "0",    1, DATA_INTEGER, NOCOMMENT);
 
   labelReg = StrTempReg("L", label, TYPE_INTEGER);
   generate(0, iLDI, label, labelReg, GEN_LABEL, "String");
@@ -65,10 +65,10 @@ void aiPause(int message, int length)
   (void) sprintf(list, "r%d r%d", message, length);
 
   /* declare the name */
-  generate(0, NAME, (int) code, 0, 0, NOCOMMENT);
+  generate(0, NAME, (Generic) code, 0, 0, NOCOMMENT);
 
   /* generate the subroutine call to s_paus */
-  generate_long(0, JSRl, (int) code, aiStackBase(), (int) list, 
-		(int) /*refs*/ "?", (int) "", 0, GEN_STRING, NOCOMMENT);
+  generate_long(0, JSRl, (Generic) code, aiStackBase(), (Generic) list, 
+		(Generic) /*refs*/ "?", (Generic) "", 0, GEN_STRING, NOCOMMENT);
 } /* aiPause */
 

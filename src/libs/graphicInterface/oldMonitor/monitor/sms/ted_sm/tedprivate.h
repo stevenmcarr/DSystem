@@ -1,4 +1,4 @@
-/* $Id: tedprivate.h,v 1.13 1997/03/11 14:34:15 carr Exp $ */
+/* $Id: tedprivate.h,v 1.14 1997/06/25 14:59:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -80,8 +80,6 @@
 
 extern unsigned char char_tab[];
 
-/*extern char *realloc();*/
-
 /* buffer types */
 typedef enum {
 	FILEBUFFER,
@@ -129,7 +127,7 @@ typedef struct TedBufStruct {
 	UtilList *my_wins;		/* list of windows into this buffer */
 
 	int	save_behavior;		/* used to signal saveas and saveacopy */
-	void   (*mod_function)();	/* used to signal REPLACE mods */
+        sm_ted_modify_callback mod_function;           /* used to signal REPLACE mods */
 } TedBuf;
 
 typedef struct TedWinStruct {
@@ -154,7 +152,7 @@ typedef struct TedWinStruct {
 	Point		last_click;		/* last click location */
 	int		multiplier;		/* a multiplier for function calls */
 	UtilList	*damage;		/* list of various damages to the window since last redisplay */
-	void		(*message_handler)();	/* the callback for message printing */
+	sm_ted_message_callback message_handler;	/* the callback for message printing */
 	Generic		owner_id;		/* the owner id for the message call back */
 	BMS_private	*bms;			/* boyer-moyer searching info */
 	char 		*rpattern;		/* a pattern to be inserted */
@@ -247,7 +245,7 @@ typedef struct TedStruct {
 #define BEHAV_SAVEACOPY	2
 
 
-#define NO_MESG_HANDLER ((void (*)()) 0) 
+#define NO_MESG_HANDLER ((sm_ted_message_callback) 0) 
 
 #define EOL 	2147483647	/* set cw->prefer_col to this to track eol */
 				/* 1024*1024*1024*2 - 1 == 2^31 - 1 == 2147483647 */
@@ -268,7 +266,6 @@ extern int new_hole_size;		/* size to make the hole, if it is too small */
 /* sm_ted.c */
 EXTERN(void, sm_ted_inform,(Pane *p, char *format, ...));
 EXTERN(void, sm_ted_bitch,(Pane *p, char *format, ...));
-EXTERN(Boolean, sm_ted_modified,());
 EXTERN(void, sm_ted_resize_internal,(Pane *p));
 EXTERN(TedBuf*, sm_ted_buf,(Pane *p));
 EXTERN(TedWin*, sm_ted_win,(Pane *p));
@@ -284,36 +281,30 @@ EXTERN(char*, sm_ted_buf_delete_nprev_chars,(Pane *p, int amount));
 EXTERN(char*, sm_ted_buf_delete_n_chars,(Pane *p, int n));
 EXTERN(void, sm_ted_buf_insert_buf,());
 EXTERN(Boolean, sm_ted_empty_buf,());
-EXTERN(int, sm_ted_print_info,(Pane *p));
+EXTERN(void, sm_ted_buf_erase,(Pane *p));
+EXTERN(void, sm_ted_print_info,(Pane *p));
 EXTERN(Boolean, sm_ted_buf_save_doit,());
 EXTERN(Boolean, sm_ted_buf_write_current_file,());
-EXTERN(int, sm_ted_buf_reread_current_buffer,());
-EXTERN(int, sm_ted_buf_insert_file,());
-EXTERN(int, sm_ted_buf_set_mark,(Pane *p, int num_mark));
-EXTERN(int, sm_ted_buf_goto_mark,());
+EXTERN(void, sm_ted_buf_set_mark,(Pane *p, int num_mark));
 EXTERN(int, sm_ted_buf_name_unique_mark,(Pane *p, char *title));
-EXTERN(int, sm_ted_buf_delete_mark_number,(Pane *p, int num));
+EXTERN(void, sm_ted_buf_delete_mark_number,(Pane *p, int num));
 EXTERN(Boolean, sm_ted_buf_repeat_mark_name,(Pane *p, char *name));
-EXTERN(int, sm_ted_buf_mark_modify,(Pane *p));
+EXTERN(void, sm_ted_buf_mark_modify,(Pane *p));
 EXTERN(char*, sm_ted_buf_complete_file_name,(Pane *p, char *name));
 EXTERN(char*, sm_ted_buf_get_pname,(Pane *p));
 EXTERN(Boolean, sm_ted_buf_is_empty,(Pane *P)); 
 
 /* win.c */
-EXTERN(void, sm_ted_win_create,());	
 /* create the structures associated with a pane */
 EXTERN(void, sm_ted_win_create_internal,(Pane *p));
-EXTERN(void, sm_ted_win_destroy,());	
 /* destroy the structures associated with a pane */
 EXTERN(char, sm_ted_win_get_char,(register Pane *p));
-EXTERN(void, sm_ted_resize_internal,());
-EXTERN(void, sm_ted_win_set_xy,());
-EXTERN(int, sm_ted_win_adjust,(Pane *p, int at, int elts));
+EXTERN(void, sm_ted_win_adjust,(Pane *p, int at, int elts));
 EXTERN(TedWin*, TedWin_of,(UtilNode *node));
 
 /* window.c */
 /*int sm_ted_dot_to_click();*/ 
-EXTERN(int, sm_ted_refresh,(Pane *p));
+EXTERN(void, sm_ted_refresh,(Pane *p));
 
 /* move.c */
 EXTERN(void, sm_ted_page_forward,(Pane *p));
@@ -365,16 +356,17 @@ EXTERN(void, sm_ted_case_word_lower,(Pane *p));
 EXTERN(void, sm_ted_case_word_capitilize,(Pane *p));
 
 /* bind.c */
-int sm_ted_quote_char();
+EXTERN(int, sm_ted_quote_char,(void));
+EXTERN(void, sm_ted_default_bindings,(Pane *p));
 
 /* hole.c */
-void sm_ted_hole_to();
-void sm_ted_enlarge_hole();
+EXTERN(void,sm_ted_hole_to,(void));
+EXTERN(void,sm_ted_enlarge_hole,(void));
 
 /* mode.c */
-EXTERN(int, sm_ted_octal_mode,(Pane *p));
-EXTERN(int, sm_ted_caret_mode,(Pane *p));
-EXTERN(int, sm_ted_verbatim_mode,(Pane *p));
+EXTERN(void, sm_ted_octal_mode,(Pane *p));
+EXTERN(void, sm_ted_caret_mode,(Pane *p));
+EXTERN(void, sm_ted_verbatim_mode,(Pane *p));
 
 /* display.c */
 EXTERN(void, sm_ted_rewrite_line,(register Pane *p, Point loc));
@@ -456,7 +448,7 @@ EXTERN(int, sm_ted_forward_replace,(Pane *p));
 EXTERN(int, sm_ted_backward_replace,(Pane *p));
 EXTERN(Boolean, sm_ted_finder,(Pane *p, aFRDia *frd, char *what, Boolean dir,
                                Boolean case_fold));
-EXTERN(Boolean, sm_ted_replacer,(Pane *p, aFRDia *frd, char *what, 
+EXTERN(void, sm_ted_replacer,(Pane *p, aFRDia *frd, char *what, 
                                  Boolean case_fold, char *replace));
 EXTERN(int, sm_ted_global_replacer,(Pane *p, aFRDia *frd, char *what, 
                                     Boolean global, Boolean dir, 

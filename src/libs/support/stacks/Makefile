@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:37:26 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:19:32 carr Exp $
 
 HERE = libs/support/stacks
 
 SRCS = \
 	   PointerStack.C \
-	   xstack.ansi.c
+	   xstack.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 

@@ -1,4 +1,4 @@
-/* $Id: tuple.h,v 1.5 1997/03/11 14:37:24 carr Exp $ */
+/* $Id: tuple.h,v 1.6 1997/06/25 15:19:03 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -23,6 +23,8 @@
 #ifndef general_h
 #include <libs/support/misc/general.h>
 #endif
+
+struct tuple;
 
 struct tuple_set
 {

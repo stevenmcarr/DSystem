@@ -1,4 +1,4 @@
-/* $Id: stmts.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: stmts.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -81,7 +81,6 @@
 /* global names - shared with procedures.c */
 
 int 	 	proc_type;
-AST_INDEX	formal_list;
 
 /* ... shared with get.c */
 int	NotMapped = 1;
@@ -174,13 +173,13 @@ void aiStmtList(AST_INDEX StmtList)
 	else
 	{
 	  if (aiSparc) 
-	    generate_string("_MAIN_", FRAME, aiStackSize, (int) parms, 0,
+	    generate_string("_MAIN_", FRAME, aiStackSize, (Generic) parms, 0,
 		     "Start of the program");
 	  else if (aiRt)
-	    generate_string("_.MAIN_", FRAME, aiStackSize, (int) parms, 0, 
+	    generate_string("_.MAIN_", FRAME, aiStackSize, (Generic) parms, 0, 
 		     "Start of the program");
 	  else
-	    generate_string("_main", FRAME, aiStackSize, (int) parms, 0,
+	    generate_string("_main", FRAME, aiStackSize, (Generic) parms, 0,
 		     "Start of the program");
 
 	   aiLoadUpStuff();

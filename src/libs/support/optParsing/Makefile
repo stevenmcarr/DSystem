@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:37:06 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:18:09 carr Exp $
 
 HERE = libs/support/optParsing
 
 SRCS = \
 	   Options.C \
-	   invoke_main.ansi.c \
+	   invoke_main.C \
 	   opt_parse.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a

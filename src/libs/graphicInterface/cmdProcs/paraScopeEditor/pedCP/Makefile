@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:32:02 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 14:42:34 carr Exp $
 
 HERE = libs/graphicInterface/cmdProcs/paraScopeEditor/pedCP
 
 SRCS = \
-	   change.ansi.c \
-	   dia.ansi.c \
-	   depdisp.ansi.c \
+	   change.C \
+	   dia.C \
+	   depdisp.C \
 	   PEditorCP.C \
 	   PEditorCP_opt.C
 

@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:37:05 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 15:17:54 carr Exp $
 
 HERE = libs/support/numerical
 
 SRCS = \
-	   ExtendedGCD.ansi.c \
-	   NumericalRecipeUtils.ansi.c
+	   ExtendedGCD.C \
+	   NumericalRecipeUtils.C
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 
