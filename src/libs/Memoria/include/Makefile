@@ -1,9 +1,7 @@
 #
-# $Header: /home/cs/carr/cvsroot/DSystem/src/libs/Memoria/include/Makefile,v 1.2 1992/06/15 08:55:26 rn Exp $
+# $Header: /home/cs/carr/cvsroot/DSystem/src/libs/Memoria/include/Makefile,v 1.3 1992/08/25 17:02:50 cooker Exp $
 #
 
 HERE = ped_cp/memory/include
-
-archive: ; @$(DO_NOTHING)
 
 include Makeinclude
