@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.50 2000/04/05 17:29:29 carr Exp $ */
+/* $Id: mh_walk.C,v 1.51 2001/09/14 17:00:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1525,6 +1525,10 @@ void mh_walk_ast(int          selection,
   	          += walk_info.LoopStats->NonUniformLoopsReplaced;
   	   LoopStats->NonUniformLoopsZeroFP
   	          += walk_info.LoopStats->NonUniformLoopsZeroFP;
+  	   LoopStats->NumKilledGenerators
+  	          += walk_info.LoopStats->NumKilledGenerators;
+  	   LoopStats->NumNoConsistentDependence
+  	          += walk_info.LoopStats->NumNoConsistentDependence;
 
            SRStatsDump(((config_type *)PED_MH_CONFIG(ped))->logfile,
 				       walk_info.LoopStats);
@@ -1796,7 +1800,8 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 	   LoopStats->NonUniformLoopsReplaced);
    fprintf(logfile, "Total Number of Loops w/ Non-Uniform References and no FP Pressure = %d\n\n",
 			LoopStats->NonUniformLoopsZeroFP);
-
+   fprintf(logfile, "Total Number of References with all Generators Killed = %d\n\n", LoopStats->NumKilledGenerators);
+   fprintf(logfile, "Total Number of References with only Inconsistent Dependence Edges = %d\n", LoopStats->NumNoConsistentDependence);
 
   }
 
