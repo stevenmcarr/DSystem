@@ -1,4 +1,4 @@
-/* $Id: libmem.C,v 1.7 1997/03/27 20:50:26 carr Exp $ */
+/* $Id: libmem.C,v 1.8 1997/06/26 17:25:18 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -169,7 +169,7 @@ void *my_calloc(const char *fname, unsigned line, unsigned nitems, uint32 size)
 
 /* Exactly HERE TurboC breaks with objects > 64K!!!  */
 /* Turbo lacks copy & fill for objects > 64K	     */
-  bzero(ptr,(uint)(nitems*size));    /* Clear it out */
+  bzero((char*)ptr,(uint)(nitems*size));    /* Clear it out */
   return ptr;
 }
 
@@ -189,7 +189,7 @@ void *my_realloc(const char *fname, unsigned line, void *ptr, uint32 size)
   s = (char *)my_malloc( fname, line, size );
   len = node->size - sizeof(Tag) - 32;
 /* HERE TurboC breaks with objects > 64K */
-  bcopy(s,ptr,(uint)(min(len,size)));
+  bcopy((const char *)s,(char*)ptr,(uint)(min(len,size)));
   totalmem -= len;	       /* Already added for malloc'd area, now lower */
   dodel( node );	       /* Nuke old node */
   return s;		       /* Return adjusted user's area */

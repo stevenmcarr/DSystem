@@ -1,4 +1,4 @@
-/* $Id: kb.C,v 1.1 1997/06/25 14:49:10 carr Exp $ */
+/* $Id: kb.C,v 1.2 1997/06/26 17:21:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -491,7 +491,7 @@ KbString copyKbString(KbString ks)
 	ns.kc_ptr = (KbChar *)get_mem(ks.num_kc*sizeof(KbChar),"copyKbString");
 	ns.num_kc = ks.num_kc;
 	ns.ephemeral = true;
-	bcopy(ks.kc_ptr, ns.kc_ptr, ks.num_kc*sizeof(KbChar));
+	bcopy((const char *)ks.kc_ptr, (char *)ns.kc_ptr, ks.num_kc*sizeof(KbChar));
 	return ns;
 }
 
@@ -515,7 +515,7 @@ KbString regetKbString(KbString *ks, int nl)
 		KbChar *ns;	/* New string */
 
 		ns = (KbChar *)get_mem( nl*sizeof(KbChar), "regetKbString" );
-		bcopy(ks->kc_ptr, ns, ks->num_kc*sizeof(KbChar));
+		bcopy((const char *)ks->kc_ptr, (char *)ns, ks->num_kc*sizeof(KbChar));
 		ks->kc_ptr = ns;
 	}
 

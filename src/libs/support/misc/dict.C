@@ -1,4 +1,4 @@
-/* $Id: dict.C,v 1.9 1997/06/25 15:16:57 carr Exp $ */
+/* $Id: dict.C,v 1.10 1997/06/26 17:32:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -142,7 +142,7 @@ Dict::Dict( Dict &d ) : size(d.size), cnt(d.cnt), hash(d.hash), cmp(d.cmp)
       int32 len = (bcnt+bcnt+1)*sizeof(void*); // Length in bytes
       bin[i] = (const void **)malloc((uint)len);
       assert(bin[i] != NULL);		 // OOM check
-      bcopy(ptr, bin[i], (int)len);// Copy key-value pairs
+      bcopy((const char *)ptr, (char *)bin[i], (int)len);// Copy key-value pairs
     }
   }
 }
@@ -167,7 +167,7 @@ Dict &Dict::operator =( Dict &d )
       int32 len = (bcnt+bcnt+1)*sizeof(void*); // Length in bytes
       bin[i] = (const void **)malloc((uint)len);
       assert(bin[i] != NULL);		 // OOM check
-      bcopy(ptr, bin[i], (int)len);// Copy key-value pairs
+      bcopy((const char *)ptr, (char *)bin[i], (int)len);// Copy key-value pairs
     }
   }
   return *this;

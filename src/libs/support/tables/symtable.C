@@ -1,4 +1,4 @@
-/* $Id: symtable.C,v 1.1 1997/06/25 15:20:35 carr Exp $ */
+/* $Id: symtable.C,v 1.2 1997/06/26 17:30:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -105,6 +105,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include <include/bstring.h>
 #include <libs/support/memMgmt/mem.h>
@@ -193,10 +194,10 @@ SymTable SymInit(unsigned int size)
   ip->CleanupFns = (SymCleanupFunc*)get_mem(FS*sizeof(void*),"SymTable CleanupFns");
   ip->InitVals   = (Generic*)get_mem(FS*sizeof(Generic*),  "SymTable InitVals");
 
-  bzero(ip->FieldVals, FS*sizeof(Generic*));
-  bzero(ip->FieldNames, FS*sizeof(char*));
-  bzero(ip->CleanupFns, FS*sizeof(void*));
-  bzero(ip->InitVals, FS*sizeof(Generic*));
+  bzero((char *)ip->FieldVals, FS*sizeof(Generic*));
+  bzero((char *)ip->FieldNames, FS*sizeof(char*));
+  bzero((char *)ip->CleanupFns, FS*sizeof(void*));
+  bzero((char *)ip->InitVals, FS*sizeof(Generic*));
 
   ip->NumSlots   = size;
   ip->NextSlot   = FIRST_SLOT;      /* added JMC  14 March 1991 */
@@ -447,7 +448,7 @@ static int SymFieldIndex(SymTable ip, char* field)
     ip->FieldNames[i] = ssave(field);
     ip->FieldVals[i]= (Generic*) get_mem(sizeof(Generic)*ip->NumSlots,
 					 "SymTable Field Vector");
-    bzero(ip->FieldVals[i], sizeof(Generic)*ip->NumSlots); /* JMC -- initially 0 */
+    bzero((char *)ip->FieldVals[i], sizeof(Generic)*ip->NumSlots); /* JMC -- initially 0 */
     ip->InitVals[i] = 0;
     ip->CleanupFns[i] = (SymCleanupFunc)0;
   }
@@ -649,7 +650,7 @@ static void OverflowVectors(SymTable ip)
     if (ip->FieldVals[i] != (Generic*) 0)
     {
       p = (Generic*) get_mem(NewSize, "Symbol Table Column (overflow)");
-      bcopy(ip->FieldVals[i], p, OldSize);	/* copy the old values	*/
+      bcopy((const char *)ip->FieldVals[i], (char *)p, OldSize);	/* copy the old values	*/
 
       Val = ip->InitVals[i];			/* initialize the rest	*/
       for (j=ip->NumSlots;j<NewSlots;j++)

@@ -1,4 +1,4 @@
-/* $Id: bmsearch.C,v 1.1 1997/06/25 15:18:28 carr Exp $ */
+/* $Id: bmsearch.C,v 1.2 1997/06/26 17:27:36 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -41,17 +41,17 @@ BMS_private *bm_create(BMS_private *info)
 
 	if (info == (BMS_private*)0)
 		info = (BMS_private *)get_mem(sizeof(BMS_private),"bm_create");
-	bzero(info, sizeof(BMS_private));
+	bzero((char *)info, sizeof(BMS_private));
 
 	info->delta2	  = (unsigned char *)get_mem(length+1,"bm_create");
 	info->f		  = (unsigned char *)get_mem(length+1,"bm_create");
 	info->pattern	  = (char *)get_mem(length+1,"bm_create");
 	info->truepattern = (char *)get_mem(length+1,"bm_create");
 
-	bzero(info->delta2, length+1);
-	bzero(info->f, length+1);
-	bzero(info->pattern, length+1);
-	bzero(info->truepattern, length+1);
+	bzero((char *)info->delta2, length+1);
+	bzero((char *)info->f, length+1);
+	bzero((char *)info->pattern, length+1);
+	bzero((char *)info->truepattern, length+1);
 
 	info->maxpatlen = length;
 	info->newsearch = forward;
@@ -184,10 +184,10 @@ void bm_newpattern(BMS_private *info, char *newpat, int length)
 	info->pattern	  = (char *)get_mem(length+1,"bm_pattern");
 	info->truepattern = (char *)get_mem(length+1,"bm_pattern");
 
-	bzero(info->delta2, length+1);
-	bzero(info->f, length+1);
-	bzero(info->pattern, length+1);
-	bzero(info->truepattern, length+1);
+	bzero((char *)info->delta2, length+1);
+	bzero((char *)info->f, length+1);
+	bzero((char *)info->pattern, length+1);
+	bzero((char *)info->truepattern, length+1);
 
 	info->maxpatlen = length;
     }
@@ -196,7 +196,7 @@ void bm_newpattern(BMS_private *info, char *newpat, int length)
     info->patlen = length;
     info->oldsearch = bogus;				/* force recomputation of failure functions at next search */
 
-    bcopy(newpat, info->truepattern, info->patlen + 1);	/* save it for later pattern requests of different searchtypes */
+    bcopy((const char *)newpat, (char *)info->truepattern, info->patlen + 1);	/* save it for later pattern requests of different searchtypes */
 }
 
 
@@ -219,7 +219,7 @@ void bm_calc_funcs(BMS_private *info)
     if ( bm_is_forward(info) )
     {
 	/* just copy it straight */
-	bcopy(info->truepattern, info->pattern, m + 1 );
+	bcopy((const char *)info->truepattern, (char *)info->pattern, m + 1 );
     }
     else
     {

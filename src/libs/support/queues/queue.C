@@ -1,4 +1,4 @@
-/* $Id: queue.C,v 1.1 1997/06/25 15:18:48 carr Exp $ */
+/* $Id: queue.C,v 1.2 1997/06/26 17:28:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -50,8 +50,8 @@ static void qGrow(Queue q, int increase)
 			(q->qMax + increase) * q->eltSize,
 			"qGrow");
 
-	bcopy(	q->q + q->eltSize *  q->qFront,
-		q->q + q->eltSize * (q->qFront + increase),
+	bcopy((const char *)	q->q + q->eltSize *  q->qFront,
+	      (char *)	q->q + q->eltSize * (q->qFront + increase),
 		q->eltSize * (q->qMax - q->qFront) );
 
 	q->qMax += increase;
@@ -100,7 +100,7 @@ char *qUp(Queue q, char *eltp)
 	place *= q->eltSize;
 
 	/* Insert new element */
-	bcopy( eltp, &(q->q[place]), q->eltSize );
+	bcopy((const char *) eltp,(char *) &(q->q[place]), q->eltSize );
 	q->qLength++;
 
 	return eltp;
@@ -121,7 +121,7 @@ char *qButt(Queue q, char *eltp)
 	place *= q->eltSize;
 
 	/* Insert new element */
-	bcopy( eltp, &(q->q[place]), q->eltSize );
+	bcopy((const char *) eltp, (char *)&(q->q[place]), q->eltSize );
 	q->qLength++;
 
 	return eltp;

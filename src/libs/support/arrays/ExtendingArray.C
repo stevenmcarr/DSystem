@@ -1,4 +1,4 @@
-/* $Id: ExtendingArray.C,v 1.1 1997/06/25 15:13:37 carr Exp $ */
+/* $Id: ExtendingArray.C,v 1.2 1997/06/26 17:23:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -110,7 +110,7 @@ int f_new(Generic* f)
     if (FREE_LIST(*f) != F_NIL) {
 	id = FREE_LIST(*f);
 	ctemp = (char *) f_address(*f,id);
-	bcopy(ctemp, &(FREE_LIST(*f)), sizeof(Generic));
+	bcopy(ctemp, (char *)&(FREE_LIST(*f)), sizeof(Generic));
 	if (INIT_FUNC(*f)) (INIT_FUNC(*f))(ctemp);
 	return id;
     }
@@ -151,7 +151,7 @@ void f_dispose(Generic f, int id)
 
     memset(temp, ZAP_CHAR, ELT_SIZE(f));
 
-    bcopy(&(FREE_LIST(f)), temp, sizeof(Generic));
+    bcopy((const char *)&(FREE_LIST(f)), temp, sizeof(Generic));
     FREE_LIST(f) = id;
 }
 
@@ -174,7 +174,7 @@ Boolean f_unused(Generic f, int id)
         if (freeList == id)
             return(true);
 
-	bcopy((void*)f_address(f, freeList), (void*)&freeList, sizeof(Generic));
+	bcopy((const char*)f_address(f, freeList), (char*)&freeList, sizeof(Generic));
     }
     return(false);
 }

@@ -1,4 +1,4 @@
-/* $Id: fusion.C,v 1.1 1997/06/25 13:52:57 carr Exp $ */
+/* $Id: fusion.C,v 1.2 1997/06/26 17:32:08 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -331,8 +331,8 @@ pt_fuse_outer(FortTree ft, SideInfo* infoPtr, DT_info* dt_info,
   /* cache Subs_list info */
   s1 = (Subs_list **) get_mem(sizeof(Subs_list *) * refCount1, "dt");
   s2 = (Subs_list **) get_mem(sizeof(Subs_list *) * refCount2, "dt");
-  bzero(s1, sizeof(Subs_list *) * refCount1);
-  bzero(s2, sizeof(Subs_list *) * refCount2);
+  bzero((char*)s1, sizeof(Subs_list *) * refCount1);
+  bzero((char*)s2, sizeof(Subs_list *) * refCount2);
 
   for (i = 0; i < refCount1; i++)
   {

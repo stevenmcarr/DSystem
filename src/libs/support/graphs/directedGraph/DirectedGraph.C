@@ -1,4 +1,4 @@
-/* $Id: DirectedGraph.C,v 1.3 1997/06/25 15:16:01 carr Exp $ */
+/* $Id: DirectedGraph.C,v 1.4 1997/06/26 17:24:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -79,7 +79,7 @@ void DirectedGraph::Create(int _numberOfEdgeClasses)
   nodeIds.Create();
 
   // initialize typed edge counts to zero
-  bzero(numberOfEdges, sizeof(unsigned int) * numberOfEdgeClasses);
+  bzero((char *)numberOfEdges, sizeof(unsigned int) * numberOfEdgeClasses);
 }
 
 
@@ -462,7 +462,7 @@ DirectedGraphNode::DirectedGraphNode(DirectedGraph *dg)
   assert(graph->numberOfEdgeClasses > 0);
   edges = new DirectedGraphEdge *[graph->numberOfEdgeClasses * 
 		     DIRECTED_EDGE_ENDPOINT_TYPE_COUNT];
-  bzero(edges, 
+  bzero((char *)edges, 
 	(graph->numberOfEdgeClasses * DIRECTED_EDGE_ENDPOINT_TYPE_COUNT * 
 	 sizeof(DirectedGraphEdge *)));
 
