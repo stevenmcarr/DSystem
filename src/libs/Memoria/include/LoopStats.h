@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.13 1995/06/07 16:06:11 carr Exp $ */
+/* $Id: LoopStats.h,v 1.14 1996/01/17 11:27:44 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -109,6 +109,7 @@ typedef struct loopstatstype {
   
 	  UniformRefs,         /* number of uniformly generated references */
 	  NonUniformRefs,      /* number of non-uniformly generated references */
+          NonUniformLoops,     /* number of loops with non-UGR's */
 	  NonUniformLoopsReplaced,     /* number of loops w/ non-uniformly generated references and potential for SR */
 	  NonUniformLoopsZeroFP;     /* number of loops w/ non-uniformly generated references and no register pressure */
   float   LoopBal;             /* Loop Balance */
