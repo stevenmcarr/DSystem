@@ -1,4 +1,4 @@
-/* $Id: groups.C,v 1.1 1997/06/24 17:41:50 carr Exp $ */
+/* $Id: groups.C,v 1.2 2001/10/12 19:37:04 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -151,10 +151,13 @@ Boolean is_f77_executable_stmt(AST_INDEX n)	/* certified -- JMC 9/92 */
   }
 }
 
-
+#ifdef SOLARIS
+extern "C" 
+#endif
 AST_INDEX first_executable_stmt(Boolean (*pre_cond)(AST_INDEX), 
 				Boolean (*spec_cond)(AST_INDEX), 
-                                Boolean (*post_cond)(AST_INDEX), AST_INDEX stmt_list)
+                                Boolean (*post_cond)(AST_INDEX), 
+				AST_INDEX stmt_list)
 {
   AST_INDEX stmt;
   assert(stmt_list != AST_NIL && pre_cond(stmt_list));

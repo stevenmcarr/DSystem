@@ -1,4 +1,4 @@
-/* $Id: port.h,v 1.14 1997/06/25 15:16:57 carr Exp $ */
+/* $Id: port.h,v 1.15 2001/10/12 19:34:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -51,7 +51,11 @@ inline long abs( long x ) { return x < 0 ? -x : x; }
 
 #define volatile
 #define huge
+
+#ifndef SOLARIS
 #define signed
+#endif
+
 #define touch(x)
 #include <include/bstring.h>
 #ifdef general_h
@@ -67,7 +71,11 @@ inline long abs( long x ) { return x < 0 ? -x : x; }
 
 #define volatile
 #define huge
+
+#ifndef SOLARIS
 #define signed
+#endif
+
 #define touch(x)
 /*extern "C" void bcopy(void *b1, void *b2, int len);*/
 EXTERN(void, bcopy, (void *b1, void *b2, int len));

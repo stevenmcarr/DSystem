@@ -1,4 +1,4 @@
-/* $Id: SD_Base.h,v 1.1 1997/03/11 14:28:59 carr Exp $ */
+/* $Id: SD_Base.h,v 1.2 2001/10/12 19:33:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,7 +11,7 @@
 #ifndef _SD_Base_h
 #define _SD_Base_h
 
-#include <stream.h>
+#include <iostream.h>
 //#include "PipeWriter.h"
 //#include "PipeReader.h"
 //#include "RecordDossier.h"

@@ -1,4 +1,4 @@
-/* $Id: AST_ht.C,v 1.4 1997/03/27 20:34:58 carr Exp $ */
+/* $Id: AST_ht.C,v 1.5 2001/10/12 19:37:04 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,6 +10,9 @@
 /***********************************************************************
  * Revision history:
  * $Log: AST_ht.C,v $
+ * Revision 1.5  2001/10/12 19:37:04  carr
+ * updated for Solaris 2.8 and RedHat 7.1
+ *
  * Revision 1.4  1997/03/27 20:34:58  carr
  * Alpha
  *
@@ -36,7 +39,7 @@ changes to make AST_ht.C ANSI-C compliant
 
 #include <assert.h>
 #include <stdarg.h>
-#include <stream.h>
+#include <iostream.h>
 
 #ifndef AST_ht_h
 #include <libs/frontEnd/ast/AST_ht.h>

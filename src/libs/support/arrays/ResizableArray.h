@@ -1,4 +1,4 @@
-/* $Id: ResizableArray.h,v 1.8 1997/03/11 14:36:32 carr Exp $ */
+/* $Id: ResizableArray.h,v 1.9 2001/10/12 19:35:00 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -27,7 +27,7 @@
 #ifndef _MEMORY_
 #include <libs/support/memMgmt/libmem.h>
 #endif	_MEMORY_
-class ostream;
+//class ostream;
 
 //------------------------------Array------------------------------------------
 // Arrays of objects which grow as needed.

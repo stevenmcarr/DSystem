@@ -1,4 +1,4 @@
-/* $Id: OverlapForwardDFProblem.h,v 1.3 1997/03/11 14:35:02 carr Exp $ */
+/* $Id: OverlapForwardDFProblem.h,v 1.4 2001/10/12 19:30:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,7 +10,7 @@
 
 #include <libs/fortD/misc/FortD.h>
 #undef is_open
-#include <stream.h>
+#include <iostream.h>
 #include <libs/ipAnalysis/callGraph/CallGraph.h>
 #include <libs/ipAnalysis/callGraph/CallGraphAnnot.h>
 #include <libs/ipAnalysis/callGraph/CallGraphNodeEdge.h>

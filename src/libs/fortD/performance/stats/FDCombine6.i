@@ -1,4 +1,4 @@
-/* $Id: FDCombine6.i,v 1.1 1997/03/11 14:29:09 carr Exp $ */
+/* $Id: FDCombine6.i,v 1.2 2001/10/12 19:33:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -121,7 +121,7 @@ RecordID::setFamily( const char* recName )
 void
 RecordID::setRecord( const char* recName )
 {
-   char* nameString = strchr( recName, ' ' );   /* first blank space */
+   char* nameString = (char *)strchr( recName, ' ' );   /* first blank space */
 
       if ( nameString ) {   /* not a NULL */
          switch( family ) {
@@ -212,7 +212,7 @@ FieldID::testAndSetIndex( const char* recName, int* theField, int index )
       *theField = index;
       
    } else if ( *theField != index ) {
-      cerr << form( "WARNING: unmatched field IDs in %s\n", recName );
+      cerr << "WARNING: unmatched field IDs in " << recName  << endl;
    }
 }   /* end of FieldID::testAndSetIndex() */
 
@@ -224,7 +224,7 @@ FieldID::setIndex( const char* recName, const RecordDossier& inDossier,
 {
    int  index;
 
-   char*  nameString = strchr( recName, ' ' );   /* first blank space */
+   char*  nameString = (char *)strchr( recName, ' ' );   /* first blank space */
    FamilyType  family = inRecord.getFamily();
    RecordType  record = inRecord.getRecord();
 
@@ -392,11 +392,11 @@ LineStatCell::addBaseInfo( const char* inFileName, const char* inProcName,
 	return;
 
    if ( strlen( inFileName ) >= NAME_SIZE ) 
-	cerr << form( "WARNING: fileName length larger than %d\n", NAME_SIZE );
+	cerr << "WARNING: fileName length larger than " << NAME_SIZE << endl;
    strcpy( fileName, inFileName );
 
    if ( strlen( inProcName ) >= NAME_SIZE )
-	cerr << form( "WARNING: procName length larger than %d\n", NAME_SIZE );
+	cerr <<  "WARNING: procName length larger than " << NAME_SIZE << endl;
    strcpy( procName, inProcName );
 
    /* it is better to have line number(s) in ascending order */
@@ -455,15 +455,15 @@ DataLocalityCell::addBaseInfo( const char* inFileName, const char* inProcName,
 			      int inDim ) 
 {
    if ( strlen( inFileName ) >= NAME_SIZE ) 
-	cerr << form( "WARNING: fileName length larger than %d\n", NAME_SIZE );
+	cerr <<  "WARNING: fileName length larger than " << NAME_SIZE << endl;
    strcpy( fileName, inFileName );
 
    if ( strlen( inProcName ) >= NAME_SIZE )
-	cerr << form( "WARNING: procName length larger than %d\n", NAME_SIZE );
+	cerr <<  "WARNING: procName length larger than " << NAME_SIZE << endl;
    strcpy( procName, inProcName );
 
    if ( strlen( inArrayName ) >= NAME_SIZE )
-	cerr << form( "WARNING: arrayName length larger than %d\n", NAME_SIZE );
+	cerr <<  "WARNING: arrayName length larger than " << NAME_SIZE << endl;
    strcpy( arrayName, inArrayName );
 
    lineNum = inLineNum;
@@ -657,8 +657,8 @@ ProcCell::ProcCell( const char* inProcName, int inLineNum, int inStaticID,
 		   ProcCell* nextCell) 
 {
    if ( strlen( inProcName ) >= NAME_SIZE )
-	cerr << form( "WARNING: procName length larger than %d\n",
-		     NAME_SIZE );
+	cerr << "WARNING: procName length larger than " << 
+		     NAME_SIZE << endl;
    strcpy( name, inProcName );
 
    if ( prevCell != NULL )
@@ -743,14 +743,14 @@ FileCell::FileCell( const char* inFileName, const char* inProcName,
 		   FileCell* nextCell) 
 {
    if ( strlen( inFileName ) >= NAME_SIZE )
-	cerr << form( "WARNING: fileName length larger than %d\n",
-		     NAME_SIZE );
+	cerr << "WARNING: fileName length larger than "
+		     << NAME_SIZE << endl;
    strcpy( name, inFileName );
 
    if ( prevCell != NULL )
 	prevCell->linkNext( this );
    next = nextCell;
-   down = new ProcCell( inProcName, inLineNum, inStaticID, NULL, NULL );
+   down = new ProcCell( inProcName, inLineNum, inStaticID, (ProcCell*)NULL, (ProcCell*)NULL );
 
 }   /* end of FileCell::FileCell() */
 
@@ -794,7 +794,7 @@ FileCell::updateList( const char* inFileName, const char* inProcName,
 	 if ( theProc == NULL ) {
 	    /* it should not happen, but just in case */
 	    newProc = new ProcCell( inProcName, inLineNum, inStaticID,
-				   NULL, NULL );
+				   (ProcCell*)NULL, (ProcCell*)NULL );
 	    current->linkDown( newProc );
 
 	 } else {

@@ -1,4 +1,4 @@
-/* $Id: port.C,v 1.12 1999/06/23 13:40:07 carr Exp $ */
+/* $Id: port.C,v 1.13 2001/10/12 19:34:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -22,7 +22,6 @@
 // This function prints a void pointer to a stream.  It only exists because
 // gcc does not support this, but Solaris CC doesn't support a const void*
 // << operator.
-class ostream;
 
 #ifdef __GNUC__
 

@@ -1,9 +1,9 @@
-/* $Id: ArrayNameInfo.C,v 1.2 1997/03/27 20:34:10 carr Exp $ */
+/* $Id: ArrayNameInfo.C,v 1.3 2001/10/12 19:33:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// $Id: ArrayNameInfo.C,v 1.2 1997/03/27 20:34:10 carr Exp $ -*-c++-*-
+// $Id: ArrayNameInfo.C,v 1.3 2001/10/12 19:33:01 carr Exp $ -*-c++-*-
 //**************************************************************************
 // Definitions for class ArrayNameInfo
 //
@@ -192,7 +192,7 @@ InfoTableEntry* ArrayNameInfo::GetFullEntry(char* arrayName, Boolean createNew)
     
     // Stash away the pointer to the table entry in the hash table
     if (infoTable.AddNameValue((Generic) arrayNameKey,
-			       (Generic) tableEntry, /*oldValue*/ NULL)) {
+			       (Generic) tableEntry, (Generic) NULL)) {
 	char errbuf[128];
 	(void) sprintf(errbuf, "Entry exists for key %s ?\n", arrayNameKey);
 	die_with_message(errbuf);
@@ -205,7 +205,8 @@ InfoTableEntry* ArrayNameInfo::GetFullEntry(char* arrayName, Boolean createNew)
 SDDF_ArrayInfo*	ArrayNameInfo::GetArrayInfo(char* arrayName, Boolean createNew)
 {
     InfoTableEntry* entry = GetFullEntry(arrayName, createNew);
-    return (entry != (InfoTableEntry*) NULL)? entry->arrayInfo : NULL;
+    return (entry != (InfoTableEntry*) NULL)? entry->arrayInfo : 
+	   (SDDF_ArrayInfo*) NULL;
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: FortDTest.C,v 1.3 1997/03/11 14:28:20 carr Exp $ */
+/* $Id: FortDTest.C,v 1.4 2001/10/12 19:31:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -37,7 +37,7 @@ void dc_compile_proc_p(PedInfo ped, AST_INDEX pnode, FortDInterface *fi)
   info.Ped = (Generic)ped;
   info.fi = (Generic)fi;
 
-  cout<<form("\n---------Procedure---------\n");
+  cout<<"\n---------Procedure---------\n";
   walk_statements(pnode, LEVEL1, dc_check_assign, NULL,((Generic)(&info)));
 }
 
@@ -109,31 +109,31 @@ static int dc_check_side_info(AST_INDEX node, Generic info)
 static void sp_dump(SNODE *sp)
 {
  int i;
- cout<<form("---------------Begin SNODE-------------- \n");
- cout<<form("SP ADDRESS = %d \n", (int)sp);
- cout<<form("name =  %s \n", sp->id);
- cout<<form("numdim = %d \n", sp->numdim);
- cout<<form("type   = %d \n",  sp->fform); 
+ cout<<"---------------Begin SNODE-------------- \n";
+ cout<<"SP ADDRESS = %d \n", (int)sp;
+ cout<<"name =  %s \n", sp->id;
+ cout<<"numdim = %d \n", sp->numdim;
+ cout<<"type   = %d \n",  sp->fform; 
  for(i=0;i<sp->numdim;++i)
   {
-    cout<<form("Begin Distribution Information \n");
-    cout<<form("upper_bound = %d  lower_bound = %d \n", sp_get_upper(sp, i), sp_get_lower(sp,i));
-    cout<<form("overlap_upper = %d   overlap lower = %d \n", sp_max_access(sp, i), sp_min_access(sp, i));
+    cout<<"Begin Distribution Information \n";
+    cout<<"upper_bound = %d  lower_bound = %d \n", sp_get_upper(sp, i), sp_get_lower(sp,i);
+    cout<<"overlap_upper = %d   overlap lower = %d \n", sp_max_access(sp, i), sp_min_access(sp, i);
     switch(sp->distinfo[i]->distr_type)
    {
     case FD_DIST_LOCAL:
-    cout<<form("dim number = %d  distribution = %s, blocksize1 = %d \n", i, "Local", sp->distinfo[i]->blocksize1);
+    cout<<"dim number = %d  distribution = %s, blocksize1 = %d \n", i, "Local", sp->distinfo[i]->blocksize1;
     break;
 
     case FD_DIST_BLOCK:
-    cout<<form("dim number = %d  distribution = %s, blocksize1 = %d \n", i, "Block", sp->distinfo[i]->blocksize1);
+    cout<<"dim number = %d  distribution = %s, blocksize1 = %d \n", i, "Block", sp->distinfo[i]->blocksize1;
     break;
 
     default: 
-    cout<<form("unknown distribution \n");
+    cout<<"unknown distribution \n";
  }
  }
-  cout<<form("-------------End SNODE------------- \n"); 
+  cout<<"-------------End SNODE------------- \n"; 
 }
 
 

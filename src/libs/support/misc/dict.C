@@ -1,4 +1,4 @@
-/* $Id: dict.C,v 1.11 2001/09/17 01:30:42 carr Exp $ */
+/* $Id: dict.C,v 1.12 2001/10/12 19:34:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,7 +17,6 @@
 #include <assert.h>
 #include <iostream.h>
 #include <stdio.h>
-#include <stream.h>
 
 #include <libs/support/misc/dict.h>
 

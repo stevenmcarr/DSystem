@@ -1,4 +1,4 @@
-/* $Id: ProcessTrace.C,v 1.1 1997/03/11 14:29:13 carr Exp $ */
+/* $Id: ProcessTrace.C,v 1.2 2001/10/12 19:33:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -599,7 +599,7 @@ symTableManager( int index )
        exit(-1);
 
    } else {
-       cout << form( "new table space is %d\n", newSize );
+       cout << "new table space is " <<  newSize << endl;
 
        /* copy existed values to new tables */
        for ( i = 0; i < currentSymTableSize; i++ ) {
@@ -1659,8 +1659,8 @@ updateOutList( FileCell* theHeader, const char* fileName,
    FileCell* newOne;
 
    if ( theHeader == NULL ) {   /* brand new list */
-      newOne = new FileCell( fileName, procName, lineNum, staticID, NULL,
-			    NULL );
+      newOne = new FileCell( fileName, procName, lineNum, staticID, (FileCell*)NULL,
+			    (FileCell*)NULL );
       return newOne;
 
    } else {

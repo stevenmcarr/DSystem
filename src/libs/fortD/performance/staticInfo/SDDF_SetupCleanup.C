@@ -1,4 +1,4 @@
-/* $Id: SDDF_SetupCleanup.C,v 1.1 1997/03/11 14:28:58 carr Exp $ */
+/* $Id: SDDF_SetupCleanup.C,v 1.2 2001/10/12 19:33:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -8,11 +8,11 @@
 
 // -*- C++ -*- 
 /* Contains the C code for the basic interface routines for fortran D */ 
-/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/SDDF_SetupCleanup.C,v 1.1 1997/03/11 14:28:58 carr Exp $
+/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/SDDF_SetupCleanup.C,v 1.2 2001/10/12 19:33:01 carr Exp $
 //
 */
 
-static const char * RCS_ID = "$Id: SDDF_SetupCleanup.C,v 1.1 1997/03/11 14:28:58 carr Exp $";
+static const char * RCS_ID = "$Id: SDDF_SetupCleanup.C,v 1.2 2001/10/12 19:33:01 carr Exp $";
 #define ASSERT_FILE_VERSION RCS_ID
 #define MKASSERT
 
@@ -20,7 +20,7 @@ static const char * RCS_ID = "$Id: SDDF_SetupCleanup.C,v 1.1 1997/03/11 14:28:58
 // Include corresponding .h file last. In general, if these routines
 // are called externally, there should be a .h file.
 
-#include <stream.h>
+#include <iostream.h>
 
 #include <Attributes.h>
 #include <OutputFileStreamPipe.h>
@@ -90,7 +90,7 @@ void SD_Build_Tree_Annot(Context modContext,	 // context used for file name
   
   // TEMPORARY FIX for inconsistency between old and new repository file names:
   // Set file name as the tail component of the path name.
-  char* startchar = strrchr(modContext->ReferenceFilePathName(), (int)'/');
+  char* startchar = (char *)strrchr(modContext->ReferenceFilePathName(), (int)'/');
   if (startchar == (char*) NULL)	// i.e., no '/' in path name
       startchar = (char*)modContext->ReferenceFilePathName();
   else

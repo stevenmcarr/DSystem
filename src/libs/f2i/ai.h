@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.15 1999/07/22 18:06:37 carr Exp $ */
+/* $Id: ai.h,v 1.16 2001/10/12 19:35:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -491,4 +491,5 @@ EXTERN(int ,GetDataSize,(int));
 EXTERN(void, ApplyMemoryCompiler,(int,PedInfo,AST_INDEX,FortTree,Context,char *));
 
      /* from libs/Memoria/ut/mem_util.C  */
-EXTERN(void, ut_GetSubscriptText,(AST_INDEX,char*,SymDescriptor symtab = NULL));
+EXTERN(void, ut_GetSubscriptText,(AST_INDEX,char*,
+				  SymDescriptor symtab = (SymDescriptor) NULL));

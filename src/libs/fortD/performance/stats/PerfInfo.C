@@ -1,9 +1,9 @@
-/* $Id: PerfInfo.C,v 1.2 1997/03/27 20:34:26 carr Exp $ */
+/* $Id: PerfInfo.C,v 1.3 2001/10/12 19:33:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// $Id: PerfInfo.C,v 1.2 1997/03/27 20:34:26 carr Exp $
+// $Id: PerfInfo.C,v 1.3 2001/10/12 19:33:25 carr Exp $
 //**************************************************************************
 // Implementation of class FortDPerfInfo: Wrapper class for accessing runtime
 //					  performance data from Pablo traces.
@@ -193,7 +193,7 @@ PerfMetrics* FortDPerfInfo::ProcPerfInfo(AST_INDEX procStmt, Boolean incl)
 PerfMetrics* FortDPerfInfo::LoopPerfInfo(AST_INDEX loopHdr, Boolean incl)
 {
     if (!doIt) return NULL;
-    return LoopCommPerfInfo(/*dh*/NULL, loopHdr, incl);
+    return LoopCommPerfInfo((Dist_Globals*)NULL, loopHdr, incl);
     
     //int staticID = GetStaticID(loopHdr);
     //if (staticID == DUMMY_STATIC_ID)	// No perf info for this code object
@@ -407,7 +407,7 @@ int FortDPerfInfo::GetLoopStaticID(AST_INDEX loopHdr)
     if ((oldIndex = repr.loopIndexTable->GetEntryIndex(&loopHdr))
 		 == HASH_TABLE_EMPTY)
     {
-	repr.loopIndexTable->AddEntry(&loopHdr, /*AddEntryCallback*/ NULL);
+	repr.loopIndexTable->AddEntry(&loopHdr, (AddEntryFunctPtr) NULL);
 	oldIndex = repr.loopIndexTable->GetEntryIndex(&loopHdr);
     }
     else {

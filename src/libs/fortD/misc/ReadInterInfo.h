@@ -1,4 +1,4 @@
-/* $Id: ReadInterInfo.h,v 1.4 1997/03/11 14:28:46 carr Exp $ */
+/* $Id: ReadInterInfo.h,v 1.5 2001/10/12 19:31:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,7 +10,7 @@
 #endif
 
 #undef is_open
-#include <stream.h>
+#include <iostream.h>
 
 EXTERN(void, map_set_to_sp, (SNODE *sp, FortranDHashTableEntry *a,
                 FortranDHashTableEntry *d, int align_index, int dist_index));

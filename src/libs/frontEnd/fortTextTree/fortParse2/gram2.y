@@ -1,4 +1,4 @@
-/* $Id: gram2.y,v 1.10 1997/06/24 17:47:33 carr Exp $ */
+/* $Id: gram2.y,v 1.11 2001/10/12 19:38:11 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1408,4 +1408,8 @@ setLineTags2(FortTreeNode node, fx_StatToken st, fx_EndingStat endval)
   tt_setTagNode(ftt_textTree, node, st.tt_tag );
 
   ft_SetConceal(ftt_fortTree, node, 2, endval.conceal);
+}
+
+void yyerror(const char *s)
+{
 }

@@ -1,4 +1,4 @@
-/* $Id: builtins.C,v 1.2 2001/09/17 00:21:33 carr Exp $ */
+/* $Id: builtins.C,v 1.3 2001/10/12 19:37:04 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -50,7 +50,9 @@
 /* table describing Fortran77 intrinsic functions */
 /**************************************************/
 
-static intrinsic_descriptor intrinsic_table[] = {
+#define SIZE_INTRINSIC_TABLE 86
+
+static intrinsic_descriptor intrinsic_table[SIZE_INTRINSIC_TABLE] = {
 "abs",		1, RE, RE,
 "acos",		1, RE, RE,
 "aimag",	1, CM, RE,
@@ -143,7 +145,9 @@ static intrinsic_descriptor intrinsic_table[] = {
 /* table describing Fortran77 generic functions */
 /************************************************/
 
-static generic_descriptor generic_table[] = {
+#define SIZE_GENERIC_TABLE 27
+
+static generic_descriptor generic_table[SIZE_GENERIC_TABLE] = {
 "abs",		UN, 1, IN, RE, DB, CM, 
 "acos",		UN, 1, RE, DB, UN, UN,
 "aint",		UN, 1, RE, DB, UN, UN,
@@ -154,10 +158,8 @@ static generic_descriptor generic_table[] = {
 "cmplx",	CM, NARGS_CMPLX_1_OR_2, IN, RE, DB, CM, 
 "cos",		UN, 1, RE, DB, CM, UN,
 "cosh",		UN, 1, RE, DB, UN, UN,
-/*"cshift",	UN, NARGS_MORE_THAN_2, IN, RE, DB, CM,*/
 "dble",		DB, 1, IN, RE, DB, CM, 
 "dim",		UN, 2, IN, RE, DB, UN,
-/*"eoshift",	UN, NARGS_MORE_THAN_2, IN, RE, DB, CM,*/
 "exp",		UN, 1, RE, DB, CM, UN,
 "int",		IN, 1, IN, RE, DB, CM, 
 "log",		UN, 1, RE, DB, CM, UN,
@@ -175,7 +177,7 @@ static generic_descriptor generic_table[] = {
 "tanh",		UN, 1, RE, DB, UN, UN
 };
 
-static generic_to_intrinsic_descriptor generic_to_intrinsic_table[] = {
+static generic_to_intrinsic_descriptor generic_to_intrinsic_table[SIZE_INTRINSIC_TABLE] = {
   "abs",	"iabs","abs","dabs","cabs","",
   "acos",	"acos","dacos","","","",
   "aint",	"aint","dint","","","",
@@ -186,10 +188,8 @@ static generic_to_intrinsic_descriptor generic_to_intrinsic_table[] = {
   "cmplx",      "","","","","",
   "cos",	"cos","dcos","ccos","","",
   "cosh",	"cosh","dcosh","","","",
-/*  "cshift",	"cshift","cshift","cshift","cshift","cshift",*/
   "dble",       "","","","","",
   "dim",	"idim","dim","ddim","","",
-/*  "eoshift",	"eoshift","eoshift","eoshift","eoshift","eoshift",*/
   "exp",	"exp","dexp","cexp","","",
   "int",	"int","ifix","idint","","",
   "log",	"alog","dlog","clog","","",
@@ -208,7 +208,9 @@ static generic_to_intrinsic_descriptor generic_to_intrinsic_table[] = {
 };
 
 /* Many Fortran 90 intrinsics accept arguments that have different types */
-static char *different_typed_args_table[] = {
+
+#define SIZE_OTHER_TABLE 2
+static char *different_typed_args_table[SIZE_OTHER_TABLE] = {
 "cshift",
 "eoshift"
 };

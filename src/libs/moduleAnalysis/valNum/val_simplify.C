@@ -1,4 +1,4 @@
-/* $Id: val_simplify.C,v 2.12 1997/10/30 15:28:42 carr Exp $ */
+/* $Id: val_simplify.C,v 2.13 2001/10/12 19:29:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -15,7 +15,7 @@
 #include <libs/moduleAnalysis/valNum/val.i>
 #include <libs/support/numerical/ExtendedGCD.h>
 #undef is_open
-#include <stream.h>
+#include <iostream.h>
 
 extern char *D_sym_simplify;
 

@@ -1,4 +1,4 @@
-/* $Id: Set.h,v 1.2 1997/03/11 14:37:19 carr Exp $ */
+/* $Id: Set.h,v 1.3 2001/10/12 19:34:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -24,7 +24,7 @@
 #ifndef _PORT_
 #include <libs/support/misc/port.h>
 #endif _PORT_
-class ostream;
+#include <iostream.h>
 class SetI_;
 class SparseSet;
 class VectorSet;

@@ -1,4 +1,4 @@
-/* $Id: OnHomeTable.C,v 1.8 2001/09/14 18:31:04 carr Exp $ */
+/* $Id: OnHomeTable.C,v 1.9 2001/10/12 19:42:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,6 +19,9 @@
 /**********************************************************************
  * Revision History:
  * $Log: OnHomeTable.C,v $
+ * Revision 1.9  2001/10/12 19:42:07  carr
+ * updated for Solaris 2.8 and RedHat 7.1
+ *
  * Revision 1.8  2001/09/14 18:31:04  carr
  * Update for RH 7.1
  *
@@ -54,7 +57,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  */
 
 #include <assert.h>
-#include <stream.h>
+#include <iostream.h>
 #include <libs/fortD/irregAnalysis/OnHomeTable.h>
 #include <libs/frontEnd/include/walk.h>
 #include <libs/frontEnd/ast/AstIter.h>

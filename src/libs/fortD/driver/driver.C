@@ -1,4 +1,4 @@
-/* $Id: driver.C,v 1.24 1997/03/27 20:32:40 carr Exp $ */
+/* $Id: driver.C,v 1.25 2001/10/12 19:31:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -133,7 +133,7 @@ void fortd_compiler(cNameValueTable analyses, Fd_opts *fd_opts)
   
   if (fd_opts->flags[Do_interface])
     {
-      cout<<form("Invoking the D Editor interface \n");
+      cout<<"Invoking the D Editor interface \n";
       FortDInterfaceTest(callGraph, &program);
     }
   
@@ -143,7 +143,7 @@ void fortd_compiler(cNameValueTable analyses, Fd_opts *fd_opts)
   
   else  
     {  
-      cout<<form("Invoking the Fortran D code generator \n");
+      cout<<"Invoking the Fortran D code generator \n";
       
       // 2/9/94 RvH: Determinism helps debugging
       //for(CallGraphNodeIterator x(cg2, Unordered); n = x.Current(); x++)

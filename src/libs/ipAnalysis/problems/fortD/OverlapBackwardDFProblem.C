@@ -1,4 +1,4 @@
-/* $Id: OverlapBackwardDFProblem.C,v 1.5 1997/03/11 14:35:01 carr Exp $ */
+/* $Id: OverlapBackwardDFProblem.C,v 1.6 2001/10/12 19:30:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -59,7 +59,8 @@ void FortD_OverlapBackward_DFProblem::UpdateOverlapsReach(CallGraphAnnot *an_t, 
      formal = an->fortd_set[i]->name();
  
    if(an->fortd_set[i]->Count() > 1)
-     cout<<form("Currently unable to handle multiple reaching decompositions \n");
+     cout << "Currently unable to handle multiple reaching decompositions"
+	  << endl;
 
 //---------------------------------------------------------------------
 // get the distribute info data structure for the formal parameter

@@ -1,10 +1,10 @@
-/* $Id: strutil.C,v 1.1 1997/06/24 17:41:50 carr Exp $ */
+/* $Id: strutil.C,v 1.2 2001/10/12 19:37:04 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 #include <string.h>
-#include <stream.h>
+#include <iostream.h>
 #include <stdlib.h>
 
 #include <libs/support/misc/general.h>

@@ -1,4 +1,4 @@
-/* $Id: FDCombine6.h,v 1.2 2001/09/14 18:34:07 carr Exp $ */
+/* $Id: FDCombine6.h,v 1.3 2001/10/12 19:33:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -90,7 +90,7 @@
 #ifndef  FDCombine6_h
 #define  FDCombine6_h
 
-#include <stream.h>
+#include <iostream.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

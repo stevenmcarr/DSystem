@@ -1,4 +1,4 @@
-/* $Id: filer_dia.C,v 1.3 2001/09/17 13:45:49 carr Exp $ */
+/* $Id: filer_dia.C,v 1.4 2001/10/12 19:38:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -62,7 +62,12 @@ filename component.  This is the RE for a filename component:
     ([^\\./]|\\.[^\\./]|\\.\\.[^/])[^/]*
 It appears twice in the RE for CLEAN_FILE_NAME.
 */
+#ifdef LINUX
 typedef FUNCTION_POINTER(int,ScanDirSelectFunc,(const struct dirent *));
+#else
+typedef FUNCTION_POINTER(int,ScanDirSelectFunc,(struct dirent *));
+#endif
+
 typedef FUNCTION_POINTER(Boolean,OkayerFunc,(Generic,char*));
 
 #define DIR_START	1

@@ -1,11 +1,11 @@
-/* $Id: SD_MsgInfo.h,v 1.1 1997/03/11 14:29:04 carr Exp $ */
+/* $Id: SD_MsgInfo.h,v 1.2 2001/10/12 19:33:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 // -*- C++ -*-
 /* Explanatory one line comment on file nature */
-/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/SD_MsgInfo.h,v 1.1 1997/03/11 14:29:04 carr Exp $
+/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/SD_MsgInfo.h,v 1.2 2001/10/12 19:33:02 carr Exp $
 //
 */
 // The tag should exactly match the filename
@@ -13,7 +13,7 @@
 #define _SD_MsgInfo_h
 // All includes and definitions go here. Include only the minimum set required to include this file. Do not include anything that is only required by the coressponding .c file (if there is one)
 
-#include <stream.h>
+#include <iostream.h>
 #include <libs/support/misc/general.h>
 #include <libs/fortD/performance/staticInfo/SD_Base.h>
 #include <libs/fortD/performance/staticInfo/SD_List.h>

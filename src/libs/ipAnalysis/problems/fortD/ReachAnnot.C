@@ -1,4 +1,4 @@
-/* $Id: ReachAnnot.C,v 1.5 1997/03/27 20:41:14 carr Exp $ */
+/* $Id: ReachAnnot.C,v 1.6 2001/10/12 19:30:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -6,9 +6,14 @@
 //-------------------
 // include files
 
+signed char *test;
+
 #include <stdio.h>
+signed char *test1;
 #include <libs/fortD/misc/FortD.h>
+signed char *test2;
 #include <libs/ipAnalysis/problems/fortD/ReachAnnot.h>
+signed char *test3;
 #include <libs/ipAnalysis/problems/fortD/ReachDFProblem.h>
 #include <libs/ipAnalysis/ipInfo/iptree.h>
 

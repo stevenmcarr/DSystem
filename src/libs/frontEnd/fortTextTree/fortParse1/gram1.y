@@ -1,4 +1,4 @@
-/* $Id: gram1.y,v 1.11 1997/06/24 17:45:59 carr Exp $ */
+/* $Id: gram1.y,v 1.12 2001/10/12 19:37:40 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -3789,7 +3789,7 @@ int yylex()
 
 
 
-void yyerror(char *s)
+void yyerror(const char *s)
 {
   /* save just the first error message to occur */
   if( fp1_error == nil )  fp1_error = ssave(s);

@@ -1,4 +1,4 @@
-/* $Id: cfg_iter.C,v 1.5 1997/03/11 14:35:29 carr Exp $ */
+/* $Id: cfg_iter.C,v 1.6 2001/10/12 19:28:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,7 +11,7 @@
  ***********************************************************************/
 
 #include <assert.h>
-#include <stream.h>
+#include <iostream.h>
 #ifndef Cfg_h
 #include <libs/moduleAnalysis/cfg/Cfg.h>
 #endif

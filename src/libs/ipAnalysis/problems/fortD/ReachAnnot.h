@@ -1,4 +1,4 @@
-/* $Id: ReachAnnot.h,v 1.7 1997/03/11 14:35:03 carr Exp $ */
+/* $Id: ReachAnnot.h,v 1.8 2001/10/12 19:30:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,7 +21,7 @@
 
 #include <libs/fortD/misc/FortD.h>
 #undef is_open
-#include <stream.h>
+#include <iostream.h>
 
 
 // 9/25/93 RvH: Why all these constants instead of flexible data
