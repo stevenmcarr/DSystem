@@ -7,6 +7,8 @@
 #ifndef sllist_h
 #include <misc/sllist.h>
 #endif
+#include <fort/treeutil.h>
+
 #include <IntegerList.h>
 #include <fort/AstIter.h>
 #include <Lambda/Lambda.h>
@@ -27,7 +29,6 @@ class UniformlyGeneratedSetsEntry : public IntegerList {
   Boolean Uniform;
   int Solve(la_matrix B, la_vect c, int m, int n, la_matrix *S, int *num);
   Boolean DetermineIfReuseExists(la_matrix A,la_vect C1, la_vect C2);
-  void GetConstants(AST_INDEX node1,la_vect C);
   Boolean SolutionIsValid(la_matrix A,la_vect x,la_vect b);
   Boolean CheckIntersect(la_vect X1,la_vect X2,int n);
   Boolean IsSolutionInLIS(la_matrix X,la_vect r_p,int row,int column,
@@ -49,14 +50,14 @@ public:
      la_matCopy(nodeH,H,Subscripts,NestingLevel);
      ZeroSpace = la_vecNew(Subscripts);
      la_vecClear(ZeroSpace,Subscripts);
-     LocalizedIterationSpace = la_vecNew(Subscripts);
+     LocalizedIterationSpace = la_vecNew(NestingLevel);
      if (LIS == NULL)
        {
-	la_vecClear(LocalizedIterationSpace, Subscripts-1);
-	LocalizedIterationSpace[Subscripts-1] = 1;
+	la_vecClear(LocalizedIterationSpace, NestingLevel-1);
+	LocalizedIterationSpace[NestingLevel-1] = 1;
        }
      else
-       la_vecCopy(LIS,LocalizedIterationSpace,Subscripts);
+       la_vecCopy(LIS,LocalizedIterationSpace,NestingLevel);
   };
 
   ~UniformlyGeneratedSetsEntry()
@@ -68,6 +69,8 @@ public:
        la_vecFree(LocalizedIterationSpace);
     }
 
+  void GetConstants(AST_INDEX node1,la_vect C);
+
   void SetLocalizedIterationSpace(la_vect LIS)
     {
      int i;
@@ -75,7 +78,7 @@ public:
        la_vecCopy(LIS,LocalizedIterationSpace,NestingLevel);
     }
 
-  void printH()
+  void PrintH()
   {
     int i,j;
     
@@ -91,7 +94,7 @@ public:
   {
     int i;
     
-      for (i = 0;i < NestingLevel; i++)
+      for (i = 0; i< NestingLevel; i++)
 	printf("\t%d",LocalizedIterationSpace[i]);
       printf("\n");
   }
@@ -108,7 +111,9 @@ public:
   la_vect getLocal() { return LocalizedIterationSpace;};
   int getNestl() { return NestingLevel;};
   int getSubs() { return Subscripts;};
+  char* getName() { return name; };
   la_matrix getH() { return H;};
+  void PrintOut();
  };
 
 
@@ -118,17 +123,13 @@ class UGSEntryIterator : public IntegerListIter {
     UGSEntryIterator(UniformlyGeneratedSetsEntry& UGSEntry) : 
       IntegerListIter(UGSEntry)
       {
-      }
+      }; 
     UGSEntryIterator(UniformlyGeneratedSetsEntry* UGSEntry) : 
       IntegerListIter(UGSEntry)
       {
-      } 
+      };
 
-   AST_INDEX operator() ()
-    {
-     return (AST_INDEX) 
-            (IntegerListIter::operator()())->GetValue();
-    } 
+   AST_INDEX operator() ();
 
 };
 
@@ -141,7 +142,6 @@ class UniformlyGeneratedSets : public IntegerList {
 
   UniformlyGeneratedSetsEntry *GetUniformlyGeneratedSet(AST_INDEX node);
   UniformlyGeneratedSetsEntry *GetUniformlyGeneratedSet(AST_INDEX node, la_matrix NodeH);
-  void AddNode(AST_INDEX node);
   void Append(la_matrix nodeH, AST_INDEX node, int NumSubs, Boolean uniform );
   int GetIndex(char *ivar);
   void ComputeH(AST_INDEX node,la_matrix nodeH,Boolean *uniform,AST_INDEX expr,
@@ -150,34 +150,13 @@ class UniformlyGeneratedSets : public IntegerList {
 
 
 public:
-  UniformlyGeneratedSets(AST_INDEX loop,int NL,char **IV,la_vect LIS = NULL) 
-  { 
-   int i;
-   AST_INDEX node;
-   
-     NestingLevel = NL;
-     IndexVars = new char*[NestingLevel];
-     for (i = 0; i < NestingLevel; i++)
-       IndexVars[i] = new char[80];
-     for (i = 0; i < NestingLevel; i++)
-       (void)strcpy(IndexVars[i],IV[i]);
-     LocalizedIterationSpace = la_vecNew(NestingLevel);
-     if (LIS == NULL)
-       {
-	la_vecClear(LocalizedIterationSpace, NestingLevel-1);
-	LocalizedIterationSpace[NestingLevel-1] = 1;
-       }
-     else
-       la_vecCopy(LIS,LocalizedIterationSpace,NestingLevel);
-     for (AstIter AIter(loop,false); (node = AIter()) != AST_NIL;)
-       if (is_subscript(node))
-         AddNode(node);
-  };
+  UniformlyGeneratedSets(AST_INDEX loop,int NL,char **IV,la_vect LIS = NULL) ;
   ~UniformlyGeneratedSets()
     { delete IndexVars;
       la_vecFree(LocalizedIterationSpace);
     };
 
+  void AddNode(AST_INDEX node);
   Boolean NodeHasGroupSpatialReuse(AST_INDEX node);
   Boolean NodeHasGroupTemporalReuse(AST_INDEX node);
   Boolean NodeHasSelfTemporalReuse(AST_INDEX node);
@@ -200,16 +179,12 @@ class UGSIterator : public IntegerListIter {
   public:
     UGSIterator(UniformlyGeneratedSets& UGS) : IntegerListIter(UGS)
       {
-      }
+      };
     UGSIterator(UniformlyGeneratedSets* UGS) : IntegerListIter(UGS)
       {
-      } 
+      };
 
-   UniformlyGeneratedSetsEntry* operator() ()
-    {
-     return (UniformlyGeneratedSetsEntry*) 
-            (IntegerListIter::operator()())->GetValue();
-    } 
+   UniformlyGeneratedSetsEntry* operator() ();
 
 
 };
