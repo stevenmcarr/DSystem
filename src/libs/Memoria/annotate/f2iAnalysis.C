@@ -1,5 +1,5 @@
 
-/* $Id: f2iAnalysis.C,v 1.1 1998/07/07 19:28:33 carr Exp $ */
+/* $Id: f2iAnalysis.C,v 1.2 1999/02/23 19:05:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -25,6 +25,7 @@
 #include <libs/Memoria/include/mem_util.h>
 
 extern int aiCache;
+extern int aiParseComments;
 extern int aiOptimizeAddressCode;
 
 static int remove_edges(AST_INDEX      stmt,
@@ -125,7 +126,7 @@ void memory_PerformF2iAnalysis(PedInfo      ped,
      walk_statements(root,level,(WK_STMT_CLBACK)ut_mark_do_pre,
 		     (WK_STMT_CLBACK)ut_mark_do_post,(Generic)&pre_info);
      walk_statements(root,level,(WK_STMT_CLBACK)remove_edges,NOFUNC,(Generic)ped);
-     if (aiCache)
+     if (aiCache || aiParseComments)
        memory_PerformCacheAnalysis(ped,symtab,ar,root,level,pre_info.loop_num);
      if (aiOptimizeAddressCode)
        memory_PerformAddressOptimization(ped,symtab,ar,root,level,pre_info.loop_num);

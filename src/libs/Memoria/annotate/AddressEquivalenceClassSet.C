@@ -3,6 +3,7 @@
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/Memoria/annotate/AddressEquivalenceClassSet.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/annotate/DirectivesInclude.h>
 
 static int CheckNodes(AST_INDEX node,
 		      StmtOrderInfoType *StmtOrderInfo)
@@ -23,14 +24,14 @@ static int CheckNodes(AST_INDEX node,
 
       
 
-static Boolean NewReferenceIsEarlier(AST_INDEX Old,
-				     AST_INDEX New)
-
+Boolean AddressEquivalenceClass::NewReferenceIsEarlier(AST_INDEX Old,
+						       AST_INDEX New)
+				    
 {
   AST_INDEX OldStmt = ut_get_stmt(Old);
   AST_INDEX NewStmt = ut_get_stmt(New);
-  stmt_info_type *OldSptr = get_stmt_info_ptr(OldStmt);
-  stmt_info_type *NewSptr = get_stmt_info_ptr(NewStmt);
+  stmt_info_type *OldSptr = get_stmt_info_ptr(Old);
+  stmt_info_type *NewSptr = get_stmt_info_ptr(New);
 
   if (NewSptr->stmt_num < OldSptr->stmt_num)
     return true;
@@ -65,12 +66,47 @@ static Boolean NewReferenceIsEarlier(AST_INDEX Old,
   return false;
 }
 
+Boolean AddressEquivalenceClass::NewReferenceIsEarlier(Directive *Dir,
+						       AST_INDEX New)
+				    
+{
+  AST_INDEX NewStmt = ut_get_stmt(New);
+  stmt_info_type *NewSptr = get_stmt_info_ptr(NewStmt);
+
+  return BOOL(NewSptr->stmt_num < Dir->StmtNumber);
+}
+
+Boolean AddressEquivalenceClass::NewReferenceIsEarlier(AST_INDEX Old,
+						       Directive *Dir)
+				    
+{
+  AST_INDEX OldStmt = ut_get_stmt(Old);
+  stmt_info_type *OldSptr = get_stmt_info_ptr(OldStmt);
+
+  return BOOL(Dir->StmtNumber < OldSptr->stmt_num);
+}
+
+Boolean AddressEquivalenceClass::NewReferenceIsEarlier(Directive *LeaderDir,
+						       Directive *Dir)
+				    
+{
+  return BOOL(Dir->StmtNumber < LeaderDir->StmtNumber);
+}
+
 static int BuildEquivalenceClasses(AST_INDEX node,
 				   AddressEquivalenceClassSet *AECS)
 
 {
   if (is_subscript(node))
     AECS->AddNode(node);
+  else if (is_comment(node) && DirectiveInfoPtr(node) != NULL)
+    {
+      Directive *Dir = DirectiveInfoPtr(node);
+      if (Dir->Instr == PrefetchInstruction ||
+	  Dir->Instr == FlushInstruction)
+	AECS->AddNode(Dir);
+    }
+
   return(WALK_CONTINUE);
       
 }
@@ -145,6 +181,26 @@ void AddressEquivalenceClassSet::AddNode(AST_INDEX node)
      else
        EquivalenceClass = Append(nodeH,node,Subscripts,uniform);
      EquivalenceClass->CheckLeader(node);
+  }
+
+
+void AddressEquivalenceClassSet::AddNode(Directive *Dir)
+
+  {
+   AddressEquivalenceClass *EquivalenceClass;
+   Boolean uniform = true;
+   int **nodeH,i,j,Subscripts;
+
+     Size++;
+     Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(Dir->Subscript));
+     nodeH = la_matNew(Subscripts,NestingLevel);
+     GetH(Dir->Subscript,nodeH,&uniform);
+     if (uniform && 
+	 (EquivalenceClass = GetAddressEquivalenceClass(Dir->Subscript,nodeH)) != NULL)
+       EquivalenceClass->AddEntry(Dir->Subscript);
+     else
+       EquivalenceClass = Append(nodeH,Dir->Subscript,Subscripts,uniform);
+     EquivalenceClass->CheckLeader(Dir);
   }
 
 void AddressEquivalenceClassSet::GetH(AST_INDEX node,
@@ -261,6 +317,8 @@ AddressEquivalenceClass::AddressEquivalenceClass(char *EntryName,
   NestingLevel = level;
   Subscripts = subs;
   Uniform = uniform;
+  LeaderIsADirective = false;
+  LeaderDirective = NULL;
   H = la_matNew(Subscripts,NestingLevel);
   la_matCopy(nodeH,H,Subscripts,NestingLevel);
   C_L = la_vecNew(Subscripts);
@@ -271,7 +329,7 @@ Boolean AddressEquivalenceClass::SameEquivalenceClass(AST_INDEX node,
 
   {
    int i,j;
-   la_vect C,C_L;
+   la_vect C,C_Leader;
 
      if (NOT(Uniform) || strcmp(name,gen_get_text(gen_SUBSCRIPT_get_name(node)))) 
        return (false);
@@ -284,10 +342,10 @@ Boolean AddressEquivalenceClass::SameEquivalenceClass(AST_INDEX node,
      C = la_vecNew(Subscripts);
      GetConstants(node,C);
 
-     C_L = la_vecNew(Subscripts);
-     GetConstants(Leader,C_L);
+     C_Leader = la_vecNew(Subscripts);
+     GetConstants(Leader,C_Leader);
      for (i = 1; i < Subscripts; i++) // ignore the first subscript position
-         if (C[i] != C_L[i])
+         if (C[i] != C_Leader[i])
 	   return(false);
      
      return(true);
@@ -315,13 +373,58 @@ void AddressEquivalenceClass::CheckLeader(AST_INDEX node)
   int i = Subscripts - 1 ;
   Boolean AllEqual = true;
   la_vect C_n;
+  Boolean Earlier;
 
   if (Leader != NULL)
-    if (NewReferenceIsEarlier(Leader,node))
-      Leader = node;
-    else;
+    {
+      Boolean Earlier;
+
+      if (LeaderIsADirective)
+	Earlier = NewReferenceIsEarlier(LeaderDirective,node);
+      else
+	Earlier = NewReferenceIsEarlier(Leader,node);
+      if (Earlier)
+	{
+	  LeaderIsADirective = false;
+	  Leader = node;
+	}
+    }
   else
-    Leader = node;
+    {
+      LeaderIsADirective = false;
+      Leader = node;
+    }
+}
+
+void AddressEquivalenceClass::CheckLeader(Directive *Dir)
+
+{
+  Boolean Change = false;
+  Boolean Done = false;
+  int i = Subscripts - 1 ;
+  Boolean AllEqual = true;
+  la_vect C_n;
+  Boolean Earlier;
+
+  if (Leader != NULL)
+    {
+      if (LeaderIsADirective)
+	Earlier = NewReferenceIsEarlier(LeaderDirective,Dir);
+      else
+	Earlier = NewReferenceIsEarlier(Leader,Dir);
+      if (Earlier)
+	{
+	  LeaderIsADirective = true;
+	  LeaderDirective = Dir;
+	  Leader = Dir->Subscript;
+	}
+    }
+  else
+    {
+      LeaderIsADirective = true;
+      LeaderDirective = Dir;
+      Leader = Dir->Subscript;
+    }
 }
 
 AST_INDEX AddressClassIterator::operator() ()

@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.19 1998/07/07 19:43:50 carr Exp $ */
+/* $Id: prefetch.C,v 1.20 1999/02/23 19:08:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -43,6 +43,9 @@
 
 extern Boolean Memoria_LetRocketSchedulePrefetches;
 extern Boolean Memoria_IssueDead;
+
+
+
 //
 //  Function: remove_edges
 //
@@ -459,15 +462,7 @@ static void AllocatePrefetches(PrefetchListIterator WordIterator,
   while (WordIterator.current() != NULL)
     {
       if (RecurrenceOnly)
-	{
-	  OnRecurrence = 
-	    RData.IsReferenceOnRecurrence(WordIterator.current()->GetValue());
- 	  if (OnRecurrence)
- 	    {
- 	      cout << "**Node is on Recurrence**" << endl;
- 	      tree_print(WordIterator.current()->GetValue());
- 	    }
-	}
+	OnRecurrence = RData.IsReferenceOnRecurrence(WordIterator.current()->GetValue());
       else
 	OnRecurrence = true;
       
@@ -1166,25 +1161,25 @@ static void UnrollLoop(model_loop   *loop_data,
      // insert "priming" prefetches before pre-loop begins.  These are the things that
      // need to be prefetched but aren't in loop do to distance offset
 
-     if (NOT(Memoria_LetRocketSchedulePrefetches))
-       { 
-        if (PreLoop == AST_NIL)
-          PreLoop = loop_data[loop].node;
-        for (i = 0; i < WordPrefetchDistance; i++)
-          InsertPrefetchesBeforeStmt(PreLoop,WordPrefetches,Var,
-				     gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
-				     i,false,false,
-				     gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
+//      if (NOT(Memoria_LetRocketSchedulePrefetches))
+//        { 
+//         if (PreLoop == AST_NIL)
+//           PreLoop = loop_data[loop].node;
+//         for (i = 0; i < WordPrefetchDistance; i++)
+//           InsertPrefetchesBeforeStmt(PreLoop,WordPrefetches,Var,
+// 				     gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
+// 				     i,false,false,
+// 				     gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
        
-        // insert "priming" prefetches for line prefetches.  Prefetch all lines before
-        // the first prefetch in the pre-conditioning loop.
+//         // insert "priming" prefetches for line prefetches.  Prefetch all lines before
+//         // the first prefetch in the pre-conditioning loop.
 
-        for (i = 0; i < 2*LineDistance; i+= UnrollVal)
-          InsertPrefetchesBeforeStmt(PreLoop,LinePrefetches,Var,
-				     gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
-				     i,true,false,
-				     gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
-      }
+//         for (i = 0; i < 2*LineDistance; i+= UnrollVal)
+//           InsertPrefetchesBeforeStmt(PreLoop,LinePrefetches,Var,
+// 				     gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
+// 				     i,true,false,
+// 				     gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
+//       }
       
   }
 
@@ -1355,6 +1350,7 @@ static void SchedulePrefetches(model_loop *loop_data,
 	  PipelineIterations(1,IterationDist) : 0;
      
 	// determine how far in advance line prefetches must be issued
+	// The line size is in bytes and we are prefetching 8-byte words (dp).
 
 	LinePrefetchDistance = (NOT(LinePrefetches->NullList()))?
 	  PipelineIterations(((config_type *)PED_MH_CONFIG(ped))->line>>3,
@@ -1407,35 +1403,51 @@ static void SchedulePrefetches(model_loop *loop_data,
   }
 
 
-static char *BuildDependenceList(AST_INDEX ArrayRef,
-				 AST_INDEX IvarNode,
-				 AST_INDEX Step,
-				 Boolean   IsSelfSpatialFetch,
-				 int       LineLength)
+static char *BuildDependenceDirective(AST_INDEX ArrayRef,
+				      char *Ivar,
+				      int StepVal,
+				      int Offset)
 
 {
-  char *DepText = new char[512],
-       SubText[32];
-  char *Ivar = gen_get_text(IvarNode);
-  int StepVal; 
+  char *SubText;
+
+  SubText = new char[72];
+  AST_INDEX node = tree_copy_with_type(ArrayRef);
+  pt_var_add(node,Ivar,StepVal*Offset);
+  node = pt_simplify_expr(node);
+  ut_GetSubscriptText(node,SubText);
+  return SubText;
+}
   
+static void AddDependenceDirectives(AST_INDEX OriginalRef,
+				    int       PrefetchNumber,
+				    char      *IVar,
+				    int       StepVal,
+				    int       Offset,
+				    Boolean   IsSelfSpatialFetch,
+				    int       LineLength,
+				    AST_INDEX Directive)
+{
+  char Instruction[72];
 
-  (void)pt_eval(Step,&StepVal);
+  sprintf(Instruction,"$directive dep %d, %s",PrefetchNumber,
+	  BuildDependenceDirective(OriginalRef,IVar,StepVal,0));
 
-  ut_GetSubscriptText(ArrayRef,SubText);
-  (void)strcat(DepText,SubText);
+  AST_INDEX NewDirective = pt_gen_comment(Instruction);
+  list_insert_after(Directive,NewDirective);
+  Directive = NewDirective;
+
   if (IsSelfSpatialFetch)
     for (int i = 1; i < LineLength; i++)
       {
-	AST_INDEX node = tree_copy_with_type(ArrayRef);
-	pt_var_add(node,Ivar, StepVal*i);
-	ut_GetSubscriptText(node,SubText);
-        (void)strcat(DepText,",");
-	(void)strcat(DepText,SubText);
+	sprintf(Instruction,"$directive dep %d, %s",PrefetchNumber,
+		BuildDependenceDirective(OriginalRef,IVar,StepVal,i));
+	NewDirective = pt_gen_comment(Instruction);
+	list_insert_after(Directive,NewDirective);
+	Directive = NewDirective;
       }
-  return DepText;
 }
-  
+			      
 //
 //  Function: ConvertPrefetchCallsToDirectives
 //
@@ -1458,6 +1470,9 @@ static int ConvertPrefetchCallsToDirectives(AST_INDEX stmt,
       Instruction[100];       // text for prefetch directive
     AST_INDEX Inv,            // AST for invocation
              Comment;         // AST for prefetch directive
+    static int PrefetchNumber = 0; // used to uniquely identify each prefetch 
+                                   // instruction 
+
 
      if (is_call(stmt))
        {
@@ -1489,18 +1504,27 @@ static int ConvertPrefetchCallsToDirectives(AST_INDEX stmt,
 	   
 	    // Create comment containing the directive
  
-	    if (OriginalRef == AST_NIL)
-	      sprintf(Instruction,"$directive prefetch (%s)",Text);
-	    else
-	      sprintf(Instruction,"$directive prefetch (%s) $$Dep %s",Text,
-		      BuildDependenceList(OriginalRef,IVar,Step,
-					  BOOL(SelfSpatialFetch == 0),
-					  LineLength));
+	    sprintf(Instruction,"$directive prefetch %d, %s",PrefetchNumber,Text);
 	    
 	    // Generate comment and put in AST where stmt used to be
 
 	    Comment = pt_gen_comment(Instruction);
 	    pt_tree_replace(stmt,Comment);
+	    
+	    // Now add dependence directives
+
+	    if (OriginalRef != AST_NIL)
+	      {
+		int StepVal;
+
+		pt_eval(Step,&StepVal);
+		AddDependenceDirectives(OriginalRef,PrefetchNumber,gen_get_text(IVar),
+					StepVal,0,BOOL(SelfSpatialFetch == 0),
+					LineLength,Comment);
+	      }
+
+	    PrefetchNumber++;
+
 	    return(WALK_FROM_OLD_NEXT);
 	  }
         if (strcmp("$$Dead",gen_get_text(gen_INVOCATION_get_name(Inv))) == 0)

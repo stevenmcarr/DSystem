@@ -1,4 +1,4 @@
-/* $Id: ai.C,v 1.4 1998/07/07 19:25:02 carr Exp $ */
+/* $Id: ai.C,v 1.5 1999/02/23 19:04:40 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -95,7 +95,7 @@ void ai(Context m_context,FortTree local_ft,FortTextTree local_ftt,char *FileNam
       }
 
     aiInit();
-    if (aiCache || aiOptimizeAddressCode)
+    if (aiCache || aiOptimizeAddressCode || aiParseComments)
       {
        dg_all(m_context,CONTEXT_NULL,CONTEXT_NULL,ftt,ft,&DG,&EL,&LI,&SI,&DT,
 	      &cfgModule,true);

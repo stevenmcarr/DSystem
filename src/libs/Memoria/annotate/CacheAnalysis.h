@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.h,v 1.14 1998/08/05 19:32:59 carr Exp $ */
+/* $Id: CacheAnalysis.h,v 1.15 1999/02/23 19:05:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -36,9 +36,11 @@ typedef struct DepInfoStruct {
   Boolean UseSpecialSelfSpatialLoad;
   AST_INDEX AddressLeader;
   int       Offset;
+  int       StmtNumber;
  } DepInfoType;         /* copy in a2i_lib/ai.h */
 
 typedef struct depstruct {
+  AST_INDEX Reference;
   int ReferenceNumber;
   char DType;
   int Distance;

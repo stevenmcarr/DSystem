@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.11 1998/08/05 19:33:33 carr Exp $ */
+/* $Id: ai.h,v 1.12 1999/02/23 19:04:40 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -174,6 +174,7 @@ typedef struct DepInfoStruct {
  } DepInfoType;         /* copy in Memoria/annotate/CacheAnalysis.h */
 
 typedef struct depstruct {
+  AST_INDEX Reference;
   int ReferenceNumber;
   char DType;
   int Distance;

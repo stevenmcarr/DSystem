@@ -1,4 +1,4 @@
-/* $Id: yaccDirectives.y,v 1.3 1997/11/19 14:45:20 carr Exp $ */
+/* $Id: yaccDirectives.y,v 1.4 1999/02/23 19:05:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -27,6 +27,7 @@ char *a2i_DirectiveString;
 Directive a2i_Directive;
 
 Boolean a2i_IsDirective;
+
 %}
 
 %union
@@ -38,13 +39,12 @@ Boolean a2i_IsDirective;
   }
 
 %token CDIR
-%token DEP
-%token <ival> PREFETCH FLUSH
+%token PREFETCH FLUSH DEP
 %token <cval> NAME ICONST
 %token LPAR RPAR COMMA
 %token PLUS MINUS TIMES DIVIDE
 
-%type <aval> subvar subscript expr subscript_list subvarlist
+%type <aval> subvar subscript expr subscript_list constexpr id
 %type <dval> command;
 
 %left PLUS MINUS
@@ -57,37 +57,27 @@ directive : CDIR command
 	      a2i_Directive = $2;
 	     }
 
-command : PREFETCH LPAR subvar RPAR 
+command : PREFETCH constexpr COMMA subvar 
             {
 	     $$.Instr = PrefetchInstruction;
-	     $$.Subscript = $3;
+	     $$.Subscript = $4;
+	     $$.DirectiveNumber = atoi(gen_get_text($2));
 	    }
-        | PREFETCH LPAR subvar RPAR DEP subvarlist
-            {
-	     $$.Instr = PrefetchInstruction;
-	     $$.Subscript = $3;
-             $$.ASTDependenceList = $6;
-            }
         | FLUSH LPAR subvar RPAR
             {
 	     $$.Instr = FlushInstruction;
 	     $$.Subscript = $3;
 	    }
-        ;
+        | DEP constexpr COMMA subvar
+            {
+	      $$.Instr = Dependence;
+	      $$.Subscript = $4;
+	      $$.DirectiveNumber = atoi(gen_get_text($2));
+	    }
 
-subvarlist: subvar
-             {
-	       $$ = list_create($1);
-	     }
-        | subvarlist COMMA subvar
-          {
-	    $$ = list_insert_last($1,$3);
-	   }
-        ;
-
-subvar : NAME LPAR subscript_list RPAR 
+subvar : id LPAR subscript_list RPAR 
   {
-   $$ = gen_SUBSCRIPT(pt_gen_ident($1),$3);
+   $$ = gen_SUBSCRIPT($1,$3);
   }
 
 subscript_list: subscript
@@ -131,19 +121,29 @@ expr : expr PLUS expr
           $$ = $2;
          }
          
-     | NAME
+     | id
        { 
-	$$ = gen_IDENTIFIER();
-	gen_put_text($$,$1,STR_IDENTIFIER); 
+	$$ =$1;
        }
-
-     | ICONST
+     | constexpr
        { 
+	$$ =$1;
+       }
+     ;
+
+constexpr: ICONST
+       {
 	$$ = gen_CONSTANT();
 	gen_put_text($$,$1,STR_CONSTANT_INTEGER); 
        }
      ;
 
+id: NAME
+       { 
+	$$ = gen_IDENTIFIER();
+	gen_put_text($$,$1,STR_IDENTIFIER); 
+       }
+     ;
 %%
 
 void a2i_error(s) 
@@ -204,7 +204,7 @@ Boolean a2i_string_parse (str,Dir,symtab)
      {
       Dir->Instr = a2i_Directive.Instr;
       Dir->Subscript = a2i_Directive.Subscript;
-      Dir->ASTDependenceList = a2i_Directive.ASTDependenceList;
+      Dir->DirectiveNumber = a2i_Directive.DirectiveNumber;
       SetTypes(Dir->Subscript,symtab);
       return true;
      }

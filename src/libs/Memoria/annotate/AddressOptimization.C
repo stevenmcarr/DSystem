@@ -1,4 +1,4 @@
-/* $Id: AddressOptimization.C,v 1.1 1998/07/07 19:28:33 carr Exp $ */
+/* $Id: AddressOptimization.C,v 1.2 1999/02/23 19:05:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -52,8 +52,16 @@ static int CreateAddressInfo(AST_INDEX node,
 
   {
 
-     walkIDsInStmt(node,(WK_IDS_CLBACK_V)UpdateAddressInfoSubscript,Symtab);
-     return(WALK_CONTINUE);
+    if (is_comment(node))
+      if (DirectiveInfoPtr(node) != NULL)
+	{
+	  DirectiveInfoPtr(node)->AddressLeader = AST_NIL;
+	  DirectiveInfoPtr(node)->Offset = -1;
+	}
+      else;
+    else
+      walkIDsInStmt(node,(WK_IDS_CLBACK_V)UpdateAddressInfoSubscript,Symtab);
+    return(WALK_CONTINUE);
   }
 
 
@@ -65,7 +73,14 @@ static int StoreAddressInfo(AST_INDEX     node,
        {
 	 DepInfoPtr(node)->AddressLeader = CacheInfo->AECS->GetLeader(node);
 	 DepInfoPtr(node)->Offset = CacheInfo->AECS->GetOffset(node);
-      }
+       }
+     else if (is_comment(node))
+       {
+	 DirectiveInfoPtr(node)->AddressLeader = 
+	   CacheInfo->AECS->GetLeader(DirectiveInfoPtr(node)->Subscript);
+	 DirectiveInfoPtr(node)->Offset = 
+	   CacheInfo->AECS->GetOffset(DirectiveInfoPtr(node)->Subscript);
+       }
      return(WALK_CONTINUE);
   }
 

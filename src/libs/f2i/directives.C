@@ -1,4 +1,4 @@
-/* $Id: directives.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: directives.C,v 1.2 1999/02/23 19:04:40 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,6 +17,27 @@ void HandleDirective(AST_INDEX Stmt)
 
    Index = fst_QueryIndex(ft_SymTable,
 	     gen_get_text(gen_SUBSCRIPT_get_name(GET_DIRECTIVE_INFO(Stmt)->Subscript)));
-   Reg = getSubscriptLValue(GET_DIRECTIVE_INFO(Stmt)->Subscript);
+   if (aiOptimizeAddressCode)
+     if (GET_DIRECTIVE_INFO(Stmt)->AddressLeader != AST_NIL)
+       if (GET_DIRECTIVE_INFO(Stmt)->AddressLeader == GET_DIRECTIVE_INFO(Stmt)->Subscript)
+	 {
+	   Reg = getSubscriptLValue(GET_DIRECTIVE_INFO(Stmt)->Subscript);
+	   ASTRegMap->MapAddEntry(GET_DIRECTIVE_INFO(Stmt)->Subscript,Reg);
+	 }
+       else
+	 {
+	   Reg = ASTRegMap->MapToValue(GET_DIRECTIVE_INFO(Stmt)->AddressLeader);
+	   int Offset = GET_DIRECTIVE_INFO(Stmt)->Offset*GetDataSize(TYPE_INTEGER);
+	   int OffsetReg = getConstantInRegFromInt(Offset);
+	   int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
+	   int TempIndex = TempReg(Reg, OffsetReg, op, TYPE_INTEGER);
+	   generate(0, op, Reg, OffsetReg, TempIndex, NOCOMMENT);
+	   Reg = TempIndex;
+	 }
+     else
+       Reg = getSubscriptLValue(GET_DIRECTIVE_INFO(Stmt)->Subscript);
+   else
+     Reg = getSubscriptLValue(GET_DIRECTIVE_INFO(Stmt)->Subscript);
+
    generate_cache_op(Reg,Index,GET_DIRECTIVE_INFO(Stmt));
   }

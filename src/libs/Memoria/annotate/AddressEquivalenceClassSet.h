@@ -7,6 +7,7 @@
 #include <libs/Memoria/include/la.h>
 #include <libs/Memoria/include/ASTToIntMap.h>
 #include <libs/Memoria/include/GenericList.h>
+#include <libs/Memoria/annotate/DirectivesInclude.h>
 
 class AddressEquivalenceClass;
 
@@ -44,6 +45,7 @@ public:
   AST_INDEX GetLeader(AST_INDEX node);
   int GetOffset(AST_INDEX n);
   void AddNode(AST_INDEX node);
+  void AddNode(Directive *Dir);
 
 };
 
@@ -72,7 +74,14 @@ class AddressEquivalenceClass : public GenericList
   Boolean Uniform;
   AST_INDEX Leader;
   la_vect C_L;
+  Boolean LeaderIsADirective;
+  Directive *LeaderDirective;
 
+
+  Boolean NewReferenceIsEarlier(AST_INDEX Old,Directive *Dir);
+  Boolean NewReferenceIsEarlier(Directive *Dir,AST_INDEX New);
+  Boolean NewReferenceIsEarlier(Directive *LeaderDir,Directive *Dir);
+  Boolean NewReferenceIsEarlier(AST_INDEX Old,AST_INDEX New);
 
 public:
 
@@ -90,6 +99,7 @@ public:
   AST_INDEX GetLeader() {return Leader;}
 
   void CheckLeader(AST_INDEX n);
+  void CheckLeader(Directive *Dir);
 
   Boolean SameEquivalenceClass(AST_INDEX node,
 			      la_matrix nodeH);

@@ -1,4 +1,4 @@
-/* $Id: DirectivesInclude.h,v 1.4 1997/11/19 14:44:51 carr Exp $ */
+/* $Id: DirectivesInclude.h,v 1.5 1999/02/23 19:05:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,14 +11,16 @@
 #include <libs/frontEnd/ast/ast.h>
 #include <libs/support/lists/list.h>
 
-typedef enum {PrefetchInstruction,FlushInstruction} Instruction;
+typedef enum {PrefetchInstruction,FlushInstruction,Dependence} Instruction;
 
 typedef struct DirectiveStruct {
   Instruction Instr;
   AST_INDEX   Subscript;
-  AST_INDEX   ASTDependenceList;
   UtilList    *DependenceList;
   int         DirectiveNumber;
+  int         StmtNumber;
+  AST_INDEX   AddressLeader; /* used in AddressOptimization */
+  int         Offset; /* used in AddressOptimization */
  }  Directive;
 
 EXTERN(Boolean, a2i_string_parse, (char *str,Directive *Dir,SymDescriptor symtab));

@@ -12,7 +12,7 @@ extern char *a2i_DirectiveString;
 
 $directive                  return CDIR;
 
-$$Dep                       return DEP;
+dep                         return DEP;
 
 prefetch                     {
                               yylval.ival = PrefetchInstruction;
