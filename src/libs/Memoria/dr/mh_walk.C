@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.18 1994/06/14 16:17:27 carr Exp $ */
+/* $Id: mh_walk.C,v 1.19 1994/07/08 11:30:30 yguan Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -302,7 +302,6 @@ static void ScalarStats(AST_INDEX      stmt,
    memory_scalar_replacement(walk_info->ped,stmt,level,walk_info->symtab,
 			     walk_info->ar,walk_info->LoopStats);
 
-     /* DUMP LOOP STATS HERE */
 
      /* re-initialize scratch field (no dangling pointers) */
    walk_expression(stmt,set_scratch,NOFUNC,
@@ -1161,6 +1160,7 @@ void mh_walk_ast(int          selection,
      walk_info.ar = ar;
      walk_info.program = ctxLocation(mod_context); 
      walk_info.LoopStats = (LoopStatsType *)calloc(1,sizeof(LoopStatsType));
+     
      walk_info.MainProgram = false;
 	
      walk_statements(root,LEVEL1,(WK_STMT_CLBACK)remove_do_labels,NOFUNC,
@@ -1351,7 +1351,32 @@ void mh_walk_ast(int          selection,
        case SR_STATS:
 	 /* ACCUMULATE PROGRAM TOTALS HERE */
 	 /* DUMP ROUTINE TOTALS HERE */
-         break;
+           LoopStats->NumLoop_badexit
+                  += walk_info.LoopStats->NumLoop_badexit;
+	   LoopStats->NumLoop_backjump
+	          += walk_info.LoopStats->NumLoop_backjump;
+           LoopStats->NumLoop_illjump
+		  += walk_info.LoopStats->NumLoop_illjump;
+	   LoopStats->FPRegisterPressure
+	          += walk_info.LoopStats->FPRegisterPressure;
+	   LoopStats->NumRefRep
+	          += walk_info.LoopStats->NumRefRep;
+           LoopStats->NumLoopReplaced
+		  += walk_info.LoopStats->NumLoopReplaced;
+           LoopStats->NumLoopSpilled
+		  += walk_info.LoopStats->NumLoopSpilled;
+	   LoopStats->NumBasicBlock
+	          += walk_info.LoopStats->NumBasicBlock;
+           LoopStats->NumZeroFPLoop
+		  += walk_info.LoopStats->NumZeroFPLoop;
+	   LoopStats->NumInnermostLoop
+	          += walk_info.LoopStats->NumInnermostLoop;
+	   LoopStats->LoopBal
+	          += walk_info.LoopStats->LoopBal;
+
+           SRStatsDump(((config_type *)PED_MH_CONFIG(ped))->logfile,
+				       walk_info.LoopStats);
+           break;
        default:
          break;
       }
@@ -1492,6 +1517,69 @@ void UnrollStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 	     LoopStats->SingleDepthInterlock/(float)LoopStats->SingleDepth);
   }
 
+void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
+  {
+    int total_loop_replaced;
+
+    total_loop_replaced = LoopStats->NumLoopReplaced;
+
+     fprintf(logfile,"\n\n");
+
+     fprintf(logfile, "Total Number of Bad Flow = %d\n\n",
+  		     LoopStats->Numbadflow);
+
+   if(LoopStats->Numbadflow > 0)
+    {
+
+     fprintf(logfile, "Total number of bad exits = %d\n\n",
+  		     LoopStats->NumLoop_badexit); 
+
+     fprintf(logfile, "Total number of back jumps = %d\n\n",
+  		     LoopStats->NumLoop_backjump); 
+
+     fprintf(logfile, "Total number of illegal jumps = %d\n\n",
+		     LoopStats->NumLoop_illjump);
+    }
+   
+   fprintf(logfile, "Total Number of Loop Spilled = %d\n\n",
+		     LoopStats->NumLoopSpilled);
+
+   fprintf(logfile, "Total Number of Innermost Loop = %d\n\n",
+		     LoopStats->NumInnermostLoop);
+
+   fprintf(logfile, "Total Number of Replaced Loop = %d\n\n",
+		     LoopStats->NumLoopReplaced);
+
+   if(total_loop_replaced > 0)
+     {
+      /*printf("total basic block = %d\n", LoopStats->NumBasicBlock); */
+
+      fprintf(logfile, "Average FPregister Pressure/Loop Replaced = %.4f\n\n",
+   		     (float)LoopStats->FPRegisterPressure/(float)total_loop_replaced);
+
+      fprintf(logfile, "Total number of replaced loops wo/ FP pressure = %d\n\n",
+			LoopStats->NumZeroFPLoop);
+
+      int LoopRepw_pressure; /* Loop Replaced with FP register pressure */
+
+      LoopRepw_pressure = total_loop_replaced - LoopStats->NumZeroFPLoop;
+
+      fprintf(logfile, "Average FPregister Pressure/Loop Replaced w/ pressur 
+			= %.4f\n\n",
+			(float)LoopStats->FPRegisterPressure/(float)LoopRepw_pressure);
+
+      fprintf(logfile, "Average Number of Reference Replaced/Loop Replaced = %.4f\n\n",
+   		     (float)LoopStats->NumRefRep/(float)total_loop_replaced);
+
+      fprintf(logfile, "Average Number of Basic Blocks/Loop Repaced = %.4f\n\n",
+		     (float)LoopStats->NumBasicBlock/(float)total_loop_replaced);
+
+      fprintf(logfile, "Average Loop Balance/Loop Replaced = %.4f\n\n",
+                     LoopStats->LoopBal/(float)total_loop_replaced);
+     }
+
+
+  }
 
 /****************************************************************************/
 /*                                                                          */
@@ -1515,5 +1603,29 @@ void memory_UnrollStatsTotal(char *program)
      fclose(logfile);
   }
 
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   memory_SRStatsTotal                                        */
+/*                                                                          */
+/*   Input:      program - name of program being processed                  */
+/*                                                                          */
+/*   Description:  print out the scalar replacement statistics for          */ 
+/*                 an entire program                                        */
+/*                                                                          */
+/****************************************************************************/
+
+void memory_SRStatsTotal(char *program)
+
+  {
+   char fn[DB_PATH_LENGTH];
+   FILE *logfile;
+
+     sprintf(fn,"%s.STATSLOG",program);
+     logfile = fopen(fn,"w");
+     SRStatsDump(logfile,LoopStats);
+     fclose(logfile);
+  }
 
 
