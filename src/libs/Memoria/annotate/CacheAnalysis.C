@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.23 1999/04/22 14:31:10 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.24 1999/06/23 13:39:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -298,8 +298,9 @@ static int StoreCacheInfo(AST_INDEX     node,
 	 {
 	   DepInfoPtr(node)->UseSpecialSelfSpatialLoad = 
 	     CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
-	   CacheInfo->HasSpecialSelfSpatial = CacheInfo->HasSpecialSelfSpatial
-	     || DepInfoPtr(node)->UseSpecialSelfSpatialLoad;
+	   CacheInfo->HasSpecialSelfSpatial = 
+	     BOOL(CacheInfo->HasSpecialSelfSpatial
+	    	  || DepInfoPtr(node)->UseSpecialSelfSpatialLoad);
 	 }
       }
      return(WALK_CONTINUE);
@@ -648,10 +649,10 @@ static int CyclesPerIteration(AST_INDEX Node,
       return(CycleInfo.FPCycles);
   }
 
-static int AddSpecialLoadDistanceInstruction(AST_INDEX LoopHeader,
-					     DataReuseModel *ReuseModel,
-					     int NumberOfAddressSets,
-					     PedInfo ped)
+static void AddSpecialLoadDistanceInstruction(AST_INDEX LoopHeader,
+	 				      DataReuseModel *ReuseModel,
+					      int NumberOfAddressSets,
+					      PedInfo ped)
 {
   
   // Get the number of cycles for enough loop iterations to go through an

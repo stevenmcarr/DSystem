@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.9 1999/03/31 21:57:42 carr Exp $ */
+/* $Id: Memoria.C,v 1.10 1999/06/23 13:39:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -143,7 +143,12 @@ void CompileFile(FortranModule *module)
 	{
 	  Filename = new char[strlen(module->ReferenceFilePathName()) + 20];
 	  (void) strcpy(Filename,module->ReferenceFilePathName());
+
+#ifndef SOLARIS
 	  int end = strlen(Filename) - strlen(rindex(Filename,'.'));
+#else
+	  int end = strlen(Filename) - strlen(strrchr(Filename,'.'));
+#endif
 	  Filename[end] = '\0';
 
 	  switch(selection) {
