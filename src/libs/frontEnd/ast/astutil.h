@@ -1,4 +1,4 @@
-/* $Id: astutil.h,v 1.13 1997/03/27 20:34:58 carr Exp $ */
+/* $Id: astutil.h,v 1.14 1997/05/02 19:43:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,7 +39,7 @@ typedef unsigned char     TYPE;      /* bottom 4 bits - real type
 #define PAREN_BIT       0x8000
 
 typedef unsigned char  AST_DATA;
-typedef unsigned int   SCRATCH;
+typedef unsigned long   SCRATCH;
 
 
 typedef struct LeafNodeStruct 

@@ -1,4 +1,4 @@
-/* $Id: ast.h,v 1.5 1997/03/11 14:29:21 carr Exp $ */
+/* $Id: ast.h,v 1.6 1997/05/02 19:43:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,7 +17,11 @@
 #include <libs/support/misc/general.h>
 #endif
 
-typedef unsigned int		AST_INDEX; 
+#ifdef LONG_POINTER
+typedef unsigned long	AST_INDEX; 
+#else
+typedef unsigned int	AST_INDEX; 
+#endif
 
 /* Global null node index (0) */
 extern AST_INDEX 		ast_null_node; 
