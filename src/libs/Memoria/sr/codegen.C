@@ -1,4 +1,4 @@
-/* $Id: codegen.C,v 1.9 1995/11/01 15:09:53 carr Exp $ */
+/* $Id: codegen.C,v 1.10 1995/12/27 16:12:50 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -52,7 +52,7 @@ static void insert_load(block_type *block,
 				          table_entry.node)),table_entry.def);
      array_ref = tree_copy_with_type(table_entry.node);
      new_stmt = gen_ASSIGNMENT(AST_NIL,ut_gen_ident(symtab,reg,
-			       gen_get_converted_type(table_entry.node)),
+			       gen_get_real_type(table_entry.node)),
 			       array_ref);
      fst_PutField(symtab,(int)reg,NUM_REGS,table_entry.regs-1);
      if (NOT(top))
@@ -233,7 +233,7 @@ static int check_def(AST_INDEX node,
 		new_stmt = gen_ASSIGNMENT(AST_NIL,array_ref,
 					  ut_gen_ident(code_info->symtab,
 						       reg_name,
-					    gen_get_converted_type(node)));
+					    gen_get_real_type(node)));
 		if (scalar_info->scalar)
 	          list_insert_after(code_info->do_stmt,new_stmt);
 		else
@@ -251,7 +251,7 @@ static int check_def(AST_INDEX node,
 	     else if (scalar_info->scalar)
 	       code_info->post_stores = true;
 	   pt_tree_replace(node,ut_gen_ident(code_info->symtab,reg_name,
-					     gen_get_converted_type(node)));
+					     gen_get_real_type(node)));
 	  }
        }
      else if (is_identifier(node))
@@ -263,7 +263,7 @@ static int check_def(AST_INDEX node,
 	  s[1] = '\0';
 	  sprintf(reg_name,"%s%d",reg_name,mod(-code_info->copy,dist+1));
 	  pt_tree_replace(node,ut_gen_ident(code_info->symtab,reg_name,
-					    gen_get_converted_type(node)));
+					    gen_get_real_type(node)));
 	 }
      return(WALK_CONTINUE);
   }
@@ -295,14 +295,14 @@ static int check_use(AST_INDEX node,
 	   sprintf(reg_name,"%s$%d$%d",gen_get_text(name),scalar_info->def,
 		   mod(-code_info->copy, scalar_info->num_regs));
 	   tree_replace(node,ut_gen_ident(code_info->symtab,reg_name,
-					  gen_get_converted_type(node)));
+					  gen_get_real_type(node)));
 	   if (!scalar_info->scalar || code_info->load_scalar)
 	    {
 	     array_ref = tree_copy_with_type(node);
 	     /* set_scratch_to_NULL(gen_SUBSCRIPT_get_name(array_ref)); */
 	     new_stmt = gen_ASSIGNMENT(AST_NIL,
 				       ut_gen_ident(code_info->symtab,reg_name,
-						 gen_get_converted_type(node)),
+						 gen_get_real_type(node)),
 				       array_ref);
 	     if (is_guard(code_info->stmt))
 	       if (list_prev(code_info->stmt) == AST_NIL)
@@ -355,7 +355,7 @@ static int check_use(AST_INDEX node,
 	   sprintf(reg_name,"%s$%d$%d",gen_get_text(name),scalar_info->def,
 		   reg_num);
 	   pt_tree_replace(node,ut_gen_ident(code_info->symtab,reg_name,
-					     gen_get_converted_type(node)));
+					     gen_get_real_type(node)));
 	  }
        }
      return(WALK_CONTINUE);
@@ -445,9 +445,9 @@ static void insert_transfers(AST_INDEX stmt_list,
 		   scalar_info->def,i-1);
 	   newa = gen_ASSIGNMENT(AST_NIL,
 				ut_gen_ident(symtab,lval,
-			            gen_get_converted_type(name_node->gen)),
+			            gen_get_real_type(name_node->gen)),
 				ut_gen_ident(symtab,rval,
-			            gen_get_converted_type(name_node->gen)));
+			            gen_get_real_type(name_node->gen)));
 	   tlist = list_insert_last(tlist,newa);
 	  }
        }
