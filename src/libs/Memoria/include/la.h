@@ -1,4 +1,4 @@
-/* $Id: la.h,v 1.4 1997/10/30 15:11:09 carr Exp $ */
+/* $Id: la.h,v 1.5 1997/11/10 21:21:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -28,6 +28,7 @@
 #include <libs/frontEnd/ast/AstIter.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 #include <libs/Memoria/uj/compute_uj.h>
+#include <libs/Memoria/include/GenericList.h>
 
 
 #define True  1
@@ -140,7 +141,7 @@ class GTSetIter:
           };
 
 class GroupSpatialEntry: 
-	public SinglyLinkedListEntry
+	public GenericList, public SinglyLinkedListEntry
         {
          private:
 		GroupTemporalSet *gts; 
@@ -151,6 +152,8 @@ class GroupSpatialEntry:
 		int *Gap;
                 la_vect leader_v;   // The leader of this spatial group
 		AST_INDEX leader_n;
+                la_vect trailer_v;   // The trailer of this spatial group
+		AST_INDEX trailer_n;
 		la_vect LocIterSpace;
 		la_vect ZeroSpace;
 		la_matrix H;
@@ -175,8 +178,24 @@ class GroupSpatialEntry:
 		void FillArray(int* a,int s) {gts->FillArray(a, s);}
 		void DoAnalysis();
 		la_vect Leader() { return leader_v; };
+		la_vect Trailer() { return trailer_v; };
 		AST_INDEX LeaderNode() { return leader_n; };
+		AST_INDEX TrailerNode() { return trailer_n; };
 		void PrintOut();
+		void AddSpatialDependences(AST_INDEX node);
+	};
+
+class GSEntryIter:
+	 public GenericListIter
+	{
+	 public:
+		GSEntryIter(GroupSpatialEntry *l):
+		 GenericListIter(l)
+		 { };
+		GSEntryIter(GroupSpatialEntry &l):
+		GenericListIter(l)
+		{ };
+		AST_INDEX operator () ();
 	};
 
 class GroupSpatialSet :
@@ -238,6 +257,8 @@ class DataReuseModelEntry:
 		float ComputePrefetch(int, int, int, int);
 		float ComputePrefetch(int, int);
 		Boolean IsGroupSpatialLeader(AST_INDEX node);
+		Boolean IsGroupSpatialTrailer(AST_INDEX node);
+		Boolean AddSpatialDependences(AST_INDEX node);
 	};
 
 class DataReuseModel:
@@ -254,6 +275,8 @@ class DataReuseModel:
 		float ComputePrefetch(int, int, int, int);
 		float ComputePrefetch(int, int);
 		Boolean IsGroupSpatialLeader(AST_INDEX node);
+		Boolean IsGroupSpatialTrailer(AST_INDEX node);
+		void AddSpatialDependences(AST_INDEX node);
 	};
 
 class DRIter:

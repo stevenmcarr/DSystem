@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.h,v 1.11 1997/10/30 15:09:58 carr Exp $ */
+/* $Id: CacheAnalysis.h,v 1.12 1997/11/10 21:20:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,7 +31,7 @@ typedef struct DepInfoStruct {
   int ReferenceNumber;
   UtilList *DependenceList;
   LocalityType Locality;
-  Boolean IsGroupSpatialLeader;
+  Boolean IsGroupSpatialTrailer;
  } DepInfoType;         /* copy in a2i_lib/ai.h */
 
 typedef struct depstruct {

@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.13 1997/10/30 15:09:58 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.14 1997/11/10 21:20:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -8,6 +8,8 @@
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+
+#include <iostream.h>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
@@ -211,8 +213,8 @@ static int StoreCacheInfo(AST_INDEX     node,
 	 {
 	   CacheInfo->HasSelfSpatial = true;
 	   if (aiSpecialCache)
-	     DepInfoPtr(node)->IsGroupSpatialLeader = 
-	       CacheInfo->ReuseModel->IsGroupSpatialLeader(node);
+	     DepInfoPtr(node)->IsGroupSpatialTrailer = 
+	       CacheInfo->ReuseModel->IsGroupSpatialTrailer(node);
 	 }
       }
      return(WALK_CONTINUE);
@@ -274,7 +276,7 @@ static void AddDependencesToDirective(Directive *Dir,
       {
 	Dep = new DepStruct;
 	Dep->ReferenceNumber = DepInfoPtr(UTIL_NODE_ATOM(Ref))->ReferenceNumber;
-	Dep->DType = 'c';
+	Dep->DType = 'p';
 	Dep->Distance = 0;
 	util_append(Dir->DependenceList,util_node_alloc((Generic)Dep,NULL));
       }
@@ -363,7 +365,70 @@ static void BuildPrefetchDependenceList(CacheInfoType *CacheInfo)
   util_list_free(BeforeList);
   util_list_free(AfterList);
 }
-      
+
+void GroupSpatialEntry::AddSpatialDependences(AST_INDEX TrailerNode)
+
+{
+  GenericListIter GLIter(*this);
+  GenericListEntry *GLEntry;
+  AST_INDEX Node;
+  DepStruct *Dep;
+
+    while ((GLEntry = GLIter()) != NULL)
+      {
+	Node = GLEntry->GetValue();
+	if (Node != TrailerNode)
+	  {	
+	    Dep = new DepStruct;
+	    Dep->ReferenceNumber = DepInfoPtr(Node)->ReferenceNumber;
+	    Dep->DType = 'c';
+	    Dep->Distance = 0;
+	    util_append(DepInfoPtr(TrailerNode)->DependenceList,
+			util_node_alloc((Generic)Dep,NULL));
+	  }
+      }
+}
+
+
+Boolean DataReuseModelEntry::AddSpatialDependences(AST_INDEX node)
+ 
+{
+  GSSetIter GSIter(*gsset);
+  GroupSpatialEntry *GSEntry;
+  Boolean Found = false;
+  AST_INDEX TrailerNode;
+
+  while ((GSEntry = GSIter()) != NULL && NOT(Found))
+    {
+      if (GSEntry->TrailerNode() == node)
+	{
+	  GSEntry->AddSpatialDependences(node);
+	  Found = true;
+	}
+    }
+  return(Found);
+}
+
+void DataReuseModel::AddSpatialDependences(AST_INDEX node)
+
+{
+  DRIter ReuseIter(*this);
+  DataReuseModelEntry *ReuseEntry;
+  Boolean Found = false;
+
+  while ((ReuseEntry = ReuseIter()) != NULL && NOT(Found))
+    Found = ReuseEntry->AddSpatialDependences(node);
+}      
+
+static int BuildGroupSpatialDependenceList(AST_INDEX     node,
+					   DataReuseModel *ReuseModel)
+			  
+  {
+     if (is_subscript(node))
+       if (DepInfoPtr(node)->IsGroupSpatialTrailer)
+	 ReuseModel->AddSpatialDependences(node);
+     return(WALK_CONTINUE);
+  }
 
 static void walk_loops(CacheInfoType  *CacheInfo,
 		       int            loop)
@@ -398,6 +463,9 @@ static void walk_loops(CacheInfoType  *CacheInfo,
 	BuildPrefetchDependenceList(CacheInfo);
 	if (aiSpecialCache)
 	  {
+	    walk_expression(CacheInfo->loop_data[loop].node,
+			    (WK_EXPR_CLBACK)BuildGroupSpatialDependenceList,NOFUNC,
+			    (Generic)CacheInfo->ReuseModel);
 	    delete CacheInfo->ReuseModel;
 	    delete UGS;
 	    delete LIS;

@@ -1,4 +1,4 @@
-/* $Id: la.C,v 1.4 1997/11/04 21:10:32 carr Exp $ */
+/* $Id: la.C,v 1.5 1997/11/10 21:21:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -20,13 +20,15 @@
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 #include <libs/support/Lambda/Lambda.h>
 #include <libs/Memoria/include/mem_util.h>
+#include <libs/Memoria/include/GenericList.h>
 
 #define sign(x) (((x)>0) ? 1: -1)
 
 int Solve(la_matrix, la_vect, int, int, la_matrix*, int*);
 int ChangeLeader(la_vect, la_vect, int);
+int ChangeTrailer(la_vect, la_vect, int);
 
-DataReuseModel::DataReuseModel(UniformlyGeneratedSets *UGS)
+DataReuseModel::DataReuseModel(UniformlyGeneratedSets *UGS) : SinglyLinkedList()
 {
  UniformlyGeneratedSetsEntry *UGSEntry;
  UGSIterator UGSIter(*UGS);
@@ -76,6 +78,18 @@ Boolean DataReuseModel::IsGroupSpatialLeader(AST_INDEX node)
   return IsLeader;
 }
 
+Boolean DataReuseModel::IsGroupSpatialTrailer(AST_INDEX node)
+
+{
+  DRIter ReuseIter(*this);
+  Boolean IsTrailer = false;
+  DataReuseModelEntry *ReuseEntry;
+
+  while ((ReuseEntry = ReuseIter()) != NULL && NOT(IsTrailer))
+    IsTrailer = ReuseEntry->IsGroupSpatialTrailer(node);
+  return IsTrailer;
+}
+
 Boolean DataReuseModelEntry::IsGroupSpatialLeader(AST_INDEX node)
 
 {
@@ -88,7 +102,20 @@ Boolean DataReuseModelEntry::IsGroupSpatialLeader(AST_INDEX node)
   return IsLeader;
 }
 
-DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse)
+Boolean DataReuseModelEntry::IsGroupSpatialTrailer(AST_INDEX node)
+
+{
+  GSSetIter GSIter(*gsset);
+  Boolean IsTrailer = false;
+  GroupSpatialEntry *GSEntry;
+
+  while ((GSEntry = GSIter()) != NULL && NOT(IsTrailer))
+    IsTrailer = BOOL(GSEntry->TrailerNode() == node);
+  return IsTrailer;
+}
+
+DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse) : 
+  SinglyLinkedListEntry()
 {
  UGSEntryIterator ugseiter(*ugse);
  AST_INDEX node;
@@ -117,7 +144,7 @@ DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse)
 GroupSpatialSet::GroupSpatialSet(la_vect lisp,
                                 int nestl, int subscript, 
 				char *name_in,
-                                la_matrix inH)
+				 la_matrix inH) : SinglyLinkedList()
 {
  size = 0;
  (void)strcpy(Name, name_in);
@@ -266,7 +293,7 @@ void GroupSpatialSet::PutintoGSEntry(AST_INDEX node, la_vect c_vect)
    {
     gsentry = new GroupSpatialEntry(LocIterSpace, Nestl, Subs, H, node, c_vect);
     ++ size;
-    SinglyLinkedList::Append( gsentry ) ;
+    SinglyLinkedList::Append( (SinglyLinkedListEntry*)gsentry ) ;
    }
 }
 
@@ -329,7 +356,7 @@ void GroupSpatialSet::PrintLIS()
 GroupSpatialEntry::GroupSpatialEntry(la_vect loc, int nestl, 
 				     int sub, la_matrix h, 
 				     AST_INDEX node,
-				     la_vect c_vect)
+				     la_vect c_vect) : GenericList(), SinglyLinkedListEntry()
 {
  Nestl = nestl;
  Subs = sub;
@@ -342,8 +369,12 @@ GroupSpatialEntry::GroupSpatialEntry(la_vect loc, int nestl,
  leader_v = la_vecNew(sub);
  la_vecCopy(c_vect, leader_v, sub);
  leader_n = node;
+ trailer_v = la_vecNew(sub);
+ la_vecCopy(c_vect, trailer_v, sub);
+ trailer_n = node;
  gts = new GroupTemporalSet(loc, nestl, sub, h); 
  gts->PutintoGTEntry(node, c_vect);
+ Append((Generic)node);
  NumGap = 0;
  Marked = 0;
 }
@@ -365,8 +396,11 @@ int GroupSpatialEntry::take(AST_INDEX n, la_vect in_c)
  if( NodeshasGS(leader_v, in_c))
    {
     gts->PutintoGTEntry(n, in_c );
+    Append((Generic)n);
     if(ChangeLeader(leader_v, in_c, Subs))
        leader_n = n;
+    if(ChangeTrailer(trailer_v, in_c, Subs))
+       trailer_n = n;
     Accept = True;
    } 
  
@@ -477,7 +511,7 @@ void GroupSpatialEntry::PrintOut()
 }
 
 GroupTemporalSet::GroupTemporalSet(la_vect loc, int nestl, int sub, 
-				  la_matrix h)
+				   la_matrix h) : SinglyLinkedList()
 {
  size = 0;
  Nestl = nestl;
@@ -547,7 +581,7 @@ void GroupTemporalSet::FillArray(int* array, int start)
 
 GroupTemporalEntry::GroupTemporalEntry(la_vect loc, int nestl, int sub,
 				       la_matrix h, 
-				       AST_INDEX n, la_vect in_c) 
+				       AST_INDEX n, la_vect in_c) : SinglyLinkedListEntry()
 {
  size = 0;
  Nestl = nestl;
@@ -663,7 +697,7 @@ void GroupTemporalEntry::PrintOut()
 
 }
 
-VectListEntry::VectListEntry(AST_INDEX n, la_vect v, int sub)
+VectListEntry::VectListEntry(AST_INDEX n, la_vect v, int sub) :  SinglyLinkedListEntry()
 {
      const_vect = la_vecNew(sub);
      la_vecCopy(v, const_vect, sub);
@@ -678,7 +712,7 @@ void VectListEntry::PrintOut()
   //cout << "\t\t\t" << Text << endl;
 }
 
-VectList::VectList(int sub)
+VectList::VectList(int sub) :  SinglyLinkedList()
 {
  Subs = sub;
 }
@@ -916,6 +950,32 @@ int ChangeLeader(la_vect leader, la_vect new_v, int size)
   if(Change)
     for( i = 0; i<size; i++)
       leader[i] = new_v[i];
+
+ return Change; 
+  
+}
+
+int ChangeTrailer(la_vect trailer, la_vect new_v, int size)
+{
+ int Change = False;
+ int Done = False;
+ int i = size - 1 ;
+
+ while( i >= 0 &&  !Done)
+   {
+    if(trailer[i] < new_v[i])
+       Done = True;
+    else if ( trailer[i] > new_v[i] )
+       {
+        Done = True;
+        Change = True;
+       } 
+    -- i;
+   }
+  
+  if(Change)
+    for( i = 0; i<size; i++)
+      trailer[i] = new_v[i];
 
  return Change; 
   
