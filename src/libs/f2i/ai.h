@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.5 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: ai.h,v 1.6 1997/10/30 15:08:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -50,6 +50,7 @@
     extern int aiRt;   	/* generate code for Rt                 */
                         /* so default is for itoc  (cij 8/6/92) */
     extern int aiCache; /* do cache reuse analysis */
+    extern int aiSpecialCache; /* make self spatial gs leaders cache misses */
     extern int aiLongIntegers; /* use 64-bit integers */
     extern int aiDoubleReals; /* use double precision only*/
 
@@ -161,7 +162,8 @@ typedef struct DepInfoStruct {
   int ReferenceNumber;
   UtilList *DependenceList;
   LocalityType Locality;
- } DepInfoType;         /* copy in mc_lib/annotate/CacheAnalysis.h */
+  Boolean IsGroupSpatialLeader;
+ } DepInfoType;         /* copy in Memoria/annotate/CacheAnalysis.h */
 
 typedef struct depstruct {
   int ReferenceNumber;
@@ -471,4 +473,4 @@ EXTERN(char *,ConstantNameFromIndex,(int ));
 EXTERN(void, ApplyMemoryCompiler,(int,PedInfo,AST_INDEX,FortTree,Context,char *));
 
      /* from libs/Memoria/ut/mem_util.C  */
-EXTERN(void, ut_GetSubscriptText,(AST_INDEX,char*));
+EXTERN(void, ut_GetSubscriptText,(AST_INDEX,char*,SymDescriptor symtab = NULL));

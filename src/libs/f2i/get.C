@@ -1,4 +1,4 @@
-/* $Id: get.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: get.C,v 1.2 1997/10/30 15:08:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -137,7 +137,10 @@ char *getLocality(AST_INDEX node)
       case NONE:
 	return("&none");
       case SELF_SPATIAL:   
-        return("&self-spatial");
+        if (aiSpecialCache && DepInfoPtr(node)->IsGroupSpatialLeader)
+          return("&special-self-spatial");
+        else
+          return("&self-spatial");
       case GROUP_SPATIAL:  
 	return("&group-spatial");
       case SELF_TEMPORAL:         
