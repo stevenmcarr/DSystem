@@ -1,4 +1,4 @@
-/* $Id: yaccDirectives.y,v 1.5 1999/04/22 14:31:10 carr Exp $ */
+/* $Id: yaccDirectives.y,v 1.6 1999/06/11 17:45:08 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
