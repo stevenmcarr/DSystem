@@ -1,4 +1,4 @@
-/* $Id: ScanDir.h,v 1.4 1997/03/27 20:49:09 carr Exp $ */
+/* $Id: ScanDir.h,v 1.5 1999/06/11 20:59:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,7 +30,7 @@ typedef FUNCTION_POINTER (int, SelectFunctPtr, (struct dirent*));
 typedef FUNCTION_POINTER (int, CompareFunctPtr, (struct dirent**, 
                                                  struct dirent**));
 
-#ifndef OSF1
+#ifdef SOLARIS
 /********************** scandir extern functions ************************/
 
 EXTERN (int, scandir, (char*, struct dirent***, SelectFunctPtr, CompareFunctPtr));
@@ -40,3 +40,9 @@ EXTERN (int, alphasort, (struct dirent**, struct dirent**));
 #endif
 
 #endif
+
+
+
+
+
+
