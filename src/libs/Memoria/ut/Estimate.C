@@ -1,4 +1,4 @@
-/* $Id: Estimate.C,v 1.3 1997/04/07 13:40:23 carr Exp $ */
+/* $Id: Estimate.C,v 1.4 1997/04/11 15:26:36 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -16,6 +16,7 @@
 #include <libs/Memoria/include/Estimate.h>
 #endif
 
+#include <libs/support/sorts/QuickSort.h>
 extern "C"{
 #include <math.h>
 };
@@ -434,6 +435,7 @@ void CacheBlock::Analysis()
  int *const_array, *def_gap;
  int dist;
  int start, end;
+ QuickSort QSort;
 
  size = rows->const_array_size(); 
  const_array = new int[size];
@@ -446,7 +448,8 @@ void CacheBlock::Analysis()
  //    cout <<" " << const_array[i];
  //cout << endl; 
 
- qsort ( const_array, size, sizeof(int), intcompare);
+ QSort.Create ((void **)&const_array, intcompare);
+ QSort.Sort(0,size-1);
 
  //cout << "The 1st Dim are sorted as: " ;
  //for ( i = 0; i < size; i++ )
