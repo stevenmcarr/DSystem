@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.18 1998/06/29 17:31:46 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.19 1998/07/07 19:28:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -25,6 +25,9 @@
 #include <libs/Memoria/annotate/CacheAnalysis.h>
 #include <libs/Memoria/annotate/DirectivesInclude.h>
 #include <libs/Memoria/include/la.h>
+
+extern int aiCache;
+extern int aiOptimizeAddressCode;
 
 static int RefCount = 0;
 
@@ -515,11 +518,12 @@ static void walk_loops(CacheInfoType  *CacheInfo,
   }
 
 
-void memory_PerformCacheAnalysis(PedInfo      ped,
+void memory_PerformCacheAnalysis(PedInfo       ped,
 				 SymDescriptor symtab,
-				 arena_type   *ar,
-				 AST_INDEX    root,
-				 int          level)
+				 arena_type    *ar,
+				 AST_INDEX     root,
+				 int           level,
+				 int           loop_num)
 
 /****************************************************************************/
 /*                                                                          */
@@ -527,27 +531,16 @@ void memory_PerformCacheAnalysis(PedInfo      ped,
 /****************************************************************************/
 
   {
-   pre_info_type  pre_info;
    CacheInfoType  CacheInfo;
 
-     pre_info.stmt_num = 0;
-     pre_info.loop_num = 0;
-     pre_info.surrounding_do = -1;
-     pre_info.surround_node = AST_NIL;
-     pre_info.abort = false;
-     pre_info.ped = ped;
-     pre_info.symtab = symtab;
-     pre_info.ar = ar;
-     walk_statements(root,level,(WK_STMT_CLBACK)ut_mark_do_pre,
-		     (WK_STMT_CLBACK)ut_mark_do_post,(Generic)&pre_info);
-     walk_statements(root,level,(WK_STMT_CLBACK)remove_edges,NOFUNC,(Generic)ped);
      CacheInfo.loop_data = (model_loop *)ar->arena_alloc_mem_clear
-                  (LOOP_ARENA,pre_info.loop_num*sizeof(model_loop)*4);
+                  (LOOP_ARENA,loop_num*sizeof(model_loop)*4);
      ut_analyze_loop(root,CacheInfo.loop_data,level,ped,symtab);
 
-     walk_statements(root,level,(WK_STMT_CLBACK)CreateDepInfo,NOFUNC,(Generic)symtab);
+     walk_statements(root,level,(WK_STMT_CLBACK)CreateDepInfo,NOFUNC,
+		     (Generic)symtab);
      CacheInfo.ped = ped;
-     CacheInfo.IVar = new char*[pre_info.loop_num];
+     CacheInfo.IVar = new char*[loop_num];
      CacheInfo.symtab = symtab;
      CacheInfo.ar = ar;
      walk_loops(&CacheInfo,0);
