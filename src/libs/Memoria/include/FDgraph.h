@@ -69,6 +69,7 @@
 #include	<misc/list.h>           /* UtilList			*/
 #endif
 
+#define FD_ALL 100
 
 /*  Represents a statement or a loop to be fused.
  */ 
@@ -127,22 +128,48 @@ typedef struct fdProblemGraph {
 /* Provided functions                                                   */
 /************************************************************************/
 
+EXTERN(void, fdMake, (PedInfo ped, Boolean fusion));
+/* 
+ * Dummy routine that calls the next three routines from the menu.
+ * Should either become a better dialog with options or removed.
+ */
 
 /* Call in the Fusion routines in this order */
-
 EXTERN(FDGraph *, fdBuildFusion,
-                      (PedInfo ped, AST_INDEX stmt, Boolean parallel) );
+                      (PedInfo ped, AST_INDEX stmt, Boolean parallel,
+		       int depth) );
+/* 
+ * Returns an instance of the graph for fusion.  Starts looking at stmt 
+ * to find a loop cluster (group of adjacent nests).  If parallel is true
+ * it marks the loops appropriately and checks dependences appropriately.
+ * If depth == FD_ALL, then it tries to fuse at the deepest level at 
+ * which it finds type matches.  If some fusions occur at level 2, then 
+ * a subsequent call with depth = 1 may find more fusions.  Depth must be
+ * greater than 0!!
+ */
+
 EXTERN( void,     fdGreedyFusion,
                       (PedInfo ped,  FDGraph *problem, Boolean wantAll,
 		       Boolean *all, Boolean *any) );
-EXTERN( void,     fdDoFusion, (PedInfo ped, FDGraph  *problem, AST_INDEX loop) );
-/* Sets "any" to true if at least one pair of canidate loops are fused.  
+/* 
+ * Performs  greedy fusion on an instance of a fusion problem.  If wantAll 
+ * is true, tries to fuse all the loops into one regardless of reuse 
+ * between pairs.
+ * Sets "any" to true if at least one pair of canidate loops are fused.  
  * Sets "all" to true if all the canidates for fusion are fused into one
  * at some level, not necessarily the depth of the deepest nest.
- * Frees the data structures.
+ */
+
+EXTERN( void,     fdDoFusion, (PedInfo ped, FDGraph  *problem ) );
+/*
+ * Changes the dependence graph and the AST/program to reflect fusion in 
+ * problem.
  */
 
 EXTERN(void, fdDestroyProblem, (FDGraph *problem) );
+/*
+ * Frees the data structures.
+ */
 
 
 
