@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.8 1993/06/16 13:14:54 carr Exp $ */
+/* $Id: scalar.C,v 1.9 1993/07/20 16:32:40 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -9,6 +9,7 @@
 #include <mh_ast.h>
 #include <fort/walk.h>
 #include <scalar.h>
+#include <LoopStats.h>
 
 #ifndef check_h
 #include <check.h>
@@ -638,7 +639,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 	sr_moderate_pressure(do_info->ped,name_info.glist,
 			     ((config_type *)PED_MH_CONFIG(do_info->ped))
 			     ->max_regs - prelim_info.scalar_regs,&redo,
-			     prelim_info.array_table,logfile,do_info->ar);
+			     prelim_info.array_table,logfile,do_info->ar,
+			     do_info->LoopStats);
 	if (!util_list_empty(name_info.glist))
 	  {
 	   if (((config_type *)PED_MH_CONFIG(do_info->ped))->logging)
@@ -802,7 +804,8 @@ void memory_scalar_replacement(PedInfo      ped,
 			       AST_INDEX    root,
 			       int          level,
 			       SymDescriptor symtab,
-			       arena_type    *ar)
+			       arena_type    *ar,
+			       LoopStatsType *LoopStats)
 
 /****************************************************************************/
 /*                                                                          */
@@ -818,5 +821,6 @@ void memory_scalar_replacement(PedInfo      ped,
      do_info.abort = false;
      do_info.symtab = symtab;
      do_info.ar = ar;
+     do_info.LoopStats = LoopStats;
      walk_statements(root,level,pre_scalar,post_scalar,(Generic)&do_info);
   }
