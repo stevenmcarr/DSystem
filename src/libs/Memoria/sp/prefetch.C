@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.25 2000/02/10 19:05:28 carr Exp $ */
+/* $Id: prefetch.C,v 1.26 2000/04/09 20:20:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -41,11 +41,14 @@
 #include <libs/Memoria/ut/Recurrence.h>
 #undef is_open
 #include <iostream.h>
+#include <math.h>
 
 extern Boolean Memoria_LetRocketSchedulePrefetches;
 extern Boolean Memoria_IssueDead;
 extern Boolean CheckRecurrencesForPrefetching;
 
+extern int aiLongIntegers;
+extern int aiDoubleReals;
 
 
 //
@@ -154,16 +157,29 @@ static int CheckLocality(AST_INDEX          node,
 
      if (is_subscript(node))
        {
-	name = gen_SUBSCRIPT_get_name(node);
-	sptr = get_subscript_ptr(name);
 
-	// store locality information
+	 // Set the log2 of the max words in a cache line. This is used for prefetch
+	 // distance.
+	 
+	 if (gen_get_real_type(node) == TYPE_DOUBLE_PRECISION ||
+	     (gen_get_real_type(node) == TYPE_INTEGER && aiLongIntegers) ||
+	     (gen_get_real_type(node) == TYPE_REAL && aiDoubleReals))
+	   if (locality_info->LogMaxWordsPerLine < 3)
+	     locality_info->LogMaxWordsPerLine = 3;
+	   else;
+	 else if (locality_info->LogMaxWordsPerLine < 2)
+	   locality_info->LogMaxWordsPerLine = 2;
 
-	sptr->Locality = ut_GetReferenceType(node,locality_info->loop_data,
-					     locality_info->loop,
-					     locality_info->ped,
-					     locality_info->UGS);
-	return(WALK_SKIP_CHILDREN);
+	 name = gen_SUBSCRIPT_get_name(node);
+	 sptr = get_subscript_ptr(name);
+
+	 // store locality information
+	 
+	 sptr->Locality = ut_GetReferenceType(node,locality_info->loop_data,
+					      locality_info->loop,
+					      locality_info->ped,
+					      locality_info->UGS);
+	 return(WALK_SKIP_CHILDREN);
        }
      return(WALK_CONTINUE);
   }
@@ -261,7 +277,8 @@ static void CheckRefsForPrefetch(model_loop    *loop_data,
 				 PrefetchList  *TempLocality,
 				 PrefetchList  *SpatLocality,
 				 PedInfo       ped,
-				 char          **IVar)
+				 char          **IVar,
+				 int&          LogMaxWordsPerLine)
 
   {
    locality_info_type locality_info;
@@ -274,6 +291,7 @@ static void CheckRefsForPrefetch(model_loop    *loop_data,
      locality_info.NoLocality = NoLocality;
      locality_info.TempLocality = TempLocality;
      locality_info.SpatLocality = SpatLocality;
+     locality_info.LogMaxWordsPerLine = 0;
 
      // Use uniformly generated sets to compute locality information
      // this is not likely to work right now.
@@ -288,7 +306,10 @@ static void CheckRefsForPrefetch(model_loop    *loop_data,
      // determine locality for each array reference in loop
 
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		     (WK_EXPR_CLBACK)CheckLocality,NOFUNC,(Generic)&locality_info);
+		     (WK_EXPR_CLBACK)CheckLocality,NOFUNC,
+		     (Generic)&locality_info);
+
+     LogMaxWordsPerLine = locality_info.LogMaxWordsPerLine;
 
      // build up word and line prefetch lists
 
@@ -301,37 +322,6 @@ static void CheckRefsForPrefetch(model_loop    *loop_data,
      delete locality_info.UGS;
   }
    
-//
-//  Function: LoadCycles
-//
-//  Input: Node - AST index of a subscript
-//         ped - configuration info
-//
-//  Output: number of cycles for a load of a value
-//
-//  Description: based on type return how long an operation takes
-//
-
-static int LoadCycles(AST_INDEX Node,
-		      PedInfo   ped)
-
-  {
-   int LoadPenalty;
-
-    LoadPenalty = ((config_type *)PED_MH_CONFIG(ped))->hit_cycles;
-    if (gen_get_converted_type(Node) == TYPE_REAL)
-      return(LoadPenalty);
-
-    // on some architectures a 64-bit value may take to load instructions
-    // not likely anymore though
-
-    else if (gen_get_converted_type(Node) == TYPE_DOUBLE_PRECISION ||
-            gen_get_converted_type(Node) == TYPE_COMPLEX)
-      return(((config_type *)PED_MH_CONFIG(ped))->double_fetches*LoadPenalty);
-    else	
-      return(0);
-  }
-
 //
 //  Function: OperationCycles
 //
@@ -398,10 +388,16 @@ static int CountCycles(AST_INDEX     Node,
 
 	if (sptr->Locality == NONE || sptr->Locality == SELF_SPATIAL ||
 	    sptr->Locality == GROUP_SPATIAL)
-	  CycleInfo->MemCycles += LoadCycles(Node,CycleInfo->ped);
+	  CycleInfo->MemCycles += 
+	    ((config_type *)PED_MH_CONFIG(CycleInfo->ped))->hit_cycles;
+	
+	return (WALK_SKIP_CHILDREN);
        }
      else if (is_binary_op(Node))
-	CycleInfo->FlopCycles += OperationCycles(Node,CycleInfo->ped);
+       if (gen_get_real_type(Node) == TYPE_INTEGER)
+	 CycleInfo->MemCycles++;
+       else
+	 CycleInfo->FlopCycles += OperationCycles(Node,CycleInfo->ped);
      return(WALK_CONTINUE);
   }
 
@@ -433,6 +429,14 @@ static int CyclesPerIteration(AST_INDEX Node,
 
      walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountCycles,NOFUNC,
 		     (Generic)&CycleInfo);
+
+    CycleInfo.FlopCycles = 
+      ceil_ab(CycleInfo.FlopCycles,
+	      ((config_type *)PED_MH_CONFIG(ped))->FPUnits);
+	      
+    CycleInfo.MemCycles = 
+      ceil_ab(CycleInfo.MemCycles,
+	      ((config_type *)PED_MH_CONFIG(ped))->IntegerUnits);
      
      // conservatively assume that memory and flops are parallel.  This gives a
      // lower bound on cycle time 
@@ -536,7 +540,8 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 					 int          loop,
 					 PrefetchList *LinePrefetches,
 					 PrefetchList *WordPrefetches,
-					 PedInfo      ped)
+					 PedInfo      ped,
+					 int          LogMaxWordsPerLine)
 
   {
     float PrefetchBandwidth;   // bandwidth provided by machine
@@ -564,9 +569,12 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 
      BandwidthNeeded = WordPrefetches->Count();
      LineValue = ((float)LinePrefetches->Count()) *
-       (8.0/(float)((config_type *)PED_MH_CONFIG(ped))->line);
+       (pow(2.0,(double)LogMaxWordsPerLine)) /
+       ((float)((config_type *)PED_MH_CONFIG(ped))->line);
      BandwidthNeeded += LineValue;
+
      Cycles = CyclesPerIteration(loop_data[loop].node,ped);
+
      BandwidthNeeded /= Cycles;
 
 
@@ -1158,7 +1166,7 @@ static void UnrollLoop(model_loop   *loop_data,
      // insert line prefetches at beginning of unrolled loop
 
      InsertPrefetchesBeforeStmt(list_first(gen_DO_get_stmt_LIST(loop_data[loop].node)),
-				LinePrefetches,Var,Step,LineDistance*2,true,true);
+				LinePrefetches,Var,Step,LineDistance,true,true);
 
      if (Memoria_IssueDead)
        InsertSSDead(list_first(gen_DO_get_stmt_LIST(loop_data[loop].node)),
@@ -1275,7 +1283,7 @@ static void StripLoop(model_loop   *loop_data,
      gen_DO_put_stmt_LIST(loop_data[loop].node,list_create(NewLoop));
 
      // insert line prefetches before through-strip loop
-     InsertPrefetchesBeforeStmt(NewLoop,LinePrefetches,Var,Step,LineDistance*2,true,
+     InsertPrefetchesBeforeStmt(NewLoop,LinePrefetches,Var,Step,LineDistance,true,
 				true);
 
      // update induction variable for through-strip loop
@@ -1311,7 +1319,8 @@ static void SchedulePrefetches(model_loop *loop_data,
 			       PrefetchList *SpatLocality,
 			       PedInfo      ped,
 			       SymDescriptor symtab,
-			       arena_type    *ar)
+			       arena_type    *ar,
+			       int           LogMaxWordsPerLine)
   {
     AST_INDEX var;                  // AST for loop induction variable
     AST_INDEX Step;
@@ -1327,11 +1336,12 @@ static void SchedulePrefetches(model_loop *loop_data,
     if (Memoria_LetRocketSchedulePrefetches)
       {
 
+	UnrollVal = (LinePrefetches->NullList()) ? 0 :
+	  (((config_type *)PED_MH_CONFIG(ped))->line >> LogMaxWordsPerLine);
+
 	// Rocket can schedule better than we can, so just tell it what to prefetch
 	// and that will be enough
 
-	UnrollVal = (LinePrefetches->NullList()) ? 0 :
-	  (((config_type *)PED_MH_CONFIG(ped))->line >> 3);
 	LinePrefetchDistance = UnrollVal >> 1;
 	WordPrefetchDistance = 0;
 	MaxDistance = (LinePrefetches->NullList() &&
@@ -1347,29 +1357,33 @@ static void SchedulePrefetches(model_loop *loop_data,
 	// prefetch with loop cycles
 
 	if (!Cycles) Cycles = 1;
+
 	IterationDist = ceil_ab(((config_type *)PED_MH_CONFIG(ped))->
 				prefetch_latency,Cycles);
 
 	// determine how far in advance word prefetches must be issued
 
-	WordPrefetchDistance = (NOT(WordPrefetches->NullList())) ?
-	  PipelineIterations(1,IterationDist) : 0;
+	WordPrefetchDistance = (NOT(WordPrefetches->NullList())) ? IterationDist : 0;
      
 	// determine how far in advance line prefetches must be issued
 	// The line size is in bytes and we are prefetching 8-byte words (dp).
+	// Add in enough elements to prefetch the next cache line to remove
+	// alignment problems
 
-	LinePrefetchDistance = (NOT(LinePrefetches->NullList()))?
-	  PipelineIterations(((config_type *)PED_MH_CONFIG(ped))->line>>3,
-			     IterationDist):0;
+	int ElementsPerLine =
+	  ((config_type *)PED_MH_CONFIG(ped))->line >> LogMaxWordsPerLine;
+
+	LinePrefetchDistance = (NOT(LinePrefetches->NullList())) ?
+	  (PipelineIterations(ElementsPerLine,IterationDist) + ElementsPerLine) : 0;
 	
 	MaxDistance = MAX(LinePrefetchDistance,WordPrefetchDistance);
 	
 	// Assumes Double Precision (which is all Rocket supports anyway)
 	// Comput the unroll value as 0 if no line prefetching is done
-	// otherwise make it the number of double precision words that fit in a cache line
+	// otherwise make it the number of dble precision words that fit in a cache line
 	
 	UnrollVal = (LinePrefetchDistance == 0) ? 0 : 
-	  (((config_type *)PED_MH_CONFIG(ped))->line >> 3);
+	  (((config_type *)PED_MH_CONFIG(ped))->line >> LogMaxWordsPerLine);
       }
 	
      var = gen_INDUCTIVE_get_name(gen_DO_get_control(loop_data[loop].node));
@@ -1492,7 +1506,8 @@ static int ConvertPrefetchCallsToDirectives(AST_INDEX stmt,
 	    strcmp("$$PrefetchN",FunctionName) == 0)
 	  {
 
-	    int LineLength = ((config_type*)PED_MH_CONFIG(PrefetchInfo->ped))->line >> 3;
+	    int LineLength = ((config_type*)PED_MH_CONFIG(PrefetchInfo->ped))->line 
+	      >> PrefetchInfo->LogMaxWordsPerLine;
 	    // Get Text representation of subscript AST
 	    
 	    AST_INDEX ArrayRef = list_first(gen_INVOCATION_get_actual_arg_LIST(Inv));
@@ -1578,6 +1593,7 @@ static void walk_loops(model_loop    *loop_data,
     PrefetchList NoLocality;
     PrefetchList TempLocality;
     PrefetchList SpatLocality;
+    int LogMaxWordsPerLine;
 
 
    // Get the induction variable of the current loop
@@ -1594,18 +1610,21 @@ static void walk_loops(model_loop    *loop_data,
 	 // ever iteration and which need to be prefetched every cache-line iterations
 
 	CheckRefsForPrefetch(loop_data,loop,&LinePrefetches,&WordPrefetches,
-        &NoLocality,&TempLocality,&SpatLocality,ped,IVar);
+			     &NoLocality,&TempLocality,&SpatLocality,ped,IVar,
+			     LogMaxWordsPerLine);
 
 	// If the architecture stalls on prefetch buffer overflow, we want to 
 	// limit the prefetching done to keep that from happening
 
 	if (!((config_type *)PED_MH_CONFIG(ped))->aggressive)
 	  ModeratePrefetchRequirements(loop_data,loop,&LinePrefetches,
-          &WordPrefetches,ped);
+				       &WordPrefetches,ped,
+				       LogMaxWordsPerLine);
 
 	// Software pipeline the prefetches
 	SchedulePrefetches(loop_data,loop,&LinePrefetches,&WordPrefetches,
-        &NoLocality,&TempLocality,&SpatLocality,ped,symtab,ar);
+			   &NoLocality,&TempLocality,&SpatLocality,ped,symtab,ar,
+			   LogMaxWordsPerLine);
 
 	// Make prefetches into comments with directives
 
@@ -1613,6 +1632,7 @@ static void walk_loops(model_loop    *loop_data,
 	
 	PrefetchInfo.ped = ped;
 	PrefetchInfo.symtab = symtab; 
+	PrefetchInfo.LogMaxWordsPerLine = LogMaxWordsPerLine;
 
 	walk_statements(tree_out(loop_data[loop].node),loop_data[loop].level,NOFUNC,
 			(WK_STMT_CLBACK)ConvertPrefetchCallsToDirectives,
