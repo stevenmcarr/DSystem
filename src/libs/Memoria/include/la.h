@@ -1,4 +1,4 @@
-/* $Id: la.h,v 1.7 1998/07/07 19:42:48 carr Exp $ */
+/* $Id: la.h,v 1.8 1998/08/05 19:31:54 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -159,6 +159,8 @@ class GroupSpatialEntry:
 		AST_INDEX leader_n;
                 la_vect trailer_v;   // The trailer of this spatial group
 		AST_INDEX trailer_n;
+                la_vect load_leader_v;   // The load_leader of this spatial group
+		AST_INDEX load_leader_n;
 		la_vect LocIterSpace;
 		la_vect ZeroSpace;
 		la_matrix H;
@@ -185,8 +187,10 @@ class GroupSpatialEntry:
 		void DoAnalysis();
 		la_vect Leader() { return leader_v; };
 		la_vect Trailer() { return trailer_v; };
+		la_vect LoadLeader() { return load_leader_v; };
 		AST_INDEX LeaderNode() { return leader_n; };
 		AST_INDEX TrailerNode() { return trailer_n; };
+		AST_INDEX LoadLeaderNode() { return load_leader_n; };
 		void PrintOut();
 		void AddSpatialDependences(AST_INDEX node);
 		Boolean Member(AST_INDEX node);
@@ -256,7 +260,7 @@ class DataReuseModelEntry:
 		float ComputePrefetch(int, int, int, int);
 		float ComputePrefetch(int, int);
 		Boolean IsGroupSpatialLeader(AST_INDEX node);
-		Boolean IsGroupSpatialTrailer(AST_INDEX node);
+		Boolean IsGroupSpatialLoadLeader(AST_INDEX node);
 		Boolean AddSpatialDependences(AST_INDEX node);
 		Boolean HasGroupSpatialReuse(AST_INDEX node);
 		Boolean HasSelfSpatialReuse(AST_INDEX node);
@@ -279,7 +283,7 @@ class DataReuseModel:
 		float ComputePrefetch(int, int, int, int);
 		float ComputePrefetch(int, int);
 		Boolean IsGroupSpatialLeader(AST_INDEX node);
-		Boolean IsGroupSpatialTrailer(AST_INDEX node);
+		Boolean IsGroupSpatialLoadLeader(AST_INDEX node);
 		void AddSpatialDependences(AST_INDEX node);
 		LocalityType GetNodeReuseType(AST_INDEX node);
 		Boolean HasGroupSpatialReuse(AST_INDEX node);
