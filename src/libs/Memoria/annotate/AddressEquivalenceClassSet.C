@@ -22,75 +22,172 @@ static int CheckNodes(AST_INDEX node,
   return(WALK_CONTINUE);
 }
 
-      
 
-Boolean AddressEquivalenceClass::NewReferenceIsEarlier(AST_INDEX Old,
-						       AST_INDEX New)
-				    
+int AddressEquivalenceClass::CompareVectors(la_vect LeaderVect,
+					    la_vect NewVect)
+
 {
-  AST_INDEX OldStmt = ut_get_stmt(Old);
-  AST_INDEX NewStmt = ut_get_stmt(New);
-  stmt_info_type *OldSptr = get_stmt_info_ptr(Old);
-  stmt_info_type *NewSptr = get_stmt_info_ptr(New);
 
-  if (NewSptr->stmt_num < OldSptr->stmt_num)
-    return true;
-
-  if (NewSptr->stmt_num == OldSptr->stmt_num)
+  for(int i = Subscripts - 1 ; i >=0; i--)
     {
-      StmtOrderInfoType StmtOrderInfo;
-
-      StmtOrderInfo.Old = Old;
-      StmtOrderInfo.New = New;
-      StmtOrderInfo.Found = 0;
-
-      if (is_assignment(NewStmt))
-	{
-	  walk_expression(gen_ASSIGNMENT_get_rvalue(NewStmt),
-			  (WK_EXPR_CLBACK)CheckNodes,
-			  (WK_EXPR_CLBACK)NOFUNC,
-			  (Generic)&StmtOrderInfo);
-	  if (StmtOrderInfo.Found == 0)
-	    walk_expression(gen_ASSIGNMENT_get_lvalue(NewStmt),
-			    (WK_EXPR_CLBACK)CheckNodes,
-			    (WK_EXPR_CLBACK)NOFUNC,
-			    (Generic)&StmtOrderInfo);
-	}
-      else
-	walk_expression(NewStmt,(WK_EXPR_CLBACK)CheckNodes,(WK_EXPR_CLBACK)NOFUNC,
-			(Generic)&StmtOrderInfo);
-      if (StmtOrderInfo.Found == 2)
-	return true;
+      if(LeaderVect[i] > NewVect[i])
+	return -1;
+      else 
+	if (LeaderVect[i] < NewVect[i])
+	  return 1;
     }
 
-  return false;
+  return 0;
+}
+
+
+Boolean AddressEquivalenceClass::NewReferenceIsEarlier(AST_INDEX Old,
+						       AST_INDEX New,
+						       Boolean StmtOrderOnly = false)
+				    
+{
+  Boolean Earlier;
+  la_vect OldVect = la_vecNew(Subscripts);
+  la_vect NewVect = la_vecNew(Subscripts);
+
+  GetConstants(Old,OldVect);
+  GetConstants(New,NewVect);
+  int CompareVal = CompareVectors(OldVect,NewVect);
+  if (CompareVal == 0 ||  StmtOrderOnly)
+    {
+      AST_INDEX OldStmt = ut_get_stmt(Old);
+      AST_INDEX NewStmt = ut_get_stmt(New);
+      stmt_info_type *OldSptr = get_stmt_info_ptr(OldStmt);
+      stmt_info_type *NewSptr = get_stmt_info_ptr(NewStmt);
+      
+      if (NewSptr->stmt_num < OldSptr->stmt_num)
+	Earlier = true;
+      else if (NewSptr->stmt_num == OldSptr->stmt_num)
+	{
+	  StmtOrderInfoType StmtOrderInfo;
+	  
+	  StmtOrderInfo.Old = Old;
+	  StmtOrderInfo.New = New;
+	  StmtOrderInfo.Found = 0;
+	  
+	  if (is_assignment(NewStmt))
+	    {
+	      walk_expression(gen_ASSIGNMENT_get_rvalue(NewStmt),
+			      (WK_EXPR_CLBACK)CheckNodes,
+			      (WK_EXPR_CLBACK)NOFUNC,
+			      (Generic)&StmtOrderInfo);
+	      if (StmtOrderInfo.Found == 0)
+		walk_expression(gen_ASSIGNMENT_get_lvalue(NewStmt),
+				(WK_EXPR_CLBACK)CheckNodes,
+				(WK_EXPR_CLBACK)NOFUNC,
+				(Generic)&StmtOrderInfo);
+	    }
+	  else
+	    walk_expression(NewStmt,(WK_EXPR_CLBACK)CheckNodes,
+			    (WK_EXPR_CLBACK)NOFUNC,
+			    (Generic)&StmtOrderInfo);
+	  if (StmtOrderInfo.Found == 2)
+	    Earlier = true;
+	  else
+	    Earlier = false;
+	}
+      else	
+        Earlier = false;
+    }
+  else if (CompareVal == 1) 
+    Earlier = false;
+  else
+    Earlier = true;
+
+  la_vecFree(OldVect);
+  la_vecFree(NewVect);
+
+  return Earlier;
 }
 
 Boolean AddressEquivalenceClass::NewReferenceIsEarlier(Directive *Dir,
-						       AST_INDEX New)
+						       AST_INDEX New,
+						       Boolean StmtOrderOnly = false)
 				    
 {
-  AST_INDEX NewStmt = ut_get_stmt(New);
-  stmt_info_type *NewSptr = get_stmt_info_ptr(NewStmt);
+  Boolean Earlier;
+  la_vect OldVect = la_vecNew(Subscripts);
+  la_vect NewVect = la_vecNew(Subscripts);
 
-  return BOOL(NewSptr->stmt_num < Dir->StmtNumber);
+  GetConstants(Dir->Subscript,OldVect);
+  GetConstants(New,NewVect);
+  int CompareVal = CompareVectors(OldVect,NewVect);
+  if (CompareVal == 0 ||  StmtOrderOnly)
+    {
+      AST_INDEX NewStmt = ut_get_stmt(New);
+      stmt_info_type *NewSptr = get_stmt_info_ptr(NewStmt);
+      
+      Earlier = BOOL(NewSptr->stmt_num < Dir->StmtNumber);
+    }
+  else if (CompareVal == -1) 
+    Earlier = true;
+  else 
+    Earlier = false;
+
+  la_vecFree(OldVect);
+  la_vecFree(NewVect);
+
+  return Earlier;
 }
 
 Boolean AddressEquivalenceClass::NewReferenceIsEarlier(AST_INDEX Old,
-						       Directive *Dir)
+						       Directive *Dir,
+						       Boolean StmtOrderOnly = false)
 				    
 {
-  AST_INDEX OldStmt = ut_get_stmt(Old);
-  stmt_info_type *OldSptr = get_stmt_info_ptr(OldStmt);
+  Boolean Earlier;
+  la_vect OldVect = la_vecNew(Subscripts);
+  la_vect NewVect = la_vecNew(Subscripts);
 
-  return BOOL(Dir->StmtNumber < OldSptr->stmt_num);
+  GetConstants(Old,OldVect);
+  GetConstants(Dir->Subscript,NewVect);
+  int CompareVal = CompareVectors(OldVect,NewVect);
+  if (CompareVal == 0 ||  StmtOrderOnly)
+    {
+      AST_INDEX OldStmt = ut_get_stmt(Old);
+      stmt_info_type *OldSptr = get_stmt_info_ptr(OldStmt);
+      
+      Earlier = BOOL(Dir->StmtNumber < OldSptr->stmt_num);
+    }
+  else if (CompareVal == -1)
+    Earlier = true;
+  else
+    Earlier = false;
+
+  la_vecFree(OldVect);
+  la_vecFree(NewVect);
+
+  return Earlier;
 }
 
 Boolean AddressEquivalenceClass::NewReferenceIsEarlier(Directive *LeaderDir,
-						       Directive *Dir)
+						       Directive *Dir,
+						       Boolean StmtOrderOnly = false)
 				    
 {
-  return BOOL(Dir->StmtNumber < LeaderDir->StmtNumber);
+  Boolean Earlier;
+  la_vect OldVect = la_vecNew(Subscripts);
+  la_vect NewVect = la_vecNew(Subscripts);
+
+  GetConstants(LeaderDir->Subscript,OldVect);
+  GetConstants(Dir->Subscript,NewVect);
+  int CompareVal = CompareVectors(OldVect,NewVect);
+  if (CompareVal == 0 ||  StmtOrderOnly)
+    Earlier =  BOOL(Dir->StmtNumber < LeaderDir->StmtNumber);
+  if (CompareVal == -1)
+    Earlier = true;
+  else
+    Earlier = false;
+
+  la_vecFree(OldVect);
+  la_vecFree(NewVect);
+
+  return Earlier;
 }
 
 static int BuildEquivalenceClasses(AST_INDEX node,
@@ -111,9 +208,11 @@ static int BuildEquivalenceClasses(AST_INDEX node,
       
 }
 
+
 AddressEquivalenceClassSet::AddressEquivalenceClassSet(AST_INDEX loop,
 						       int NL,
-						       char **IV) : GenericList()
+						       char **IV) 
+  : GenericList()
 
   { 
    int i;
@@ -181,6 +280,7 @@ void AddressEquivalenceClassSet::AddNode(AST_INDEX node)
      else
        EquivalenceClass = Append(nodeH,node,Subscripts,uniform);
      EquivalenceClass->CheckLeader(node);
+     EquivalenceClass->CheckFirstInLoopBody(node);
   }
 
 
@@ -201,6 +301,7 @@ void AddressEquivalenceClassSet::AddNode(Directive *Dir)
      else
        EquivalenceClass = Append(nodeH,Dir->Subscript,Subscripts,uniform);
      EquivalenceClass->CheckLeader(Dir);
+     EquivalenceClass->CheckFirstInLoopBody(Dir);
   }
 
 void AddressEquivalenceClassSet::GetH(AST_INDEX node,
@@ -304,6 +405,18 @@ AST_INDEX AddressEquivalenceClassSet::GetLeader(AST_INDEX node)
   la_matFree(nodeH,Subscripts,NestingLevel);
 }
 
+AST_INDEX AddressEquivalenceClassSet::GetFirstInLoop(AST_INDEX node)
+
+{
+  Boolean uniform;
+
+  int Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(node));
+  la_matrix nodeH = la_matNew(Subscripts,NestingLevel);
+  GetH(node,nodeH,&uniform);
+  return (GetAddressEquivalenceClass(node,nodeH)->GetFirstInLoop());
+  la_matFree(nodeH,Subscripts,NestingLevel);
+}
+
 
 AddressEquivalenceClass::AddressEquivalenceClass(char *EntryName,
 						 la_matrix nodeH, 
@@ -319,7 +432,10 @@ AddressEquivalenceClass::AddressEquivalenceClass(char *EntryName,
   Uniform = uniform;
   LeaderIsADirective = false;
   LeaderDirective = NULL;
-  Leader = NULL;
+  Leader = (AST_INDEX)NULL;
+  FirstInLoopIsADirective = false;
+  FirstInLoopDirective = NULL;
+  FirstInLoop = (AST_INDEX)NULL;
   H = la_matNew(Subscripts,NestingLevel);
   la_matCopy(nodeH,H,Subscripts,NestingLevel);
   C_L = la_vecNew(Subscripts);
@@ -369,8 +485,6 @@ void AddressEquivalenceClass::GetConstants(AST_INDEX node1,
 void AddressEquivalenceClass::CheckLeader(AST_INDEX node)
 
 {
-  Boolean Change = false;
-  Boolean Done = false;
   int i = Subscripts - 1 ;
   Boolean AllEqual = true;
   la_vect C_n;
@@ -398,10 +512,7 @@ void AddressEquivalenceClass::CheckLeader(AST_INDEX node)
 }
 
 void AddressEquivalenceClass::CheckLeader(Directive *Dir)
-
 {
-  Boolean Change = false;
-  Boolean Done = false;
   int i = Subscripts - 1 ;
   Boolean AllEqual = true;
   la_vect C_n;
@@ -425,6 +536,63 @@ void AddressEquivalenceClass::CheckLeader(Directive *Dir)
       LeaderIsADirective = true;
       LeaderDirective = Dir;
       Leader = Dir->Subscript;
+    }
+}
+
+void AddressEquivalenceClass::CheckFirstInLoopBody(AST_INDEX node)
+
+{
+  int i = Subscripts - 1 ;
+  Boolean AllEqual = true;
+  la_vect C_n;
+  Boolean Earlier;
+
+  if (FirstInLoop != AST_NIL)
+    {
+      Boolean Earlier;
+
+      if (FirstInLoopIsADirective)
+	Earlier = NewReferenceIsEarlier(FirstInLoopDirective,node,true);
+      else
+	Earlier = NewReferenceIsEarlier(FirstInLoop,node,true);
+      if (Earlier)
+	{
+	  FirstInLoopIsADirective = false;
+	  FirstInLoop = node;
+	}
+    }
+  else
+    {
+      FirstInLoopIsADirective = false;
+      FirstInLoop = node;
+    }
+}
+
+void AddressEquivalenceClass::CheckFirstInLoopBody(Directive *Dir)
+{
+  int i = Subscripts - 1 ;
+  Boolean AllEqual = true;
+  la_vect C_n;
+  Boolean Earlier;
+
+  if (FirstInLoop != AST_NIL)
+    {
+      if (FirstInLoopIsADirective)
+	Earlier = NewReferenceIsEarlier(FirstInLoopDirective,Dir,true);
+      else
+	Earlier = NewReferenceIsEarlier(FirstInLoop,Dir,true);
+      if (Earlier)
+	{
+	  FirstInLoopIsADirective = true;
+	  FirstInLoopDirective = Dir;
+	  FirstInLoop = Dir->Subscript;
+	}
+    }
+  else
+    {
+      FirstInLoopIsADirective = true;
+      FirstInLoopDirective = Dir;
+      FirstInLoop = Dir->Subscript;
     }
 }
 

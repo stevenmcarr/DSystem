@@ -1,4 +1,4 @@
-/* $Id: directives.C,v 1.3 1999/04/22 14:30:37 carr Exp $ */
+/* $Id: directives.C,v 1.4 1999/06/11 17:42:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -14,7 +14,7 @@ void HandleDirective(AST_INDEX Stmt)
   // AST_INDEX Stmt;
 
   {
-   int Index,Reg;
+   int Index,Reg,Offset;
 
    switch(GET_DIRECTIVE_INFO(Stmt)->Instr)
      {
@@ -25,24 +25,33 @@ void HandleDirective(AST_INDEX Stmt)
 						    ->Subscript)));
 	if (aiOptimizeAddressCode)
 	  if (GET_DIRECTIVE_INFO(Stmt)->AddressLeader != AST_NIL)
-	    if (GET_DIRECTIVE_INFO(Stmt)->AddressLeader == 
-		GET_DIRECTIVE_INFO(Stmt)->Subscript)
-	      {
-		Reg = getSubscriptLValue(GET_DIRECTIVE_INFO(Stmt)->Subscript);
-		ASTRegMap->MapAddEntry(GET_DIRECTIVE_INFO(Stmt)->
-				       Subscript,Reg);
-	      }
-	    else
-	      {
+	    {
+
+	   // if this is the first reference in the loop body of on 
+	   // Address Equivalence Set, then generate the address arithmetic
+	   // for the Address Leader (the base address).
+
+	      if (GET_DIRECTIVE_INFO(Stmt)->FirstInLoop == 
+		  GET_DIRECTIVE_INFO(Stmt)->Subscript)
+		{
+		  Reg = getSubscriptLValue(GET_DIRECTIVE_INFO(Stmt)->
+					   AddressLeader);
+		  ASTRegMap->MapAddEntry(GET_DIRECTIVE_INFO(Stmt)->
+					 AddressLeader,Reg);
+		}
+	      else
 		Reg = ASTRegMap->MapToValue(GET_DIRECTIVE_INFO(Stmt)->
 					    AddressLeader);
-		int Offset = GET_DIRECTIVE_INFO(Stmt)->Offset*
-		  GetDataSize(TYPE_INTEGER);
-		int OffsetReg = getConstantInRegFromInt(Offset);
-		int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
-		int TempIndex = TempReg(Reg, OffsetReg, op, TYPE_INTEGER);
-		generate(0, op, Reg, OffsetReg, TempIndex, NOCOMMENT);
-		Reg = TempIndex;
+
+	      if ((Offset = GET_DIRECTIVE_INFO(Stmt)->Offset
+		   * GetDataSize(TYPE_INTEGER)) != 0)
+		{
+		  int OffsetReg = getConstantInRegFromInt(Offset);
+		  int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
+		  int TempIndex = TempReg(Reg, OffsetReg, op, TYPE_INTEGER);
+		  generate(0, op, Reg, OffsetReg, TempIndex, NOCOMMENT);
+		  Reg = TempIndex;
+		}
 	      }
 	  else
 	    Reg = getSubscriptLValue(GET_DIRECTIVE_INFO(Stmt)->Subscript);
@@ -57,7 +66,7 @@ void HandleDirective(AST_INDEX Stmt)
 	  int TempIndex = TempReg(GET_DIRECTIVE_INFO(Stmt)->SpecialLoadStride,
 				  0,SETSLR,TYPE_INTEGER);
 	  generate(0, SETSLR, GET_DIRECTIVE_INFO(Stmt)->SpecialLoadStride,
-		   Index,GEN_NUMBER,"Set Spatial Load Stride");
+		   TempIndex,GEN_NUMBER,"Set Spatial Load Stride");
 	  break;
 	}
      }

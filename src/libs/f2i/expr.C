@@ -1,4 +1,4 @@
-/* $Id: expr.C,v 1.4 1998/08/05 20:38:15 carr Exp $ */
+/* $Id: expr.C,v 1.5 1999/06/11 17:42:28 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -324,27 +324,37 @@ int getIdInRegister(AST_INDEX node)
 	comment = GenDepComment(node);
 	if (aiOptimizeAddressCode)
 	  if (DepInfoPtr(node)->AddressLeader != AST_NIL)
-	    if (DepInfoPtr(node)->AddressLeader == node)
-	      {
-		AReg  = getSubscriptLValue(node);
-		DReg  = StrTempReg("!", AReg, Index_type);
-		ASTRegMap->MapAddEntry(node,AReg);
-	      }
-	    else
-	      {
-		// create code to for address arithmetic that can be peepholed
-		// to use register + offset addressing mode
-		
+	    {
+
+	      // if this is the first reference in the loop body of on 
+	      // Address Equivalence Set, then generate the address arithmetic
+	      // for the Address Leader (the base address).
+	      
+	      if (DepInfoPtr(node)->FirstInLoop == node)
+		{
+		  AReg  = getSubscriptLValue(DepInfoPtr(node)->AddressLeader);
+		  DReg  = StrTempReg("!", AReg, Index_type);
+		  ASTRegMap->MapAddEntry(DepInfoPtr(node)->AddressLeader,AReg);
+		}
+	      else
 		AReg = ASTRegMap->MapToValue(DepInfoPtr(node)->AddressLeader);
-		Offset = DepInfoPtr(node)->Offset*GetDataSize(TYPE_INTEGER);
-		int OffsetReg = getConstantInRegFromInt(Offset);
-		int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
-		int TempIndex = TempReg(AReg, OffsetReg, op, TYPE_INTEGER);
-		generate(0, op, AReg, OffsetReg, TempIndex, NOCOMMENT);
-		AReg = TempIndex;
+	      
+	      if ((Offset = DepInfoPtr(node)->Offset*GetDataSize(TYPE_INTEGER))
+		  != 0)
+		{
+		  // create code to for address arithmetic that can be 
+		  // peepholed to use register + offset addressing mode
+		  
+		  int OffsetReg = getConstantInRegFromInt(Offset);
+		  int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
+		  int TempIndex = TempReg(AReg, OffsetReg, op, TYPE_INTEGER);
+		  generate(0, op, AReg, OffsetReg, TempIndex, NOCOMMENT);
+		  AReg = TempIndex;
+		  DReg  = StrTempReg("!", AReg, Index_type);
+		}
+	      else
 		DReg  = StrTempReg("!", AReg, Index_type);
-		
-	      }
+	    }
 	  else
 	    {
 	      AReg  = getSubscriptLValue(node);

@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.13 1999/04/22 14:30:37 carr Exp $ */
+/* $Id: ai.h,v 1.14 1999/06/11 17:42:28 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -171,7 +171,9 @@ typedef struct DepInfoStruct {
   LocalityType Locality;
   Boolean UseSpecialSelfSpatialLoad;
   AST_INDEX AddressLeader;
-  int Offset;
+  AST_INDEX FirstInLoop;
+  int       Offset;
+  int       StmtNumber;
  } DepInfoType;         /* copy in Memoria/annotate/CacheAnalysis.h */
 
 typedef struct depstruct {

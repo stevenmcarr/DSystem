@@ -43,6 +43,7 @@ public:
     }
 
   AST_INDEX GetLeader(AST_INDEX node);
+  AST_INDEX GetFirstInLoop(AST_INDEX node);
   int GetOffset(AST_INDEX n);
   void AddNode(AST_INDEX node);
   void AddNode(Directive *Dir);
@@ -74,15 +75,19 @@ class AddressEquivalenceClass : public GenericList
   la_matrix H;
   Boolean Uniform;
   AST_INDEX Leader;
+  AST_INDEX FirstInLoop;
   la_vect C_L;
   Boolean LeaderIsADirective;
   Directive *LeaderDirective;
+  Boolean FirstInLoopIsADirective;
+  Directive *FirstInLoopDirective;
 
 
-  Boolean NewReferenceIsEarlier(AST_INDEX Old,Directive *Dir);
-  Boolean NewReferenceIsEarlier(Directive *Dir,AST_INDEX New);
-  Boolean NewReferenceIsEarlier(Directive *LeaderDir,Directive *Dir);
-  Boolean NewReferenceIsEarlier(AST_INDEX Old,AST_INDEX New);
+  Boolean NewReferenceIsEarlier(AST_INDEX Old,Directive *Dir,Boolean);
+  Boolean NewReferenceIsEarlier(Directive *Dir,AST_INDEX New,Boolean);
+  Boolean NewReferenceIsEarlier(Directive *LeaderDir,Directive *Dir,Boolean);
+  Boolean NewReferenceIsEarlier(AST_INDEX Old,AST_INDEX New,Boolean);
+  int CompareVectors(la_vect LeaderVect,la_vect NewVect);
 
 public:
 
@@ -98,9 +103,13 @@ public:
     { (*this) += (Generic)n; }
 
   AST_INDEX GetLeader() {return Leader;}
+  AST_INDEX GetFirstInLoop() {return FirstInLoop;}
 
   void CheckLeader(AST_INDEX n);
   void CheckLeader(Directive *Dir);
+
+  void CheckFirstInLoopBody(AST_INDEX n);
+  void CheckFirstInLoopBody(Directive *Dir);
 
   Boolean SameEquivalenceClass(AST_INDEX node,
 			      la_matrix nodeH);

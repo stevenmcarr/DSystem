@@ -1,4 +1,4 @@
-/* $Id: assignment.C,v 1.5 1998/08/06 13:49:42 carr Exp $ */
+/* $Id: assignment.C,v 1.6 1999/06/11 17:42:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -129,21 +129,31 @@ static void NonCharacterAssignment(AST_INDEX	node)
 
      if (aiOptimizeAddressCode)
        if (DepInfoPtr(lhs)->AddressLeader != AST_NIL)
-	 if (DepInfoPtr(lhs)->AddressLeader == lhs)
-	   {
-	     lhs_index = getSubscriptLValue(lhs);
-	     ASTRegMap->MapAddEntry(lhs,lhs_index);
-	   }
-	 else
-	   {
+	 {
+
+	   // if this is the first reference in the loop body of on 
+	   // Address Equivalence Set, then generate the address arithmetic
+	   // for the Address Leader (the base address).
+
+	   if (DepInfoPtr(lhs)->FirstInLoop == lhs)
+	     {
+	       lhs_index = getSubscriptLValue(DepInfoPtr(lhs)->AddressLeader);
+	       ASTRegMap->MapAddEntry(DepInfoPtr(lhs)->AddressLeader,
+				      lhs_index);
+	     }
+	   else
 	     lhs_index = ASTRegMap->MapToValue(DepInfoPtr(lhs)->AddressLeader);
-	     Offset = DepInfoPtr(lhs)->Offset*GetDataSize(TYPE_INTEGER);
-	     int OffsetReg = getConstantInRegFromInt(Offset);
-	     int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
-	     int TempIndex = TempReg(lhs_index, OffsetReg, op, TYPE_INTEGER);
-	     generate(0, op, lhs_index, OffsetReg, TempIndex, NOCOMMENT);
-	     lhs_index = TempIndex;
-	   }
+
+	   if ((Offset = DepInfoPtr(lhs)->Offset*GetDataSize(TYPE_INTEGER)) 
+	       != 0)
+	     {
+	       int OffsetReg = getConstantInRegFromInt(Offset);
+	       int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
+	       int TempIndex = TempReg(lhs_index, OffsetReg, op, TYPE_INTEGER);
+	       generate(0, op, lhs_index, OffsetReg, TempIndex, NOCOMMENT);
+	       lhs_index = TempIndex;
+	     }
+	 }
        else
 	 lhs_index = getSubscriptLValue(lhs);
      else
