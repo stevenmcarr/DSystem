@@ -1,4 +1,4 @@
-/* $Id: stmts.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: stmts.C,v 1.3 1997/11/19 14:46:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -150,7 +150,10 @@ void aiStmtList(AST_INDEX StmtList)
 	       Stmt, ast_get_node_type_name(StmtType), StmtType);
 
    if (StmtType == GEN_COMMENT && aiParseComments)
-     IsDirective = aiDirectiveIsInComment(Stmt);
+     {
+       StmtLabel = AST_NIL; // comments don't have labels in the AST
+       IsDirective = aiDirectiveIsInComment(Stmt);
+     }
 
    if (StmtType != GEN_COMMENT || IsDirective)
     if (ai_isExecutable(StmtType) || IsDirective)

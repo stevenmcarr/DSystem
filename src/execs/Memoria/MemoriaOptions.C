@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.5 1997/10/30 19:15:42 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.6 1997/11/19 14:46:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -29,6 +29,9 @@ int aiCache = -1;
 int aiSpecialCache = 0;
 int blue_color = 0;
 
+Boolean Memoria_LetRocketSchedulePrefetches = false;
+Boolean Memoria_IssueDead = false;
+
 Options MemoriaOptions("Memoria Options");
 
 Boolean mc_unroll_cache = false;  
@@ -39,7 +42,7 @@ Boolean RestrictedUnrolling = false;
 
 void MemoriaOptionsUsage(char *pgm_name)
 {
-   printf("Usage: %s [-s] [-e] [-i] [-p] [-r#] [-d#] [-w#] [-u] [-U] [-D] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
+   printf("Usage: %s [-s] [-e] [-i] [-p] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-R] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
   puts(" ");
   puts("         -c  annontate with calls to cache simulator");
   puts("         -d#  set dependence analysis level at 0 or 1 (default)");
@@ -55,6 +58,7 @@ void MemoriaOptionsUsage(char *pgm_name)
   puts("         -U  do unroll-and-jam with cache model");
   puts("         -S  do depencence statistics");
   puts("         -D  issue DEAD instructions for dead cache lines");
+  puts("         -R  let Rocket schedule prefetches");
   puts("         -P  program composition");
   puts("         -M  Fortran module");
   puts("         -L  list of Fortran modules");
@@ -167,6 +171,11 @@ void mc_opt_prefetch(void *state)
      }
   }
 
+void mc_opt_rocket_schedule(void *state)
+{
+  Memoria_LetRocketSchedulePrefetches = true;
+}
+
 void mc_opt_dead(void *state)
 
   {
@@ -175,6 +184,7 @@ void mc_opt_dead(void *state)
       case NO_SELECT:
         selection = DEAD;
 	select_char = 'D';
+        Memoria_IssueDead = true;
 	break;
       default:
 	MemoriaOptionsUsage("Memoria");
@@ -300,6 +310,12 @@ static struct flag_	dead_f = {
   mc_opt_dead,
   "dead cache lines", 
   "insert dead cache line directives",
+};
+
+static struct flag_	rocket_schedule_f = {
+  mc_opt_rocket_schedule,
+  "let rocket schedule prefetches", 
+  "",
 };
 
 static struct flag_	interchange_f = {
@@ -507,6 +523,8 @@ int MemoriaInitOptions(int argc, char **argv)
     *mc_pre_flag = InitOption(flag,MC_PREFETCH_FLAG,(Generic)false,true, 
 			      (Generic)&prefetch_f),
     *mc_dead_flag = InitOption(flag,MC_DEAD_FLAG,(Generic)false,true,(Generic)&dead_f),
+    *mc_rocket_schedule_flag = InitOption(flag,MC_ROCKET_SCHEDULE_FLAG,(Generic)false,
+					  true,(Generic)&rocket_schedule_f),
     *mc_cache_anal_flag = InitOption(flag,MC_CACHE_ANAL_FLAG,(Generic)false,true,
 				     (Generic)&cache_f),
     *mc_ldst_anal_flag = InitOption(flag,MC_LDST_ANAL_FLAG,(Generic)false,true,
@@ -538,6 +556,7 @@ int MemoriaInitOptions(int argc, char **argv)
   MemoriaOptions.Add(mc_int_flag);
   MemoriaOptions.Add(mc_pre_flag);
   MemoriaOptions.Add(mc_dead_flag);
+  MemoriaOptions.Add(mc_rocket_schedule_flag);
   MemoriaOptions.Add(mc_repl_choice);
   MemoriaOptions.Add(mc_cache_anal_flag);
   MemoriaOptions.Add(mc_ldst_anal_flag);

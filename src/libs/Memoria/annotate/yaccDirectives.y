@@ -1,4 +1,4 @@
-/* $Id: yaccDirectives.y,v 1.2 1997/03/27 20:22:50 carr Exp $ */
+/* $Id: yaccDirectives.y,v 1.3 1997/11/19 14:45:20 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -38,12 +38,13 @@ Boolean a2i_IsDirective;
   }
 
 %token CDIR
+%token DEP
 %token <ival> PREFETCH FLUSH
 %token <cval> NAME ICONST
 %token LPAR RPAR COMMA
 %token PLUS MINUS TIMES DIVIDE
 
-%type <aval> subvar subscript expr subscript_list
+%type <aval> subvar subscript expr subscript_list subvarlist
 %type <dval> command;
 
 %left PLUS MINUS
@@ -61,12 +62,27 @@ command : PREFETCH LPAR subvar RPAR
 	     $$.Instr = PrefetchInstruction;
 	     $$.Subscript = $3;
 	    }
-
+        | PREFETCH LPAR subvar RPAR DEP subvarlist
+            {
+	     $$.Instr = PrefetchInstruction;
+	     $$.Subscript = $3;
+             $$.ASTDependenceList = $6;
+            }
         | FLUSH LPAR subvar RPAR
             {
 	     $$.Instr = FlushInstruction;
 	     $$.Subscript = $3;
 	    }
+        ;
+
+subvarlist: subvar
+             {
+	       $$ = list_create($1);
+	     }
+        | subvarlist COMMA subvar
+          {
+	    $$ = list_insert_last($1,$3);
+	   }
         ;
 
 subvar : NAME LPAR subscript_list RPAR 
@@ -188,6 +204,7 @@ Boolean a2i_string_parse (str,Dir,symtab)
      {
       Dir->Instr = a2i_Directive.Instr;
       Dir->Subscript = a2i_Directive.Subscript;
+      Dir->ASTDependenceList = a2i_Directive.ASTDependenceList;
       SetTypes(Dir->Subscript,symtab);
       return true;
      }

@@ -1,4 +1,4 @@
-/* $Id: prefetch.h,v 1.8 1997/10/30 15:19:09 carr Exp $ */
+/* $Id: prefetch.h,v 1.9 1997/11/19 14:45:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,5 +31,10 @@ typedef struct spcycletype {
   int FlopCycles;
   PedInfo ped;
  } SPCycleInfoType;
+
+typedef struct prefetchinfotype {
+  PedInfo ped;
+  SymDescriptor symtab;
+} PrefetchInfoType;
 
 #endif

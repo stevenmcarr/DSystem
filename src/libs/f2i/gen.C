@@ -1,4 +1,4 @@
-/* $Id: gen.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: gen.C,v 1.3 1997/11/19 14:46:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -192,16 +192,16 @@ void generate(int label, int op, Generic r1, Generic r2, Generic r3, char *comme
     if (aiAnnotate > 0)
     {
        /* print comments on several lines if necessary */
-      int i = 60;
+//      int i = 60;
       if (*comment == '\0')
   	 (void) fprintf(stdout, "\n");
       else 
-	 (void) fprintf(stdout, "\t# %.60s\n", comment );
-      while (i<strlen(comment)) {
-	(void) fprintf(stdout,"\t%d\t%-8.8s\t\t\t\t\t# %.60s\n",
-		       aiStmtCount,MNEM(NOP),&comment[i]);
-	i += 60;
-      }
+	 (void) fprintf(stdout, "\t# %s\n", comment );
+//      while (i<strlen(comment)) {
+//	(void) fprintf(stdout,"\t%d\t%-8.8s\t\t\t\t\t# %.60s\n",
+//		       aiStmtCount,MNEM(NOP),&comment[i]);
+//	i += 60;
+//      }
     }
     else (void) fprintf(stdout, "\n");
 
@@ -359,16 +359,16 @@ void generate_long(int label, int op, Generic r1, Generic r2, Generic r3,
   if (aiAnnotate > 0)
   {
     /* print comments on several lines if necessary */
-    int i = 60;
+    //int i = 60;
     if (*comment == '\0')
 	(void) fprintf(stdout, "\n");
     else 
-	(void) fprintf(stdout, "\t# %.60s\n", comment );
-    while (i<strlen(comment)) {
-	(void) fprintf(stdout,"\t%d\t%-8.8s\t\t\t\t\t# %.60s\n",
-		       aiStmtCount,MNEM(NOP),&comment[i]);
-	i += 60;
-    }
+	(void) fprintf(stdout, "\t# %s\n", comment );
+   // while (i<strlen(comment)) {
+	//(void) fprintf(stdout,"\t%d\t%-8.8s\t\t\t\t\t# %.60s\n",
+	//	       aiStmtCount,MNEM(NOP),&comment[i]);
+	//i += 60;
+    //}
   }
   else (void) fprintf(stdout, "\n");
   
@@ -1137,15 +1137,11 @@ char *GenDepCommentForStmt(Directive *Dir)
      sprintf(comment,"&directive &");
      ut_GetSubscriptText(Dir->Subscript,name);
      (void)strcat(comment,name);
-     if (Dir->DependenceList == NULLLIST)
+     sprintf(number," ref %d",Dir->DirectiveNumber);
+     (void)strcat(comment,number);
+     if (Dir->DependenceList != NULLLIST)
        {
-	 fprintf(stderr, "Directive w/o Dependences\n");
-	 exit(-1);
-       }
-     else
-       {
-	sprintf(number," ref %d dep",Dir->DirectiveNumber);
-	(void)strcat(comment,number);
+	(void)strcat(comment," dep ");
 	for (LNode = UTIL_HEAD(Dir->DependenceList);
 	     LNode != NULLNODE;
 	     LNode = UTIL_NEXT(LNode))

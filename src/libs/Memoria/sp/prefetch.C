@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.13 1997/10/30 15:19:09 carr Exp $ */
+/* $Id: prefetch.C,v 1.14 1997/11/19 14:45:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,6 +39,8 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
+extern Boolean Memoria_LetRocketSchedulePrefetches;
+extern Boolean Memoria_IssueDead;
 //
 //  Function: remove_edges
 //
@@ -220,7 +222,7 @@ static int BuildPrefetchList(AST_INDEX          node,
   }
 
 static int BuildDeadList(AST_INDEX          node,
-                             locality_info_type *locality_info)
+			 locality_info_type *locality_info)
 
   {
    AST_INDEX name;
@@ -557,11 +559,15 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 
 static AST_INDEX MakePrefetchStmt(AST_INDEX    Node,
 				  AST_INDEX    Var,
+				  AST_INDEX    Step,
 				  int          distance,
+				  Boolean      FetchSelfSpatial,
+				  Boolean      InsertDependences,
 				  AST_INDEX    LowerBound = AST_NIL)
 
   {
    AST_INDEX PrefetchNode;
+   AST_INDEX ArgList;
    char      Text[80],
              Instruction[100];
 
@@ -577,7 +583,19 @@ static AST_INDEX MakePrefetchStmt(AST_INDEX    Node,
 		      pt_simplify_expr(pt_gen_add(tree_copy_with_type(LowerBound),
 						  pt_gen_int(distance))));
      }
-     return(pt_gen_call("$$Prefetch",list_create(pt_simplify_expr(PrefetchNode))));
+     ArgList = list_create(pt_simplify_expr(PrefetchNode));
+     if (InsertDependences)
+       {
+	 list_insert_last(ArgList,tree_copy_with_type(Node));
+	 list_insert_last(ArgList,tree_copy_with_type(Var));
+	 if (Step == AST_NIL)
+	   Step = pt_gen_int(1);
+	 list_insert_last(ArgList,tree_copy_with_type(Step));
+       }
+     if (FetchSelfSpatial)
+       return pt_gen_call("$$PrefetchSS",ArgList);
+     else
+       return pt_gen_call("$$PrefetchN",ArgList);
   }
 
 //
@@ -602,7 +620,10 @@ static AST_INDEX MakePrefetchStmt(AST_INDEX    Node,
 static void InsertPrefetchesBeforeStmt(AST_INDEX    Stmt,
 				       PrefetchList *Prefetches,
 				       AST_INDEX    Var,
+				       AST_INDEX    Step,
 				       int          distance,
+				       Boolean      FetchSelfSpatial,
+				       Boolean      InsertDependences,
 				       AST_INDEX    LowerBound = AST_NIL)
 
   {
@@ -614,11 +635,13 @@ static void InsertPrefetchesBeforeStmt(AST_INDEX    Stmt,
 	  Node = Iterator.current())
        {
 	if (Stmt != AST_NIL)
-          list_insert_before(Stmt,MakePrefetchStmt(Node->GetValue(),Var,distance,
+          list_insert_before(Stmt,MakePrefetchStmt(Node->GetValue(),Var,Step,distance,
+						   FetchSelfSpatial,InsertDependences,
 						   LowerBound));
 	else
          list_insert_before(ut_get_stmt(Node->GetValue()),
-			    MakePrefetchStmt(Node->GetValue(),Var,distance));
+			    MakePrefetchStmt(Node->GetValue(),Var,Step,distance,
+					     FetchSelfSpatial,InsertDependences));
 	++Iterator;
        }
   }
@@ -1008,6 +1031,8 @@ static void UnrollLoop(model_loop   *loop_data,
     int       i;        // counter for inserting prefetches that need to be done
                         // before loop begins
 
+    AST_INDEX Step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(loop_data[loop].node));
+
     // copy loop to get pre-conditioning loop
 
      PreLoop = CreatePreLoop(loop_data,loop,UnrollVal-1,Symtab);
@@ -1019,10 +1044,11 @@ static void UnrollLoop(model_loop   *loop_data,
      // insert line prefetches at beginning of unrolled loop
 
      InsertPrefetchesBeforeStmt(list_first(gen_DO_get_stmt_LIST(loop_data[loop].node)),
-				LinePrefetches,Var,LineDistance*2);
+				LinePrefetches,Var,Step,LineDistance*2,true,true);
 
-     InsertSSDead(list_first(gen_DO_get_stmt_LIST(loop_data[loop].node)),
-				SpatLocality,Var,(0-UnrollVal));
+     if (Memoria_IssueDead)
+       InsertSSDead(list_first(gen_DO_get_stmt_LIST(loop_data[loop].node)),
+		    SpatLocality,Var,(0-UnrollVal));
 
      // insert "priming" prefetches before pre-loop begins.  These are the things that
      // need to be prefetched but aren't in loop do to distance offset
@@ -1030,16 +1056,19 @@ static void UnrollLoop(model_loop   *loop_data,
      if (PreLoop == AST_NIL)
        PreLoop = loop_data[loop].node;
      for (i = 0; i < WordPrefetchDistance; i++)
-       InsertPrefetchesBeforeStmt(PreLoop,WordPrefetches,Var,i,
-				  gen_INDUCTIVE_get_rvalue1(
-						gen_DO_get_control(PreLoop)));
+       InsertPrefetchesBeforeStmt(PreLoop,WordPrefetches,Var,
+				  gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
+				  i,false,false,
+				  gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
        
      // insert "priming" prefetches for line prefetches.  Prefetch all lines before
      // the first prefetch in the pre-conditioning loop.
 
      for (i = 0; i < 2*LineDistance; i+= UnrollVal)
-       InsertPrefetchesBeforeStmt(PreLoop,LinePrefetches,Var,i,
-				 gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
+       InsertPrefetchesBeforeStmt(PreLoop,LinePrefetches,Var,
+				  gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
+				  i,true,false,
+				  gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
       
   }
 
@@ -1129,7 +1158,8 @@ static void StripLoop(model_loop   *loop_data,
      gen_DO_put_stmt_LIST(loop_data[loop].node,list_create(NewLoop));
 
      // insert line prefetches before through-strip loop
-     InsertPrefetchesBeforeStmt(NewLoop,LinePrefetches,Var,LineDistance*2);
+     InsertPrefetchesBeforeStmt(NewLoop,LinePrefetches,Var,Step,LineDistance*2,true,
+				true);
 
      // update induction variable for through-strip loop
      pt_var_replace(StmtList,gen_get_text(Ivar),pt_gen_ident(NewIvar));
@@ -1167,6 +1197,7 @@ static void SchedulePrefetches(model_loop *loop_data,
 			       arena_type    *ar)
   {
     AST_INDEX var;                  // AST for loop induction variable
+    AST_INDEX Step;
     int      LinePrefetchDistance,  // Number of iterations ahead to prefetch lines
       WordPrefetchDistance,         // Number of iterations ahead to prefetch words 
       MaxDistance,                  // Maximum number of iterations ahead to prefetch
@@ -1176,49 +1207,68 @@ static void SchedulePrefetches(model_loop *loop_data,
       UnrollVal;                    // amount to unroll loop due to line prefetches
 
 
-    // determine how long for loop to finish
+    if (Memoria_LetRocketSchedulePrefetches)
+      {
 
-     Cycles = CyclesPerIteration(loop_data[loop].node,ped);
+	// Rocket can schedule better than we can, so just tell it what to prefetch
+	// and that will be enough
 
-     // determine number of iterations ahead we must prefetch to cover latency of
-     // prefetch with loop cycles
+	UnrollVal = (LinePrefetches->NullList()) ? 0 :
+	  (((config_type *)PED_MH_CONFIG(ped))->line >> 3);
+	LinePrefetchDistance = UnrollVal >> 1;
+	WordPrefetchDistance = 0;
+	MaxDistance = (LinePrefetches->NullList() &&
+		       WordPrefetches->NullList()) ? 0 : 1;
+      }
+    else
+      {
+	// determine how long for loop to finish
 
-     if (!Cycles) Cycles = 1;
-     IterationDist = ceil_ab(((config_type *)PED_MH_CONFIG(ped))->
-			     prefetch_latency,Cycles);
+	Cycles = CyclesPerIteration(loop_data[loop].node,ped);
 
-     // determine how far in advance word prefetches must be issued
+	// determine number of iterations ahead we must prefetch to cover latency of
+	// prefetch with loop cycles
 
-     WordPrefetchDistance = (NOT(WordPrefetches->NullList())) ?
-			    PipelineIterations(1,IterationDist) : 0;
+	if (!Cycles) Cycles = 1;
+	IterationDist = ceil_ab(((config_type *)PED_MH_CONFIG(ped))->
+				prefetch_latency,Cycles);
+
+	// determine how far in advance word prefetches must be issued
+
+	WordPrefetchDistance = (NOT(WordPrefetches->NullList())) ?
+	  PipelineIterations(1,IterationDist) : 0;
      
-     // determine how far in advance line prefetches must be issued
+	// determine how far in advance line prefetches must be issued
 
-     LinePrefetchDistance = (NOT(LinePrefetches->NullList()))?
-       PipelineIterations(((config_type *)PED_MH_CONFIG(ped))->line>>3,
-       IterationDist):0;
-
-     MaxDistance = MAX(LinePrefetchDistance,WordPrefetchDistance);
-
-     // Assumes Double Precision (which is all Rocket supports anyway)
-     // Comput the unroll value as 0 if no line prefetching is done
-     // otherwise make it the number of double precision words that fit in a cache line
-
-     UnrollVal = (LinePrefetchDistance == 0) ? 0 : 
-                 (((config_type *)PED_MH_CONFIG(ped))->line >> 3);
-
+	LinePrefetchDistance = (NOT(LinePrefetches->NullList()))?
+	  PipelineIterations(((config_type *)PED_MH_CONFIG(ped))->line>>3,
+			     IterationDist):0;
+	
+	MaxDistance = MAX(LinePrefetchDistance,WordPrefetchDistance);
+	
+	// Assumes Double Precision (which is all Rocket supports anyway)
+	// Comput the unroll value as 0 if no line prefetching is done
+	// otherwise make it the number of double precision words that fit in a cache line
+	
+	UnrollVal = (LinePrefetchDistance == 0) ? 0 : 
+	  (((config_type *)PED_MH_CONFIG(ped))->line >> 3);
+      }
+	
      var = gen_INDUCTIVE_get_name(gen_DO_get_control(loop_data[loop].node));
+     Step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(loop_data[loop].node));
 
      if (MaxDistance != 0){
 
 	// Insert word prefetches before appropriate statements now
 	// They will be copied during unrolling.
 
-	InsertPrefetchesBeforeStmt(AST_NIL,WordPrefetches,var,WordPrefetchDistance);
+	InsertPrefetchesBeforeStmt(AST_NIL,WordPrefetches,var,Step,WordPrefetchDistance,
+				   false,true);
 
 	if (NOT(LinePrefetches->NullList())){
 	  
-            InsertNoReuseDead(AST_NIL,NoLocality,var,0);
+	    if (Memoria_IssueDead)
+              InsertNoReuseDead(AST_NIL,NoLocality,var,0);
 	    assert(UnrollVal != 0);
 
 	    // Unroll loop to accomodate prefetching once per cache-line iterations
@@ -1233,11 +1283,43 @@ static void SchedulePrefetches(model_loop *loop_data,
 			UnrollVal,var,symtab,ar);
         }
         else
-           InsertNoReuseDead(AST_NIL,NoLocality,var,0);
+	  if (Memoria_IssueDead)
+	    InsertNoReuseDead(AST_NIL,NoLocality,var,0);
      }
-     InsertTempLocalDead(AST_NIL,TempLocality,var,0);
+     if (Memoria_IssueDead)
+       InsertTempLocalDead(AST_NIL,TempLocality,var,0);
   }
 
+
+static char *BuildDependenceList(AST_INDEX ArrayRef,
+				 AST_INDEX IvarNode,
+				 AST_INDEX Step,
+				 Boolean   IsSelfSpatialFetch,
+				 int       LineLength)
+
+{
+  char *DepText = new char[512],
+       SubText[32];
+  char *Ivar = gen_get_text(IvarNode);
+  int StepVal; 
+  
+
+  (void)pt_eval(Step,&StepVal);
+
+  ut_GetSubscriptText(ArrayRef,SubText);
+  (void)strcat(DepText,SubText);
+  if (IsSelfSpatialFetch)
+    for (int i = 1; i < LineLength; i++)
+      {
+	AST_INDEX node = tree_copy_with_type(ArrayRef);
+	pt_var_add(node,Ivar, StepVal*i);
+	ut_GetSubscriptText(node,SubText);
+        (void)strcat(DepText,",");
+	(void)strcat(DepText,SubText);
+      }
+  return DepText;
+}
+  
 //
 //  Function: ConvertPrefetchCallsToDirectives
 //
@@ -1253,7 +1335,7 @@ static void SchedulePrefetches(model_loop *loop_data,
 
 static int ConvertPrefetchCallsToDirectives(AST_INDEX stmt,
 					    int       level,
-					    int       dummy)
+					    PrefetchInfoType *PrefetchInfo)
 
   {
     char Text[80],            // text for array subscript
@@ -1264,20 +1346,40 @@ static int ConvertPrefetchCallsToDirectives(AST_INDEX stmt,
      if (is_call(stmt))
        {
 	Inv = gen_CALL_get_invocation(stmt);
+	char *FunctionName = gen_get_text(gen_INVOCATION_get_name(Inv)); 
+        int SelfSpatialFetch;
 
 	// Determine if this is a call to $$Prefetch
 
-	if (strcmp("$$Prefetch",gen_get_text(gen_INVOCATION_get_name(Inv))) == 0)
+	if ((SelfSpatialFetch = strcmp("$$PrefetchSS",FunctionName)) == 0 ||
+	    strcmp("$$PrefetchN",FunctionName) == 0)
 	  {
 
+	    int LineLength = ((config_type*)PED_MH_CONFIG(PrefetchInfo->ped))->line >> 3;
 	    // Get Text representation of subscript AST
+	    
+	    AST_INDEX ArrayRef = list_first(gen_INVOCATION_get_actual_arg_LIST(Inv));
+	    AST_INDEX IVar;
+	    AST_INDEX Step;
+	    AST_INDEX OriginalRef = list_next(ArrayRef);
 
-	    ut_GetSubscriptText(list_first(gen_INVOCATION_get_actual_arg_LIST(Inv)),
-				Text);
+	    if (OriginalRef != AST_NIL)
+	      {
+		IVar = list_next(OriginalRef);
+		Step = list_next(IVar);
+	      }
+
+	    ut_GetSubscriptText(ArrayRef,Text,PrefetchInfo->symtab);
 	   
 	    // Create comment containing the directive
  
-	    sprintf(Instruction,"$directive prefetch (%s)",Text);
+	    if (OriginalRef == AST_NIL)
+	      sprintf(Instruction,"$directive prefetch (%s)",Text);
+	    else
+	      sprintf(Instruction,"$directive prefetch (%s) $$Dep %s",Text,
+		      BuildDependenceList(OriginalRef,IVar,Step,
+					  BOOL(SelfSpatialFetch == 0),
+					  LineLength));
 	    
 	    // Generate comment and put in AST where stmt used to be
 
@@ -1361,9 +1463,14 @@ static void walk_loops(model_loop    *loop_data,
 
 	// Make prefetches into comments with directives
 
+	PrefetchInfoType PrefetchInfo;
+	
+	PrefetchInfo.ped = ped;
+	PrefetchInfo.symtab = symtab; 
+
 	walk_statements(tree_out(loop_data[loop].node),loop_data[loop].level,NOFUNC,
 			(WK_STMT_CLBACK)ConvertPrefetchCallsToDirectives,
-			(Generic)NULL);
+			(Generic)&PrefetchInfo);
        }
 
      // If this is not an innermost loop, look at all loops at the next level

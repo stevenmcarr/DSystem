@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.5 1997/10/30 15:29:19 carr Exp $ */
+/* $Id: f2i_options.C,v 1.6 1997/11/19 14:46:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,6 +31,8 @@ Boolean mc_unroll_cache = false;
 Boolean mc_allow_expansion = false;
 Boolean mc_extended_cache = false;
 Boolean RestrictedUnrolling = false;
+Boolean Memoria_LetRocketSchedulePrefetches = false;
+Boolean Memoria_IssueDead = false;
 int PartitionUnrollAmount = 0;
 int ReplaceLevel = 0;
 int DependenceLevel = 3;
