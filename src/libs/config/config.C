@@ -37,7 +37,7 @@
 
 /**************************** variable definitions ****************************/
 
-char D_copyright[] = ""
+char D_copyright[] = "";
 
 
    /* seconds the notice must show */
