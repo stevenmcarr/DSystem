@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.C,v 1.10 2000/03/31 18:07:56 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.C,v 1.11 2000/05/16 18:50:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -547,7 +547,7 @@ void UniformlyGeneratedSets::AddNode(AST_INDEX node)
 
   {
    UniformlyGeneratedSetsEntry *UGSEntry;
-   Boolean uniform;
+   Boolean uniform = true;
    int **nodeH,i,j,Subscripts;
 
      Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(node));
