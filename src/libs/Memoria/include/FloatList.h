@@ -1,4 +1,4 @@
-/* $Id: FloatList.h,v 1.3 1993/06/30 19:46:02 johnmc Exp $ */
+/* $Id: FloatList.h,v 1.4 1994/06/13 10:32:45 carr Exp $ */
 #ifndef FloatList_h
 #define FloatList_h
 
@@ -34,4 +34,4 @@ public:
     { Delete(SinglyLinkedList::First());};
  };
 
-#endif FloatList_h
+#endif
