@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.46 1997/06/30 18:42:35 carr Exp $ */
+/* $Id: mh_walk.C,v 1.47 1998/07/07 19:27:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -574,13 +574,13 @@ static void AnnotateCodeForLDSTCount(AST_INDEX      stmt,
   }
 
 
-static void PerformCacheAnalysis(AST_INDEX stmt,
+static void PerformF2iAnalysis(AST_INDEX stmt,
 				 int level,
 				 walk_info_type *walk_info)
 
   {
-   memory_PerformCacheAnalysis(walk_info->ped,walk_info->symtab,walk_info->ar,
-			       stmt,level);
+   memory_PerformF2iAnalysis(walk_info->ped,walk_info->symtab,walk_info->ar,
+			     stmt,level);
   }
 
 
@@ -670,7 +670,7 @@ static int post_walk(AST_INDEX      stmt,
 	case ANNOTATE:       if (mc_program == NULL && mc_module_list == NULL)
 	                       AnnotateCodeForCache(stmt,level,walk_info);
 	                     break;
-	case CACHE_ANALYSIS: PerformCacheAnalysis(stmt,level,walk_info);
+	case F2I_ANALYSIS:   PerformF2iAnalysis(stmt,level,walk_info);
 			     break;
        	case DEP_STATS:      DependenceStats(stmt,level,walk_info);
 	                     break;
