@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.39 1996/01/17 11:28:02 carr Exp $ */
+/* $Id: mh_walk.C,v 1.40 1996/04/10 13:13:15 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -407,6 +407,39 @@ static void SoftwarePrefetch(AST_INDEX      stmt,
 
 
 
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:     InsertDEADInstructions                                   */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description:  Call the function to force out dead cache lines.         */
+/*                                                                          */
+/****************************************************************************/
+
+
+static void InsertDEADInstructions(AST_INDEX      stmt,
+				  int            level,
+				   walk_info_type *walk_info)
+  {
+// memory_dead_cache_lines(walk_info->ped,stmt,
+//			   LEVEL1,walk_info->symtab,
+//			   walk_info->ar);
+//
+     /* re-initialize scratch field (no dangling pointers) */
+   walk_expression(stmt,set_scratch,NOFUNC,
+		   (Generic)NULL);
+
+     /* free up space used */
+   walk_info->ar->arena_deallocate(LOOP_ARENA);
+  }
+
+
+
 /****************************************************************************/
 /*                                                                          */
 /*   Function:     AnnotateCodeForCache                                     */
@@ -580,6 +613,8 @@ static int post_walk(AST_INDEX      stmt,
 			     ScalarReplacement(stmt,level,walk_info);
 	                     break;
 	case PREFETCH:       SoftwarePrefetch(stmt,level,walk_info);
+	                     break;
+	case DEAD:           InsertDEADInstructions(stmt,level,walk_info);
 	                     break;
 	case ANNOTATE:       if (mc_program == NULL && mc_module_list == NULL)
 	                       AnnotateCodeForCache(stmt,level,walk_info);
