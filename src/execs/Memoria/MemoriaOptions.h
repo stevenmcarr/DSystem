@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.h,v 1.6 1998/06/08 15:31:22 carr Exp $ */
+/* $Id: MemoriaOptions.h,v 1.7 2000/01/27 20:44:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -28,6 +28,7 @@
 #define MC_UNROLL_FLAG        'u'
 #define MC_UNROLL_CACHE_FLAG  'U'
 #define MC_PREFETCH_FLAG      'p'
+#define MC_PREFETCH_REC_FLAG  'q'
 #define MC_DEPENDENCE_CHOICE  'd'
 #define MC_CACHE_ANAL_FLAG    'h'
 #define MC_LDST_ANAL_FLAG     'l'

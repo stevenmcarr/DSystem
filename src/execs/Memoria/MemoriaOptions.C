@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.12 1999/02/23 21:45:35 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.13 2000/01/27 20:44:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -44,10 +44,11 @@ Boolean inputs_needed = false;
 Boolean RestrictedUnrolling = false;
 
 Boolean ReuseModelDebugFlag = false;
+Boolean CheckRecurrencesForPrefetching = false;
 
 void MemoriaOptionsUsage(char *pgm_name)
 {
-   printf("Usage: %s [-s] [-e] [-i] [-p] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-R] [-X#] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
+   printf("Usage: %s [-s] [-e] [-i] [-p] [-q] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-R] [-X#] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
   puts(" ");
   puts("         -c  annontate with calls to cache simulator");
   puts("         -d#  set dependence analysis level at 0 or 1 (default)");
@@ -56,6 +57,7 @@ void MemoriaOptionsUsage(char *pgm_name)
   puts("         -i  do interchange");
   puts("         -l  count # of loads and stores");
   puts("         -p  do software prefetching");
+  puts("         -q  check recurrences in software prefetching");
   puts("         -r#  set scalar replacement level 0 through 8");
   puts("         -s  do statistics");
   puts("         -u  do unroll-and-jam without cache model");
@@ -175,6 +177,12 @@ void mc_opt_prefetch(void *state)
       default:
 	MemoriaOptionsUsage("Memoria");
      }
+  }
+
+void mc_opt_prefetch_recurrences(void *state)
+
+  {
+    CheckRecurrencesForPrefetching = true;
   }
 
 void mc_opt_rocket_schedule(void *state)
@@ -323,6 +331,12 @@ static struct flag_	prefetch_f = {
   mc_opt_prefetch,
   "software prefetch", 
   "perform software prefetching",
+};
+
+static struct flag_	prefetch_rec_f = {
+  mc_opt_prefetch_recurrences,
+  "use recurrences in prefetch", 
+  "recurrences in software prefetching",
 };
 
 static struct flag_	dead_f = {
@@ -555,6 +569,8 @@ int MemoriaInitOptions(int argc, char **argv)
 			      (Generic)&interchange_f),
     *mc_pre_flag = InitOption(flag,MC_PREFETCH_FLAG,(Generic)false,true, 
 			      (Generic)&prefetch_f),
+    *mc_pre_rec_flag = InitOption(flag,MC_PREFETCH_REC_FLAG,(Generic)false,true, 
+			      (Generic)&prefetch_rec_f),
     *mc_dead_flag = InitOption(flag,MC_DEAD_FLAG,(Generic)false,true,(Generic)&dead_f),
     *mc_rocket_schedule_flag = InitOption(flag,MC_ROCKET_SCHEDULE_FLAG,(Generic)false,
 					  true,(Generic)&rocket_schedule_f),
@@ -590,6 +606,7 @@ int MemoriaInitOptions(int argc, char **argv)
   MemoriaOptions.Add(mc_partition_unroll_opt);
   MemoriaOptions.Add(mc_int_flag);
   MemoriaOptions.Add(mc_pre_flag);
+  MemoriaOptions.Add(mc_pre_rec_flag);
   MemoriaOptions.Add(mc_dead_flag);
   MemoriaOptions.Add(mc_rocket_schedule_flag);
   MemoriaOptions.Add(mc_repl_choice);
