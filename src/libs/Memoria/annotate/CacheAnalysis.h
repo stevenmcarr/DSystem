@@ -24,6 +24,6 @@ typedef struct DepInfoStruct {
    ((DepInfoType *)ast_get_scratch(n))
 
 #define CreateDepInfoPtr(n) \
-   ast_put_scratch(n,malloc(sizeof(DepInfoType)))
+   ast_put_scratch(n,(SCRATCH)malloc(sizeof(DepInfoType)))
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.28 1994/12/08 13:47:54 carr Exp $ */
+/* $Id: mh_walk.C,v 1.29 1995/01/19 13:36:36 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -1655,38 +1655,28 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 
    /* QUNYAN 0002 */
    /* Add print for LIAV, LCAV .. and average */
-   fprintf(logfile, "Total Number of LIAV = %d\n\n",
-			LoopStats->NumLIAV);
-   fprintf(logfile, "Total Number of LCAV = %d\n\n",
-			LoopStats->NumLCAV);
-   fprintf(logfile, "Total Number of LIPAV = %d\n\n",
-			LoopStats->NumLIPAV);
-   fprintf(logfile, "Total Number of LCPAV = %d\n\n",
-			LoopStats->NumLCPAV);
+
+   fprintf(logfile, "Total Number of LIAV = %dn\n", LoopStats->NumLIAV);
+   fprintf(logfile, "Total Number of LCAV = %d\n\n", LoopStats->NumLCAV);
+   fprintf(logfile, "Total Number of LIPAV = %d\n\n", LoopStats->NumLIPAV);
+   fprintf(logfile, "Total Number of LCPAV = %d\n\n", LoopStats->NumLCPAV);
    fprintf(logfile, "Total Number of Loop Carried Invariant = %d\n\n",
 			LoopStats->NumInv);
    fprintf(logfile, "Total Number of Loop Carried Distance 1 = %d\n\n",
 			LoopStats->NumLC1);
-   fprintf(logfile, "Average LIAV Pressure/Loop Replaced w/ pressur
-			  = %.4f\n\n",
+   fprintf(logfile,"Average LIAV Pressure/Loop Replaced w/ pressur = %.4f\n\n",
   	            (float)LoopStats->NumLIAV/(float)LoopRepw_pressure);
-   fprintf(logfile, "Average LCAV register Pressure/Loop Replaced w/ pressur
-			     = %.4f\n\n",
-		    (float)LoopStats->NumLCAV/(float)LoopRepw_pressure);
-   fprintf(logfile, "Average LIPAV register Pressure/Loop Replaced w/ pressur
-			     = %.4f\n\n",
+   fprintf(logfile,"Average LCAV register Pressure/Loop Replaced w/ pressur = %.4f\n\n", (float)LoopStats->NumLCAV/(float)LoopRepw_pressure);
+   fprintf(logfile, "Average LIPAV register Pressure/Loop Replaced w/ pressur = %.4f\n\n",
 		    (float)LoopStats->NumLIPAV/(float)LoopRepw_pressure);
-   fprintf(logfile, "Average LCPAV register Pressure/Loop Replaced w/ pressur
-			     = %.4f\n\n",
+   fprintf(logfile, "Average LCPAV register Pressure/Loop Replaced w/ pressur = %.4f\n\n",
 		    (float)LoopStats->NumLCPAV/(float)LoopRepw_pressure);
    /* QUNYAN 0002 */
 
-   fprintf(logfile, "Average FP register Pressure/Loop Replaced w/ pressur
-			     = %.4f\n\n",
+   fprintf(logfile, "Average FP register Pressure/Loop Replaced w/ pressur = %.4f\n\n",
   	            (float)LoopStats->FPRegisterPressure/(float)LoopRepw_pressure);
 
-   fprintf(logfile, "Average SR register Pressure/Loop Replaced w/ pressur
-		             = %.4f\n\n",
+   fprintf(logfile, "Average SR register Pressure/Loop Replaced w/ pressur = %.4f\n\n",
 		    (float)LoopStats->SRRegisterPressure/(float)LoopRepw_pressure);
 
    if(total_loop_replaced > 0)
