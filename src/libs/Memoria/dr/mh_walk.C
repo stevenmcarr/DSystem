@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.25 1994/11/21 14:55:36 qwu Exp $ */
+/* $Id: mh_walk.C,v 1.26 1994/11/30 15:45:17 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -1448,7 +1448,18 @@ void mh_walk_ast(int          selection,
     	          += walk_info.LoopStats->NumLIPAV;
            LoopStats->NumLCPAV
 	          += walk_info.LoopStats->NumLCPAV;
+           LoopStats->NumInv
+	          += walk_info.LoopStats->NumInv;
+           LoopStats->NumLC1
+	          += walk_info.LoopStats->NumLC1;
 	   /* QUNYAN 0001 */					    
+
+	   LoopStats->UniformRefs
+	          += walk_info.LoopStats->UniformRefs;
+	   LoopStats->NonUniformRefs
+	          += walk_info.LoopStats->NonUniformRefs;
+	   LoopStats->NonUniformLoops
+	          += walk_info.LoopStats->NonUniformLoops;
 
            SRStatsDump(((config_type *)PED_MH_CONFIG(ped))->logfile,
 				       walk_info.LoopStats);
@@ -1645,6 +1656,10 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 			LoopStats->NumLIPAV);
    fprintf(logfile, "Total Number of LCPAV = %d\n\n",
 			LoopStats->NumLCPAV);
+   fprintf(logfile, "Total Number of Loop Carried Invariant = %d\n\n",
+			LoopStats->NumInv);
+   fprintf(logfile, "Total Number of Loop Carried Distance 1 = %d\n\n",
+			LoopStats->NumLC1);
    fprintf(logfile, "Average LIAV Pressure/Loop Replaced w/ pressur
 			  = %.4f\n\n",
   	            (float)LoopStats->NumLIAV/(float)LoopRepw_pressure);
@@ -1686,6 +1701,14 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 
    fprintf(logfile, "Average Loop Balance/Innermost Loop  = %.4f\n\n",
                     LoopStats->LoopBal/(float)LoopStats->NumInnermostLoop);
+   fprintf(logfile, "Total Number of Uniform References = %d\n\n",
+			LoopStats->UniformRefs);
+   fprintf(logfile, "Total Number of Non-Uniform References = %d\n\n",
+			LoopStats->NonUniformRefs);
+   fprintf(logfile, "Total Number of Loops w/ Non-Uniform References = %d\n\n",
+			LoopStats->NonUniformLoops);
+   fprintf(logfile, "Total Number of Loops w/ Non-Uniform References and no FP Pressure = %d\n\n",
+			LoopStats->NonUniformLoopsZeroFP);
 
 
   }

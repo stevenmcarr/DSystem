@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.11 1994/11/21 14:56:15 qwu Exp $ */
+/* $Id: LoopStats.h,v 1.12 1994/11/30 15:46:21 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -101,9 +101,15 @@ typedef struct loopstatstype {
 	  NumLIAV,             /* number of loop independent dependency */
 	  NumLCAV,             /* number of loop carry dependency */
 	  NumLIPAV,            /* number of partial loop indenpendent dependency*/
-	  NumLCPAV;            /* number of partial loop carry dependency */
+	  NumLCPAV,            /* number of partial loop carry dependency */
+	  NumInv,              /* number of loop carried invariant */
+	  NumLC1,              /* number of loop carried distance 1 */
           /* QUNYAN 0001*/
   
+	  UniformRefs,         /* number of uniformly generated references */
+	  NonUniformRefs,      /* number of non-uniformly generated references */
+	  NonUniformLoopsReplaced,     /* number of loops w/ non-uniformly generated references and potential for SR */
+	  NonUniformLoopsZeroFP;     /* number of loops w/ non-uniformly generated references and no register pressure */
   float   LoopBal;             /* Loop Balance */
   
  } LoopStatsType;
