@@ -85,14 +85,57 @@ static int remove_edges(AST_INDEX      stmt,
      return(WALK_CONTINUE);
   }
 
+static int BuildDependenceList(AST_INDEX node,CacheInfoType *CacheInfo)
+
+  {
+   DG_Edge    *dg;
+   int        vector;
+   EDGE_INDEX edge;
+   AST_INDEX  name;
+
+     if (is_subscript(node))
+       {
+	DepInfoPtr(node)->DependenceList = util_list_alloc(NULL,NULL);
+	dg = dg_get_edge_structure( PED_DG(CacheInfo->ped));
+	name = gen_SUBSCRIPT_get_name(node);
+	vector = get_info(CacheInfo->ped,name,type_levelv);
+	for (edge = dg_first_src_ref(PED_DG(CacheInfo->ped),vector);
+	     edge != END_OF_LIST;
+	     edge = dg_next_src_ref(PED_DG(CacheInfo->ped),edge))
+	  if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
+	      dg[edge].type == dg_output)
+	    util_append(DepInfoPtr(node)->DependenceList,
+			util_node_alloc(DepInfoPtr(tree_out(dg[edge].sink))->
+				                   ReferenceNumber,NULL));
+       }
+     return(WALK_CONTINUE);
+  }
+
+static int SetReferenceNumber(AST_INDEX node,
+			      CacheInfoType *CacheInfo)
+
+  {
+   AST_INDEX name;
+
+     if (is_subscript(node))
+       {
+	CreateDepInfoPtr(node);
+	DepInfoPtr(node)->ReferenceNumber = CacheInfo->RefNum++;
+       }
+     return(WALK_CONTINUE);
+  }
+
 static int StoreCacheInfo(AST_INDEX     node,
 			  CacheInfoType *CacheInfo)
 			  
   {
-   if (is_subscript(node))
-     ast_put_scratch(node,ut_GetReferenceType(node,CacheInfo->loop_data,
-					      CacheInfo->loop,CacheInfo->ped));
-   return(WALK_CONTINUE);
+     if (is_subscript(node))
+      {
+       DepInfoPtr(node)->Locality = 
+         ut_GetReferenceType(node,CacheInfo->loop_data,CacheInfo->loop,
+			     CacheInfo->ped);
+      }
+     return(WALK_CONTINUE);
   }
 
 static void walk_loops(CacheInfoType  *CacheInfo,
@@ -133,6 +176,7 @@ void memory_PerformCacheAnalysis(PedInfo      ped,
   {
    pre_info_type  pre_info;
    CacheInfoType  CacheInfo;
+   static int RefCount = 0;
 
      pre_info.stmt_num = 0;
      pre_info.loop_num = 0;
@@ -150,5 +194,11 @@ void memory_PerformCacheAnalysis(PedInfo      ped,
      ut_analyze_loop(root,CacheInfo.loop_data,level,ped,symtab);
 
      CacheInfo.ped = ped;
+     CacheInfo.RefNum = RefCount;
+     walk_expression(root,(WK_EXPR_CLBACK)SetReferenceNumber,NOFUNC,
+		     (Generic)&CacheInfo);
+     walk_expression(root,(WK_EXPR_CLBACK)BuildDependenceList,NOFUNC,
+		     (Generic)&CacheInfo);
+     RefCount = CacheInfo.RefNum;
      walk_loops(&CacheInfo,0);
   }
