@@ -503,7 +503,7 @@ void debug_print_graph(flow_graph_type flow_graph)
 	   else
 	     stmt = list_next(stmt);
 	  }
-        if (block->last != NULL)
+        if (block->last != (Generic)NULL)
 	  printf("%d\n",get_stmt_info_ptr(block->last)->stmt_num);
 	printf("preds = ");
         for (edge = block->pred;

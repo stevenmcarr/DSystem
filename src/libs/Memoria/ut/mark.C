@@ -20,6 +20,7 @@ static int set_surrounding_do(AST_INDEX       node,
 	   create_subscript_ptr(node,pre_info->ar);
 	   sptr = get_subscript_ptr(node);
 	   sptr->surrounding_do = pre_info->surrounding_do;
+	   sptr->surround_node = pre_info->surround_node;
 	  }
        }
      return(WALK_CONTINUE);
@@ -38,7 +39,9 @@ int ut_mark_do_pre(AST_INDEX       stmt,
    create_stmt_info_ptr(stmt,((pre_info_type *)pre_info)->ar);
    get_stmt_info_ptr(stmt)->stmt_num = ((pre_info_type *)pre_info)->stmt_num++;
    get_stmt_info_ptr(stmt)->surrounding_do = 
-             ((pre_info_type *)pre_info)->surrounding_do;
+             ((pre_info_type *)pre_info)->surround_node;
+   get_stmt_info_ptr(stmt)->surrounding_do = 
+             ((pre_info_type *)pre_info)->surround_node;
    get_stmt_info_ptr(stmt)->level = level;
    if (is_do(stmt))
      {
@@ -47,6 +50,7 @@ int ut_mark_do_pre(AST_INDEX       stmt,
       get_stmt_info_ptr(stmt)->loop_num =((pre_info_type *)pre_info)->loop_num;
       ((pre_info_type *)pre_info)->surrounding_do = 
                    ((pre_info_type *)pre_info)->loop_num++;
+      ((pre_info_type *)pre_info)->surround_node = stmt;
      }
    else if (is_assignment(stmt))
      {
@@ -104,7 +108,11 @@ int ut_mark_do_post(AST_INDEX       stmt,
 
   {
    if (is_do(stmt))
-     ((pre_info_type *)pre_info)->surrounding_do = 
+     {
+      ((pre_info_type *)pre_info)->surrounding_do = 
                    get_stmt_info_ptr(stmt)->surrounding_do;
+      ((pre_info_type *)pre_info)->surround_node = 
+                   get_stmt_info_ptr(stmt)->surround_node;
+     }
    return(WALK_CONTINUE);
   }

@@ -73,8 +73,8 @@ static int build_pre(AST_INDEX       stmt,
 	  }
 	else
 	  build_info->loop_data[loop_num].max = 0;
-	build_info->loop_data[loop_num].split_list = util_list_alloc(NULL,
-							    "split-list");
+	build_info->loop_data[loop_num].split_list = 
+	          util_list_alloc((Generic)NULL,"split-list");
 	build_info->last_stack[++build_info->stack_top] = loop_num;
 	build_info->last_loop = 0;
 	build_info->parent = loop_num;
@@ -191,7 +191,7 @@ static void check_backwards_dep(model_loop *loop,
 
       sptr1 = get_stmt_info_ptr(ut_get_stmt(dg[edge].src));
       sptr2 = get_stmt_info_ptr(ut_get_stmt(dg[edge].sink));
-      if (sptr1 != NULL && sptr2 != NULL)
+      if (sptr1 != (Generic)NULL && sptr2 != (Generic)NULL)
         if (sptr1->surrounding_do != sptr2->surrounding_do &&
 	    sptr1->stmt_num > sptr2->stmt_num)
 	  {
@@ -242,7 +242,7 @@ static void check_crossing_dep(model_loop *loop_data,
 
       sptr1 = get_stmt_info_ptr(ut_get_stmt(dg[edge].src));
       sptr2 = get_stmt_info_ptr(ut_get_stmt(dg[edge].sink));
-      if (sptr1 != NULL && sptr2 != NULL)
+      if (sptr1 != (Generic)NULL && sptr2 != (Generic)NULL)
         if (sptr1->surrounding_do != sptr2->surrounding_do)
 	  {
 	   if (dg[edge].type == dg_true && 

@@ -18,6 +18,7 @@ static int mark_def(AST_INDEX    node,
    if (is_subscript(node))
      ut_add_number(kill,get_scalar_info_ptr(gen_SUBSCRIPT_get_name(node))->
 		   table_index);
+   return(WALK_CONTINUE);
   }
 
 static int add_LI_gens(AST_INDEX         node,

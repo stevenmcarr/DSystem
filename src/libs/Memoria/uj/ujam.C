@@ -161,6 +161,7 @@ static int check_unroll(AST_INDEX      stmt,
 	pre_info.stmt_num = 0;
 	pre_info.loop_num = 0;
 	pre_info.surrounding_do = -1;
+	pre_info.surround_node = AST_NIL;
 	pre_info.abort = false;
 	pre_info.ped = loop_info->ped;
 	pre_info.symtab = loop_info->symtab;

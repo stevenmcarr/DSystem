@@ -48,7 +48,7 @@ static void insert_load(block_type *block,
 			       array_ref);
      fst_PutField(symtab,reg,NUM_REGS,table_entry.regs-1);
      if (NOT(top))
-       if (block->last != NULL)
+       if (block->last != (Generic)NULL)
          if (is_guard(block->last))
            if (list_prev(block->last) == AST_NIL)
 	     list_insert_before(tree_out(block->last),new_stmt);

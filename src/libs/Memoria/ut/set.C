@@ -18,7 +18,7 @@
 #include <general.h>
 #include <Arena.h>
 #include <global.h>
-#include <libc.h>
+#include <memory.h>
 
 
 Set ut_create_set(arena_type *ar,

@@ -4,26 +4,27 @@
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "scalar.h"
-#include "check.h"
-#include "codegen.h"
-#include "dfantic.h"
-#include "dfavail.h"
-#include "dfrgen.h"
-#include "gavail.h"
-#include "insert.h"
-#include "name.h"
-#include "moderate.h"
-#include "pick.h"
-#include "profit.h"
-#include "prune.h"
-#include "table.h"
+#include <scalar.h>
+#include <check.h>
+#include <codegen.h>
+#include <dfantic.h>
+#include <dfavail.h>
+#include <dfrgen.h>
+#include <gavail.h>
+#include <insert.h>
+#include <name.h>
+#include <moderate.h>
+#include <pick.h>
+#include <profit.h>
+#include <prune.h>
+#include <table.h>
 #include <gi.h>
 #include <malloc.h>
 
 int dummy = 0; /* this decl keeps Rn from dying in get_mem (why?) */
 
 int change_logical_to_block_if(AST_INDEX stmt,
+			       int       level,
 			       int       dummy)
   
   {
@@ -567,7 +568,7 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      sr_prune_graph(loop_body,level,&gen_info);
      name_info.ped = do_info->ped;
      name_info.dg = dg_get_edge_structure( PED_DG(do_info->ped));
-     name_info.glist = util_list_alloc(NULL,"generator-list");
+     name_info.glist = util_list_alloc((Generic)NULL,"generator-list");
      name_info.ar = do_info->ar;
      sr_generate_names(root,&name_info);
      if (!util_list_empty(name_info.glist))
@@ -731,7 +732,8 @@ static int post_scalar(AST_INDEX     stmt,
         if (!do_info->abort)
 	  {
 	   do_info->do_num++;
-	   walk_statements(stmt,level,NOFUNC,change_logical_to_block_if,NULL);
+	   walk_statements(stmt,level,NOFUNC,change_logical_to_block_if,
+			   (Generic)NULL);
 	   perform_scalar_replacement(do_info,stmt,level);
 	  }
 	else

@@ -19,8 +19,7 @@ AST_INDEX ut_get_stmt(AST_INDEX node)
      node = tree_out(node);
    if (node == AST_NIL)
      die_with_message("ut_get_stmt: Invalid Statement AST_NIL");
-   else
-     return(node);
+   return(node);
   }
 
 int ut_init_copies(AST_INDEX node,

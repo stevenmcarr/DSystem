@@ -75,14 +75,15 @@ static int post_walk(AST_INDEX      stmt,
 
    if (is_do(stmt) && level == LEVEL1)
      {
-      walk_expression(stmt,set_scratch,NOFUNC,NULL);
+      walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
       logval = ((config_type *)PED_MH_CONFIG(walk_info->ped))->logging;
       logfile = ((config_type *)PED_MH_CONFIG(walk_info->ped))->logfile;
       switch(walk_info->selection) {
 	case INTERCHANGE:    memory_loop_interchange(walk_info->ped,stmt,
 						     LEVEL1,walk_info->symtab,
 						     walk_info->ar);
-			     walk_expression(stmt,set_scratch,NOFUNC,NULL);
+			     walk_expression(stmt,set_scratch,NOFUNC,
+					     (Generic)NULL);
 	                     walk_info->ar->arena_deallocate(LOOP_ARENA);
 	                     break;
 	case SCALAR_REP:     if (logval > LOG_UNROLL && logfile != NULL)
@@ -90,14 +91,16 @@ static int post_walk(AST_INDEX      stmt,
 	                     memory_scalar_replacement(walk_info->ped,stmt,
 						       walk_info->symtab,
 						       walk_info->ar);
-			     walk_expression(stmt,set_scratch,NOFUNC,NULL);
+			     walk_expression(stmt,set_scratch,NOFUNC,
+					     (Generic)NULL);
 	                     walk_info->ar->arena_deallocate(LOOP_ARENA);
 	                     break;
 	case UNROLL_AND_JAM: fst_InitField(walk_info->symtab,EXPAND_LVL,0,0);
 	                     if ((logval == LOG_UNROLL || logval == LOG_ALL) &&
 				 logfile != NULL)
 			       fprintf(logfile,"UNROLL-AND-JAM ON LOOP\n");
-			     walk_expression(stmt,set_scratch,NOFUNC,NULL);
+			     walk_expression(stmt,set_scratch,NOFUNC,
+					     (Generic)NULL);
 	                     (void)memory_unroll_and_jam(walk_info->ped,stmt,
 							 level,2,
 							 walk_info->symtab,
@@ -108,7 +111,8 @@ static int post_walk(AST_INDEX      stmt,
 	case MEM_ALL:        memory_loop_interchange(walk_info->ped,stmt,
 						     LEVEL1,walk_info->symtab,
 						     walk_info->ar); 
-			     walk_expression(stmt,set_scratch,NOFUNC,NULL);
+			     walk_expression(stmt,set_scratch,NOFUNC,
+					     (Generic)NULL);
 	                     walk_info->ar->arena_deallocate(LOOP_ARENA);
 	                     fst_InitField(walk_info->symtab,EXPAND_LVL,0,0);
 	                     if ((logval == LOG_UNROLL || logval == LOG_ALL) &&
@@ -118,7 +122,8 @@ static int post_walk(AST_INDEX      stmt,
 							      stmt, level,2,
 							     walk_info->symtab,
 							      walk_info->ar);
-			     walk_expression(stmt,set_scratch,NOFUNC,NULL);
+			     walk_expression(stmt,set_scratch,NOFUNC,
+					     (Generic)NULL);
 	                     walk_info->ar->arena_deallocate(LOOP_ARENA);
 	                     fst_KillField(walk_info->symtab,EXPAND_LVL);
 	                     if (logval > LOG_UNROLL && logfile != NULL)
@@ -136,7 +141,8 @@ static int post_walk(AST_INDEX      stmt,
 	                     memory_scalar_replacement(walk_info->ped,stmt,
 						       walk_info->symtab,
 						       walk_info->ar);
-			     walk_expression(stmt,set_scratch,NOFUNC,NULL);
+			     walk_expression(stmt,set_scratch,NOFUNC,
+					     (Generic)NULL);
 	                     walk_info->ar->arena_deallocate(LOOP_ARENA);
 	                     break;
        }
@@ -376,7 +382,7 @@ void mh_walk_ast(int          selection,
      walk_info.ped = ped;
      walk_info.ft = ft;
      walk_info.ar = ar;
-     walk_statements(root,LEVEL1,remove_do_labels,NOFUNC,NULL);
+     walk_statements(root,LEVEL1,remove_do_labels,NOFUNC,(Generic)NULL);
      walk_statements(root,LEVEL1,build_label_symtab,check_labels,
 		     (Generic)&walk_info);
      walk_statements(root,LEVEL1,pre_walk,post_walk,

@@ -70,7 +70,7 @@ static int partition_names(AST_INDEX      node,
 						    sizeof(name_node_type));
 	   util_append(name_info->glist,util_node_alloc((Generic)name_node,
 							"generator"));
-	   name_node->nlist = util_list_alloc(NULL,"name-list");
+	   name_node->nlist = util_list_alloc((Generic)NULL,"name-list");
 	   do_partition(name,name_node->nlist,name_info->dg,name_info->ped);
 	  }
 	else

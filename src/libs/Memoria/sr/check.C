@@ -75,6 +75,7 @@ static int check_def(AST_INDEX node,
 	         ut_add_number(check_info->LC_kill,sptr2->table_index);
 	      }
        }
+   return(WALK_CONTINUE);
   }
   
 static int check_stmt(AST_INDEX stmt,

@@ -20,6 +20,7 @@ typedef struct {
            mem_coeff[4],
            addr_coeff[4],
            scalar_coeff[3],
+           step[3],
            scalar_regs,
            flops,
            x1,x2,

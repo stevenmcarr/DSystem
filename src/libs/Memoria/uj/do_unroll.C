@@ -39,11 +39,6 @@ static AST_INDEX mh_gen_ident(SymDescriptor symtab,
      index = fst_Index(symtab,name);
      fst_PutFieldByIndex(symtab,index,NEW_VAR,true);
      fst_PutFieldByIndex(symtab,index,SYMTAB_TYPE,asttype);
-     /* if (src != NULL)
-       if (is_identifier(src))
-         set_scratch_to_NULL(src);
-       else
-         set_scratch_to_NULL(gen_SUBSCRIPT_get_name(src)); */
      fst_PutFieldByIndex(symtab,index,RDX_VAR,src);
      return(node);
   }
@@ -59,7 +54,10 @@ static int update_refs(AST_INDEX     node,
        if ((sptr = get_subscript_ptr(node)) != NULL && 
 	   fst_GetField(ref_info->symtab,gen_get_text(node),
 			SYMTAB_NUM_DIMS) > 0)
-         sptr->surrounding_do = ref_info->surrounding_do;
+	 {
+	  sptr->surrounding_do = ref_info->surrounding_do;
+	  sptr->surround_node = ref_info->surround_node;
+	 }
        else
          if (fst_GetField(ref_info->symtab,gen_get_text(node),EXPAND_LVL) >= 
 	     ref_info->level)
@@ -67,7 +65,7 @@ static int update_refs(AST_INDEX     node,
 	     sprintf(new_var,"%s_%d$",gen_get_text(node),ref_info->val);
 	     pt_tree_replace(node,mh_gen_ident(ref_info->symtab,new_var,
 					       gen_get_real_type(node),
-					       NULL));
+					       (Generic)NULL));
 	    }
      return(WALK_CONTINUE);
   }
@@ -80,7 +78,7 @@ static AST_INDEX find_end_stmt(AST_INDEX stmt)
 /****************************************************************************/
 
   {
-   while(!is_do(list_next(stmt)) && list_next(stmt) != NULL)
+   while(!is_do(list_next(stmt)) && list_next(stmt) != (Generic)NULL)
      stmt = list_next(stmt);
    return(stmt);
   }
@@ -103,6 +101,7 @@ static void replicate_statements(AST_INDEX     stmt_list,
 				 AST_INDEX     step,
 				 SymDescriptor symtab,
 				 int           surrounding_do,
+				 AST_INDEX     surround_node,
 				 arena_type    *ar)
 
 /****************************************************************************/
@@ -128,6 +127,7 @@ static void replicate_statements(AST_INDEX     stmt_list,
      ref_info.level = level;
      ref_info.symtab = symtab;
      ref_info.surrounding_do = surrounding_do;
+     ref_info.surround_node = surround_node;
      copy_info.val = val;
      copy_info.ar = ar;
      copy_info.symtab = symtab;
@@ -208,7 +208,7 @@ static void set_level_vectors(AST_INDEX old_list,
              v_size;
 
      for (old = list_first(old_list), newa = list_first(new_list);
-	  old != NULL;
+	  old != (Generic)NULL;
 	  old = list_next(old), newa = list_next(newa))
        {
 	if (is_do(old))
@@ -415,6 +415,117 @@ static void add_edge(AST_INDEX    source,
      dg_add_edge( PED_DG(ped),new_edge);
   }
 
+static void add_inner_edge(AST_INDEX    source,
+			   AST_INDEX    sink,
+			   AST_INDEX    src_stmt,
+			   AST_INDEX    sink_stmt,
+			   EDGE_INDEX   old_edge,
+			   int          new_thresh,
+			   int          level,
+			   PedInfo      ped)
+
+/****************************************************************************/
+/*                                                                          */
+/*                                                                          */
+/****************************************************************************/
+
+  {
+   EDGE_INDEX new_edge;
+   AST_INDEX  temp;
+   DG_Edge    *dg;
+   int        i,dist,
+              src_ref,
+              sink_ref;
+
+     dg = dg_get_edge_structure( PED_DG(ped));
+     new_edge = dg_alloc_edge( PED_DG(ped),&dg);
+     dg[new_edge].src_str = NULL;
+     dg[new_edge].sink_str = NULL;
+     dg[new_edge].type = dg[old_edge].type;
+     dg[new_edge].symbolic = dg[old_edge].symbolic;
+     dg[new_edge].consistent = dg[old_edge].consistent;
+     dg[new_edge].src = source;
+     dg[new_edge].sink = sink;
+     dg[new_edge].level = level;
+
+     /* ref lists have already been created */
+
+     dg[new_edge].src_ref = get_info(ped,source,type_levelv);
+     dg[new_edge].sink_ref = get_info(ped,sink,type_levelv);
+
+     /* stmt level vectors have already been created */
+
+      /* hack because ast makes no sense */
+
+     if (is_logical_if(tree_out(src_stmt)) || is_guard(src_stmt))
+       src_stmt = tree_out(src_stmt);
+     dg[new_edge].src_vec = get_info(ped,src_stmt,type_levelv);
+     if (is_logical_if(tree_out(sink_stmt)) || is_guard(sink_stmt))
+       sink_stmt = tree_out(sink_stmt);
+     dg[new_edge].sink_vec = get_info(ped,sink_stmt,type_levelv);
+
+     for (i = 1; i < level; i++)
+       gen_put_dt_DIS(&dg[new_edge],level,0);
+     gen_put_dt_DIS(&dg[new_edge],level,new_thresh);
+     dt_info_str( PED_DT_INFO(ped),&dg[new_edge]);
+     dg_add_edge( PED_DG(ped),new_edge);
+  }
+
+static void do_siv(AST_INDEX    source,
+		   AST_INDEX    sink,
+		   AST_INDEX    src_stmt,
+		   AST_INDEX    sink_stmt,
+		   EDGE_INDEX   old_edge,
+		   int          level,
+		   char         *ivar,
+		   PedInfo      ped)
+
+  {
+   AST_INDEX sub1,sub2,expr;
+   int       con1,con2,coeff,thresh;
+   Boolean   lin;
+
+     sub1 = tree_out(source);
+     sub2 = tree_out(sink);
+     for (sub1 = list_first(gen_SUBSCRIPT_get_rvalue_LIST(sub1)),
+          sub2 = list_first(gen_SUBSCRIPT_get_rvalue_LIST(sub2));
+	  !pt_find_var(sub1,ivar) && sub1 != AST_NIL;
+	  sub1 = list_next(sub1),
+	  sub2 = list_next(sub2));
+     if (sub1 != AST_NIL)
+       {
+	pt_fold_term(sub1,&expr,&con1);
+	pt_fold_term(sub2,&expr,&con2);
+	pt_get_coeff(sub1,ivar,&lin,&coeff);
+	if ((con1 - con2) % coeff == 0)
+          {
+	   thresh = (con1 - con2)/coeff;
+	   if (thresh < 0)
+	     add_inner_edge(sink,source,src_stmt,ut_get_stmt(sink),old_edge,
+			    -thresh,level,ped);
+	   else if (thresh > 0)
+	     add_inner_edge(source,sink,src_stmt,ut_get_stmt(sink),old_edge,
+			    thresh,level,ped);
+	   else 
+	     add_inner_edge(source,sink,src_stmt,ut_get_stmt(sink),old_edge,
+			    thresh,LOOP_INDEPENDENT,ped);
+	  }
+       }
+     else 
+       add_inner_edge(sink,sink,src_stmt,ut_get_stmt(sink),old_edge,
+		      DDATA_ANY,level,ped);
+  }
+				     
+static Boolean edge_is_consistent_MIV(DG_Edge *edge)
+  
+  {
+     if (edge->consistent == consistent_MIV && !edge->symbolic &&
+	 get_subscript_ptr(edge->sink)->MIV)
+       return(true);
+     else
+       return(false);
+  }
+
 static int update_graph(AST_INDEX     node,
 			dupd_info_type *upd_info)
 
@@ -450,8 +561,8 @@ static int update_graph(AST_INDEX     node,
 	   thresh = gen_get_dt_DIS(&dg[edge],upd_info->level);
 	   if ((dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 		dg[edge].type == dg_input || dg[edge].type == dg_output) &&
-	       (get_subscript_ptr(dg[edge].src)->surrounding_do ==
-		get_subscript_ptr(dg[edge].sink)->surrounding_do))
+	       (get_subscript_ptr(dg[edge].src)->surround_node ==
+		get_subscript_ptr(dg[edge].sink)->surround_node))
 	     if (dg[edge].consistent == consistent_SIV && !dg[edge].symbolic)
 	       {
 		if (dg[edge].level != LOOP_INDEPENDENT)
@@ -544,6 +655,29 @@ static int update_graph(AST_INDEX     node,
 			      upd_info->ped);
 		    } 
 	       }
+	     else if (edge_is_consistent_MIV(&dg[edge]))
+	       {
+		source = dg[edge].src;
+		src_stmt = ut_get_stmt(source);
+		for (index = 0; index < upd_info->val; index++)
+		  {
+		   sink = get_subscript_ptr(dg[edge].sink)->copies[index]; 
+		   do_siv(source,sink,src_stmt,ut_get_stmt(sink),edge,
+			  upd_info->inner_level,upd_info->ivar,upd_info->ped);
+		  } 
+		for (index = 0; index < upd_info->val; index++)
+		  {
+		   source = get_subscript_ptr(name)->copies[index];  
+		   src_stmt = ut_get_stmt(source);
+		   for (i = index + 1; i < upd_info->val; i++)
+		     {
+		      sink = get_subscript_ptr(dg[edge].sink)->copies[i]; 
+		      do_siv(source,sink,src_stmt,ut_get_stmt(sink),edge,
+			     upd_info->inner_level,upd_info->ivar,
+			     upd_info->ped);
+		     }
+		  }
+	       }
 	     else
 	       {
 		/* copy other edges */
@@ -586,6 +720,8 @@ static void replicate_body(AST_INDEX     stmt_list,
 			   SymDescriptor symtab,
 			   Boolean       inner_rdx,
 			   int           surrounding_do,
+			   AST_INDEX     surround_node,
+			   int           inner_level,
 			   arena_type    *ar)
   
 /****************************************************************************/
@@ -609,6 +745,7 @@ static void replicate_body(AST_INDEX     stmt_list,
      ref_info.symtab = symtab;
      ref_info.level = level;
      ref_info.surrounding_do = surrounding_do;
+     ref_info.surround_node = surround_node;
      for (i = 0; i < val-1; i++)
        {
 	new_code[i] = ut_tree_copy_with_type(stmt_list,i,ar);
@@ -630,6 +767,8 @@ static void replicate_body(AST_INDEX     stmt_list,
      upd_info.ped = ped;
      upd_info.symtab = symtab;
      upd_info.val = val;
+     upd_info.ivar = ivar;
+     upd_info.inner_level = inner_level;
      walk_expression(stmt_list,update_graph,NOFUNC,(Generic)&upd_info);
      if (inner_rdx)
        for (i = 0; i < val; i++)
@@ -668,8 +807,8 @@ int mh_copy_edges(AST_INDEX node,
 	     edge = dg_next_src_ref( PED_DG(((PedInfo)ped)),edge))
          if ((dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 	      dg[edge].type == dg_input || dg[edge].type == dg_output) &&
-	     (get_subscript_ptr(dg[edge].src)->surrounding_do == 
-	      get_subscript_ptr(dg[edge].sink)->surrounding_do))
+	     (get_subscript_ptr(dg[edge].src)->surround_node == 
+	      get_subscript_ptr(dg[edge].sink)->surround_node))
 	   {
 	    source = get_subscript_ptr(dg[edge].src)->copies[0];
 	    sink = get_subscript_ptr(dg[edge].sink)->copies[0];
@@ -751,6 +890,184 @@ static void copy_unroll_amounts(model_loop *loop_data,
        copy_unroll_amounts(loop_data,split_loop,next,snext);
   }
 
+static void unroll_rhomboid(model_loop    *loop_data,
+			    int           loop,
+			    int           uloop,
+			    PedInfo       ped,
+			    SymDescriptor symtab,
+			    AST_INDEX     step,
+			    arena_type    *ar)
+
+/****************************************************************************/
+/*                                                                          */
+/*                                                                          */
+/****************************************************************************/
+
+  {
+   int       size;
+   AST_INDEX loop_copy,arg_list,max,control1,control2,new_control,
+             ivar,new_do,min;
+   char      new_ivar[20];
+   pre_info_type pre_info;
+   edge_info_type edge_info;
+   model_loop *split_loop;
+   copy_info_type copy_info;
+
+     return;
+     copy_info.val = 1;
+     copy_info.ar = ar;
+     copy_info.symtab = symtab;
+     control1 = gen_DO_get_control(loop_data[uloop].node);
+       
+           /* create first loop */
+
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_init_copies,
+		     NOFUNC,(Generic)&copy_info);
+     loop_copy = ut_tree_copy_with_type(loop_data[loop].node,0,ar);
+     ut_update_labels(loop_copy,symtab);
+     ivar = gen_INDUCTIVE_get_name(gen_DO_get_control(loop_data[uloop].node));
+     sprintf(new_ivar,"%s$%d",gen_get_text(ivar),loop_data[uloop].level);
+     control2 = gen_DO_get_control(loop_copy);
+     arg_list =list_create(tree_copy_with_type(
+                           gen_INDUCTIVE_get_rvalue2(control2)));
+     arg_list = list_insert_last(arg_list,pt_simplify_expr(
+				 pt_gen_add(
+				   pt_gen_mul(
+				     pt_gen_int(loop_data[uloop].tri_coeff),
+			             pt_gen_add(tree_copy_with_type(ivar),
+				       pt_gen_int(loop_data[uloop].val-1))),
+			           tree_copy_with_type(
+						loop_data[uloop].tri_const))));
+     min = gen_INVOCATION(pt_gen_ident("min"),arg_list);
+     pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control2),pt_simplify_expr(
+		     pt_gen_add(
+		        pt_gen_mul(pt_gen_int(loop_data[uloop].tri_coeff),
+				   tree_copy_with_type(ivar)),
+			tree_copy_with_type(loop_data[uloop].tri_const))));
+     pt_tree_replace(gen_INDUCTIVE_get_rvalue2(control2),min);
+     arg_list =list_create(tree_copy_with_type(
+                           gen_INDUCTIVE_get_rvalue2(control1)));
+     arg_list = list_insert_last(arg_list,pt_simplify_expr(
+			           pt_gen_add(tree_copy_with_type(ivar),
+				         pt_gen_int(loop_data[uloop].val))));
+     min = gen_INVOCATION(pt_gen_ident("min"),arg_list);
+     new_control = gen_INDUCTIVE(pt_gen_ident(new_ivar),
+				 tree_copy_with_type(ivar),min,AST_NIL);
+     new_do=gen_DO(AST_NIL,AST_NIL,AST_NIL,new_control,list_create(loop_copy));
+
+     (void)list_insert_before(loop_data[loop].node,new_do);
+     set_level_vectors(gen_DO_get_stmt_LIST(loop_data[loop].node),
+		       gen_DO_get_stmt_LIST(loop_copy),ped);
+     walk_expression(loop_data[loop].node,mh_copy_edges,NOFUNC,(Generic)ped);
+     edge_info.ped = ped;
+     edge_info.level = loop_data[uloop].level;
+     walk_expression(loop_copy,add_level_to_edges,NOFUNC,(Generic)&edge_info);
+     size = count_loops(loop_data,loop) + 1;
+     split_loop = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
+						  size*sizeof(model_loop));
+     pre_info.stmt_num = 0;
+     pre_info.loop_num = 0;
+     pre_info.surrounding_do = 0;
+     pre_info.surround_node = loop_data[loop_data[loop].parent].node;
+     pre_info.ped = ped;
+     pre_info.symtab = symtab;
+     pre_info.ar = ar;
+     walk_statements(new_do,loop_data[loop].level,ut_mark_do_pre,
+		     ut_mark_do_post,(Generic)&pre_info);
+     ut_analyze_loop(new_do,split_loop,loop_data[loop].level,ped,symtab);
+     split_loop[0].max = 0;
+     split_loop[0].val = 0;
+     copy_unroll_amounts(loop_data,split_loop,loop,split_loop[0].inner_loop);
+     ut_check_shape(split_loop,0);
+     util_append(loop_data[loop].split_list,
+		 util_node_alloc((Generic)split_loop,"split-list"));
+
+           /* create last loop */
+
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_init_copies,
+		     NOFUNC,(Generic)&copy_info);
+     loop_copy = ut_tree_copy_with_type(loop_data[loop].node,0,ar);
+     ut_update_labels(loop_copy,symtab);
+     ivar = gen_INDUCTIVE_get_name(gen_DO_get_control(loop_data[uloop].node));
+     sprintf(new_ivar,"%s$%d",gen_get_text(ivar),loop_data[uloop].level);
+     control2 = gen_DO_get_control(loop_copy);
+     pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control2),pt_simplify_expr(
+		     pt_gen_add(tree_copy_with_type(
+                                 gen_INDUCTIVE_get_rvalue2(control2)),
+				pt_gen_int(1))));
+     pt_tree_replace(gen_INDUCTIVE_get_rvalue2(control2),pt_simplify_expr(
+		     pt_gen_add(pt_gen_mul(tree_copy_with_type(min),
+				    pt_gen_int(loop_data[uloop].tri_coeff)),
+			tree_copy_with_type(loop_data[uloop].rhom_const))));
+     new_control = gen_INDUCTIVE(pt_gen_ident(new_ivar),
+				 tree_copy_with_type(ivar),
+				 tree_copy_with_type(min),AST_NIL);
+     new_do=gen_DO(AST_NIL,AST_NIL,AST_NIL,new_control,list_create(loop_copy));
+     (void)list_insert_after(loop_data[loop].node,new_do);
+     set_level_vectors(gen_DO_get_stmt_LIST(loop_data[loop].node),
+		       gen_DO_get_stmt_LIST(loop_copy),ped);
+     walk_expression(loop_data[loop].node,mh_copy_edges,NOFUNC,(Generic)ped);
+     edge_info.ped = ped;
+     edge_info.level = loop_data[uloop].level;
+     walk_expression(loop_copy,add_level_to_edges,NOFUNC,(Generic)&edge_info);
+     size = count_loops(loop_data,loop) + 1;
+     split_loop = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
+						  size*sizeof(model_loop));
+     pre_info.stmt_num = 0;
+     pre_info.loop_num = 0;
+     pre_info.surrounding_do = 0;
+     pre_info.surround_node = loop_data[loop_data[loop].parent].node;
+     pre_info.ped = ped;
+     pre_info.symtab = symtab;
+     pre_info.ar = ar;
+     walk_statements(new_do,loop_data[loop].level,ut_mark_do_pre,
+		     ut_mark_do_post,(Generic)&pre_info);
+     ut_analyze_loop(new_do,split_loop,loop_data[loop].level,ped,symtab);
+     split_loop[0].max = 0;
+     split_loop[0].val = 0;
+     copy_unroll_amounts(loop_data,split_loop,loop,split_loop[0].inner_loop);
+     ut_check_shape(split_loop,0);
+     util_append(loop_data[loop].split_list,
+		 util_node_alloc((Generic)split_loop,"split-list"));
+
+        /* update node bounds */
+
+     pt_tree_replace(gen_INDUCTIVE_get_rvalue1(control1),pt_simplify_expr(
+		     pt_gen_add(
+		       pt_gen_mul(pt_gen_int(loop_data[uloop].tri_coeff),
+			          pt_gen_add(tree_copy_with_type(ivar),
+				    pt_gen_int(loop_data[uloop].val))),
+		       tree_copy_with_type(loop_data[uloop].tri_const))));
+							  
+
+        /* continue unroll-and-jam */
+
+     if (loop_data[loop].inner_loop == -1)
+      {
+       copy_info.val = loop_data[uloop].val;
+       walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
+		       ut_init_copies,NOFUNC,(Generic)&copy_info);
+       replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
+	              loop_data[uloop].val,loop_data[uloop].level,
+		      gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
+		      loop_data[uloop].node))),step,ped,symtab,false,
+		      get_stmt_info_ptr(loop_data[loop].node)->loop_num,
+		      loop_data[loop].node,
+		      loop_data[loop].level,ar);
+      }
+     else
+       {
+	if (loop_data[loop].stmts)
+	  replicate_statements(gen_DO_get_stmt_LIST(loop_data[loop].node),
+			       loop_data[uloop].val,loop_data[uloop].level,
+			       gen_get_text(gen_INDUCTIVE_get_name(
+			       gen_DO_get_control(loop_data[uloop].node))),
+			       step,symtab,loop,loop_data[loop].node,ar);
+	walk_loops_to_unroll(loop_data,loop_data[loop].inner_loop,uloop,ped,
+			     symtab,step,ar);
+       }
+  }
+
 static void unroll_triangular(model_loop    *loop_data,
 			      int           loop,
 			      int           uloop,
@@ -774,6 +1091,7 @@ static void unroll_triangular(model_loop    *loop_data,
    model_loop *split_loop;
    copy_info_type copy_info;
 
+     return;
      copy_info.val = 1;
      copy_info.ar = ar;
      copy_info.symtab = symtab;
@@ -916,6 +1234,7 @@ static void unroll_triangular(model_loop    *loop_data,
      pre_info.stmt_num = 0;
      pre_info.loop_num = 0;
      pre_info.surrounding_do = 0;
+     pre_info.surround_node = loop_data[loop_data[loop].parent].node;
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
@@ -937,7 +1256,9 @@ static void unroll_triangular(model_loop    *loop_data,
 	              loop_data[uloop].val,loop_data[uloop].level,
 		      gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
 		      loop_data[uloop].node))),step,ped,symtab,false,
-		      get_stmt_info_ptr(loop_data[loop].node)->loop_num,ar);
+		      get_stmt_info_ptr(loop_data[loop].node)->loop_num,
+		      loop_data[loop].node,
+		      loop_data[loop].level,ar);
       }
      else
        {
@@ -946,7 +1267,7 @@ static void unroll_triangular(model_loop    *loop_data,
 			       loop_data[uloop].val,loop_data[uloop].level,
 			       gen_get_text(gen_INDUCTIVE_get_name(
 			       gen_DO_get_control(loop_data[uloop].node))),
-			       step,symtab,loop,ar);
+			       step,symtab,loop,loop_data[loop].node,ar);
 	walk_loops_to_unroll(loop_data,loop_data[loop].inner_loop,uloop,ped,
 			     symtab,step,ar);
        }
@@ -976,7 +1297,10 @@ static void walk_loops_to_unroll(model_loop    *loop_data,
        walk_loops_to_unroll((model_loop *)util_node_atom(listnode),0,
 			    unroll_loop,ped,symtab,step,ar);
     if (loop_data[unroll_loop].tri_loop == loop)
-      unroll_triangular(loop_data,loop,unroll_loop,ped,symtab,step,ar);
+      if (loop_data[unroll_loop].type == RHOM)
+        unroll_rhomboid(loop_data,loop,unroll_loop,ped,symtab,step,ar);
+      else
+        unroll_triangular(loop_data,loop,unroll_loop,ped,symtab,step,ar);
     else if (loop_data[loop].inner_loop == -1)
       {
        copy_info.val = loop_data[unroll_loop].val;
@@ -988,7 +1312,9 @@ static void walk_loops_to_unroll(model_loop    *loop_data,
 	              loop_data[unroll_loop].val,loop_data[unroll_loop].level,
 		      gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
 		      loop_data[unroll_loop].node))),step,ped,symtab,false,
-		      get_stmt_info_ptr(loop_data[loop].node)->loop_num,ar);
+		      get_stmt_info_ptr(loop_data[loop].node)->loop_num,
+		      loop_data[loop].node,
+		      loop_data[loop].level,ar);
       }
     else
       {
@@ -998,7 +1324,7 @@ static void walk_loops_to_unroll(model_loop    *loop_data,
 			      loop_data[unroll_loop].level,gen_get_text(
                               gen_INDUCTIVE_get_name(gen_DO_get_control(
                               loop_data[unroll_loop].node))),step,symtab,loop,
-			      ar);
+			      loop_data[loop].node,ar);
        for (next = loop_data[loop].inner_loop;
 	    next != -1;
 	    next = loop_data[next].next_loop)
@@ -1085,6 +1411,7 @@ static model_loop *split_trap_upb(model_loop    *loop_data,
      pre_info.stmt_num = 0;
      pre_info.loop_num = 0;
      pre_info.surrounding_do = 0;
+     pre_info.surround_node = loop_data[uloop].surround_node;
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
@@ -1179,6 +1506,7 @@ static model_loop *split_trap_lwb(model_loop    *loop_data,
      pre_info.stmt_num = 0;
      pre_info.loop_num = 0;
      pre_info.surrounding_do = 0;
+     pre_info.surround_node = loop_data[uloop].surround_node;
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
@@ -1194,12 +1522,12 @@ static model_loop *split_trap_lwb(model_loop    *loop_data,
      return(split_loop);
   }
 
-unroll_and_jam_pre_loop(PedInfo       ped,
-			AST_INDEX     stmt_list,
-			int           level,
-			int           num_loops,
-			SymDescriptor symtab,
-			arena_type    *ar)
+static void unroll_and_jam_pre_loop(PedInfo       ped,
+				    AST_INDEX     stmt_list,
+				    int           level,
+				    int           num_loops,
+				    SymDescriptor symtab,
+				    arena_type    *ar)
 
   {
    AST_INDEX stmt,
@@ -1212,8 +1540,6 @@ unroll_and_jam_pre_loop(PedInfo       ped,
 	next_stmt = list_next(stmt);
 	if (is_do(stmt))
           (void)memory_unroll_and_jam(ped,stmt,level,num_loops,symtab,ar);
-	/* else
-	  set_scratch_to_NULL(stmt); */
        }
   }
 
@@ -1410,7 +1736,9 @@ static void unroll_reduction(model_loop      *loop_data,
 		    loop_data[loop].val,loop_data[loop].level,
 		    gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
 		    loop_data[loop].node))),step,ped,symtab,true,
-		    get_stmt_info_ptr(loop_data[loop].node)->loop_num,ar);
+		    get_stmt_info_ptr(loop_data[loop].node)->loop_num,
+		      loop_data[loop].node,
+		    loop_data[loop].level,ar);
      rdx_stmts.prev = list_create(AST_NIL);
      rdx_stmts.post = list_create(AST_NIL);
      fst_ForAll(symtab,insert_stmts,(Generic)&rdx_stmts);
@@ -1529,11 +1857,11 @@ static void walk_loops(model_loop    *loop_data,
       walk_loops(loop_data,next,num_loops,ped,symtab,fieldn,loops_unrolled,ar);
   }
 
-AST_INDEX mh_do_unroll_and_jam(model_loop    *loop_data,
-			       PedInfo       ped,
-			       SymDescriptor symtab,
-			       int           num_loops,
-			       arena_type    *ar)
+void mh_do_unroll_and_jam(model_loop    *loop_data,
+			  PedInfo       ped,
+			  SymDescriptor symtab,
+			  int           num_loops,
+			  arena_type    *ar)
 
 /****************************************************************************/
 /*                                                                          */

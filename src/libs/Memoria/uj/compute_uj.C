@@ -264,7 +264,9 @@ static int partition_names(AST_INDEX      node,
 	if (NOT(sptr->visited))
 	  {
 	   sptr->visited = true;
-	   lnode = util_node_alloc((Generic)util_list_alloc(NULL,NULL),NULL);
+	   lnode = util_node_alloc((Generic)util_list_alloc((Generic)NULL,
+							    (char *)NULL),
+				   (char *)NULL);
 	   util_append(dinfo->partition,lnode);
 	   do_partition(name,(UtilList *)UTIL_NODE_ATOM(lnode),
 			dg_get_edge_structure( PED_DG(dinfo->ped)),
@@ -913,6 +915,128 @@ static void compute_mem_addr_coeffs(dep_info_type *dep_info,
          dep_info->addr_coeff[2]++;
   }
 
+static void compute_MIV_coefficients(AST_INDEX     node,
+				     dep_info_type *dinfo)
+  {
+   AST_INDEX sub1;
+   DG_Edge   *dg;
+   int       vector,coeff0,coeff1,coeff2,dist;
+   Boolean   lin;
+   EDGE_INDEX edge;
+
+     dg = dg_get_edge_structure(PED_DG(dinfo->ped));
+     vector = get_info(dinfo->ped,node,type_levelv);
+     for (edge = dg_first_sink_ref(PED_DG(dinfo->ped),vector);
+	  dg[edge].consistent != consistent_MIV;
+	  edge = dg_next_sink_ref(PED_DG(dinfo->ped),edge));
+     sub1 = tree_out(dg[edge].src);
+     for (sub1 = list_first(gen_SUBSCRIPT_get_rvalue_LIST(sub1));
+	  !pt_find_var(sub1,dinfo->index[2]);
+	  sub1 = list_next(sub1));
+     if (sub1 != AST_NIL)
+       {
+	if (dinfo->index[0] != NULL)
+	  if (pt_find_var(sub1,dinfo->index[0]))
+	    {
+	     pt_get_coeff(sub1,dinfo->index[0],&lin,&coeff0);
+	     pt_get_coeff(sub1,dinfo->index[2],&lin,&coeff2);
+	     if ((dist = gen_get_dt_DIS(&dg[edge],dinfo->inner_level)) != 0)
+	       {
+		if (dist < 0) 
+	          dist = -dist;
+		dinfo->reg_coeff[0] += (dist * coeff0 * dinfo->step[0]) /
+	                               (coeff2 * dinfo->step[2]);
+	       }
+	     else
+	       dinfo->reg_coeff[0] += (coeff0 * dinfo->step[0]) /
+	                              (coeff2 * dinfo->step[2]);
+	    }
+	  else 
+	    dinfo->reg_coeff[3] += 1;
+	if (dinfo->index[1] != NULL)
+	  if (pt_find_var(sub1,dinfo->index[1]))
+	    {
+	     pt_get_coeff(sub1,dinfo->index[1],&lin,&coeff1);
+	     pt_get_coeff(sub1,dinfo->index[2],&lin,&coeff2);
+	     if ((dist = gen_get_dt_DIS(&dg[edge],dinfo->inner_level)) != 0)
+	       {
+		if (dist < 0) 
+	          dist = -dist;
+		dinfo->reg_coeff[0] += (dist * coeff1 * dinfo->step[1]) /
+	                               (coeff2 * dinfo->step[2]);
+	       }
+	     else
+	       dinfo->reg_coeff[0] += (coeff0 * dinfo->step[0]) /
+	                              (coeff2 * dinfo->step[2]);
+	    }
+	  else 
+	    dinfo->reg_coeff[3] += 1;
+	dinfo->mem_coeff[3] += 1;
+	dinfo->addr_coeff[3] += 1;
+       }
+     else 
+       if (dinfo->index[0] != NULL)
+         if (!pt_find_var(sub1,dinfo->index[0]))
+           if (dinfo->index[1] != NULL)
+             if (!pt_find_var(sub1,dinfo->index[1]))
+               dinfo->reg_coeff[3] += 1;
+	     else
+               dinfo->reg_coeff[2] += 1;
+	   else
+	     dinfo->reg_coeff[2] += 1;
+	 else
+	   if (dinfo->index[1] != NULL)
+             if (!pt_find_var(sub1,dinfo->index[1]))
+	       dinfo->reg_coeff[1] += 1;
+	     else
+               dinfo->reg_coeff[0] += 1;
+	   else
+	     dinfo->reg_coeff[0] += 1;
+       else 
+         if (dinfo->index[1] != NULL)
+           if (!pt_find_var(sub1,dinfo->index[1]))
+	     dinfo->reg_coeff[1] += 1;
+	   else
+             dinfo->reg_coeff[0] += 1;
+	 else
+	   dinfo->reg_coeff[0] += 1;
+  }
+				     
+static Boolean node_is_consistent_MIV(AST_INDEX     node,
+				      dep_info_type *dinfo)
+  
+  {
+   AST_INDEX sub1;
+   DG_Edge   *dg;
+   int       vector,count2 = 0;
+   EDGE_INDEX edge;
+
+     dg = dg_get_edge_structure(PED_DG(dinfo->ped));
+     vector = get_info(dinfo->ped,node,type_levelv);
+     for (edge = dg_first_sink_ref(PED_DG(dinfo->ped),vector);
+	  edge != END_OF_LIST && 
+	  (dg[edge].consistent != consistent_MIV ||
+	   dg[edge].symbolic);
+	  edge = dg_next_sink_ref(PED_DG(dinfo->ped),edge));
+     if (edge == END_OF_LIST)
+       return(false);
+     sub1 = tree_out(dg[edge].src);
+     for (sub1 = list_first(gen_SUBSCRIPT_get_rvalue_LIST(sub1));
+	  sub1 != AST_NIL;
+	  sub1 = list_next(sub1))
+       {
+	if (pt_find_var(sub1,dinfo->index[2]))
+	  count2++;
+	else
+	  if (pt_find_var(sub1,dinfo->index[0]) ||
+	      pt_find_var(sub1,dinfo->index[1]))
+	    return(false);
+       }
+     if (count2 <= 1)
+       return(true);
+     else
+       return(false);
+  }
 
 static void compute_coefficients(dep_info_type *dep_info)
 
@@ -961,7 +1085,13 @@ static void compute_coefficients(dep_info_type *dep_info)
 	else
 	  {
 	   node = (AST_INDEX)UTIL_NODE_ATOM(UTIL_HEAD(nlist));
-	   compute_mem_addr_coeffs(dep_info,node);
+	   if (node_is_consistent_MIV(node,dep_info))
+	     {
+	      get_subscript_ptr(node)->MIV = true;
+	      compute_MIV_coefficients(node,dep_info);
+	     }
+	   else
+	     compute_mem_addr_coeffs(dep_info,node);
 	  }
 	util_list_free(nlist);
        }
@@ -1254,6 +1384,7 @@ static void do_computation(model_loop    *loop_data,
    float         rhoL_lp,bal;
    dep_info_type dep_info;
    reg_info_type reg_info;
+   AST_INDEX     step;
 
      dep_info.ar = ar;
      if (count == 2)
@@ -1264,6 +1395,16 @@ static void do_computation(model_loop    *loop_data,
                         gen_DO_get_control(loop_data[unroll_loops[0]].node)));
 	dep_info.index[1] = gen_get_text(gen_INDUCTIVE_get_name(
 			gen_DO_get_control(loop_data[unroll_loops[1]].node)));
+	step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
+                                          loop_data[unroll_loops[0]].node));
+	if (step == AST_NIL)
+	  dep_info.step[0] = 1;
+	else if (pt_eval(step,&dep_info.step[0]));
+	step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
+                                          loop_data[unroll_loops[1]].node));
+	if (step == AST_NIL)
+	  dep_info.step[1] = 1;
+	else if (pt_eval(step,&dep_info.step[1]));
        }
      else if (count == 1)
        {
@@ -1272,6 +1413,11 @@ static void do_computation(model_loop    *loop_data,
 	dep_info.index[0] = gen_get_text(gen_INDUCTIVE_get_name(
                         gen_DO_get_control(loop_data[unroll_loops[0]].node)));
 	dep_info.index[1] = NULL;
+	step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
+                                          loop_data[unroll_loops[0]].node));
+	if (step == AST_NIL)
+	  dep_info.step[0] = 1;
+	else if (pt_eval(step,&dep_info.step[0]));
        }
      else
        {
@@ -1281,8 +1427,13 @@ static void do_computation(model_loop    *loop_data,
 	dep_info.index[1] = NULL;
        }
      dep_info.inner_level = loop_data[loop].level;
-     dep_info.index[3] = gen_get_text(gen_INDUCTIVE_get_name(
+     dep_info.index[2] = gen_get_text(gen_INDUCTIVE_get_name(
                         gen_DO_get_control(loop_data[loop].node)));
+     step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
+                                         loop_data[loop].node));
+     if (step == AST_NIL)
+       dep_info.step[2] = 1;
+     else if (pt_eval(step,&dep_info.step[2]));
      for (i = 0; i < 4; i++)
        {
 	dep_info.reg_coeff[i] = 0;
@@ -1317,7 +1468,7 @@ static void do_computation(model_loop    *loop_data,
      fst_KillField(symtab,FIRST);
      walk_expression(loop_data[loop].node,survey_edges,NOFUNC,
 		     (Generic)&dep_info);
-     dep_info.partition = util_list_alloc(NULL,NULL);
+     dep_info.partition = util_list_alloc((Generic)NULL,(char *)NULL);
      walk_expression(loop_data[loop].node,partition_names,NOFUNC,
 		     (Generic)&dep_info);
      compute_coefficients(&dep_info);

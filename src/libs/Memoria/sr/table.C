@@ -72,7 +72,8 @@ static int add_elements(AST_INDEX         node,
 	scalar_info = get_scalar_info_ptr(gen_SUBSCRIPT_get_name(node));
 	scalar_info->table_index = array_hash(prelim_info->array_table,node,
 					      prelim_info->array_refs);
-	if (prelim_info->array_table[scalar_info->table_index].node == NULL)
+	if (prelim_info->array_table[scalar_info->table_index].node == 
+	    (Generic)NULL)
 	  {
 	   prelim_info->array_table[scalar_info->table_index].node = 
 	                                                    tree_copy_with_type(node);

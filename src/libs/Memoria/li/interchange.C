@@ -541,6 +541,7 @@ static int heap_position(heap_type *heap,
 	  return i;
 	i++;
        }
+     return -1;
   }
 
 
@@ -936,7 +937,7 @@ void memory_loop_interchange(PedInfo       ped,
      ut_analyze_loop(root,loop_data,level,ped,symtab);
      ut_check_shape(loop_data,0);
      fst_InitField(symtab,INDEX,-1,0);
-     loop_list = util_list_alloc(NULL,"loop-list");
+     loop_list = util_list_alloc((Generic)NULL,"loop-list");
      loop_data[0].heap = (heap_type *)ar->arena_alloc_mem(LOOP_ARENA,
 							  MAXLOOP*
 							  sizeof(heap_type));

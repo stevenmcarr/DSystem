@@ -348,12 +348,12 @@ static void find_LI_generator(UtilNode *lnode,
   }
 
 
-static int partition_names(AST_INDEX  node,
-			   PedInfo    ped,
-			   UtilList   *glist,
-			   DG_Edge    *dg,
-			   int        *free_regs,
-			   arena_type *ar)
+static void partition_names(AST_INDEX  node,
+			    PedInfo    ped,
+			    UtilList   *glist,
+			    DG_Edge    *dg,
+			    int        *free_regs,
+			    arena_type *ar)
 
 /****************************************************************************/
 /*                                                                          */
@@ -368,7 +368,7 @@ static int partition_names(AST_INDEX  node,
 						 sizeof(name_node_type));
      lnode = util_node_alloc((Generic)name_node,"generator");
      util_append(glist,lnode);
-     name_node->nlist = util_list_alloc(NULL,"name-list");
+     name_node->nlist = util_list_alloc((Generic)NULL,"name-list");
      do_partition(node,name_node->nlist,dg,ped);
      find_LI_generator(lnode,dg,ped);
      if (gen_get_converted_type(name_node->gen) == TYPE_REAL)
@@ -434,7 +434,7 @@ static void do_opt_allocation(UtilList *glist,
      else
        {
         deallocate((name_node_type *)UTIL_NODE_ATOM(lnode));
-	UTIL_NODE_ATOM(lnode) = NULL;
+	UTIL_NODE_ATOM(lnode) = (Generic)NULL;
        }
   }
 
@@ -505,7 +505,7 @@ static void do_allocation(UtilList *glist,
        {
 	next_node = UTIL_NEXT(node);
 	if (!ut_member_number(allocate,i))
-	  if (*free_regs > 0 && UTIL_NODE_ATOM(node) != NULL)
+	  if (*free_regs > 0 && UTIL_NODE_ATOM(node) != (Generic)NULL)
 	    do_partial_allocation(node,free_regs);
 	  else
 	    {

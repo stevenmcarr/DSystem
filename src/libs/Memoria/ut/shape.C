@@ -139,7 +139,19 @@ static void determine_loop_type(model_loop *loop_data,
 	else if ((coeff1 != 0) && (coeff2 != 0))
 	  if (coeff1 != coeff2)
 	    loop_data[outer].type = COMPLEX;
-	  else;
+	  else
+	    if (coeff1 > 0)
+	      {
+	       loop_data[outer].type = RHOM;
+	       loop_data[outer].tri_loop = inner;
+	       loop_data[outer].tri_coeff = coeff1;
+	       pt_separate_linear(inner1,outervar,&lin1,&fac,&con);
+	       loop_data[outer].tri_const = tree_copy_with_type(con);
+	       pt_separate_linear(inner2,outervar,&lin1,&fac,&con);
+	       loop_data[outer].rhom_const = tree_copy_with_type(con);
+	      }
+	    else
+	      loop_data[outer].type = COMPLEX;
 	else 
 	  if (coeff1 == 0)
 	    {     /* right side */
