@@ -1,4 +1,4 @@
-/* $Id: la.h,v 1.9 2000/03/31 18:07:02 carr Exp $ */
+/* $Id: la.h,v 1.10 2001/09/14 17:01:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -27,7 +27,6 @@
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/frontEnd/ast/AstIter.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
-#include <libs/Memoria/uj/compute_uj.h>
 #include <libs/Memoria/include/GenericList.h>
 #include <libs/Memoria/include/mem_util.h>
 

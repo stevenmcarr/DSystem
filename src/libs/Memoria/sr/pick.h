@@ -1,4 +1,4 @@
-/* $Id: pick.h,v 1.5 1997/03/27 20:27:20 carr Exp $ */
+/* $Id: pick.h,v 1.6 2001/09/14 17:02:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -36,6 +36,8 @@
 #include <libs/frontEnd/ast/ast.h>
 #endif
 
+#include <libs/Memoria/include/LoopStats.h>
+
 typedef struct pickinfotype {
   block_type *block,
              *exit_block;
@@ -51,11 +53,13 @@ typedef struct pickinfotype {
   PedInfo    ped;
   Boolean    def;
   AST_INDEX  lhs;
+  LoopStatsType *LoopStats;
  } pick_info_type;
 
 EXTERN(void, sr_pick_possible_generators,(flow_graph_type flow_graph,
 					  int level,
 					  prelim_info_type *prelim_info,
-					  PedInfo ped));
+					  PedInfo ped,
+					  LoopStatsType *LoopStats));
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: sr.h,v 1.12 1997/06/25 15:23:32 carr Exp $ */
+/* $Id: sr.h,v 1.13 2001/09/14 17:01:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -35,6 +35,8 @@
 #ifndef header_h
 #include <libs/Memoria/include/header.h>
 #endif
+
+#define MAXLOOP 10
 
 typedef enum {BOGUS,LIAV,LIPAV,LCAV,LCPAV} GenTypes;
 

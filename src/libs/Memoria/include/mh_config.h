@@ -1,4 +1,4 @@
-/* $Id: mh_config.h,v 1.5 1999/04/22 14:36:55 carr Exp $ */
+/* $Id: mh_config.h,v 1.6 2001/09/14 17:01:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -42,7 +42,9 @@ typedef struct {
           FPUnits,
           IntegerUnits,
           NonBlockingCache,
-          AutoIncrement;
+          AutoIncrement,
+    IntegerPipeLength,
+    FloatPipeLength;
   float   beta_m;
   FILE    *logfile;
  } config_type;

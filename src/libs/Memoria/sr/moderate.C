@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.16 1997/03/27 20:27:20 carr Exp $ */
+/* $Id: moderate.C,v 1.17 2001/09/14 17:02:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -33,6 +33,10 @@
 #include <malloc.h>
 
 #include <libs/Memoria/include/mem_util.h>
+#include <libs/Memoria/include/memory_menu.h>
+
+extern int selection;
+extern int StatsLevel;
 
 /*
 
@@ -533,7 +537,7 @@ static void do_allocation(UtilList *glist,
        {
 	next_node = UTIL_NEXT(node);
 	if (!ut_member_number(allocate,i))
-	  if (*free_regs > 0 && UTIL_NODE_ATOM(node) != (Generic)NULL)
+	  if (*free_regs > 0 && (UTIL_NODE_ATOM(node) != (Generic)NULL))
 	    do_partial_allocation(node,free_regs);
 	  else
 	    {
@@ -592,7 +596,8 @@ static void build_cost_info(UtilList *glist,
 			    int&     NumLCPAV,
 			    int&     NumInv,
 			    int&     NumLC1,
-			    int&     regs,
+			    int&     FloatRegs,
+			    int&     IntRegs,
 			    PedInfo  ped)
 
   {
@@ -671,6 +676,7 @@ static void build_cost_info(UtilList *glist,
 	   name_node->cost = gptr->num_regs;
 	   name_node->ratio =(((float) name_node->benefit) /
 			      ((float) name_node->cost) * 100.0);
+	   FloatRegs += name_node->cost;
 	  }
 	else if (gen_get_converted_type(name_node->gen) == 
 		 TYPE_DOUBLE_PRECISION)
@@ -679,19 +685,22 @@ static void build_cost_info(UtilList *glist,
 			      ((config_type *)PED_MH_CONFIG(ped))->double_regs);
 	   name_node->ratio =(((float) name_node->benefit) /
 			      ((float) name_node->cost) * 100.0);
+	   FloatRegs += name_node->cost;
 	  }
 	else if (gen_get_converted_type(name_node->gen) == TYPE_COMPLEX)
 	  {
 	   name_node->cost = (gptr->num_regs << 1);
 	   name_node->ratio =(((float) name_node->benefit) /
 			      ((float) name_node->cost) * 100.0);
+	   FloatRegs += name_node->cost;
 	  }
 	else
 	    {
 	     name_node->cost = 0;
 	     name_node->ratio = 1000.0;
+	     if (gen_get_converted_type(name_node->gen) == TYPE_INTEGER)
+	       IntRegs += gptr->num_regs;
 	    }
-	regs += name_node->cost;
 	NumPartitions++;
        }
   }
@@ -723,15 +732,17 @@ void sr_moderate_pressure(PedInfo  ped,
             NumInv = 0,
             NumLC1 = 0,
 	    /* QUNYAN 0001 */
-            regs = 0,
+            FloatRegs = 0,
+            IntRegs = 0,
             loads;
    Set      allocate,
             opt_allocate;
    heap_type *heap;
 
      build_cost_info(glist,NumPartitions,NumReferences,NumLIAV,
-	             NumLCAV,NumLIPAV,NumLCPAV,NumInv,NumLC1,regs,ped);
-     if (regs > free_regs)
+	             NumLCAV,NumLIPAV,NumLCPAV,NumInv,NumLC1,FloatRegs,
+		     IntRegs,ped);
+     if (FloatRegs > free_regs)
        {
 
 	/* GET SPILL STATS HERE */
@@ -744,7 +755,7 @@ void sr_moderate_pressure(PedInfo  ped,
 	heap = (heap_type *)ar->arena_alloc_mem(LOOP_ARENA,
 						NumPartitions*sizeof(heap_type));
 	do_greedy(glist,heap,allocate,opt_allocate,NumPartitions,&free_regs);
-	regs = free_regs;
+	FloatRegs = free_regs;
 
 	/* GET REGS AFTER SPILLING HERE */
 
@@ -760,29 +771,38 @@ void sr_moderate_pressure(PedInfo  ped,
 	NumInv = 0;
 	NumLC1 = 0;
 	/* QUNYAN 0002*/
-        regs = 0;
+        FloatRegs = 0;
         build_cost_info(glist,NumPartitions,NumReferences,NumLIAV,
-			NumLCAV,NumLIPAV,NumLCPAV,NumInv,NumLC1,regs,ped);
+			NumLCAV,NumLIPAV,NumLCPAV,NumInv,NumLC1,FloatRegs,
+			IntRegs,ped);
        }
 
      if (logfile != NULL)
        {
 	/* accumulate SR pressure */
 
-	fprintf(logfile,"# of registers used for scalar replacement = %d\n",
-		      regs);
-        LoopStats->SRRegisterPressure += regs;
+	fprintf(logfile,"# of FP registers used for scalar replacement = %d\n",
+		      FloatRegs);
+        LoopStats->SRRegisterPressure += FloatRegs;
 
 	/* accumulate FP pressure */
 
 	fprintf(logfile,"FP Register Pressure = %d\n",
-	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs));
+		FloatRegs+(((config_type *)PED_MH_CONFIG(ped))->max_regs
+			   -free_regs));
         LoopStats->FPRegisterPressure += 
-	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs);
+	       FloatRegs+(((config_type *)PED_MH_CONFIG(ped))->max_regs
+			  -free_regs);
 
-	fprintf(logfile,"Free Registers = %d\n",free_regs-regs);
+	fprintf(logfile,"Free Registers = %d\n",free_regs-FloatRegs);
 	LoopStats->ActualFPRegisterPressure += 
-	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs);
+	       FloatRegs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-
+			  free_regs);
+	if (selection == SR_STATS && StatsLevel == 1)
+	{
+	  LoopStats->FloatRegsMinDist += FloatRegs;
+	  LoopStats->IntRegsMinDist += IntRegs;
+	}
        }
 
    *redo = false;

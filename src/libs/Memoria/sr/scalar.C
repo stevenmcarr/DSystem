@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.31 1997/03/27 20:27:20 carr Exp $ */
+/* $Id: scalar.C,v 1.32 2001/09/14 17:02:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -9,80 +9,44 @@
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <iostream.h>
+#include <fstream.h>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/sr.h>
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/frontEnd/include/walk.h>
 #include <libs/Memoria/sr/scalar.h>
+#include <libs/Memoria/sr/moderate.h>
 #include <libs/Memoria/include/LoopStats.h>
 #include <libs/frontEnd/ast/AstIter.h>
-
-#ifndef check_h
 #include <libs/Memoria/sr/check.h>
-#endif
-
-#ifndef codegen_h
 #include <libs/Memoria/sr/codegen.h>
-#endif
-
-#ifndef dfantic_h
 #include <libs/Memoria/sr/dfantic.h>
-#endif
-
-#ifndef dfavail_h
 #include <libs/Memoria/sr/dfavail.h>
-#endif
-
-#ifndef dfrgen_h
 #include <libs/Memoria/sr/dfrgen.h>
-#endif
-
-#ifndef gavail_h
 #include <libs/Memoria/sr/gavail.h>
-#endif
-
-#ifndef insert_h
 #include <libs/Memoria/sr/insert.h>
-#endif
-
-#ifndef name_h
 #include <libs/Memoria/sr/name.h>
-#endif
-
-#ifndef moderate_h
-#include <libs/Memoria/sr/moderate.h>
-#endif
-
-#ifndef pick_h
 #include <libs/Memoria/sr/pick.h>
-#endif
-
-#ifndef profit_h
 #include <libs/Memoria/sr/profit.h>
-#endif
-
-#ifndef prune_h
 #include <libs/Memoria/sr/prune.h>
-#endif
-
-#ifndef table_h
 #include <libs/Memoria/sr/table.h>
-#endif
-
-#ifndef gi_h
 #include <libs/frontEnd/include/gi.h>
-#endif
-
-#ifndef mh_config_h
 #include <libs/Memoria/include/mh_config.h>
-#endif
-
 #include <malloc.h>
 #include <libs/Memoria/include/mem_util.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/ut/SPRegisters.h>
+#include <libs/Memoria/ut/ScalarReplaceMap.h>
+#include <libs/frontEnd/ast/AstIterators.h>
+#include <libs/frontEnd/ast/builtins.h>
+#include <libs/Memoria/include/memory_menu.h>
 
 int dummy = 0; /* this decl keeps Rn from dying in get_mem (why?) */
 
+extern int selection;
+extern char* mc_module;
+extern int StatsLevel;
 
 Boolean IsIndexUniform(AST_INDEX node, 
 		       AST_INDEX expr,
@@ -117,6 +81,21 @@ Boolean IsSubscriptUniform(AST_INDEX node,
      return(Uniform);
   }
        
+
+static AstIterAdvanceDirective 
+InitializeScalarReplacementMap(AST_INDEX ASTNode,
+			       ScalarReplaceMap& SRMap)
+{
+  if (is_subscript(ASTNode))
+  {
+    AST_INDEX Name = gen_SUBSCRIPT_get_name(ASTNode);
+    scalar_info_type *sptr = get_scalar_info_ptr(Name);
+    
+      SRMap.MapAddEntry(ASTNode,sptr->is_generator,BOOL(sptr->generator != -1));
+  }
+  return(AST_ITER_CONTINUE);
+}
+  
 
 static int count_arrays(AST_INDEX          node,
 			prelim_info_type   *prelim_info)
@@ -175,15 +154,24 @@ static int count_arrays(AST_INDEX          node,
 	      == 0)
 	    {
 	     if (gen_get_converted_type(node) == TYPE_REAL)
-	       prelim_info->scalar_regs++;
+	       prelim_info->FloatScalarRegs++;
 	     else if (gen_get_converted_type(node) == TYPE_DOUBLE_PRECISION)
-	       prelim_info->scalar_regs += 
+	       prelim_info->FloatScalarRegs += 
 	         ((config_type *)PED_MH_CONFIG(prelim_info->ped))->double_regs;
 	     else if (gen_get_converted_type(node) == TYPE_COMPLEX)
-	       prelim_info->scalar_regs += 2;
+	       prelim_info->FloatScalarRegs += 2;
+	     else if (gen_get_converted_type(node) == TYPE_INTEGER)
+	       prelim_info->IntScalarRegs++;
 	    }
 	  fst_PutField(prelim_info->symtab,gen_get_text(node),REFS,++refs);
 	 }
+       else if (is_invocation(node)) // instrinsics can be 
+				     // implemented as instructions
+       {
+	 AST_INDEX Name = gen_INVOCATION_get_name(node);
+	 if (NOT(builtins_isBuiltinFunction(gen_get_text(Name))))
+	   prelim_info->contains_call = true;
+       }
      return(WALK_CONTINUE);
   }
 
@@ -257,8 +245,12 @@ static int get_prelim_info(AST_INDEX          stmt,
 	prelim_info->contains_goto_or_label = true;
        }
      else if (is_call(stmt))
-       walk_expression(gen_CALL_get_invocation(stmt),(WK_EXPR_CLBACK)count_arrays,
-		       NOFUNC,(Generic)prelim_info);
+     {
+       walk_expression(gen_CALL_get_invocation(stmt),
+		       (WK_EXPR_CLBACK)count_arrays,NOFUNC,
+		       (Generic)prelim_info);
+       prelim_info->contains_call = true;
+     }
      return(WALK_CONTINUE);
   }
 
@@ -642,11 +634,13 @@ static void perform_scalar_replacement(do_info_type  *do_info,
          }
        }
      prelim_info.array_refs = 0;
-     prelim_info.scalar_regs = 0;
+     prelim_info.FloatScalarRegs = 0;
+     prelim_info.IntScalarRegs = 0;
      prelim_info.def_num = 0;
      prelim_info.stmt_num = 0;
      prelim_info.contains_cf = false;
      prelim_info.contains_goto_or_label = false;
+     prelim_info.contains_call = false;
      prelim_info.jumps_ok = true;
      prelim_info.premature_exit = false;
      prelim_info.backjump = false;
@@ -720,7 +714,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 			 do_info->LoopStats);
      sr_perform_avail_analysis(flow_graph,check_info);
      sr_perform_rgen_analysis(flow_graph,check_info);
-     sr_pick_possible_generators(flow_graph,level,&prelim_info,do_info->ped);
+     sr_pick_possible_generators(flow_graph,level,&prelim_info,do_info->ped,
+				 do_info->LoopStats);
      sr_perform_antic_analysis(flow_graph,prelim_info.array_refs,do_info->ped,
 			       do_info->ar);
      gen_info.entry = flow_graph.entry;
@@ -733,15 +728,61 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 
 	/* if we have removed some partially available generators, we must redo
 	   avail and antic analysis */
-	sr_redo_gen_avail(flow_graph,prelim_info.array_refs,do_info->ped,do_info->ar);
-	sr_perform_antic_analysis(flow_graph,prelim_info.array_refs,do_info->ped,
-				  do_info->ar);
+	 sr_redo_gen_avail(flow_graph,prelim_info.array_refs,do_info->ped,
+			   do_info->ar);
+	 sr_perform_antic_analysis(flow_graph,prelim_info.array_refs,
+				   do_info->ped,do_info->ar);
        }
      name_info.ped = do_info->ped;
      name_info.dg = dg_get_edge_structure( PED_DG(do_info->ped));
      name_info.glist = util_list_alloc((Generic)NULL,"generator-list");
      name_info.ar = do_info->ar;
      sr_generate_names(root,&name_info);
+
+     // get stats related to pipelining the loop
+
+     if (selection == SR_STATS && StatsLevel == 1)
+     {
+       if (prelim_info.contains_call)
+	 do_info->LoopStats->ContainsCall = true;
+       else
+       {
+	 ScalarReplaceMap SRMap;
+	 SRMap.MapCreate(prelim_info.array_refs*2);
+	 
+	 AST_INDEX ASTNode;
+	 AstIterAdvanceDirective WalkAdvance;
+	 
+	 for (AstIterator ASTIter(loop_body);
+	      ASTNode = ASTIter.Current();
+	      ASTIter.Advance(WalkAdvance))
+	   WalkAdvance = InitializeScalarReplacementMap(ASTNode,SRMap);
+	 
+	 SPRegisterPrediction SPRegs(root,do_info->ped,level,do_info->IVar,
+				     &SRMap,do_info->symtab);
+	 
+	 do_info->LoopStats->IntRegsMinAvg =
+	   SPRegs.GetIntegerRegisterPressure(MinAvgMethod);
+	 do_info->LoopStats->FloatRegsMinAvg =
+	   SPRegs.GetFloatingPointRegisterPressure(MinAvgMethod);
+	 
+	 do_info->LoopStats->IntRegsMinDist =
+	   SPRegs.GetIntegerRegisterPressure(MinDistMethod) +
+	   prelim_info.IntScalarRegs;
+	 do_info->LoopStats->FloatRegsMinDist =
+	   SPRegs.GetFloatingPointRegisterPressure(MinDistMethod) +
+	   prelim_info.FloatScalarRegs;
+	 
+	 do_info->LoopStats->IntRegsLiveAcross =
+	   SPRegs.GetIntegerRegisterPressure(LiveAcrossMethod);
+	 do_info->LoopStats->FloatRegsLiveAcross =
+	   SPRegs.GetFloatingPointRegisterPressure(LiveAcrossMethod);
+	 
+	 do_info->LoopStats->II = SPRegs.GetII();
+	 
+	 SRMap.Destroy();
+       }
+     }
      if (!util_list_empty(name_info.glist))
        {
 	reg_info.expr_regs = 0;
@@ -750,18 +791,23 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 			(Generic)&reg_info);
 	if (((config_type *)PED_MH_CONFIG(do_info->ped))->chow_alloc && 
 	    reg_info.expr_regs < 4)
+	{
 
 	  /* reserve at least 4 register for a Chow-style register allocator
 	     for expressions because of high interference */
 
-	  prelim_info.scalar_regs += 4;
+	  prelim_info.FloatScalarRegs += 4;
+	  prelim_info.IntScalarRegs += 4;
+	}
 	else
-	  prelim_info.scalar_regs += reg_info.expr_regs;
+	  prelim_info.FloatScalarRegs += reg_info.expr_regs;
+	
+
 	sr_moderate_pressure(do_info->ped,name_info.glist,
 			     ((config_type *)PED_MH_CONFIG(do_info->ped))
-			     ->max_regs - prelim_info.scalar_regs,&redo,
-			     prelim_info.array_table,logfile,do_info->ar,
-			     do_info->LoopStats);
+			     ->max_regs - prelim_info.FloatScalarRegs,&redo,
+			     prelim_info.array_table,logfile,
+			     do_info->ar,do_info->LoopStats);
 	if (!util_list_empty(name_info.glist))
 	  {
 	   if (redo)
@@ -872,6 +918,9 @@ static int pre_scalar(AST_INDEX     stmt,
 		     NOFUNC,(Generic)do_info->ar);
    else if (is_do(stmt))
      {
+       do_info->IVar[level-1] = 
+	 gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(stmt)));
+					                  
       walk_expression(gen_DO_get_control(stmt),
 		      (WK_EXPR_CLBACK)remove_dependences,NOFUNC,
 		      (Generic)do_info->ped);
@@ -898,6 +947,64 @@ static int pre_scalar(AST_INDEX     stmt,
    return(WALK_CONTINUE);
   }
 
+static void InitializeSRRegisterPredictionStats(LoopStatsType *LoopStats)
+{
+  LoopStats->IntRegsMinAvg = 0;
+  LoopStats->IntRegsMinDist = 0;
+  LoopStats->IntRegsLiveAcross = 0;
+  LoopStats->FloatRegsMinAvg = 0;
+  LoopStats->FloatRegsMinDist = 0;
+  LoopStats->FloatRegsLiveAcross = 0;
+  LoopStats->II = 0;
+}
+
+static void DumpSRRegisterPredictionStats(LoopStatsType *LoopStats)
+{
+  char FileName[80];
+  static int LoopNumber = 0;
+
+  sprintf(FileName,"%s.PredictionStats",mc_module);
+
+  ofstream outFile(FileName,ios::app);
+
+  outFile << "Register Prediction Statistics for Loop "
+	  << ++LoopNumber
+	  << endl
+          << "---------------------------------------------------"
+	  << endl
+	  << endl;
+  if (LoopStats->ContainsCall)
+    outFile << "Software Pipelining Prevented by Function Call" 
+	    << endl;
+  else
+  {
+    outFile << "Integer Register Pressure MinAvg = " 
+	    << LoopStats->IntRegsMinAvg
+	    << endl;
+    outFile << "Integer Register Pressure MinDist = "
+	    << LoopStats->IntRegsMinDist
+	    << endl;
+    outFile << "Integer Register Pressure LiveAcross = "
+	    << LoopStats->IntRegsLiveAcross
+	    << endl;
+    outFile << "Floating Point Register Pressure MinAvg = "
+	    << LoopStats->FloatRegsMinAvg
+	    << endl;
+    outFile << "Floating Point Register Pressure MinDist = "
+	    << LoopStats->FloatRegsMinDist
+	    << endl;
+    outFile << "Floating Point Register Pressure LiveAcross = "
+	    << LoopStats->FloatRegsLiveAcross
+	    << endl;
+    outFile << "Estimated II = "
+	    << LoopStats->II
+	    << endl;
+  }
+  outFile << endl 
+	  << endl;
+  outFile.close();
+}
+
 static int post_scalar(AST_INDEX     stmt,
 		       int           level,
 		       do_info_type  *do_info)
@@ -916,7 +1023,11 @@ static int post_scalar(AST_INDEX     stmt,
 	    {
 	     do_info->do_num++;
 	     ++ do_info->LoopStats->NumInnermostLoop; 
+	     if (selection == SR_STATS && StatsLevel == 1)
+	       InitializeSRRegisterPredictionStats(do_info->LoopStats);
 	     perform_scalar_replacement(do_info,stmt,level);
+	     if (selection == SR_STATS && StatsLevel == 1)
+	       DumpSRRegisterPredictionStats(do_info->LoopStats);
 	    }
 	  else
 	    do_info->abort = false;
@@ -948,6 +1059,7 @@ void memory_scalar_replacement(PedInfo      ped,
      do_info.symtab = symtab;
      do_info.ar = ar;
      do_info.LoopStats = LoopStats;
+     do_info.IVar = new char*[MAXLOOP];
      walk_statements(root,level,(WK_STMT_CLBACK)pre_scalar,
 		     (WK_STMT_CLBACK)post_scalar,(Generic)&do_info);
   }

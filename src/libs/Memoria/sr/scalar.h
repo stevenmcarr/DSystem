@@ -1,4 +1,4 @@
-/* $Id: scalar.h,v 1.9 1997/03/27 20:27:20 carr Exp $ */
+/* $Id: scalar.h,v 1.10 2001/09/14 17:02:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -48,7 +48,8 @@ typedef struct arraytabletype {
 
 typedef struct preliminfotype {
   int              array_refs,
-                   scalar_regs,
+                   FloatScalarRegs,
+                   IntScalarRegs,
                    surrounding_do,
                    def_num,
                    level,
@@ -58,7 +59,8 @@ typedef struct preliminfotype {
 		   premature_exit,
 		   backjump,
                    illegal_jump,
-                   jumps_ok;
+                   jumps_ok,
+                   contains_call;
   array_table_type *array_table;
   SymDescriptor    symtab;
   PedInfo          ped;
@@ -75,6 +77,7 @@ typedef struct doinfotype {
   SymDescriptor symtab;
   arena_type *ar;
   LoopStatsType *LoopStats;
+  char     **IVar;
  } do_info_type;
 
 typedef struct reginfotype {

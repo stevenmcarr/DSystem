@@ -1,4 +1,4 @@
-/* $Id: pick.C,v 1.10 1997/03/27 20:27:20 carr Exp $ */
+/* $Id: pick.C,v 1.11 2001/09/14 17:02:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -25,6 +25,11 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #include <libs/Memoria/include/mem_util.h>
 #include <libs/Memoria/include/GenList.h>
+
+#include <libs/Memoria/include/memory_menu.h>
+
+
+extern int selection;
 
 static int update_avail(AST_INDEX       node,
 			pick_info_type  *pick_info)
@@ -135,6 +140,90 @@ static int chk_store(AST_INDEX         node,
   }
 
 
+static void countReferencesWithKilledGenerators(AST_INDEX         node,
+						pick_info_type    *pick_info)
+{
+  int sink_ref = get_info(pick_info->ped,gen_SUBSCRIPT_get_name(node),
+			  type_levelv);
+
+  Boolean foundGenEdge = false;
+  Boolean potentialGeneratorFound = false;
+  Boolean foundInconsistentTrueDependence = false;
+  Boolean foundInconsistentDependence = false;
+  Boolean foundConsistentDependence = false;
+
+  EDGE_INDEX edge;
+
+  for (edge = dg_first_sink_ref( PED_DG(pick_info->ped),sink_ref);
+       edge != END_OF_LIST && NOT(foundGenEdge);
+       edge = dg_next_sink_ref( PED_DG(pick_info->ped),edge))
+  {
+    if ((pick_info->dg[edge].type == dg_true ||
+	 pick_info->dg[edge].type == dg_input)) 
+      if ( pick_info->dg[edge].consistent != inconsistent && 
+	   !pick_info->dg[edge].symbolic)
+      {
+	
+	foundConsistentDependence = true;
+	scalar_info_type* psrc = get_scalar_info_ptr(pick_info->dg[edge].src);
+	scalar_info_type* psink = get_scalar_info_ptr(pick_info->dg[edge].sink);
+	if (pick_info->dg[edge].level == pick_info->level) 
+	{
+	  int dist;
+	  if ((dist = gen_get_dt_DIS(&pick_info->dg[edge],
+				     pick_info->dg[edge].level)) < 0)
+	    dist = 1;
+	  potentialGeneratorFound = true;
+	  if ((!ut_member_number(pick_info->exit_block->LC_rgen_out,
+				 psrc->array_num)) &&
+	      (!ut_member_number(pick_info->LC_rgen_if_1,
+				 psrc->array_num) ||
+	       !ut_member_number(pick_info->exit_block->LC_rgen_out_if_1,
+				 psrc->array_num) || dist != 1))
+	    continue;
+	  else if (ut_member_number(pick_info->exit_block->LC_avail_out,
+				    psrc->table_index) ||
+		   (ut_member_number(pick_info->LC_avail_if_1,
+				     psrc->table_index) && 
+		    ut_member_number(pick_info->exit_block->
+				     LC_avail_out_if_1,psrc->table_index)
+		    && dist == 1))
+	    foundGenEdge = true;
+	  else if (ut_member_number(pick_info->exit_block->
+				    LC_pavail_out,psrc->table_index)
+		   || (ut_member_number(pick_info->LC_pavail_if_1,
+					psrc->table_index) && 
+		       dist == 1))
+	    foundGenEdge = true;
+	}
+	else if (psrc->surrounding_do == psink->surrounding_do)
+	{
+	  potentialGeneratorFound = true;
+	  if (!ut_member_number(pick_info->LI_rgen,psrc->array_num)) 
+	    continue;
+	  if (ut_member_number(pick_info->LI_avail,
+			       psrc->table_index) ||
+	      ut_member_number(pick_info->LI_pavail,
+			       psrc->table_index))
+	    foundGenEdge = true;
+	}
+      } 
+      else 
+      {
+	if (NOT(foundInconsistentTrueDependence) &&
+	    (pick_info->dg[edge].type == dg_true))
+	  foundInconsistentTrueDependence = true;
+	foundInconsistentDependence = true;
+      }
+  }
+  if (potentialGeneratorFound && NOT(foundGenEdge) && 
+      foundInconsistentTrueDependence)
+    pick_info->LoopStats->NumKilledGenerators++;
+  else if (NOT(foundConsistentDependence) && foundInconsistentDependence)
+    pick_info->LoopStats->NumNoConsistentDependence++;
+    
+}
+       
 
 static int get_gen(AST_INDEX         node,
 		   pick_info_type    *pick_info)
@@ -156,6 +245,8 @@ static int get_gen(AST_INDEX         node,
 
      if (is_subscript(node))
        {
+	if (selection == SR_STATS)
+	  countReferencesWithKilledGenerators(node,pick_info);
 	get_scalar_info_ptr(gen_SUBSCRIPT_get_name(node))->generator = -1;
 	sink_ref = get_info(pick_info->ped,gen_SUBSCRIPT_get_name(node),
 			    type_levelv);
@@ -522,7 +613,8 @@ static void look_for_gens(pick_info_type   *pick_info)
 void sr_pick_possible_generators(flow_graph_type   flow_graph,
 				 int               level,
 				 prelim_info_type  *prelim_info,
-				 PedInfo           ped)
+				 PedInfo           ped,
+				 LoopStatsType     *LoopStats)
 
 /****************************************************************************/
 /*                                                                          */
@@ -549,6 +641,7 @@ void sr_pick_possible_generators(flow_graph_type   flow_graph,
 					      prelim_info->array_refs);
      pick_info.exit_block = flow_graph.exit;
      pick_info.level = level;
+     pick_info.LoopStats = LoopStats;
      for (pick_info.block = flow_graph.entry;
 	  pick_info.block != flow_graph.exit;
 	  pick_info.block = pick_info.block->next)

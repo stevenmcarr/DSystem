@@ -1,4 +1,4 @@
-/* $Id: codegen.C,v 1.11 1997/03/27 20:27:20 carr Exp $ */
+/* $Id: codegen.C,v 1.12 2001/09/14 17:01:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -23,6 +23,8 @@
 #include <libs/Memoria/include/label.h>
 #include <libs/Memoria/include/bound.h>
 	
+extern Boolean GeneratePreLoop;
+
 static int null_scratch(AST_INDEX node,
 			int dummy)
 
@@ -581,6 +583,7 @@ static int create_pre_loop(AST_INDEX  root,
 	       need_pre_loop = true;
 	  }
        }
+     need_pre_loop = BOOL(need_pre_loop && GeneratePreLoop); 
      if (need_pre_loop)
        {
 	new_loop = tree_copy_with_type(root);
