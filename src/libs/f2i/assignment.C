@@ -1,4 +1,4 @@
-/* $Id: assignment.C,v 1.7 2000/02/10 19:04:41 carr Exp $ */
+/* $Id: assignment.C,v 1.8 2000/05/09 20:12:49 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -144,8 +144,11 @@ static void NonCharacterAssignment(AST_INDEX	node)
 	   else
 	     lhs_index = ASTRegMap->MapToValue(DepInfoPtr(lhs)->AddressLeader);
 
-	   if ((Offset = DepInfoPtr(lhs)->Offset*GetDataSize(TYPE_INTEGER)) 
-	       != 0)
+       // MJB fixed it to check size of data instead of just using
+       // GetData(TYPE_INTEGER)...
+	   if ((Offset = DepInfoPtr(lhs)->Offset
+                * GetDataSize(gen_get_converted_type(gen_ASSIGNMENT_get_lvalue(node)))) 
+                != 0)
 	     {
 	       int OffsetReg = getConstantInRegFromInt(Offset);
 	       int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);

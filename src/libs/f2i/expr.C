@@ -1,4 +1,4 @@
-/* $Id: expr.C,v 1.9 2000/02/10 19:04:42 carr Exp $ */
+/* $Id: expr.C,v 1.10 2000/05/09 20:12:50 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -342,7 +342,10 @@ int getIdInRegister(AST_INDEX node)
 	      else
 		AReg = ASTRegMap->MapToValue(DepInfoPtr(node)->AddressLeader);
 	      
-	      if ((Offset = DepInfoPtr(node)->Offset*GetDataSize(TYPE_INTEGER))
+              // MJB fixed this to check the size of the data involved, instead
+              // of just GetDataSize(TYPE_INTEGER)...
+	      if ((Offset = DepInfoPtr(node)->Offset
+                   * GetDataSize(gen_get_converted_type(node)))
 		  != 0)
 		{
 		  // create code to for address arithmetic that can be 

@@ -1,4 +1,4 @@
-/* $Id: directives.C,v 1.5 1999/07/22 18:06:37 carr Exp $ */
+/* $Id: directives.C,v 1.6 2000/05/09 20:12:50 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -43,8 +43,10 @@ void HandleDirective(AST_INDEX Stmt)
 		Reg = ASTRegMap->MapToValue(GET_DIRECTIVE_INFO(Stmt)->
 					    AddressLeader);
 
+              // MJB Fixing Offset.. XXX IS THIS RIGHT??? WHAT DOES THIS DO???
 	      if ((Offset = GET_DIRECTIVE_INFO(Stmt)->Offset
-		   * GetDataSize(TYPE_INTEGER)) != 0)
+                   * GetDataSize(gen_get_converted_type(GET_DIRECTIVE_INFO(Stmt)->Subscript))) 
+                  != 0)
 		{
 		  int OffsetReg = getConstantInRegFromInt(Offset);
 		  int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
