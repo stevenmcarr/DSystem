@@ -1,4 +1,4 @@
-/* $Id: static.C,v 1.3 1999/03/31 22:07:28 carr Exp $ */
+/* $Id: static.C,v 1.4 2000/02/07 23:56:44 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -87,7 +87,7 @@ void aiGenerateStaticArea()
   /*  close the temporary file  */
   (void) fclose(fd);
 
-  (void) sprintf(command, "sort %s >%s", TempIn, TempOut);
+  (void) sprintf(command, "sort -n -k 1 -k 2 %s >%s", TempIn, TempOut);
   (void) system(command);
 
   fd = fopen(TempOut, "r");
@@ -255,7 +255,9 @@ void OutputData( FILE *fd )
     flag = fscanf(fd, "%d %10d %4d %[^\n]s", 
 		  &new_area, &new_offset, &new_type, text);
 
-    while (area == new_area && offset > new_offset) /* a check for duplicates */
+    // If it's the end of the file, there seems to be a problem here...
+    // MJB
+    while (area == new_area && offset > new_offset && flag != EOF) /* a check for duplicates */
     {
       dups ++;
       flag = fscanf(fd, "%d %10d %4d %[^\n]s", 
