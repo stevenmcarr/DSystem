@@ -1,4 +1,4 @@
-/* $Id: read_util.C,v 1.1 1997/06/25 15:10:07 carr Exp $ */
+/* $Id: read_util.C,v 1.2 1999/03/31 21:49:16 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -45,16 +45,16 @@ skip_field(char* start, char** buf)
   get_field_b() - Store the Boolean value of this field at bool.
   --------------------------------------------------------------------------*/
 char* 
-get_field_b(char* start, Boolean* bool)
+get_field_b(char* start, Boolean* Bool)
 {
     char	*str;
     /* find start of next field	*/
     for( str = start; (*str != '!') && (*str != '\n') && (*str != '\0'); str++);
     
     if( *start == '1' )
-	*bool = true;
+	*Bool = true;
     else
-	*bool = false;
+	*Bool = false;
     
     return( str + 1 );
 }

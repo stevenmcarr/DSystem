@@ -1,4 +1,4 @@
-/* $Id: cfgval_build.C,v 1.15 1997/06/25 15:05:31 carr Exp $ */
+/* $Id: cfgval_build.C,v 1.16 1999/03/31 21:48:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,6 +17,13 @@ STATIC(ValNumber, build_array_val, (CfgInstance cfg, SsaNodeId node));
 STATIC(void, unbuild_iterative, (CfgInstance cfg, SsaNodeId node, SsaNodeId level));
 STATIC(Boolean, loop_var_search, (CfgInstance cfg, SsaNodeId sn, SsaNodeId phi));
 STATIC(void, const_stats, (CfgInstance cfg));
+
+/*
+ *  Induce a compilation error if ssa_stuff_struct is too big
+ *  -- array dimension cannot be zero or negative.
+ */
+char cfgval_foo_junk[(VAL_WORK_SLOTS * sizeof(Generic)) -
+		     sizeof(struct val_stuff_struct) +1];
 
 static int get_call_nodenum(CfgInstance cfg, SsaNodeId callSN)
 {

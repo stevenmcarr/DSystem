@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.47 1998/07/07 19:27:52 carr Exp $ */
+/* $Id: mh_walk.C,v 1.48 1999/03/31 21:56:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -37,6 +37,7 @@
 #include <libs/frontEnd/include/gi.h>
 #endif
 
+
 #ifndef header_h
 #include <libs/Memoria/include/header.h>
 #endif
@@ -50,7 +51,8 @@
 #endif
 
 #include <libs/frontEnd/fortTextTree/FortTextTree.h>
-#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/PedExtern.h>
+//#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/PedExtern.h>
+#include <libs/fileAttrMgmt/attributedFile/AttributedFile.h>
 
 extern char *mc_program;
 extern char *mc_module_list;

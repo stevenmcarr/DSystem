@@ -1,4 +1,4 @@
-/* $Id: cfgval.i,v 1.10 1997/03/27 20:45:26 carr Exp $ */
+/* $Id: cfgval.i,v 1.11 1999/03/31 21:48:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -32,12 +32,6 @@ typedef struct val_stuff_struct {
     ValPassMap  *passNodes;
 } *ValStuff;
 
-/*
- *  Induce a compilation error if ssa_stuff_struct is too big
- *  -- array dimension cannot be zero or negative.
- */
-char cfgval_foo_junk[(VAL_WORK_SLOTS * sizeof(Generic)) -
-		     sizeof(struct val_stuff_struct) +1];
 
 
 /*

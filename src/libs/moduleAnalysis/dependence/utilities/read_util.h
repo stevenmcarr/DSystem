@@ -1,4 +1,4 @@
-/* $Id: read_util.h,v 1.5 1997/03/11 14:36:03 carr Exp $ */
+/* $Id: read_util.h,v 1.6 1999/03/31 21:49:16 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,7 +30,7 @@
 
 
 EXTERN( char *,  skip_field, (char * start, char ** buf) );
-EXTERN( char *,  get_field_b, (char * start, Boolean * bool) );
+EXTERN( char *,  get_field_b, (char * start, Boolean * b) );
 EXTERN( char *,  get_field_c, (char * start, ConsistentType * cons_ptr) );
 EXTERN( char *,  get_field_d, (char * start, int * num) );
 EXTERN( char *,  get_field_s, (char * start, char ** buf) );

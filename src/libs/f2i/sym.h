@@ -1,4 +1,4 @@
-/* $Id: sym.h,v 1.2 1997/03/27 20:30:00 carr Exp $ */
+/* $Id: sym.h,v 1.3 1999/03/31 21:56:05 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -37,13 +37,13 @@
 #include <libs/frontEnd/ast/ast.h>
 #endif
 
-int			SymDebug;
-SymDescriptor ft_SymTable;
+extern int			SymDebug;
+extern SymDescriptor ft_SymTable;
 
 
-char			*Sym2ndReg;
+extern char			*Sym2ndReg;
 
-int			SymHaveSeenAnEquivalence;
+extern int			SymHaveSeenAnEquivalence;
 
 /* exported names */
 extern int SymInsertSymbol();
@@ -61,9 +61,9 @@ struct common_table_elt
   int 	used;
 };
 
-struct common_table_elt *common_table;
-int CommonNextSlot;
-int CommonNumberOfSlots;
+extern struct common_table_elt *common_table;
+extern int CommonNextSlot;
+extern int CommonNumberOfSlots;
 
 struct leader_table_elt
 {
@@ -71,10 +71,10 @@ struct leader_table_elt
   int high;
   int common_name;
 };
-struct leader_table_elt *leader_table;
-int    leader_table_free_list;
+extern struct leader_table_elt *leader_table;
+extern int    leader_table_free_list;
 
-int SymHaveSeenASave;
+extern int SymHaveSeenASave;
 
 
 

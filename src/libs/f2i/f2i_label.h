@@ -1,4 +1,4 @@
-/* $Id: f2i_label.h,v 1.2 1997/04/24 14:11:33 carr Exp $ */
+/* $Id: f2i_label.h,v 1.3 1999/03/31 21:56:05 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -12,7 +12,7 @@
 
 #define LABEL_NEW 	aiNextLabel++
 
-int label_table_dimension;
+extern int label_table_dimension;
 
 struct label_element   		/*  element of the label table  */
   {
@@ -23,5 +23,5 @@ struct label_element   		/*  element of the label table  */
     AST_INDEX stmt_node;	/* used to track FORMAT stmts	*/
   };
 
-struct label_element *label_table;  /*  name table  */
+extern struct label_element *label_table;  /*  name table  */
 

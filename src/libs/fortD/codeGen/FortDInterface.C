@@ -1,4 +1,4 @@
-/* $Id: FortDInterface.C,v 1.9 1997/03/11 14:28:09 carr Exp $ */
+/* $Id: FortDInterface.C,v 1.10 1999/03/31 21:50:43 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -366,32 +366,26 @@ Color_type FortDRef::GetColor()
         {
           case FD_RED:
             return (FD_RED);
-          break;
        
           case FD_YELLOW:
             return (FD_YELLOW);
-          break;
 
           default:
             cerr << "FortDRef::GetColor: illegal color"
                  << endl;
             return (FD_GREEN);
-          break;
         }
-      break;
     
       case FD_MESG_CARRIED_ALL:
         return (FD_GREEN);
-      break;
 
       case FD_MESG_INDEP:
         return (FD_GREEN);
-      break;
 
       default:
         cerr << "FortDRef::GetColor: illegal message type"
              << endl;
-      break;
+        break;
     }
   }
 
@@ -484,19 +478,15 @@ GenerateStmtColor(Dist_Globals *dh, AST_INDEX stmt)
     {
       case FD_LOOP_PARALLEL:
         return FD_GREEN;
-      break;
 
       case FD_LOOP_PIPELINED:
         return FD_YELLOW;
-      break;
  
       case FD_LOOP_SEQUENTIAL:
         return FD_RED;
-      break;
 
       default:
         return FD_BLACK;
-      break;
     }
   }
 }
@@ -534,32 +524,26 @@ Stmt_type FortDStmt::StmtType()
     {
       case FD_REDUC_PLUS:
         return FD_STMT_SUM_REDUCT;
-      break;
 
       case FD_REDUC_TIMES:
         return FD_STMT_PROD_REDUCT;
-      break;
 
       case FD_REDUC_MIN:
         return FD_STMT_MIN_REDUCT;
-      break;
 
       case FD_REDUC_MAX:
         return FD_STMT_MAX_REDUCT;
-      break;
 
       case FD_REDUC_MIN_LOC:
         return FD_STMT_MINLOC_REDUCT;
-      break;
 
       case FD_REDUC_MAX_LOC:
         return FD_STMT_MAXLOC_REDUCT;
-      break;
 
       default:
         cerr << "FortDStmt::StmtType(): Unrecognized reduction"
              << endl;
-      break;
+        break;
     }
   }
 
@@ -2145,11 +2129,9 @@ classify_CrossProcDepColor(Dist_Globals* dh, DG_Edge* edge)
     {
       case FD_MESG_INDEP:
         return (FD_GREEN);
-      break;
 
       case FD_MESG_CARRIED_ALL:
         return (FD_GREEN);
-      break;
 
         // At this point  there is a cross processor dependence on a partitioned
         // loop.  Determine if the loop is sequential or pipelined by obtaining
@@ -2162,28 +2144,23 @@ classify_CrossProcDepColor(Dist_Globals* dh, DG_Edge* edge)
           {
             case FD_RED:
               return (FD_RED);
-            break;
 
             case FD_YELLOW:    
               return (FD_YELLOW);
-            break;
 
             default:
               cerr << "classify_CrossProcDepColor: illegal stmt color"
                    << endl;
               return (FD_BLACK);
-            break;
           }
         }
         else
         {
           return (FD_BLACK);
         }
-      break;
 
       default:
         return (FD_BLACK);
-      break;
     }
   }
 }

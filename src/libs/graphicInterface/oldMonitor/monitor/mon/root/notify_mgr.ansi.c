@@ -1,4 +1,4 @@
-/* $Id: notify_mgr.ansi.c,v 1.7 1997/06/25 14:52:22 carr Exp $ */
+/* $Id: notify_mgr.ansi.c,v 1.8 1999/03/31 21:54:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -23,7 +23,11 @@
 #include <libs/support/strings/rn_string.h>
 
 typedef FUNCTION_POINTER(void,HandlerFunc,(Generic,Generic,char *, int));
+#ifndef SOLARIS
+typedef FUNCTION_POINTER(void,CRHandlerFunc,(Generic,int,int *));
+#else
 typedef FUNCTION_POINTER(void,CRHandlerFunc,(Generic,int,union wait *));
+#endif
 
     /*** CHILD PROCESS REGISTRATION ***/
 
@@ -303,7 +307,11 @@ struct  cp_reg  *cr;                    /* current child registration   */
                     break;
                 }
             }
+#ifndef SOLARIS
+	    (cr->handler)(cr->owner, cr->pid, (int *) mon_event.msg);
+#else
 	    (cr->handler)(cr->owner, cr->pid, (union wait *) mon_event.msg);
+#endif
             break;
 	default:
 	    die_with_message("Notify_mgr.c:  Unknown event.");

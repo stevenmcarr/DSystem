@@ -1,4 +1,4 @@
-/* $Id: dg_read.C,v 1.1 1997/06/25 15:06:11 carr Exp $ */
+/* $Id: dg_read.C,v 1.2 1999/03/31 21:49:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -95,7 +95,7 @@ readgraph (FILE *gfile_ptr, MapInfoOpaque map, DG_Instance *DG,
     		ic_sensitive,
     		ic_preventing;
     ConsistentType	consistent;
-    DepType	get_dtype(char dchar), type;
+    DepType	type;
 
     /*	Create DG_Instance and read in data from file to build graph	*/
 
@@ -391,7 +391,7 @@ readrsd(FILE *rsdptr, MapInfoOpaque map, DG_Instance *dg, DT_info *dt,
     char     	foo[MAXLINE], *buf;
     int             i, pos;
     char            *fields;
-    Boolean         bool;
+    Boolean         b;
     int             line;                         /* field 1 */
     char            *var;                         /* field 2 */
     int             occurrence;                   /* field 3 */
@@ -420,23 +420,23 @@ readrsd(FILE *rsdptr, MapInfoOpaque map, DG_Instance *dg, DT_info *dt,
 	/* fields 5-8 must have the values (false, true, false, true)
 	   respectively, or the record is to be ignored. 
 	   */
-	fields = get_field_b(fields, &bool );		/* field 5 */
-	if( bool )
+	fields = get_field_b(fields, &b );		/* field 5 */
+	if( b )
 	{
 	    continue;	/* if not empty, ignore this record */
 	}
-	fields = get_field_b(fields, &bool );		/* field 6 */
-	if( ! bool )
+	fields = get_field_b(fields, &b );		/* field 6 */
+	if( ! b )
 	{
 	    continue;	/* if empty, ignore this record */
 	}
-	fields = get_field_b(fields, &bool );		/* field 7 */
-	if( bool )
+	fields = get_field_b(fields, &b );		/* field 7 */
+	if( b )
 	{
 	    continue;	/* if not empty, ignore this record */
 	}
-	fields = get_field_b(fields, &bool );		/* field 8 */
-	if( ! bool )
+	fields = get_field_b(fields, &b );		/* field 8 */
+	if( ! b )
 	{
 	    continue;	/* if empty, ignore this record */
 	}

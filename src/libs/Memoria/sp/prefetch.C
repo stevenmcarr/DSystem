@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.20 1999/02/23 19:08:51 carr Exp $ */
+/* $Id: prefetch.C,v 1.21 1999/03/31 21:57:14 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,6 +39,7 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 #include <libs/Memoria/ut/Recurrence.h>
+#undef is_open
 #include <iostream.h>
 
 extern Boolean Memoria_LetRocketSchedulePrefetches;

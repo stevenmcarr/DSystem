@@ -1,6 +1,8 @@
 %{
-#include <DirectivesInclude.h>
-#include <yaccDirectives.h>
+#include <libs/Memoria/annotate/DirectivesInclude.h>
+#include <libs/Memoria/annotate/yaccDirectives.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define yywrap() 1
 #define EOS     '\0'

@@ -1,4 +1,4 @@
-/* $Id: control.C,v 1.1 1997/06/25 15:05:47 carr Exp $ */
+/* $Id: control.C,v 1.2 1999/03/31 21:48:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -55,7 +55,7 @@ STATIC(int, 	  cd_new_node,(ControlDep *cd, int p, int old));
 STATIC(cdEdges,   cd_move_edge_new_pred,(cdEdges predge, cdEdges oldedge, cdEdges
                                          lastsucc, cdNodes nodes, int n));
 STATIC(void,      cd_create_ast_guard,(AST_INDEX loop, cdNodes nodes, int n,
-                                       AST_INDEX true, AST_INDEX false, int t));
+                                       AST_INDEX True, AST_INDEX False, int t));
 STATIC(AST_INDEX, cd_build_ast_guard_rvalue,(AST_INDEX ev, char *val));
 STATIC(AST_INDEX, cd_move_stmt,(AST_INDEX stmt, AST_INDEX new_stmt_list, Stack
                                 ifstmts, AST_INDEX ifstmt));
@@ -301,8 +301,8 @@ cd_build_guards(ControlDep *cd, int n, cdEdge *edge, cdEdge *pedge, AST_INDEX ev
     int	      i, t, f, first;
     int	      into;
     AST_INDEX guard;
-    AST_INDEX true;
-    AST_INDEX false;
+    AST_INDEX True;
+    AST_INDEX False;
     UtilList **plist = cd->lddesc->plist;
     AST_INDEX loop   = cd->top;
     cdNode    *nodes = cd->nodes;
@@ -333,23 +333,23 @@ cd_build_guards(ControlDep *cd, int n, cdEdge *edge, cdEdge *pedge, AST_INDEX ev
 	newnode = util_node_alloc (t, "cd_build_guards");
 	util_insert_before (newnode, pnode);
 	
-	true  = AST_NIL;
-	false = AST_NIL;
+	True  = AST_NIL;
+	False = AST_NIL;
 	first = tedge->sink->lda->tier;
 	for ( ; (tedge != NULL) && (tedge->sink->lda->tier == first); 
 	     tedge = next)
 	{
 	    next = tedge->next_succ;
 	    /* create $ev<n>[i] .eq. 1 */
-	    if ((tedge->label == CD_TRUE) && (true == AST_NIL))
-		true = cd_build_ast_guard_rvalue (ev, "1");
+	    if ((tedge->label == CD_TRUE) && (True == AST_NIL))
+		True = cd_build_ast_guard_rvalue (ev, "1");
 	    
-	    else if ((tedge->label == CD_FALSE) && (false == AST_NIL)) 
+	    else if ((tedge->label == CD_FALSE) && (False == AST_NIL)) 
 	    {
 		/* create $ev<n>[i] .eq. 0 */
-		false = cd_build_ast_guard_rvalue (ev, "0");
+		False = cd_build_ast_guard_rvalue (ev, "0");
 		
-		if ((true != AST_NIL) && (nodes[n].pred->src->stmt != loop))
+		if ((True != AST_NIL) && (nodes[n].pred->src->stmt != loop))
 		{/* a node is needed for each of the true and 
 		  * false branch, pnode has the correct place for t */
 		    t = cd_new_node (cd, tedge->sink->lda->tier, n);
@@ -359,7 +359,7 @@ cd_build_guards(ControlDep *cd, int n, cdEdge *edge, cdEdge *pedge, AST_INDEX ev
 	    }
 	    lastsucc = cd_move_edge_new_pred (pedge, tedge, lastsucc, nodes, t);
 	}
-	cd_create_ast_guard (loop, nodes, n, true, false, t);
+	cd_create_ast_guard (loop, nodes, n, True, False, t);
     }
 }
 
@@ -376,41 +376,41 @@ cd_build_ast_guard_rvalue (AST_INDEX ev, char *val)
 			
 static void
 cd_create_ast_guard (AST_INDEX loop, cdNodes nodes, int n, 
-                     AST_INDEX true, AST_INDEX false, int t)
+                     AST_INDEX True, AST_INDEX False, int t)
 {
     AST_INDEX guard;
     if (nodes[n].pred->src->stmt == loop)
     {
-	if (true != AST_NIL)
+	if (True != AST_NIL)
 	{/* if-then-else, or if-then for original true branch */
-	    guard =  gen_GUARD(AST_NIL, true, AST_NIL);
+	    guard =  gen_GUARD(AST_NIL, True, AST_NIL);
 	    guard = list_create(guard);
-	    if (false != AST_NIL)
-		list_insert_last(guard, gen_GUARD(AST_NIL, false, AST_NIL));
+	    if (False != AST_NIL)
+		list_insert_last(guard, gen_GUARD(AST_NIL, False, AST_NIL));
 	    
 	}
 	else
 	{ /* if-then for original false branch */
-	    guard = gen_GUARD(AST_NIL, false, AST_NIL);
+	    guard = gen_GUARD(AST_NIL, False, AST_NIL);
 	    guard = list_create(guard);
 	}
 	nodes[t].stmt = guard;
     }
     else
     {
-	if (true == AST_NIL)
+	if (True == AST_NIL)
 	{ /* if-then for original false branch */
-	    guard = gen_GUARD(AST_NIL, false, AST_NIL);
+	    guard = gen_GUARD(AST_NIL, False, AST_NIL);
 	    guard = list_create(guard);
 	    nodes[t].stmt = guard;
 	}
-	else if (false != AST_NIL) 
-	{ /* if-then for original true and false branch */
-	    guard = gen_GUARD(AST_NIL, true, AST_NIL);
+	else if (False != AST_NIL) 
+	{ /* if-then for original True and false branch */
+	    guard = gen_GUARD(AST_NIL, True, AST_NIL);
 	    guard = list_create(guard);
 	    nodes[t - 1].stmt = guard;
 	    
-	    guard = gen_GUARD(AST_NIL, false, AST_NIL);
+	    guard = gen_GUARD(AST_NIL, False, AST_NIL);
 	    guard = list_create(guard);
 	    nodes[t].stmt = guard;
 	}

@@ -1,4 +1,4 @@
-/* $Id: CallGraphNodeEdge.C,v 1.8 1997/03/27 20:40:12 carr Exp $ */
+/* $Id: CallGraphNodeEdge.C,v 1.9 1999/03/31 21:55:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -175,7 +175,7 @@ type(_type)
 
 CallGraphNode::CallGraphNode(CallGraph *cg, ProcSummary *procSummary) : 
 DirectedGraphNode(cg), type(GetCallGraphNodeType(procSummary)),
-procName(ssave(procSummary->name)), formalParameterSet(new FormalParameterSet),
+procName(ssave(procSummary->NamedObject::name)), formalParameterSet(new FormalParameterSet),
 entryPoints(new EntryPoints)
 {
   *entryPoints = procSummary->entryPoints;

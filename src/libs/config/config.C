@@ -425,8 +425,10 @@ int filterStandardArgs(int argc, char **argv)
 static 
 char* GetEnvVarName(char* str)
 {
-  char *orig_str = str;
-  char *end_str;
+  char *environ_str = (char*)malloc(strlen(str)*sizeof(char));
+  char *orig_str = (char*)malloc(strlen(str)*sizeof(char));;
+
+  (void)strcpy(orig_str,str);
 
   assert(*str == '$');
   str++;
@@ -438,7 +440,7 @@ char* GetEnvVarName(char* str)
     exit(-1);
   }
   str++;
-  end_str = strrchr(str, ')');
+  char *end_str = strrchr(str, ')');
   if (end_str == NULL)
   {
     fprintf(stderr, "GetEnvVarName: error parsing environment variable at start of\n:");
@@ -446,7 +448,9 @@ char* GetEnvVarName(char* str)
     fprintf(stderr, "                No closing paren found.\n");
     exit(-1);
   }
-  *end_str = '\0';
+  int length = strlen(str) - strlen(end_str);
+  strncpy(environ_str,str,length);
+  environ_str[length] = '\0';
 
      /* grab the name of the environment variable */
   if (environ_var_name != NULL)
@@ -454,12 +458,10 @@ char* GetEnvVarName(char* str)
     sfree(environ_var_name);
     sfree(environ_var_value);
   }
-  environ_var_name = ssave(str);
+  environ_var_name = ssave(environ_str);
   environ_var_value = ssave(getenv(environ_var_name));
-
-     /* replace closing paren */
-  *end_str = ')';
 
      /* closing paren */
   return end_str;
 }
+

@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.5 1997/03/11 14:33:20 carr Exp $ */
+/* $Id: system.h,v 1.6 1999/03/31 21:54:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,11 +17,15 @@
 #include <libs/support/misc/general.h>
 #endif
 
+#ifdef SOLARIS
    /* forward declare to satisfy Solaris compiler gripe.  This will */
    /* need to be changed to comply with SVR4 standards.             */
 union wait;
 
 EXTERN(void, status_wait, (int pid, union wait *status_ptr));
+#else
+EXTERN(void, status_wait, (int pid, int *status_ptr));
+#endif
 /* replaces wait3 C call                                                                */
 /* Takes two parameters (int pid) the process id to wait on and (union wait *sptr) the	*/
 /* pointer to the union wait which will record the status.  The call waits for a change	*/

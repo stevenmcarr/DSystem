@@ -1,4 +1,4 @@
-/* $Id: label.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: label.C,v 1.3 1999/03/31 21:56:05 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -18,6 +18,9 @@
 #include <libs/f2i/ai.h>
 #include <libs/f2i/sym.h>
 #include <strings.h>
+
+int label_table_dimension;
+struct label_element *label_table;  /*  name table  */
 
 static int LabelGetInternal (STR_TEXT,int*,AST_INDEX,int);
 

@@ -1,4 +1,4 @@
-/* $Id: notify.h,v 1.6 1997/03/11 14:33:18 carr Exp $ */
+/* $Id: notify.h,v 1.7 1999/03/31 21:54:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -45,8 +45,13 @@ EXTERN(void, notify_unregister_async_fd, (short fd));
 /* earlier registration.						*/
 
 
+#ifndef SOLARIS
+typedef FUNCTION_POINTER(void, notify_process_callback,
+  (Generic owner, int pid, int *status));
+#else
 typedef FUNCTION_POINTER(void, notify_process_callback,
   (Generic owner, int pid, union wait *status));
+#endif
 /* The process notifier takes three arguments:  (Generic owner) the	*/
 /* owner handle, (int pid) the process id of the notification, and	*/
 /* (union wait *status) the status of the process.			*/

@@ -1,4 +1,4 @@
-/* $Id: CallGraph.C,v 1.7 1997/03/27 20:40:12 carr Exp $ */
+/* $Id: CallGraph.C,v 1.8 1999/03/31 21:55:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -22,6 +22,10 @@
 
 #ifndef general_h
 #include <libs/support/misc/general.h>
+#endif
+
+#ifdef LINUX
+#include <assert.h>
 #endif
 
 #include <libs/support/misc/dict.h>
@@ -343,7 +347,7 @@ int CallGraph::Build()
 int CallGraph::AddStaticCallEdges(ProcSummary *summary)
 {
   int returncode = 0;
-  CallGraphNode *caller = LookupNode(summary->name);
+  CallGraphNode *caller = LookupNode(summary->NamedObject::name);
   
   //---------------------------------------------------------------------
   // I do not think this condition can ever be true here 

@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.21 1999/02/23 19:05:34 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.22 1999/03/31 21:56:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -514,7 +514,7 @@ static void walk_loops(CacheInfoType  *CacheInfo,
 	  LIS[i] = 0;
 	AST_INDEX step = gen_INDUCTIVE_get_rvalue3(
                            gen_DO_get_control(CacheInfo->loop_data[loop].node));
-	if (step == NULL)
+	if (step == AST_NIL)
 	  LIS[CacheInfo->loop_data[loop].level-1] = 1;
 	else if (pt_eval(step,&LIS[CacheInfo->loop_data[loop].level-1]))
 	  LIS[CacheInfo->loop_data[loop].level-1] = 1;

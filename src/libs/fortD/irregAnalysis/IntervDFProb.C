@@ -1,4 +1,4 @@
-/* $Id: IntervDFProb.C,v 1.8 1997/03/11 14:28:28 carr Exp $ */
+/* $Id: IntervDFProb.C,v 1.9 1999/03/31 21:52:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,7 +11,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: IntervDFProb.C,v $
- * Revision 1.8  1997/03/11 14:28:28  carr
+ * Revision 1.9  1999/03/31 21:52:44  carr
+ * updated for g++
+ *
+ * Revision 1.8  1997/03/11  14:28:28  carr
  * newly checked in as revision 1.8
  *
 Revision 1.8  94/03/21  13:17:12  patton
@@ -189,9 +192,9 @@ IntervalDFProblem::gt_solve_combined(GtSensFunc     sens1,
     ? ChildrenBackward : ChildrenForward;
   IntervalGraphIter iter1(cfg, order1);
   CfgMeetIter       iter2(cfg, CFG_NIL, order2);
-  CfgAnnotPtrIter   meet1_gts(cfg, CFG_NIL, this, gt_access_apply,
+  CfgAnnotPtrIter   meet1_gts(cfg, CFG_NIL, this, (AccessApplyFunc)gt_access_apply,
 			      meetees1, cur_gt_access);
-  CfgAnnotPtrIter   meet2_gts(cfg, CFG_NIL, this, gt_access_apply,
+  CfgAnnotPtrIter   meet2_gts(cfg, CFG_NIL, this, (AccessApplyFunc)gt_access_apply,
 			      meetees2, cur_gt_access);
 
   is_lift = select_LiftPredicate(order1);
@@ -246,7 +249,7 @@ IntervalDFProblem::gt_solve_sens(GtSensFunc     sens,
   GiveTakePtr       liftee_gt;  // Annotation of liftee
   Meetees           meetees = (order == PreOrder
 			       || order == PostOrder) ? Preds : Succs;
-  CfgAnnotPtrIter   meet_gts(cfg, CFG_NIL, this, gt_access_apply,
+  CfgAnnotPtrIter   meet_gts(cfg, CFG_NIL, this, (AccessApplyFunc)gt_access_apply,
 			     meetees, cur_gt_access);
   IntervalGraphIter iter(cfg, order, only_level);
 
@@ -334,7 +337,7 @@ IntervalDFProblem::solve_insens(InsensFunc insens, TraversalOrder order)
 CfgAnnotPtrIter *
 IntervalDFProblem::gen_meet_annots(CfgNodeId cn, Meetees meetees) const
 {
-  return new CfgAnnotPtrIter(cfg, cn, this, set_access_apply,
+  return new CfgAnnotPtrIter(cfg, cn, this, (AccessApplyFunc)set_access_apply,
 			     meetees, 0);
 }
 
@@ -345,7 +348,7 @@ IntervalDFProblem::gen_meet_annots(CfgNodeId cn, Meetees meetees) const
 CfgAnnotPtrIter *
 IntervalDFProblem::gen_meet_gts(CfgNodeId cn, Meetees meetees) const
 {
-  return new CfgAnnotPtrIter(cfg, cn, this, gt_access_apply, meetees,
+  return new CfgAnnotPtrIter(cfg, cn, this, (AccessApplyFunc)gt_access_apply, meetees,
 			     cur_gt_access);
 }
 

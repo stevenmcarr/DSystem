@@ -1,4 +1,4 @@
-/* $Id: analyse.C,v 1.20 1997/06/24 17:38:57 carr Exp $ */
+/* $Id: analyse.C,v 1.21 1999/03/31 21:52:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,7 +11,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: analyse.C,v $
- * Revision 1.20  1997/06/24 17:38:57  carr
+ * Revision 1.21  1999/03/31 21:52:44  carr
+ * updated for g++
+ *
+ * Revision 1.20  1997/06/24  17:38:57  carr
  * Support 64-bit Pointers
  *
  * Revision 1.19  1997/03/11  14:28:37  carr
@@ -452,17 +455,17 @@ prefix_type(int type, const char *str)
 Boolean
 match_boolean(const char *str)
 {
-  Boolean bool = (Boolean) (str_prefix(str, "true")
+  Boolean Bool = (Boolean) (str_prefix(str, "true")
 			    || str_prefix(str, "1"));
 
-  if (!(bool
+  if (!(Bool
 	|| str_prefix(str, "false")
 	|| str_prefix(str, "0"))) {
     cerr << "WARNING match_boolean(): Could not match boolean in \"" <<
       str << "\"\n";
   }
 
-  return bool;
+  return Bool;
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: sym.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: sym.C,v 1.2 1999/03/31 21:56:05 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,6 +11,19 @@
 #include <libs/f2i/ai.h>
 #include <libs/f2i/sym.h>
 #include <libs/f2i/char.h>
+
+struct common_table_elt *common_table;
+int CommonNextSlot;
+int CommonNumberOfSlots; 
+struct leader_table_elt *leader_table;
+int    leader_table_free_list;
+int SymHaveSeenASave;
+int                      SymDebug;
+SymDescriptor ft_SymTable;
+char                     *Sym2ndReg;
+int                      SymHaveSeenAnEquivalence;
+
+
 
 
 /* forward declarations */

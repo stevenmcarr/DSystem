@@ -1,4 +1,4 @@
-/* $Id: event.ansi.c,v 1.14 1997/06/27 17:40:23 carr Exp $ */
+/* $Id: event.ansi.c,v 1.15 1999/03/31 21:54:19 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,7 +13,7 @@
 
 #include <fcntl.h>
 #include <signal.h>
-#ifndef OSF1
+#ifdef SOLARIS
 #include <vfork.h>
 #endif
 #include <stdio.h>
@@ -22,6 +22,9 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
+#ifndef SOLARIS
+#include <sys/select.h>
+#endif
 
 #include <libs/support/misc/general.h>
 
@@ -56,7 +59,11 @@ struct	cr_node	{				/* CHILD REGISTRATION NODE (for 1-list)	*/
 	int		pid;			/* the registered process id		*/
 	Generic		owner;			/* the registered owner of the process	*/
 	Boolean		urgent;			/* input should not be held		*/
+#ifdef SOLARIS
 	union	wait	status;			/* the most recient status of process	*/
+#else
+       int *status;
+#endif
 	struct	cr_node	*next;			/* the next entry in the list		*/
 	Boolean		ready;			/* there is a waiting child here	*/
 		};
@@ -69,7 +76,11 @@ typedef FUNCTION_POINTER(void,SignalHandler,(int));
 
 	/* ASYNCHRONOUS IO INFORMATION */
 
+#ifdef SOLARIS
 typedef	struct	fd_set	SelectMask;		/* the select mask type			*/
+#else
+typedef	fd_set	SelectMask;		/* the select mask type			*/
+#endif
 struct	file		{			/* FILE descriptor			*/
 	Generic		owner;			/* the owner of the file		*/
 	Boolean		buffer;			/* true if the file is buffered		*/
@@ -116,7 +127,11 @@ startChildProcessEvents(void)
 static Boolean
 readyChildProcessEvent(void)
 {
+#ifdef SOLARIS
 	status_wait(0, (union wait *) 0);
+#else
+	status_wait(0, (int *) 0);
+#endif
 	return BOOL(urgent_childs + ((urgent_only) ? 0 : boring_childs));
 }
 
@@ -215,7 +230,11 @@ int system(char* s)
 {
   register int pid;			/* the (shard) process id		*/
   register int omask;			/* old signal mask			*/
+#ifdef SOLARIS
   union	wait   status;			/* the return status			*/
+#else
+  int status;
+#endif
 
   pid = vfork();
   if (pid == -1)
@@ -235,6 +254,11 @@ int system(char* s)
       sigsetmask(omask);
 #ifdef _AIX
       return (WIFEXITED(status)) ? status.w_retcode : status.w_termsig;
+#elif !defined(SOLARIS)
+      if (WIFEXITED(status)) 
+	return WEXITSTATUS(status); 
+      else
+	return WTERMSIG(status);
 #else
       return (WIFEXITED(status.w_status)) ? status.w_retcode : status.w_termsig;
 #endif
@@ -244,11 +268,19 @@ int system(char* s)
 
 /* Replaces "wait3" with something that knows about other child pids.			*/
 void
+#ifdef SOLARIS
 status_wait(int pid, union wait* status_ptr)
+#else
+status_wait(int pid, int* status_ptr)
+#endif
 {
 register struct	cr_node	*current;		/* current entry in registration list	*/
 register int		new_pid;		/* the new ready child process id	*/
+#ifdef SOLARIS
 union wait		status;			/* the return status			*/
+#else
+int*		status;			/* the return status			*/
+#endif
 
 	if (pid)
 	{/* check the existing registration list & arrive list for this pid */

@@ -1,4 +1,4 @@
-/* $Id: CallGraphDFProblem.C,v 1.2 1997/03/27 20:40:12 carr Exp $ */
+/* $Id: CallGraphDFProblem.C,v 1.3 1999/03/31 21:55:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -132,7 +132,7 @@ void CallGraphDFProblem::Initialize(DirectedGraph *dg, int)
       //-----------------------------------------------------------------------
       ModuleLocalInfoIterator procedures(mli);
       for(ProcLocalInfo *pli; pli = procedures.Current(); ++procedures) {
-        node = cg->LookupNode(pli->name);
+        node = cg->LookupNode(pli->NamedObject::name);
         assert(node);
         //--------------------------------------------------------------------
         // perform node initialization passing local information

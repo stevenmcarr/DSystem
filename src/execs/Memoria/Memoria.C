@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.8 1999/02/23 21:45:35 carr Exp $ */
+/* $Id: Memoria.C,v 1.9 1999/03/31 21:57:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,12 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
-#ifdef OSF1
-#include <String.h>
-#else
-#include <rw/cstring.h>
-#endif
+#include <string.h>
 
 #include <libs/support/misc/general.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/standalone.h>
@@ -109,7 +104,7 @@ void CompileFile(FortranModule *module)
   FortTextTreeModAttr*  fttAttr = ATTACH_ATTRIBUTE(module, FortTextTreeModAttr);
   FortTree              ft = ftAttr->ft;
   FortTextTree          ftt = fttAttr->ftt;
-  char            *NewFile;
+  char            *Filename;
   
   
   module->DisableAttributeCaching();
@@ -129,7 +124,7 @@ void CompileFile(FortranModule *module)
   PED_ROOT(ped)	      = root;
   PED_INFO(ped)	      = SI;
   PED_DT_INFO(ped)    = DT;
-  PED_MH_CONFIG(ped)  = NULL;
+  PED_MH_CONFIG(ped)  = (int)NULL;
   
   
   /* Run the memory compiler on the ast of the input file */
@@ -143,63 +138,54 @@ void CompileFile(FortranModule *module)
 	 chosen then no changes are done to the tree. */
       
       if (mc_output != NULL)
-	NewFile = mc_output;
+	Filename = mc_output;
       else
 	{
-#ifdef OSF1
-	  String Filename(module->ReferenceFilePathName());
-	  Filename = Filename(0,Filename.index(".f"));
-#else
-	  RWCString Filename(module->ReferenceFilePathName());
-	  Filename.remove(Filename.index(".f"));
-#endif
+	  Filename = new char[strlen(module->ReferenceFilePathName()) + 20];
+	  (void) strcpy(Filename,module->ReferenceFilePathName());
+	  int end = strlen(Filename) - strlen(rindex(Filename,'.'));
+	  Filename[end] = '\0';
+
 	  switch(selection) {
 	  case INTERCHANGE:
-	    Filename += ".perm.f";
+	    (void) strcat(Filename,".perm.f");
 	    break;
 	  case SCALAR_REP:
 	    {
 	      char Level[2];
 
-	      Filename += ".sr";
+	      (void) strcat(Filename,".sr");
 	      sprintf(Level,"%d",ReplaceLevel);
-	      Filename += (const char *)Level;
-	      Filename += ".f";
+	      (void) strcat(Filename,Level);
+	      (void) strcat(Filename,".f");
 	      break;
 	    }
 	  case UNROLL_AND_JAM:
-	    Filename += ".uj.f";
+	    (void) strcat(Filename,".uj.f");
 	    break;
 	  case PREFETCH:
-	    Filename += ".fetch.f";
+	    (void) strcat(Filename,".fetch.f");
 	    break;
 	  case ANNOTATE:
-	    Filename += ".cache.f";
+	    (void) strcat(Filename,".cache.f");
 	    break;
 	  case LDST:
-	    Filename += ".ldst.f";
+	    (void) strcat(Filename,".ldst.f");
 	    break;
 	  case DEAD:
-	    Filename += ".dead.f";
+	    (void) strcat(Filename,".dead.f");
 	    break;
 	  case PARTITION_UNROLL:
-	    Filename += ".unroll.f";
+	    (void) strcat(Filename,".unroll.f");
 	    break;
 	  default:
-	    Filename += ".memoria.f";
+	    (void) strcat(Filename,".memoria.f");
 	    break;
 	  }
-#ifdef OSF1
-	  char *TempFile= (char *)Filename;
-#else
-	  char* TempFile = (char *)Filename.data();
-#endif
-	  NewFile = new char[strlen(TempFile)];
-	  (void)strcpy(NewFile,TempFile);
 	}
 
 
-      fd = fopen(NewFile, "w");
+      fd = fopen(Filename, "w");
       if (fd == 0)
 	{
 	  fprintf(stderr, "The output file could not be opened...\n");
