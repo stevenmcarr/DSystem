@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.29 1997/11/04 21:10:45 carr Exp $ */
+/* $Id: compute_uj.C,v 1.30 2000/07/19 19:20:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -3605,8 +3605,8 @@ static void do_computation(model_loop    *loop_data,
            }
 
         //cout << "Generating UGS" << endl;
-        UGS = new UniformlyGeneratedSets(gen_DO_get_stmt_LIST(loop_data[loop].node),
-	                             loop_data[loop].level,IVar);
+        UGS = new UniformlyGeneratedSets(loop_data[loop].node,
+	                                 loop_data[loop].level,IVar);
       
         //cout << "Begin Creating Data Reuse Model" << endl;
         drmodel = new DataReuseModel(UGS);
