@@ -1,4 +1,20 @@
-/* $Id: prefetch.C,v 1.9 1995/09/14 14:44:25 carr Exp $ */
+/* $Id: prefetch.C,v 1.10 1996/10/15 15:21:15 carr Exp $ */
+
+//  
+//  File:  prefetch.C
+//
+//  Description: This code walks the loop structure model_loop looking for innermost
+//               loops.  For each innermost loop, it determines the cache locality
+//               of each array reference.  Then, using the algorithm of Mowry, et al.,
+//               it software pipelines software prefetches.
+//
+//  Creation: 9/14/95
+//  
+//  Modifications:  Removed code to ensure that no bogus prefetches are issued.
+//                  Now count on hardware to suppress such prefetches. 
+//                  - smc 5/20/96
+//
+//                  fixed bug in unroll amount determination - smc 9/29/96
 
 #include <mh.h>
 #include <fort/gi.h>
@@ -16,28 +32,47 @@
 #include <label.h>
 #include <strings.h>
 
+#include <assert.h>
+
 #include	<dg.h>
 
 #include <UniformlyGeneratedSets.h>
 
+//
+//  Function: remove_edges
+//
+//  Input: stmt - AST of a statement in a loop
+//         level - nesting level of statement
+//         ped - dependence graph
+//
+//  Output: modified dependence graph
+//
+//  Description: Remove all io, exit, control and call dependences
+//
 
 static int remove_edges(AST_INDEX stmt,
 			int       level,
 			PedInfo   ped)
 
   {
-   DG_Edge    *dg;
-   int        vector;
-   EDGE_INDEX edge,
-              next_edge;
-   int        i;
+    DG_Edge    *dg;       // dependence graph
+    int        vector;    // level vector for dependence graph
+    EDGE_INDEX edge,      // dependence edge
+      next_edge;          // next dependence edge in list
+    int        i;         // counter for nesting levels
 
      dg = dg_get_edge_structure( PED_DG(ped));
      vector = get_info(ped,stmt,type_levelv);
+
+     // set store field for lhs of an assignment
+
      if (is_assignment(stmt))
        if (is_subscript(gen_ASSIGNMENT_get_lvalue(stmt)))
          get_subscript_ptr(gen_SUBSCRIPT_get_name(gen_ASSIGNMENT_get_lvalue(
 			   stmt)))->store = true;
+
+     // for each nesting level remove io,exit, call and control dependences
+
      for (i = 1;i <= level; i++)
        {
 	for (edge = dg_first_src_stmt( PED_DG(ped),vector,i);
@@ -59,6 +94,9 @@ static int remove_edges(AST_INDEX stmt,
 	     dg_delete_free_edge( PED_DG(ped),edge);
 	  }
        }
+
+     // remove loop independent exit, io, call and control dependences
+
      for (edge = dg_first_src_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
@@ -68,6 +106,8 @@ static int remove_edges(AST_INDEX stmt,
 	    dg[edge].type == dg_call || dg[edge].type == dg_control)
 	  dg_delete_free_edge( PED_DG(ped),edge);
        }
+
+     // remove loop independent exit, io, call and control dependences
      for (edge = dg_first_sink_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
@@ -80,63 +120,125 @@ static int remove_edges(AST_INDEX stmt,
      return(WALK_CONTINUE);
   }
 
+//
+//  Function: CheckLocality
+//
+//  Input: node - AST node
+//         locality_info - structure containing various needed info
+//
+//  Output: updated Locality field for array references
+//
+//  Description: For each array reference check the type of locality it has and
+//               set the file in subscript info to indicate.
+//
 
 static int CheckLocality(AST_INDEX          node,
 			 locality_info_type *locality_info)
 
   {
-   AST_INDEX name;
-   subscript_info_type *sptr;
+    AST_INDEX name;             // identifier for array ref
+    subscript_info_type *sptr;  // pointer to subscript info (store locality there)
+
+
+   // do we have an array reference 
 
      if (is_subscript(node))
        {
 	name = gen_SUBSCRIPT_get_name(node);
 	sptr = get_subscript_ptr(name);
+
+	// store locality information
+
 	sptr->Locality = ut_GetReferenceType(node,locality_info->loop_data,
 					     locality_info->loop,
 					     locality_info->ped,
 					     locality_info->UGS);
+	char Text[80];
+
+	ut_GetSubscriptText(node,Text);
+	printf("Group Distance for %s = %d\n",Text,sptr->GroupDistance);
 	return(WALK_SKIP_CHILDREN);
        }
      return(WALK_CONTINUE);
   }
 
+//
+//  Function: BuildPrefetchList
+//
+//  Input: node - AST node 
+//         locality_info - structure containing prefetchlists
+//
+//  Output: possibly update prefetch list
+//
+//  Description: If we have an array reference, check locality and
+//               add to appropriate list.
+//
 
 static int BuildPrefetchList(AST_INDEX          node,
 			     locality_info_type *locality_info)
 
   {
-   AST_INDEX name;
-   subscript_info_type *sptr;
+    AST_INDEX name;           // identifier for array reference
+    subscript_info_type *sptr;// pointer to subscript info (contains localilty for array)
+
+
+    // do we have an array reference?
 
      if (is_subscript(node))
        {
-	name = gen_SUBSCRIPT_get_name(node);
-	sptr = get_subscript_ptr(name);
-	if (sptr->Locality == NONE)
-          if (((config_type *)PED_MH_CONFIG(locality_info->ped))->
-	      write_allocate)
+
+	 // get subscript info (contains locality for reference)
+
+	 name = gen_SUBSCRIPT_get_name(node);
+	 sptr = get_subscript_ptr(name);
+	 if (sptr->Locality == NONE)
+
+	   // if no locality we prefetch by word if we allocate on writes
+
+	   if (((config_type *)PED_MH_CONFIG(locality_info->ped))->
+	       write_allocate)
+	     locality_info->WordPrefetches->append_entry(node); 
+
+	   // if no write allocate, only prefetch loads
+
+	   else if (NOT(sptr->store))
 	    locality_info->WordPrefetches->append_entry(node); 
-	  else if (NOT(sptr->store))
-	    locality_info->WordPrefetches->append_entry(node); 
+
+	   // prefetch writes that are part of group-temporal reuse
+
 	  else if (sptr->uses_regs)
 	    locality_info->WordPrefetches->append_entry(node); 
 	  else;
+
+	  // prefetch self-spatial by line
+	  
 	if (sptr->Locality == SELF_SPATIAL)
-	  if (gen_get_real_type(node) == TYPE_REAL)
-	    locality_info->SPLinePrefetches->append_entry(node); 
-	  else
-	    locality_info->DPLinePrefetches->append_entry(node); 
+	  locality_info->DPLinePrefetches->append_entry(node); 
+
 	return(WALK_SKIP_CHILDREN);
        }
      return(WALK_CONTINUE);
   }
 
+//
+//  Function: CheckRefsForPrefetch
+//
+//  Input: loop_data - tree structure for loop nest
+//         loop - index into loop_data for current loop
+//         LinePrefetches - list of array references to be prefetched by line
+//         WordPrefetches - list of array references to be prefetched by word
+//         ped - dependence graph and configuration info
+//         IVar - induction variables
+//
+//  Output: Lists of array references for prefetching
+//
+//  Description: Walk statements and determine the locality of each array reference.
+//               Then, walk them again and build up lists for prefetching.
+//
 
 static void CheckRefsForPrefetch(model_loop    *loop_data,
 				 int           loop,
-				 PrefetchList  *SPLinePrefetches,
-				 PrefetchList  *DPLinePrefetches,
+				 PrefetchList  *LinePrefetches,
 				 PrefetchList  *WordPrefetches,
 				 PedInfo       ped,
 				 char          **IVar)
@@ -147,23 +249,42 @@ static void CheckRefsForPrefetch(model_loop    *loop_data,
      locality_info.ped = ped;
      locality_info.loop = loop;
      locality_info.loop_data = loop_data;
-     locality_info.SPLinePrefetches = SPLinePrefetches;
-     locality_info.DPLinePrefetches = DPLinePrefetches;
+     locality_info.DPLinePrefetches = LinePrefetches;
      locality_info.WordPrefetches = WordPrefetches;
+
+     // Use uniformly generated sets to compute locality information
+     // this is not likely to work right now.
+
      if (mc_extended_cache)
        locality_info.UGS = new UniformlyGeneratedSets(loop_data[loop].node,
 						      loop_data[loop].level,
 						      IVar);
      else
        locality_info.UGS = NULL;
+
+     // determine locality for each array reference in loop
+
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		     (WK_EXPR_CLBACK)CheckLocality,NOFUNC,(Generic)&locality_info);
+
+     // build up word and line prefetch lists
+
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		     (WK_EXPR_CLBACK)BuildPrefetchList,NOFUNC,
 		     (Generic)&locality_info);
      delete locality_info.UGS;
   }
    
+//
+//  Function: LoadCycles
+//
+//  Input: Node - AST index of a subscript
+//         ped - configuration info
+//
+//  Output: number of cycles for a load of a value
+//
+//  Description: based on type return how long an operation takes
+//
 
 static int LoadCycles(AST_INDEX Node,
 		      PedInfo   ped)
@@ -174,6 +295,10 @@ static int LoadCycles(AST_INDEX Node,
     LoadPenalty = ((config_type *)PED_MH_CONFIG(ped))->hit_cycles;
     if (gen_get_converted_type(Node) == TYPE_REAL)
       return(LoadPenalty);
+
+    // on some architectures a 64-bit value may take to load instructions
+    // not likely anymore though
+
     else if (gen_get_converted_type(Node) == TYPE_DOUBLE_PRECISION ||
             gen_get_converted_type(Node) == TYPE_COMPLEX)
       return(((config_type *)PED_MH_CONFIG(ped))->double_fetches*LoadPenalty);
@@ -181,12 +306,22 @@ static int LoadCycles(AST_INDEX Node,
       return(0);
   }
 
+//
+//  Function: OperationCycles
+//
+//  Input: Node - binary operator AST
+//         ped - configuration info
+//
+//  Output: number of cycles for an operator
+//
+//  Description: look up in configuration info how long a particular operation takes
+//
 
 static int OperationCycles(AST_INDEX Node,
 			   PedInfo   ped)
 
   {
-   int ops;
+    int ops;  // complex operations take more than 1 instruction
      
      if (!is_binary_times(Node) || 
 	 (!is_binary_plus(tree_out(Node)) && 
@@ -212,16 +347,29 @@ static int OperationCycles(AST_INDEX Node,
      return(0);
   }
 
+//
+//  Function: CountCycles
+//
+//  Input: Node - AST node of operation to check cycle count on
+//         CycleInfo - record of cycles in loop so far
+//
+//  Output: Increase in number of cycles in loop depending on operation
+//
+//  Description: Add to memory cycles for array references and flops for operators
+//
 
 static int CountCycles(AST_INDEX     Node,
 		       SPCycleInfoType *CycleInfo)
 
   {
-   subscript_info_type *sptr;
+    subscript_info_type *sptr; // point to subscript info
 
      if (is_subscript(Node))
        {
 	sptr = get_subscript_ptr(gen_SUBSCRIPT_get_name(Node));
+
+	// determine whether this is not scalar replaced to get cycle time
+
 	if (sptr->Locality == NONE || sptr->Locality == SELF_SPATIAL ||
 	    sptr->Locality == GROUP_SPATIAL)
 	  CycleInfo->MemCycles += LoadCycles(Node,CycleInfo->ped);
@@ -231,41 +379,78 @@ static int CountCycles(AST_INDEX     Node,
      return(WALK_CONTINUE);
   }
 
+//
+//  Function: CyclesPerIteration
+//
+//  Input: Node -  AST index of an innermost loop
+//         ped - dependence graph and configuration info
+//
+//  Output: The number of floating-point and memory cycles in a loop
+//
+//  Description: walk the statements in the AST and compute how much each
+//               node requires in machine cycles
+//
 
 static int CyclesPerIteration(AST_INDEX Node,
 			      PedInfo   ped)
 
   {
-   SPCycleInfoType CycleInfo;
+    SPCycleInfoType CycleInfo; // Cycle information
   
+    // Initilization 
+
      CycleInfo.MemCycles = 0;
      CycleInfo.FlopCycles = 0;
      CycleInfo.ped = ped;
+
+     // walk statements and compute cycles
+
      walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountCycles,NOFUNC,
 		     (Generic)&CycleInfo);
+     
+     // conservatively assume that memory and flops are parallel.  This gives a
+     // lower bound on cycle time 
+
      if (CycleInfo.MemCycles >= CycleInfo.FlopCycles)
        return(CycleInfo.MemCycles);
      else
        return(CycleInfo.FlopCycles);
   }
 
+//
+//  Function: ModeratePrefetchRequirements
+//
+//  Input: loop_data - tree structure of loop nest
+//         loop - index into loop_data of current loop
+//         LinePrefetches - list of array references to prefetch by line
+//         WordPrefetches - list of array references to prefetch by word
+//         ped - dependence graph and configuration info
+//
+//  Output: smaller list of prefetches that fit into the bandwidth provided
+//          by target machine
+//
+//  Description: Remove prefetches if not enough bandwidth.  Give preference to
+//               word prefetches as they eliminate more misses. 
+//
+
 static void ModeratePrefetchRequirements(model_loop   *loop_data,
 					 int          loop,
-					 PrefetchList *SPLinePrefetches,
-					 PrefetchList *DPLinePrefetches,
+					 PrefetchList *LinePrefetches,
 					 PrefetchList *WordPrefetches,
 					 PedInfo      ped)
 
   {
-   float PrefetchBandwidth;
-   float BandwidthNeeded;
-   float ScheduleBandwidth;
-   float SPLineValue,DPLineValue;
-   float Cycles;
-   PrefetchListIterator SPLineIterator(SPLinePrefetches),
-                        DPLineIterator(DPLinePrefetches),
-                        WordIterator(WordPrefetches);
+    float PrefetchBandwidth;   // bandwidth provided by machine
+    float BandwidthNeeded;     // bandwidth required by loop
+    float ScheduleBandwidth;   // bandwidth required by modified prefetch lists
+    float LineValue;           // bandwidth need by line prefetches
+    float Cycles;
+    PrefetchListIterator LineIterator(LinePrefetches),// Iterator for line prefetches
+      WordIterator(WordPrefetches);                   // Iterator for word prefetches
    PrefetchListEntry    *temp;
+
+
+   // Get machine prefetch bandwidth 
 
      if (((config_type *)PED_MH_CONFIG(ped))->prefetch_latency == 0)
        PrefetchBandwidth = 0.0;
@@ -273,17 +458,25 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
        PrefetchBandwidth = 
         ((float) ((config_type *)PED_MH_CONFIG(ped))->prefetch_buffer) /
         ((float) ((config_type *)PED_MH_CONFIG(ped))->prefetch_latency);
+
+     // compute total bandwidth required
+
      BandwidthNeeded = WordPrefetches->Count();
-     SPLineValue = ((float)SPLinePrefetches->Count()) *
-                           (4.0/(float)((config_type *)PED_MH_CONFIG(ped))->line);
-     DPLineValue = ((float)DPLinePrefetches->Count()) *
-                           (8.0/(float)((config_type *)PED_MH_CONFIG(ped))->line);
-     BandwidthNeeded += SPLineValue + DPLineValue;
+     LineValue = ((float)LinePrefetches->Count()) *
+       (8.0/(float)((config_type *)PED_MH_CONFIG(ped))->line);
+     BandwidthNeeded += LineValue;
      Cycles = CyclesPerIteration(loop_data[loop].node,ped);
      BandwidthNeeded /= Cycles;
+
+
+     // If machine does not have enough bandwidth, remove some prefetches
+
      if (BandwidthNeeded > PrefetchBandwidth)
        {
 	ScheduleBandwidth = 0.0;
+
+	// Add word prefetches until bandwidth required is too high
+
 	while (WordIterator.current() != NULL)
 	  if (ScheduleBandwidth <= (PrefetchBandwidth - 1.0/Cycles))
 	    {
@@ -296,37 +489,45 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 	     (void)WordIterator++;
 	     WordPrefetches->Delete(temp);
 	    }
-	while (DPLineIterator.current() != NULL)
-	  if (ScheduleBandwidth <= (PrefetchBandwidth - DPLineValue/Cycles))
+
+	// Add line prefetches until bandwidth too high
+
+	while (LineIterator.current() != NULL)
+	  if (ScheduleBandwidth <= (PrefetchBandwidth - LineValue/Cycles))
 	    {
-	     ScheduleBandwidth += (DPLineValue/Cycles);
-	     (void)DPLineIterator++;
+	     ScheduleBandwidth += (LineValue/Cycles);
+	     (void)LineIterator++;
 	    }
 	  else
 	    {
-	     temp = DPLineIterator.current();
-	     (void)DPLineIterator++;
-	     DPLinePrefetches->Delete(temp);
-	    }
-	while (SPLineIterator.current() != NULL)
-	  if (ScheduleBandwidth <= (PrefetchBandwidth - SPLineValue/Cycles))
-	    {
-	     ScheduleBandwidth += (SPLineValue/Cycles);
-	     (void)SPLineIterator++;
-	    }
-	  else
-	    {
-	     temp = SPLineIterator.current();
-	     (void)SPLineIterator++;
-	     SPLinePrefetches->Delete(temp);
+	     temp = LineIterator.current();
+	     (void)LineIterator++;
+	     LinePrefetches->Delete(temp);
 	    }
        }
   }
 
+//
+//  Function: MakePrefetchStatement
+//
+//  Input: Node - AST of array reference to prefetch
+//         Var - innermost loop induction variable AST
+//         distance - iterations ahead to prefetch
+//         LowerBound - loop lower bound AST
+//
+//  Output: a statement that is a call to $$Prefetch
+//
+//  Description: If LowerBound is AST_NIL, make a prefetch statement that
+//               includes the induction variable (the statement is inside the
+//               loop) and add the distance as an offset.  If LowerBound is not
+//               AST_NIL, then the statement is an offset off of the LowerBound
+//               (this will go outside a loop for priming).
+//
 
 static AST_INDEX MakePrefetchStmt(AST_INDEX    Node,
 				  AST_INDEX    Var,
-				  int          distance)
+				  int          distance,
+				  AST_INDEX    LowerBound = AST_NIL)
 
   {
    AST_INDEX PrefetchNode;
@@ -338,15 +539,39 @@ static AST_INDEX MakePrefetchStmt(AST_INDEX    Node,
               directive */
 
      PrefetchNode = tree_copy_with_type(Node);
-     pt_var_add(PrefetchNode,gen_get_text(Var),distance);
+     if (LowerBound == AST_NIL)
+       pt_var_add(PrefetchNode,gen_get_text(Var),distance);
+     else
+       pt_var_replace(PrefetchNode,gen_get_text(Var),
+		      pt_simplify_expr(pt_gen_add(tree_copy_with_type(LowerBound),
+						  pt_gen_int(distance))));
      return(pt_gen_call("$$Prefetch",list_create(pt_simplify_expr(PrefetchNode))));
   }
 
+//
+//  Function: InsertPrefetchesBeforeStmt
+//
+//  Input: Stmt - statement before which to insert prefetches
+//         Prefetches - list of array references to prefetch
+//         Var - AST index of innermost loop induction variable
+//         distance - number of iterations ahead to prefetch
+//         LowerBound - Loop lower bound if prefetches go before loop
+//
+//  Output: modified AST with calls to $$Prefetch
+//
+//  Description: If we pass in an actual statement we insert prefetches
+//               before that statement.  If we pass in AST_NIL, we insert
+//               the prefetches before the statement containing the reference.
+//               If LowerBound is not null, then we are inserting before the
+//               loop and we base our distance off of the lower bound of the
+//               loop.  This is done for "priming" prefetches
+//
 
 static void InsertPrefetchesBeforeStmt(AST_INDEX    Stmt,
 				       PrefetchList *Prefetches,
 				       AST_INDEX    Var,
-				       int          distance)
+				       int          distance,
+				       AST_INDEX    LowerBound = AST_NIL)
 
   {
    PrefetchListIterator Iterator(Prefetches);
@@ -357,8 +582,8 @@ static void InsertPrefetchesBeforeStmt(AST_INDEX    Stmt,
 	  Node = Iterator.current())
        {
 	if (Stmt != AST_NIL)
-          list_insert_before(Stmt,MakePrefetchStmt(Node->GetValue(),Var,
-						   distance));
+          list_insert_before(Stmt,MakePrefetchStmt(Node->GetValue(),Var,distance,
+						   LowerBound));
 	else
          list_insert_before(ut_get_stmt(Node->GetValue()),
 			    MakePrefetchStmt(Node->GetValue(),Var,distance));
@@ -366,161 +591,73 @@ static void InsertPrefetchesBeforeStmt(AST_INDEX    Stmt,
        }
   }
 
+//
+//  Function: PipelineIterations
+//
+//  Input: minimum - minimum number of iterations ahead to prefetch data
+//                   based on whether we are prefetching on a word or a line
+//                   regardless of latency. word = 1, line = cache-line size
+//         iteration - how many iterations it takes to hide a prefetch
+//
+//  Output:  the number of iterations ahead to prefetch
+//
+//  Description: If we are prefetching enough iterations ahead for machine
+//               to hide latency, then return minimum. Otherwise, we need to
+//               prefetch enough multiples of minimum to hide the entire prefetch
+//
 
 static int PipelineIterations(int minimum,
 			      int iteration)
 
   {
-   if (minimum >= iteration)
-     return minimum;
-   else
-     return minimum * ceil_ab(iteration,minimum);
+    return minimum >= iteration ? minimum : minimum * ceil_ab(iteration,minimum);
   }
 
-static void PrimePrefetchPipe(AST_INDEX    Node,
-			      int          WordDistance,
-			      int          LineDistance,
-			      PrefetchList *WordPrefetches,
-			      PrefetchList *SPLinePrefetches,
-			      PrefetchList *DPLinePrefetches)
+//
+//  Function: CreatePreLoop
+//
+//  Input: loop_data - tree structure of loop nest
+//         loop - index into loop_data of loop being pre-conditioned
+//         UnrollVal - amount by which loop is unrolled
+//         Symtab - symbol table
+//
+//  Output: pre-conditioned loop
+//
+//  Description: create a pre-loop to make sure loop executes the right number
+//               of times when unrolled.  Pre-loop will execute enough iteration
+//               to make make loop execute a multiple of the unroll amount.
+//
+
+static AST_INDEX CreatePreLoop(model_loop    *loop_data,
+			       int           loop,
+			       int           UnrollVal,
+			       SymDescriptor Symtab)
+
 
   {
-   AST_INDEX NewLoop,
-             NewCtrl,
-             Stmt,
-             NextStmt,
-             Step,
-             ArgList,
-             Min,
-             Var;
-   int       StepVal;
-
-     NewLoop = tree_copy_with_type(Node);
-     Stmt = list_first(gen_DO_get_stmt_LIST(NewLoop));
-     NewCtrl = gen_DO_get_control(NewLoop);
-     Var = gen_INDUCTIVE_get_name(NewCtrl);
-     ArgList = list_create(pt_simplify_expr(pt_gen_add(
-			         tree_copy_with_type(gen_INDUCTIVE_get_rvalue1(NewCtrl)),
-				 pt_gen_int(WordDistance-1))));
-     ArgList = list_insert_first(ArgList,
-				tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(NewCtrl)));
-     Min = gen_INVOCATION(pt_gen_ident("min"),ArgList);
-     pt_tree_replace(gen_INDUCTIVE_get_rvalue2(NewCtrl),Min);
-     InsertPrefetchesBeforeStmt(Stmt,WordPrefetches,Var,0);
-     while (Stmt != AST_NIL)
-       {
-	NextStmt = list_next(Stmt);
-	tree_free(list_remove_node(Stmt));
-	Stmt = NextStmt;
-       }
-     list_insert_before(Node,NewLoop);
-
-     
-     NewLoop = tree_copy_with_type(Node);
-     Stmt = list_first(gen_DO_get_stmt_LIST(NewLoop));
-     NewCtrl = gen_DO_get_control(NewLoop);
-     Var = gen_INDUCTIVE_get_name(NewCtrl);
-     ArgList = list_create(pt_simplify_expr(pt_gen_add(
-			         tree_copy_with_type(gen_INDUCTIVE_get_rvalue1(NewCtrl)),
-				 pt_gen_int(LineDistance*2 - 1))));
-     ArgList = list_insert_first(ArgList,
-				tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(NewCtrl)));
-     Min = gen_INVOCATION(pt_gen_ident("min"),ArgList);
-     pt_tree_replace(gen_INDUCTIVE_get_rvalue2(NewCtrl),Min);
-     Step = gen_INDUCTIVE_get_rvalue3(NewCtrl);
-     if (Step == AST_NIL)
-       gen_INDUCTIVE_put_rvalue3(NewCtrl,pt_gen_int(LineDistance));
-     else 
-       {
-	(void)pt_eval(Step,&StepVal);
-	pt_tree_replace(Step,pt_gen_mul(pt_gen_int(LineDistance),pt_gen_int(StepVal)));
-       }
-     InsertPrefetchesBeforeStmt(Stmt,SPLinePrefetches,Var,0);
-     InsertPrefetchesBeforeStmt(Stmt,DPLinePrefetches,Var,0);
-     while (Stmt != AST_NIL)
-       {
-	NextStmt = list_next(Stmt);
-	tree_free(list_remove_node(Stmt));
-	Stmt = NextStmt;
-       }
-     list_insert_before(Node,NewLoop);
-  }
-
-static void PeelLoop(AST_INDEX     Node,
-		     int           Iterations,
-		     int           WordDistance,
-		     int           LineDistance,
-		     PrefetchList *WordPrefetches)
-  {
-   AST_INDEX NewLoop,
-             NewCtrl,
-             Ctrl,
-             UpBnd,
-             ArgList,
-             Max,
-             Var,
-             Iter;
-   int       i;
-
-     NewLoop = tree_copy_with_type(Node);
-     NewCtrl = gen_DO_get_control(NewLoop);
-     Ctrl = gen_DO_get_control(Node);
-     ArgList = list_create(pt_simplify_expr(pt_gen_sub(
-			         tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(NewCtrl)),
-				 pt_gen_int(WordDistance-1))));
-     ArgList = list_insert_first(ArgList,
-				tree_copy_with_type(gen_INDUCTIVE_get_rvalue1(NewCtrl)));
-     Max = gen_INVOCATION(pt_gen_ident("max"),ArgList);
-     pt_tree_replace(gen_INDUCTIVE_get_rvalue1(NewCtrl),Max);
-     list_insert_after(Node,NewLoop);
-
-     Var = gen_INDUCTIVE_get_name(Ctrl);
-     NewLoop = tree_copy_with_type(Node);
-     InsertPrefetchesBeforeStmt(list_first(gen_DO_get_stmt_LIST(NewLoop)),
-				WordPrefetches,Var,WordDistance);
-     NewCtrl = gen_DO_get_control(NewLoop);
-     ArgList = list_create(pt_simplify_expr(pt_gen_sub(
-				 tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(NewCtrl)),
-				 pt_gen_int(LineDistance*2-1))));
-     ArgList = list_insert_first(ArgList,
-				tree_copy_with_type(gen_INDUCTIVE_get_rvalue1(NewCtrl)));
-     Max = gen_INVOCATION(pt_gen_ident("max"),ArgList);
-     pt_tree_replace(gen_INDUCTIVE_get_rvalue1(NewCtrl),Max);
-     UpBnd = pt_simplify_expr(pt_gen_sub(
-				 tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(NewCtrl)),
-				 pt_gen_int(WordDistance)));
-     pt_tree_replace(gen_INDUCTIVE_get_rvalue2(NewCtrl),UpBnd);
-     list_insert_after(Node,NewLoop);
-     pt_tree_replace(gen_INDUCTIVE_get_rvalue2(Ctrl),
-		     pt_simplify_expr(pt_gen_sub(tree_copy_with_type(
-                                                 gen_INDUCTIVE_get_rvalue2(Ctrl)),
-						 pt_gen_int(LineDistance*2))));
-  }
-
-static void CreatePreLoop(model_loop    *loop_data,
-			  int           loop,
-			  int           UnrollVal,
-			  SymDescriptor Symtab)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-  
-
-  {
-   AST_INDEX control,new_loop,next,
-             lwb,upb,step;
-   Boolean   need_pre_loop = false;
-   int       lwb_v,upb_v,step_v;
+    AST_INDEX control,         // control AST for do loop
+      new_loop = AST_NIL,      // AST for pre loop
+      lwb,                     // lower bound AST of loop
+      upb,                     // upper bound AST of loop
+      step;                    // step size AST of loop
+    Boolean need_pre_loop = false;
+    int lwb_v,                 // lower bound of loop
+      upb_v,                   // upper bound of loop
+      step_v;                  // step size of loop
 
      control = gen_DO_get_control(loop_data[loop].node);
      lwb = gen_INDUCTIVE_get_rvalue1(control);
+
+     // if lower bound symbolic we need a pre loop
+
      if (pt_eval(lwb,&lwb_v))
        need_pre_loop = true;
      else
        {
 	upb = gen_INDUCTIVE_get_rvalue2(control);
+
+	// if upper bound symbolic we need a pre loop
+
 	if (pt_eval(upb,&upb_v))
 	  need_pre_loop = true;
 	else
@@ -528,25 +665,61 @@ static void CreatePreLoop(model_loop    *loop_data,
 	   step = gen_INDUCTIVE_get_rvalue3(control);
 	   if (step == AST_NIL)
 	     step_v = 1;
+
+	   // if step symbolic we need a pre loop
+
 	   else if (pt_eval(step,&step_v))
 	     need_pre_loop = true;
 	   if (!need_pre_loop)
-	     if (mod((upb_v - lwb_v + 1)/step_v, loop_data[loop].val + 1)
+	     if (mod((upb_v - lwb_v + 1)/step_v, UnrollVal + 1)
 	           != 0)
+
+	       // if loop not executed a multiple of unroll value then need pre loop
+
 	       need_pre_loop = true;
 	  }
        }
      if (need_pre_loop)
        {
-	new_loop = tree_copy_with_type(loop_data[loop].node);
-	ut_update_labels(new_loop,Symtab);
-	ut_update_bounds(loop_data[loop].node,new_loop,UnrollVal);
-	list_insert_before(loop_data[loop].node,new_loop);
+
+	 // create pre loop
+
+	 new_loop = tree_copy_with_type(loop_data[loop].node);
+
+	 // change duplicate labels
+
+	 ut_update_labels(new_loop,Symtab);
+
+	 // update loop bounds for pre-loop and loop
+
+	 ut_update_bounds(loop_data[loop].node,new_loop,UnrollVal);
+
+	 // put pre loop before current loop
+
+	 list_insert_before(loop_data[loop].node,new_loop);
        }
      else 
+
+       // update step size of loop
+
        ut_update_bounds(loop_data[loop].node,AST_NIL,UnrollVal);
+     return(new_loop);
   }
   
+//
+//  Function: ReplicateBody
+//
+//  Input: DoNode - Do statement AST of loop being unrolled
+//         UnrollVal - how many copies of loop to make
+//         Ivar - loop induction variable AST
+//         Symtab - symbol table
+//         ar - Arena for memory allocation
+//
+//  Output: A loop AST with a replicated loop body
+//
+//  Description: Replicate the AST of a loop body by copying the AST and
+//               updating the statement labels.
+//
 
 static void ReplicateBody(AST_INDEX DoNode,
 			  int       UnrollVal,
@@ -560,13 +733,16 @@ static void ReplicateBody(AST_INDEX DoNode,
 /****************************************************************************/
 
   {
-   AST_INDEX     *NewCode,
-                 Step,
-                 StmtList;
-   int           i,
-                 StepVal;
+    AST_INDEX *NewCode, // replicated loop body
+      Step,             // AST of loop Step size
+      StmtList;         // statement list for loop
+    int        i,       // counter for loop replication
+      StepVal;          // value of loop step size
    
      StmtList = gen_DO_get_stmt_LIST(DoNode);
+
+     // Get loop step size
+
      Step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(DoNode));
      if (Step == AST_NIL)
        StepVal = 1;
@@ -575,178 +751,368 @@ static void ReplicateBody(AST_INDEX DoNode,
 	(void)pt_eval(Step,&StepVal);
 	StepVal /= (UnrollVal+1);
        }
+     
+     // create structure for each replicated loop body
+
      NewCode = (AST_INDEX *)ar->arena_alloc_mem(LOOP_ARENA,
 						UnrollVal * sizeof(AST_INDEX));
+
+     // Replicate loop body
+
      for (i = 0; i < UnrollVal-1; i++)
        {
 	NewCode[i] = tree_copy_with_type(StmtList);
+
+	// update loop induction variable in replicated body
+
 	pt_var_add(NewCode[i],gen_get_text(Ivar),StepVal*(i+1));
+
+	// modify any labels so there are not duplicates
+
 	ut_update_labels(NewCode[i],Symtab);
        }
      NewCode[UnrollVal-1] = tree_copy_with_type(StmtList);
+     
+     // update loop induction variable in replicated body
+
      pt_var_add(NewCode[UnrollVal-1],gen_get_text(Ivar),StepVal*UnrollVal);
+
+	// modify any labels so there are not duplicates
+
      ut_update_labels(StmtList,Symtab);
+
+     // append new loop bodies onto existing loop bodies
+
      for (i = 0; i < UnrollVal; i++)
        StmtList = list_append(StmtList,NewCode[i]);
   }
 	
+//
+//  Function: UnrollLoop
+//
+//  Input: loop_data - tree structure of loop nest
+//         loop - index into loop_data for loop being stripped
+//         WordPretches - list of array references to be prefetched every iteration
+//         WordPrefetchDistance - number of iteration ahead to prefetch word prefetches
+//         LinePrefetches - list of array references to be prefetched once
+//                          every cache-line iterations
+//         LineDistance - number of iterations ahead to prefetch line prefetches
+//         UnrollVal - amount by which to unroll loop
+//         Var - induction variable of loop
+//         symtab - symbol table
+//         ar - Arena for memory allocation
+//
+//
+//  Output: unrolled loop with prefetches inserted
+//
+//  Description: Unroll a loop to accomodate line prefetches.  Create a pre loop
+//               to get right number of iterations.  
+//
 
 static void UnrollLoop(model_loop   *loop_data,
 		       int           loop,
-		       PrefetchList *SPLinePrefetches,
-		       PrefetchList *DPLinePrefetches,
+		       PrefetchList *WordPrefetches,
+		       int           WordPrefetchDistance,
+		       PrefetchList *LinePrefetches,
 		       int           LineDistance,
+		       int           UnrollVal,
 		       AST_INDEX     Var,
 		       SymDescriptor Symtab,
 		       arena_type    *ar)
   {
-   AST_INDEX Stmt;
-   int       i;
+    AST_INDEX PreLoop;  // AST of pre-conditioning loop
+    int       i;        // counter for inserting prefetches that need to be done
+                        // before loop begins
 
-     CreatePreLoop(loop_data,loop,LineDistance-1,Symtab);
-     ReplicateBody(loop_data[loop].node,LineDistance-1,Var,Symtab,ar);
+
+
+    // copy loop to get pre-conditioning loop
+
+     PreLoop = CreatePreLoop(loop_data,loop,UnrollVal-1,Symtab);
+
+     // unroll the original loop
+
+     ReplicateBody(loop_data[loop].node,UnrollVal-1,Var,Symtab,ar);
+
+     // insert line prefetches at beginning of unrolled loop
+
      InsertPrefetchesBeforeStmt(list_first(gen_DO_get_stmt_LIST(loop_data[loop].node)),
-				DPLinePrefetches,Var,LineDistance*2);
-     InsertPrefetchesBeforeStmt(list_first(gen_DO_get_stmt_LIST(loop_data[loop].node)),
-				SPLinePrefetches,Var,LineDistance*2);
+				LinePrefetches,Var,LineDistance*2);
+
+     // insert "priming" prefetches before pre-loop begins.  These are the things that
+     // need to be prefetched but aren't in loop do to distance offset
+
+     if (PreLoop == AST_NIL)
+       PreLoop = loop_data[loop].node;
+     for (i = 0; i < WordPrefetchDistance; i++)
+       InsertPrefetchesBeforeStmt(PreLoop,WordPrefetches,Var,i,
+				  gen_INDUCTIVE_get_rvalue1(
+						gen_DO_get_control(PreLoop)));
+       
+     // insert "priming" prefetches for line prefetches.  Prefetch all lines before
+     // the first prefetch in the pre-conditioning loop.
+
+     for (i = 0; i < 2*LineDistance; i+= UnrollVal)
+       InsertPrefetchesBeforeStmt(PreLoop,LinePrefetches,Var,i,
+				 gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
   }
+
+
+//
+//  Function: StripLoop
+//
+//  Input: loop_data - tree structure of loop nest
+//         loop - index into loop_data for loop being stripped
+//         LinePrefetches - list of array references to be prefetched once
+//                          every cache-line iterations
+//         LineDistance - number of iterations ahead to prefetch
+//         StripVal - amount by which to strip loop
+//         Var - induction variable of loop
+//         symtab - symbol table
+//         ar - Arena for memory allocation
+//
+//  Output: stripped loop with line prefetches inserted
+//
+//  Description: Strip mine a loop and insert line prefetches before the new
+//               loop.  This will ensure that line prefetches are only executed
+//               once every cache-line iterations.
+//
 
 static void StripLoop(model_loop   *loop_data,
 		      int           loop,
-		      PrefetchList *SPLinePrefetches,
-		      PrefetchList *DPLinePrefetches,
+		      PrefetchList *LinePrefetches,
 		      int           LineDistance,
+		      int           StripVal,
 		      AST_INDEX     Var,
 		      SymDescriptor Symtab,
 		      arena_type    *ar)
   {
-   AST_INDEX NewLoop,
-             Ctrl,
-             Ivar,
-             StmtList,
-             ArgList,
-             Min,
-             Step;
-   int       StepVal;
-   char      NewIvar[80];
+    AST_INDEX NewLoop,          // new loop that iterates through strip
+      Ctrl,                     // control AST of loop
+      Ivar,                     // induction variable AST of loop
+      StmtList,                 // list of statements in loop
+      ArgList,                  // argument list to MIN function
+      Min,                      // AST for MIN function
+      Step;                     // Step value AST for loop
+    int       StepVal;          // Step value
+    char      NewIvar[80];      // Text for new induction variable
 
      StmtList = gen_DO_get_stmt_LIST(loop_data[loop].node);
      gen_DO_put_stmt_LIST(loop_data[loop].node,AST_NIL);
      Ctrl = gen_DO_get_control(loop_data[loop].node);
      Ivar = gen_INDUCTIVE_get_name(Ctrl);
+
+     // generate new induction variable for through-strip loop
+
      sprintf(NewIvar,"%s$%d",gen_get_text(Ivar),loop_data[loop].level);
+
+     // get step value for old loop
+
      Step = gen_INDUCTIVE_get_rvalue3(Ctrl);
      if (Step == AST_NIL)
        StepVal = 1;
      else 
        (void)pt_eval(Step,&StepVal);
+
+
+     // Create Min Function for upper bound of through-strip loop
+
      ArgList = list_create(pt_gen_add(tree_copy_with_type(Ivar),
-				      pt_gen_int((LineDistance-1)*StepVal)));
+				      pt_gen_int((StripVal-1)*StepVal)));
      ArgList = list_insert_last(ArgList,
 				tree_copy_with_type(gen_INDUCTIVE_get_rvalue2(Ctrl)));
      Min = gen_INVOCATION(pt_gen_ident("min"),ArgList);
+
+     // generate AST for new loop
+
      NewLoop = gen_DO(AST_NIL,AST_NIL,AST_NIL,
 		      gen_INDUCTIVE(pt_gen_ident(NewIvar),tree_copy_with_type(Ivar),
 				    Min,tree_copy_with_type(Step)),
 		      StmtList);
    
+
+     // update step value for by-strip loop
+
      if (Step == AST_NIL)
-       gen_INDUCTIVE_put_rvalue3(Ctrl,pt_gen_int(LineDistance*StepVal));
+       gen_INDUCTIVE_put_rvalue3(Ctrl,pt_gen_int(StripVal*StepVal));
      else
        pt_tree_replace(gen_INDUCTIVE_get_rvalue3(Ctrl),
-		       pt_gen_int(LineDistance*StepVal));
+		       pt_gen_int(StripVal*StepVal));
+
+
+     // make the through-strip loop the loop body of by-strip loop
+
      gen_DO_put_stmt_LIST(loop_data[loop].node,list_create(NewLoop));
-     InsertPrefetchesBeforeStmt(NewLoop,DPLinePrefetches,Var,LineDistance*2);
-     InsertPrefetchesBeforeStmt(NewLoop,SPLinePrefetches,Var,LineDistance*2);
+
+     // insert line prefetches before through-strip loop
+     InsertPrefetchesBeforeStmt(NewLoop,LinePrefetches,Var,LineDistance*2);
+
+     // update induction variable for through-strip loop
      pt_var_replace(StmtList,gen_get_text(Ivar),pt_gen_ident(NewIvar));
   }
 
+//
+//  Function: SchedulePrefetches
+//
+//  Input: loop_data - tree structure of loop nest
+//         loop - index into loop_data for loop being scheduled
+//         LinePrefetches - list of array references to be prefetched once
+//                          every cache-line iterations
+//         WordPrefetches - list of array references to be prefetched each iteration
+//         ped - dependence graph and configuration info
+//         symtab - symbol table
+//         ar - Arena for memory allocation
+//
+//  Output: AST for loop with software prefetches inserted
+//
+//  Description: Software pipeline the software prefetches. Determine how far in
+//               advance prefetches must be scheduled to ensure they have finished.
+//               Then, schedule them the appropriate number of loop iteration in
+//               advance.
+//
+
 static void SchedulePrefetches(model_loop *loop_data,
 			       int        loop,
-			       PrefetchList *SPLinePrefetches,
-			       PrefetchList *DPLinePrefetches,
+			       PrefetchList *LinePrefetches,
 			       PrefetchList *WordPrefetches,
 			       PedInfo      ped,
 			       SymDescriptor symtab,
 			       arena_type    *ar)
   {
-   AST_INDEX var;
-   int       SPLinePrefetchDistance,
-             DPLinePrefetchDistance,
-             LineDistance,
-             WordPrefetchDistance,
-             MaxDistance,
-             IterationDist,
-             Cycles;
+    AST_INDEX var;                  // AST for loop induction variable
+    int      LinePrefetchDistance,  // Number of iterations ahead to prefetch lines
+      WordPrefetchDistance,         // Number of iterations ahead to prefetch words 
+      MaxDistance,                  // Maximum number of iterations ahead to prefetch
+      IterationDist,                // Iterations ahead to prefetch based upon latency
+                                    // and loop cycles
+      Cycles,                       // Number of cycles for loop to finish
+      UnrollVal;                    // amount to unroll loop due to line prefetches
+
+
+    // determine how long for loop to finish
 
      Cycles = CyclesPerIteration(loop_data[loop].node,ped);
+
+     // determine number of iterations ahead we must prefetch to cover latency of
+     // prefetch with loop cycles
+
      IterationDist = ceil_ab(((config_type *)PED_MH_CONFIG(ped))->
 			     prefetch_latency,Cycles);
-     if (NOT(WordPrefetches->NullList()))
-       WordPrefetchDistance = PipelineIterations(1,IterationDist);
-     else
-       WordPrefetchDistance = 0;
-     if (NOT(SPLinePrefetches->NullList()))
-       SPLinePrefetchDistance =
-	    PipelineIterations(((config_type *)PED_MH_CONFIG(ped))->line >> 2,
-			       IterationDist);
-     else
-       SPLinePrefetchDistance = 0;
-     if (NOT(DPLinePrefetches->NullList()))
-       DPLinePrefetchDistance =
-	    PipelineIterations(((config_type *)PED_MH_CONFIG(ped))->line >> 3,
-			       IterationDist);
-     else
-       DPLinePrefetchDistance = 0;
-     LineDistance = DPLinePrefetchDistance == 0 ? SPLinePrefetchDistance : 
-                                                  DPLinePrefetchDistance;
-     MaxDistance = LineDistance  > WordPrefetchDistance ? LineDistance :
-                                                          WordPrefetchDistance; 
+
+     // determine how far in advance word prefetches must be issued
+
+     WordPrefetchDistance = (NOT(WordPrefetches->NullList())) ?
+			    PipelineIterations(1,IterationDist) : 0;
+     
+     // determine how far in advance line prefetches must be issued
+
+     LinePrefetchDistance = (NOT(LinePrefetches->NullList()))?
+       PipelineIterations(((config_type *)PED_MH_CONFIG(ped))->line>>3,IterationDist):0;
+
+     MaxDistance = MAX(LinePrefetchDistance,WordPrefetchDistance);
+
+     // Assumes Double Precision (which is all Rocket supports anyway)
+     // Comput the unroll value as 0 if no line prefetching is done
+     // otherwise make it the number of double precision words that fit in a cache line
+
+     UnrollVal = (LinePrefetchDistance == 0) ? 0 : 
+                 (((config_type *)PED_MH_CONFIG(ped))->line >> 3);
+
      if (MaxDistance != 0)
        {
-	PeelLoop(loop_data[loop].node,MaxDistance,WordPrefetchDistance,
-		 DPLinePrefetchDistance > 0 ? DPLinePrefetchDistance : 
-		 SPLinePrefetchDistance,WordPrefetches);
-	PrimePrefetchPipe(loop_data[loop].node,WordPrefetchDistance,LineDistance,
-			  WordPrefetches,SPLinePrefetches,DPLinePrefetches);
+
 	var = gen_INDUCTIVE_get_name(gen_DO_get_control(loop_data[loop].node));
+
+	// Insert word prefetches before appropriate statements now
+	// They will be copied during unrolling.
+
 	InsertPrefetchesBeforeStmt(AST_NIL,WordPrefetches,var,WordPrefetchDistance);
-	if (NOT(SPLinePrefetches->NullList()) || NOT(DPLinePrefetches->NullList()))
-	  if (LineDistance <= 8)
-	    UnrollLoop(loop_data,loop,SPLinePrefetches,DPLinePrefetches,LineDistance,var,
-		       symtab,ar);
-	  else
-	    StripLoop(loop_data,loop,SPLinePrefetches,DPLinePrefetches,LineDistance,var,
-		      symtab,ar);
+
+	if (NOT(LinePrefetches->NullList()))
+	  {
+
+	    assert(UnrollVal != 0);
+
+
+	    // Unroll loop to accomodate prefetching once per cache-line iterations
+	    // If unroll value is too high, then perform strip mining instead
+ 
+	    if (UnrollVal <= 32)
+	      UnrollLoop(loop_data,loop,WordPrefetches,WordPrefetchDistance,
+			 LinePrefetches,LinePrefetchDistance,UnrollVal,var,symtab,ar);
+	    else
+	      StripLoop(loop_data,loop,LinePrefetches,LinePrefetchDistance,
+			UnrollVal,var,symtab,ar);
+	  }
        }
   }
 
+//
+//  Function: ConvertPrefetchCallsToDirectives
+//
+//  Input: stmt - a statement in a loop
+//         level - the nesting level of the statement
+//         dummy -  a bogus parameter need by walk_statements
+//
+//  Output: potentially modified AST
+//
+//  Description: For each call to $$Prefetch function, convert statement to
+//               to a comment with a directive
+//
 
 static int ConvertPrefetchCallsToDirectives(AST_INDEX stmt,
 					    int       level,
 					    int       dummy)
 
   {
-   char Text[80],
-        Instruction[100];
-   AST_INDEX Inv,Comment;
+    char Text[80],            // text for array subscript
+      Instruction[100];       // text for prefetch directive
+    AST_INDEX Inv,            // AST for invocation
+             Comment;         // AST for prefetch directive
 
      if (is_call(stmt))
        {
 	Inv = gen_CALL_get_invocation(stmt);
+
+	// Determine if this is a call to $$Prefetch
+
 	if (strcmp("$$Prefetch",gen_get_text(gen_INVOCATION_get_name(Inv))) == 0)
 	  {
-	   ut_GetSubscriptText(list_first(gen_INVOCATION_get_actual_arg_LIST(Inv)),
-			       Text);
-	   sprintf(Instruction,"$directive prefetch (%s)",Text);
-	   Comment = pt_gen_comment(Instruction);
-	   pt_tree_replace(stmt,Comment);
-	   return(WALK_FROM_OLD_NEXT);
+
+	    // Get Text representation of subscript AST
+
+	    ut_GetSubscriptText(list_first(gen_INVOCATION_get_actual_arg_LIST(Inv)),
+				Text);
+	   
+	    // Create comment containing the directive
+ 
+	    sprintf(Instruction,"$directive prefetch (%s)",Text);
+	    
+	    // Generate comment and put in AST where stmt used to be
+
+	    Comment = pt_gen_comment(Instruction);
+	    pt_tree_replace(stmt,Comment);
+	    return(WALK_FROM_OLD_NEXT);
 	  }
        }
      return(WALK_CONTINUE);
   }
 
+//
+//  Function: walk_loops
+//
+//  Input: loop_data - tree structure of loop nest
+//         loop - index into loop_data for current loop
+//         ped - dependendence graph and configuration info 
+//         symtab - symbol table
+//         ar - Arena for memory allocation
+//         IVar - induction variable for current loop
+//
+//  Output: modified loops after software prefetching
+//
+//  Description: walk the tree structure for a loop nest.  For each innermost loop
+//               apply software prefetching.
+//
 
 static void walk_loops(model_loop    *loop_data,
 		       int           loop,
@@ -756,27 +1122,49 @@ static void walk_loops(model_loop    *loop_data,
 		       char          **IVar)
 		       
   {
-   int next;
-   PrefetchList SPLinePrefetches;
-   PrefetchList DPLinePrefetches;
-   PrefetchList WordPrefetches;
+    int next;  // the next loop at to examine in loop_data
+    PrefetchList LinePrefetches; // List of array references that must be prefetched
+                                // every cache-line iterations.
+    PrefetchList WordPrefetches; // List of array references that must be prefetched
+                                // every iteration.
+
+
+   // Get the induction variable of the current loop
 
      IVar[loop_data[loop].level-1] = gen_get_text(gen_INDUCTIVE_get_name(
 					  gen_DO_get_control(loop_data[loop].node)));
 
+     // If this is an innermost loop the perform software prefetching
+
      if (loop_data[loop].inner_loop == -1)
        {
-	CheckRefsForPrefetch(loop_data,loop,&SPLinePrefetches,&DPLinePrefetches,
-			     &WordPrefetches,ped,IVar);
+
+	 // Examine array references to determine which ones need to be prefetched 
+	 // ever iteration and which need to be prefetched every cache-line iterations
+
+	CheckRefsForPrefetch(loop_data,loop,&LinePrefetches,&WordPrefetches,ped,IVar);
+
+	// If the architecture stalls on prefetch buffer overflow, we want to 
+	// limit the prefetching done to keep that from happening
+
 	if (!((config_type *)PED_MH_CONFIG(ped))->aggressive)
-	  ModeratePrefetchRequirements(loop_data,loop,&SPLinePrefetches,
-				       &DPLinePrefetches,&WordPrefetches,ped);
-	SchedulePrefetches(loop_data,loop,&SPLinePrefetches,&DPLinePrefetches,
-			   &WordPrefetches,ped,symtab,ar);
+	  ModeratePrefetchRequirements(loop_data,loop,&LinePrefetches,&WordPrefetches,
+				       ped);
+
+	// Software pipeline the prefetches
+
+	SchedulePrefetches(loop_data,loop,&LinePrefetches,&WordPrefetches,ped,symtab,
+			   ar);
+
+	// Make prefetches into comments with directives
+
 	walk_statements(tree_out(loop_data[loop].node),loop_data[loop].level,NOFUNC,
 			(WK_STMT_CLBACK)ConvertPrefetchCallsToDirectives,
 			(Generic)NULL);
        }
+
+     // If this is not an innermost loop, look at all loops at the next level
+
      else
        {
 	for (next = loop_data[loop].inner_loop;
@@ -786,6 +1174,21 @@ static void walk_loops(model_loop    *loop_data,
        }
   }
 
+//
+//  Function:  memory_software_prefetch
+//
+//  Input:   ped - Structure holding dependence graph and configuration info
+//           root - AST_INDEX of an outermost loop
+//           level - the level of the outermost loop
+//           symtab - Symbol Table
+//           ar - Arena for memory allocation
+//
+//  Output:  A loop structure with prefetches inserted in each innermost loop
+//           via the algorithm of Mowry, et al.
+//
+//  Description: Driver for the algorithm
+//
+
 
 void memory_software_prefetch(PedInfo       ped,
 			      AST_INDEX     root,
@@ -794,10 +1197,12 @@ void memory_software_prefetch(PedInfo       ped,
 			      arena_type    *ar)
 
   {
-   pre_info_type pre_info;
-   model_loop    *loop_data;
-   UtilList      *loop_list;
-   char          **IVar;
+    pre_info_type pre_info;      // structure for initializing subscript_ptr
+    model_loop    *loop_data;    // tree structure for loop nest
+    char          **IVar;        // Induction Variable of loop
+
+
+   //  Initial structure need to record surrounding do information
 
      pre_info.stmt_num = 0;
      pre_info.loop_num = 0;
@@ -806,16 +1211,41 @@ void memory_software_prefetch(PedInfo       ped,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
+
+     // Walk loop and set the surrounding do field in the subscript_ptr
+     // field of the "name" of subscript nodes.  This also initializes the
+     // subscript_ptr
+
      walk_statements(root,level,(WK_STMT_CLBACK)ut_mark_do_pre,
 		     (WK_STMT_CLBACK)ut_mark_do_post,(Generic)&pre_info);
+
+     //  If loop contains control flow or funciton calls, abort algorithm
+
      if (pre_info.abort)
        return;
+
+     //  Remove dependence edges that are not needed
+
      walk_statements(root,level,(WK_STMT_CLBACK)remove_edges,NOFUNC,(Generic)ped);
+
+     // allocate structure for loop information
+
      loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 					 pre_info.loop_num*sizeof(model_loop));
+
+     // set up model_loop structure (tree) for this loop nest
+
      ut_analyze_loop(root,loop_data,level,ped,symtab);
+
+     // determine if loop nest is rectangular, triangular, etc.
+
      ut_check_shape(loop_data,0);
+
+     // walk the loop structure, performing software prefetching on each innermost
+     // loop.
+
      IVar = new char*[pre_info.loop_num];
      walk_loops(loop_data,0,ped,symtab,ar,IVar);
+
      delete IVar;
   }
