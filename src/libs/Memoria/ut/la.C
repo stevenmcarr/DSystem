@@ -1,4 +1,4 @@
-/* $Id: la.C,v 2.3 2000/03/31 18:08:02 carr Exp $ */
+/* $Id: la.C,v 2.4 2000/05/16 03:14:18 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1403,7 +1403,14 @@ int ChangeLoadLeader(la_vect load_leader, la_vect new_v, int size,
  int i = size - 1 ;
  Boolean AllEqual = true;
 
- AST_INDEX LoadLeaderStmt = ut_get_stmt(load_leader_n);
+ AST_INDEX LoadLeaderStmt = ut_get_stmt(load_leader_n); // Should this be new_node?
+
+ if (is_assignment(LoadLeaderStmt))
+   if (gen_ASSIGNMENT_get_lvalue(LoadLeaderStmt) == new_node)
+     return False;
+
+ // We should probably check to see if this is a load...
+ LoadLeaderStmt = ut_get_stmt(new_node); // Should this be new_node?
 
  if (is_assignment(LoadLeaderStmt))
    if (gen_ASSIGNMENT_get_lvalue(LoadLeaderStmt) == new_node)
