@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.34 1995/08/18 10:07:16 trsuchyt Exp $ */
+/* $Id: mh_walk.C,v 1.35 1995/08/21 15:09:41 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -48,8 +48,8 @@
 #include <FDgraph.h>
 #include <PedExtern.h>
 
-static char *mc_program = NULL;
-static char *mc_module_list = NULL;
+extern char *mc_program;
+extern char *mc_module_list;
 
 static LoopStatsType *LoopStats = NULL;
 
@@ -446,6 +446,43 @@ static void AnnotateCodeForCache(AST_INDEX      stmt,
 				   walk_info->ftt);
   }
 
+/****************************************************************************/
+/*                                                                          */
+/*   Function:     AnnotateCodeForLDSTCount                                 */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/****************************************************************************/
+
+
+static void AnnotateCodeForLDSTCount(AST_INDEX      stmt,
+				 int            level,
+				 walk_info_type *walk_info)
+  {
+   AST_INDEX node1,node2,ExecutableStmt;
+   char TextConstant[80];
+
+     if (walk_info->LoopStats->Nests == 1 && mc_program == NULL &&
+	 mc_module_list == NULL)
+       {
+
+	  /* initialize the simulator before the first loop nest */
+
+	ExecutableStmt = first_f77_executable_stmt(ut_GetSubprogramStmtList(stmt));
+	list_insert_before(ExecutableStmt,pt_gen_call("cache_init",AST_NIL));
+       }
+     else if ((mc_program != NULL || mc_module_list != NULL) &&
+	      walk_info->MainProgram)
+       {
+	ExecutableStmt = first_f77_executable_stmt(gen_PROGRAM_get_stmt_LIST(stmt));
+	list_insert_before(ExecutableStmt,pt_gen_call("cache_init",AST_NIL));
+       }	   
+     memory_AnnotateWithCacheCalls(stmt,level, walk_info->routine,
+				   walk_info->ftt);
+  }
+
 
 static void PerformCacheAnalysis(AST_INDEX stmt,
 				 int level,
@@ -540,6 +577,8 @@ static int post_walk(AST_INDEX      stmt,
 	                     break;
 	case ANNOTATE:       if (mc_program == NULL && mc_module_list == NULL)
 	                       AnnotateCodeForCache(stmt,level,walk_info);
+	                     break;
+	case LDST:           AnnotateCodeForLDSTCount(stmt,level,walk_info);
 	                     break;
 	case CACHE_ANALYSIS: PerformCacheAnalysis(stmt,level,walk_info);
 			     break;
