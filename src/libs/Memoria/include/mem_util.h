@@ -1,4 +1,4 @@
-/* $Id: mem_util.h,v 1.7 1993/06/21 13:48:01 carr Exp $ */
+/* $Id: mem_util.h,v 1.8 1994/01/18 16:12:55 carr Exp $ */
 
 #ifndef mem_util_h
 #define mem_util_h
@@ -36,7 +36,8 @@
 #endif
 
 typedef struct loop_struct model_loop;
-typedef enum LocalityType;
+typedef enum {UNDEFINED,NONE,SELF_TEMPORAL,GROUP_TEMPORAL,SELF_SPATIAL,
+	      GROUP_SPATIAL,SELF_TEMPORAL_CACHE,GROUP_TEMPORAL_CACHE} LocalityType;
 
 typedef struct list_struct *listp;
 
