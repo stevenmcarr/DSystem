@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.26 1997/10/30 15:20:35 carr Exp $ */
+/* $Id: mem_util.C,v 1.27 2002/01/30 18:52:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,6 +13,8 @@
 /*                                                                          */
 /****************************************************************************/
 
+#include <iostream.h>
+#include <fstream.h>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
@@ -23,6 +25,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <libs/frontEnd/ast/AstIterators.h>
 
 #ifndef gi_h
 #include <libs/frontEnd/include/gi.h>
@@ -31,6 +34,8 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 
 EXTERN(double, ceil, (double x));
+
+extern char *mc_module;
 
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
@@ -1027,4 +1032,74 @@ int ut_LoopSize(AST_INDEX Node,
    return(10);
   }
 
+void ut_PrintDependences(AST_INDEX Loop,
+			 PedInfo ped,
+			 SymDescriptor SymTab)
+{
+  AST_INDEX ASTNode;
+  char *FileName = new char[strlen(mc_module)+4];
+  char *NodeText = new char[80];
+  char *SinkText = new char[80];
+
+  sprintf(FileName,"%s.dot",mc_module);
+
+
+  ofstream outFile(FileName,ios::out);
+
+  outFile << "  digraph G {" << endl;
+  outFile << "\tcenter=1; size= \"7.5,10\";" << endl;
+
+  DG_Edge *dg = dg_get_edge_structure( PED_DG(ped));
+
+  for (AstIterator ASTIter(Loop);
+       ASTNode = ASTIter.Current();
+       ASTIter.Advance(AST_ITER_CONTINUE))
+    if (is_subscript(ASTNode))
+      {
+	ut_GetSubscriptText(ASTNode,NodeText,SymTab);
+	
+	AST_INDEX name = gen_SUBSCRIPT_get_name(ASTNode);
+	int vector = get_info(ped,name,type_levelv);
+
+	for (EDGE_INDEX edge = dg_first_src_ref( PED_DG(ped),vector);
+	     edge != END_OF_LIST;
+	     edge = dg_next_src_ref( PED_DG(ped),edge))
+	  if (dg[edge].type == dg_true ||
+	      dg[edge].type == dg_anti ||
+	      dg[edge].type == dg_output||
+	      dg[edge].type == dg_input)
+	    {
+	      ut_GetSubscriptText(tree_out(dg[edge].sink),SinkText,SymTab);
+	      
+	      outFile << "\t\"" << NodeText << ":" << (Generic)ASTNode <<
+		"\" -> \"" << SinkText << ":" << 
+		(Generic)tree_out(dg[edge].sink) <<
+		"\" [label=\"<" << dg[edge].dt_str << ">\"";
+	      
+	      switch(dg[edge].type) 
+		{
+		case dg_true:
+		  outFile << "style=bold,color=red];" << endl;
+		  break;
+		case dg_anti:
+		  outFile << ",style=dotted,color=blue];" << endl;
+		  break;
+		case dg_output:
+		  outFile << "color=green];" << endl;
+		  break;
+		case dg_input:
+		  outFile << "color=gold];" << endl;
+		}
+	    }
+      }
+
+  outFile << "  }" << endl;
+  
+  outFile.close();
+  
+  delete FileName;
+  delete NodeText;
+  delete SinkText;
+  
+}
 
