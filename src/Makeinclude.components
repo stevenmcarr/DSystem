@@ -1,4 +1,4 @@
-# $Id: Makeinclude.components,v 1.2 1997/04/09 17:18:51 carr Exp $
+# $Id: Makeinclude.components,v 1.3 1997/04/09 19:58:04 carr Exp $
 ###########################################################################
 #
 # File:
@@ -168,6 +168,7 @@ LIBS = \
 	   $(IP_INTERFACE) \
 	   $(FM_COMP) \
 	   $(FM_FORTMOD) \
+	   $(FRONT_END_PTREE) \
 	   $(FRONT_END) \
 	   $(FORT_D_LINF) \
 	   $(GI_FRAMEWORK) \
@@ -199,6 +200,7 @@ NLIBS = \
 	   $(IP_INTERFACE) \
 	   $(FM_COMP) \
 	   $(FM_FORTMOD) \
+	   $(FRONT_END_PTREE) \
 	   $(FRONT_END) \
 	   $(FORT_D_LINF) \
 	   $(GI_FRAMEWORK) \
