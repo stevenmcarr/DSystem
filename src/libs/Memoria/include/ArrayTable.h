@@ -1,7 +1,7 @@
 #ifndef ArrayTable_h
 #define ArrayTable_h
 
-#include <misc/Arena.h>
+#include <Arena.h>
 #include <fort/FortTextTree.h>
 
 typedef struct ArrayTableStruct {
