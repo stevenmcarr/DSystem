@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.10 1993/07/20 16:34:20 carr Exp $ */
+/* $Id: compute_uj.C,v 1.11 1993/07/23 17:32:11 tseng Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -36,7 +36,7 @@
 
 #include <mem_util.h>
 
-extern mc_aggressive;
+Boolean mc_aggressive = false;  /* brought from mc_options.C - tseng 7/93 */
 
 /****************************************************************************/
 /*                                                                          */
