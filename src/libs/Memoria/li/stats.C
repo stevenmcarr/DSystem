@@ -1,4 +1,4 @@
-/* $Id: stats.C,v 1.9 1994/07/20 11:32:08 carr Exp $ */
+/* $Id: stats.C,v 1.10 1995/03/13 15:09:12 carr Exp $ */
 
 /****************************************************************/
 /*                                                              */
@@ -61,6 +61,7 @@
 #include	<dg.h>		/* dg_add_edge()		*/
 #endif 
 
+#include <RefGroups.h>
 
 /****************************************************************/
 /*                                                              */
@@ -141,16 +142,14 @@ static int GetLoopCostFirst(model_loop *loop_data,
 static void DumpLoopStats(model_loop *loop_data,
 			  int        loop,
 			  int        num_loops,
-			  UtilList   *GroupList,
+			  RefGroupSet *RefGroups,
 			  LoopStatsType *LoopStats,
 			  FILE       *logfile,
 			  AST_INDEX  InnerLoop,
 			  PedInfo    ped)
   {
    int i;
-   UtilNode *GroupNode;
-   RefGroupType *RefGroup;
-   StatsInfoType BalanceStats;
+   RefGroupMember *RG;
 
      fprintf(logfile,"Statistics for Loop at Level %d\n",
 	     loop_data[loop].level);
@@ -163,41 +162,28 @@ static void DumpLoopStats(model_loop *loop_data,
 	LoopStats->Reversed++;
        }
      i = 0;
-     for (GroupNode = UTIL_HEAD(GroupList);
-	  GroupNode != NULLNODE;
-	  GroupNode = UTIL_NEXT(GroupNode))
+     for (RefGroupSetIter RGIter(*RefGroups);
+	  RG = (RefGroupMember *)RGIter();)
        {
 	i++;
-	RefGroup = (RefGroupType *)UTIL_NODE_ATOM(GroupNode);
 	fprintf(logfile,"\t Ref Group %d:\n",i);
-	fprintf(logfile,"\t    Elements: %d\n",RefGroup->number);
+	fprintf(logfile,"\t    Elements: %d\n",RG->Count());
 	fprintf(logfile,"\t    Locality:");
-	if (RefGroup->Invariant)
+	if (RG->HasSelfTemporal())
 	  fprintf(logfile," Invariant");
-	if (RefGroup->Spatial)
+	else if (RG->HasSelfSpatial())
 	  fprintf(logfile," Spatial");
-	if (RefGroup->OtherSpatial)
-	  fprintf(logfile," OtherSpatial");
-	if (RefGroup->Temporal)
+	if (RG->HasGroupTemporal())
 	  fprintf(logfile," Temporal");
-	if (NOT(RefGroup->Invariant) && NOT(RefGroup->Spatial) &&
-	    NOT(RefGroup->OtherSpatial) && NOT(RefGroup->Temporal))
+	else if (RG->HasGroupSpatial())
+	  fprintf(logfile," OtherSpatial");
+	if (NOT(RG->HasSelfTemporal()) && NOT(RG->HasSelfSpatial()) &&
+	    NOT(RG->HasGroupSpatial()) && NOT(RG->HasGroupTemporal()))
 	  fprintf(logfile," None");
 	fprintf(logfile,"\n\n");
        }
      fprintf(logfile,"\n\n\tNumber of Ref Groups: %d\n",i);
      fprintf(logfile,"\tLoop Cost %d\n\n\n",GetLoopCostFirst(loop_data,loop));
-     BalanceStats.ped = ped;
-     BalanceStats.flops = 0.0;
-     BalanceStats.mops = 0.0;
-     BalanceStats.level = loop_data[loop].level;
-     BalanceStats.UseCache = true;
-     BalanceStats.loop_data = loop_data;
-     BalanceStats.loop = loop;
-     walk_expression(InnerLoop,(WK_EXPR_CLBACK)ut_ComputeBalance,NOFUNC,
-		     (Generic)&BalanceStats);
-     loop_data[loop].fbalance = ((float)BalanceStats.mops) /
-                                ((float)BalanceStats.flops);
    
   }
 
@@ -222,46 +208,42 @@ static void DumpLoopStats(model_loop *loop_data,
 static void GetLocalityStats(LocalityMatrixType *LoopStatsLocalityMatrix,
 			     LocalityMatrixType *LocalityMatrix,
 			     int                *OtherSpatialGroups,
-			     UtilList           *GroupList)
+			     RefGroupSet        *RefGroups)
 
   {
-   UtilNode *GroupNode;
-   RefGroupType *RefGroup;
+   RefGroupMember *RG;
 
-     for (GroupNode = UTIL_HEAD((UtilList *)UTIL_NODE_ATOM(
-                                 UTIL_HEAD(GroupList)));
-	  GroupNode != NULLNODE;
-	  GroupNode = UTIL_NEXT(GroupNode))
+     for (RefGroupSetIter RGIter(*RefGroups);
+	  RG = (RefGroupMember*)RGIter();)
        {
-	RefGroup = (RefGroupType *)UTIL_NODE_ATOM(GroupNode);
-	if (RefGroup->number == 1)
-	  if (RefGroup->Invariant)
+	if (RG->Count() == 1)
+	  if (RG->HasSelfTemporal())
 	    LocalityMatrix->SingleGroups.Invariant++;
-	  else if (RefGroup->Spatial)
+	  else if (RG->HasSelfSpatial())
 	    LocalityMatrix->SingleGroups.Spatial++;
 	  else
 	    LocalityMatrix->SingleGroups.None++;
 	else
-	  if (RefGroup->Invariant)
+	  if (RG->HasSelfTemporal())
 	    {
 	     LocalityMatrix->MultiGroups.Invariant++;
 	     LocalityMatrix->MultiRefs.Invariant
-	        += RefGroup->number;
-	     if (RefGroup->OtherSpatial)
+	        += RG->Count();
+	     if (RG->HasGroupSpatial())
 	       (*OtherSpatialGroups)++;
 	    }
-	  else if (RefGroup->Spatial)
+	  else if (RG->HasSelfSpatial())
 	    {
 	     LocalityMatrix->MultiGroups.Spatial++;
 	     LocalityMatrix->MultiRefs.Spatial
-	        += RefGroup->number;
+	        += RG->Count();
 	    }
 	  else
 	    {
 	     LocalityMatrix->MultiGroups.None++;
 	     LocalityMatrix->MultiRefs.None
-	       += RefGroup->number;
-	     if (RefGroup->OtherSpatial)
+	       += RG->Count();
+	     if (RG->HasGroupSpatial())
 	       (*OtherSpatialGroups)++;
 	    }
        }
@@ -337,8 +319,7 @@ static void DumpPermutationStats(model_loop *loop_data,
            Distribution = false,
            Nearby       = false,
            InOrder      = true;
-   UtilNode *GroupNode;
-   RefGroupType *RefGroup;
+   char *IVar[21];  // max fortran nesting depth = 20
 
      OriginalLocalityMatrix.SingleGroups.Invariant = 0;
      OriginalLocalityMatrix.SingleGroups.Spatial = 0;
@@ -372,13 +353,17 @@ static void DumpPermutationStats(model_loop *loop_data,
 	     *inner_loops);
 
            /* print out RefGroup stats */
-
+     for (i = loop;
+	  i != -1;
+	  i = loop_data[i].parent)
+       IVar[i] = gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
+                              loop_data[loop].node)));
      for (i = loop;
 	  i != -1;
 	  i = loop_data[i].parent)
        DumpLoopStats(loop_data,i,num_loops,
-		     (UtilList *)UTIL_NODE_ATOM(UTIL_HEAD(loop_data[i].
-							  GroupList)),
+		     (RefGroupSet *)UTIL_NODE_ATOM(UTIL_HEAD(loop_data[i].
+							     GroupList)),
 		     LoopStats,logfile,loop_data[loop].node,ped);
 
           /* print out permutation statistics */
@@ -539,7 +524,8 @@ static void DumpPermutationStats(model_loop *loop_data,
      GetLocalityStats(&LoopStats->OriginalLocalityMatrix,
 		      &OriginalLocalityMatrix,
 		      &OriginalOtherSpatialGroups,
-                      loop_data[loop].GroupList);
+                      (RefGroupSet *)UTIL_NODE_ATOM(UTIL_HEAD(
+                      loop_data[loop].GroupList)));
      LoopStats->OriginalOtherSpatialGroups += OriginalOtherSpatialGroups;
      for (FinalLoop = loop;
 	  loop_data[FinalLoop].level !=loop_data[loop].FinalOrder[num_loops-1];
@@ -547,7 +533,8 @@ static void DumpPermutationStats(model_loop *loop_data,
      GetLocalityStats(&LoopStats->FinalLocalityMatrix,
 		      &FinalLocalityMatrix,
 		      &FinalOtherSpatialGroups,
-                      loop_data[FinalLoop].GroupList);
+                      (RefGroupSet *)UTIL_NODE_ATOM(UTIL_HEAD(
+                      loop_data[FinalLoop].GroupList)));
      LoopStats->FinalOtherSpatialGroups += FinalOtherSpatialGroups;
      for (MemoryLoop = loop;
 	  loop_data[MemoryLoop].level
@@ -556,7 +543,8 @@ static void DumpPermutationStats(model_loop *loop_data,
      GetLocalityStats(&LoopStats->MemoryLocalityMatrix,
 		      &MemoryLocalityMatrix,
 		      &MemoryOtherSpatialGroups,
-                      loop_data[MemoryLoop].GroupList);
+                      (RefGroupSet *)UTIL_NODE_ATOM(UTIL_HEAD(
+                      loop_data[MemoryLoop].GroupList)));
      LoopStats->MemoryOtherSpatialGroups += MemoryOtherSpatialGroups;
      fprintf(logfile,"Original Loop Locality\n");
      fprintf(logfile,"======================\n\n");
@@ -578,8 +566,6 @@ static void DumpPermutationStats(model_loop *loop_data,
 		OriginalLocalityMatrix.MultiRefs.None);
      fprintf(logfile,"Other Spatial %d\n\n",
 		OriginalOtherSpatialGroups);
-     fprintf(logfile,"Orginal Balance   = %.4f\n\n\n",
-	     loop_data[loop].fbalance);
      fprintf(logfile,"Final Loop Locality\n");
      fprintf(logfile,"======================\n\n");
      fprintf(logfile,"RefGroups\n");
@@ -600,8 +586,6 @@ static void DumpPermutationStats(model_loop *loop_data,
 		FinalLocalityMatrix.MultiRefs.None);
      fprintf(logfile,"Other Spatial %d\n\n",
 		FinalOtherSpatialGroups);
-     fprintf(logfile,"Final Balance   = %.4f\n\n\n",
-	     loop_data[FinalLoop].fbalance);
      fprintf(logfile,"Memory Loop Locality\n");
      fprintf(logfile,"======================\n\n");
      fprintf(logfile,"RefGroups\n");
@@ -622,8 +606,6 @@ static void DumpPermutationStats(model_loop *loop_data,
 		MemoryLocalityMatrix.MultiRefs.None);
      fprintf(logfile,"Other Spatial %d\n\n",
 		MemoryOtherSpatialGroups);
-     fprintf(logfile,"Memory Balance   = %.4f\n\n\n",
-	     loop_data[MemoryLoop].fbalance);
      depth = loop_data[loop].level;
      FinalCost = GetLoopCostFirst(loop_data,FinalLoop);
      MemoryCost = GetLoopCostFirst(loop_data,MemoryLoop);
@@ -633,15 +615,6 @@ static void DumpPermutationStats(model_loop *loop_data,
 	FinalRatio = ((float)OriginalCost)/((float)FinalCost);
 	LoopStats->FinalRatio[depth-1] += FinalRatio;
 	fprintf(logfile,"\tFinal Ratio = %.2f\n",FinalRatio);
-#ifdef STATSDEBUG
-	if (FinalRatio > 1.00)
-	  {
-           printf("Debug Info for Perfect Loop Nest %d\n\n",*inner_loops);
-	   printf("%s: %s  CostRatio = %.2f  BalanceRatio = %.2f\n",program,
-		  routine,FinalRatio,
-		  loop_data[loop].fbalance/loop_data[FinalLoop].fbalance);
-	  }
-#endif
        }
      else
        {
@@ -667,9 +640,7 @@ static void DumpPermutationStats(model_loop *loop_data,
 	  i != -1;
 	  i = loop_data[i].parent)
        {
-	util_free_nodes((UtilList *)UTIL_NODE_ATOM(
-                           UTIL_HEAD(loop_data[i].GroupList)));
-	util_list_free((UtilList *)UTIL_NODE_ATOM(
+	delete((RefGroupSet *)UTIL_NODE_ATOM(
                            UTIL_HEAD(loop_data[i].GroupList)));
 	util_free_node(util_pop(loop_data[i].GroupList));
 	loop_data[i].InvariantCostList.free_head();
