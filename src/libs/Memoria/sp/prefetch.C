@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.7 1995/08/18 10:20:54 trsuchyt Exp $ */
+/* $Id: prefetch.C,v 1.8 1995/08/22 10:56:26 carr Exp $ */
 
 #include <mh.h>
 #include <fort/gi.h>
@@ -214,7 +214,7 @@ static int OperationCycles(AST_INDEX Node,
 
 
 static int CountCycles(AST_INDEX     Node,
-		       CycleInfoType *CycleInfo)
+		       SPCycleInfoType *CycleInfo)
 
   {
    subscript_info_type *sptr;
@@ -236,7 +236,7 @@ static int CyclesPerIteration(AST_INDEX Node,
 			      PedInfo   ped)
 
   {
-   CycleInfoType CycleInfo;
+   SPCycleInfoType CycleInfo;
   
      CycleInfo.MemCycles = 0;
      CycleInfo.FlopCycles = 0;
