@@ -1,4 +1,4 @@
-/* $Id: cNameValueTable.h,v 1.4 1997/03/11 14:37:38 carr Exp $ */
+/* $Id: cNameValueTable.h,v 1.5 1999/06/11 21:07:19 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -148,7 +148,7 @@ typedef Generic cNameValueTable;
 
 typedef FUNCTION_POINTER (int, NameCompareCallback, (Generic name1, Generic name2));
 
-typedef FUNCTION_POINTER (uint, NameHashFunctCallback, (Generic name, uint size));
+typedef FUNCTION_POINTER (unsigned int, NameHashFunctCallback, (Generic name, unsigned int size));
 
 typedef FUNCTION_POINTER (void, NameValueTableForAllCallback, (Generic name, 
                                                                Generic value, 
@@ -160,7 +160,7 @@ typedef FUNCTION_POINTER (void, NameValueTableForAllCallbackV, (Generic name,
 
 /********************** cNameValueTable function externs **********************/
 
-EXTERN (cNameValueTable, NameValueTableAlloc, (uint initialSlots, 
+EXTERN (cNameValueTable, NameValueTableAlloc, (unsigned int initialSlots, 
                                                NameCompareCallback   UserNameCompare,
                                                NameHashFunctCallback UserHashFunct));
 
@@ -180,7 +180,7 @@ EXTERN (Boolean, NameValueTableQueryPair, (cNameValueTable nvt,
                                            Generic name, 
                                            Generic* value));
 
-EXTERN (uint, NameValueTableNumPairs, (cNameValueTable nvt));
+EXTERN (unsigned int, NameValueTableNumPairs, (cNameValueTable nvt));
 
 
 EXTERN (void, NameValueTableForAll, (cNameValueTable nvt, 
@@ -192,6 +192,6 @@ EXTERN (void, NameValueTableForAllV, (cNameValueTable nvt,
 
 EXTERN (int, NameValueTableIntCompare, (Generic intKey1, Generic intKey2));
 
-EXTERN (uint, NameValueTableIntHash, (Generic intKey, uint size));
+EXTERN (unsigned int, NameValueTableIntHash, (Generic intKey, unsigned int size));
 
 #endif

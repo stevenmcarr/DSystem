@@ -1,4 +1,4 @@
-/* $Id: log_msg.h,v 1.5 1997/03/11 14:37:03 carr Exp $ */
+/* $Id: log_msg.h,v 1.6 1999/06/11 21:17:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -70,7 +70,10 @@ EXTERN(void, log_msg_internal, (Boolean do_it, char *format, ...));
 
 extern	int	 errno,			/* system error number		*/
 		 sys_nerr;		/* # of system errors in table	*/
+
+#ifndef LINUX
 extern	char	*sys_errlist[];		/* system error string table	*/
+#endif
 
 
 extern	char	*log_msg_file_name;

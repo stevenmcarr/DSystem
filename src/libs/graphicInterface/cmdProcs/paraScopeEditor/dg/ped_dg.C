@@ -1,4 +1,4 @@
-/* $Id: ped_dg.C,v 1.1 1997/06/25 14:40:06 carr Exp $ */
+/* $Id: ped_dg.C,v 1.2 1999/06/11 21:28:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -377,7 +377,7 @@ pedReinitialize(PedInfo ped)
     
     /* reinitialize interprocedural information -- JMC 2/93 */
     if (PED_PGM_CONTEXT(ped) != CONTEXT_NULL) {
-      if (PED_PGM_CALLGRAPH(ped) != NULL) 
+      if (PED_PGM_CALLGRAPH(ped) != AST_NIL) 
 	IPQuery_Fini((C_CallGraph) PED_PGM_CALLGRAPH(ped));
       PED_PGM_CALLGRAPH(ped) = (Generic) IPQuery_Init(PED_PGM_CONTEXT(ped)); 
     } 

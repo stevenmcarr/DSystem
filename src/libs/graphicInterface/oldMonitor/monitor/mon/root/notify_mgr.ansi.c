@@ -1,4 +1,4 @@
-/* $Id: notify_mgr.ansi.c,v 1.8 1999/03/31 21:54:34 carr Exp $ */
+/* $Id: notify_mgr.ansi.c,v 1.9 1999/06/11 21:24:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -23,7 +23,7 @@
 #include <libs/support/strings/rn_string.h>
 
 typedef FUNCTION_POINTER(void,HandlerFunc,(Generic,Generic,char *, int));
-#ifndef SOLARIS
+#ifdef LINUX
 typedef FUNCTION_POINTER(void,CRHandlerFunc,(Generic,int,int *));
 #else
 typedef FUNCTION_POINTER(void,CRHandlerFunc,(Generic,int,union wait *));
@@ -307,7 +307,7 @@ struct  cp_reg  *cr;                    /* current child registration   */
                     break;
                 }
             }
-#ifndef SOLARIS
+#ifdef LINUX
 	    (cr->handler)(cr->owner, cr->pid, (int *) mon_event.msg);
 #else
 	    (cr->handler)(cr->owner, cr->pid, (union wait *) mon_event.msg);

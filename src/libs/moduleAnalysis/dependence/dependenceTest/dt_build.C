@@ -1,4 +1,4 @@
-/* $Id: dt_build.C,v 1.1 1997/06/25 15:08:54 carr Exp $ */
+/* $Id: dt_build.C,v 1.2 1999/06/11 21:10:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -906,7 +906,7 @@ dg_ip_query_add_ref(SymDescriptor d, Dg_ref_params *r,
       int ip_use_flag = (callee_uses_actual_as_array ? T_IP_WHOLE_ARRAY :
 			 T_IP_SCALAR);
 
-      if (r->program_callgraph != NULL) {
+      if (r->program_callgraph != AST_NIL) {
 	if (IPQuery_IsScalarMod(r->program_callgraph, r->current_proc, 
 				callsite_id, sym, offset, length))
 	  dg_add_ref(r, expr, sym, ip_use_flag | GUARDED | T_DEF); /* mod */
@@ -1161,7 +1161,7 @@ dg_build_DG(Dg_ref_params *r)
       /* procedure calls */
     
       /* call edges only when no interprocedural information -- JMC 9/92 */
-      if (is_call(stmt) && (r->program_callgraph == NULL)) 
+      if (is_call(stmt) && (r->program_callgraph == AST_NIL)) 
 	{
 	  for (lvl = r->stmts[i].level - 1; lvl > 0; lvl--)
 	    dg_ins_edge(r->dg, r->dt, r->infoPtr, stmt, stmt, 

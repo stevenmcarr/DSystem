@@ -1,4 +1,4 @@
-/* $Id: notify.h,v 1.7 1999/03/31 21:54:57 carr Exp $ */
+/* $Id: notify.h,v 1.8 1999/06/11 21:23:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -45,7 +45,7 @@ EXTERN(void, notify_unregister_async_fd, (short fd));
 /* earlier registration.						*/
 
 
-#ifndef SOLARIS
+#ifdef LINUX
 typedef FUNCTION_POINTER(void, notify_process_callback,
   (Generic owner, int pid, int *status));
 #else

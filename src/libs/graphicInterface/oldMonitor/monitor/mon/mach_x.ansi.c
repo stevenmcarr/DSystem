@@ -1,4 +1,4 @@
-/* $Id: mach_x.ansi.c,v 1.19 1997/06/25 14:53:48 carr Exp $ */
+/* $Id: mach_x.ansi.c,v 1.20 1999/06/11 21:18:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1778,7 +1778,9 @@ int errorHandler(XDisplay *display, XErrorEvent *err)
 void
 startScreenEvents(ResizeFunc resize, RedrawFunc redraw, CharHandlerFunc handler)
 {
+#ifndef LINUX
 struct	sgttyb		terminal_status;	/* terminal keyboard status settings	*/
+#endif
 unsigned int		c_width, c_height;	/* best cursor width, height		*/
 int			dx, dy;			/* the display width, height		*/
 XEvent	 		ie;			/* an input event			*/
@@ -1810,8 +1812,13 @@ XSetWindowAttributes	wwAttr;			/* window attributes for root window	*/
 		char_handler  = handler;
 
 	/* check for swapping DEL & BS */
+#ifndef LINUX  
+		/* not supported under Linux */
 		gtty(0, &terminal_status);
 		kb_swap_bs_del = BOOL(terminal_status.sg_erase == '\177');
+#else
+		kb_swap_bs_del = false;
+#endif
 
 	/* open and initialize the display */
 		if ((x_display = XOpenDisplay((char *) NULL)) == (XDisplay *) 0)

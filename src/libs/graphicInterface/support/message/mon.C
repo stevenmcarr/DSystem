@@ -1,4 +1,4 @@
-/* $Id: mon.C,v 1.1 1997/06/25 15:02:41 carr Exp $ */
+/* $Id: mon.C,v 1.2 1999/06/11 21:21:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -16,7 +16,11 @@ va_list arg_list;
 
   va_start(arg_list, format);
     {
+#ifdef LINUX
+       vprintf(format, arg_list);
+#else
        _doprnt(format, arg_list, stdout);
+#endif
     }
   va_end(arg_list);
 

@@ -1,4 +1,4 @@
-/* $Id: event.ansi.c,v 1.15 1999/03/31 21:54:19 carr Exp $ */
+/* $Id: event.ansi.c,v 1.16 1999/06/11 21:12:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -22,7 +22,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
-#ifndef SOLARIS
+#ifdef LINUX
 #include <sys/select.h>
 #endif
 
@@ -59,7 +59,7 @@ struct	cr_node	{				/* CHILD REGISTRATION NODE (for 1-list)	*/
 	int		pid;			/* the registered process id		*/
 	Generic		owner;			/* the registered owner of the process	*/
 	Boolean		urgent;			/* input should not be held		*/
-#ifdef SOLARIS
+#ifndef LINUX
 	union	wait	status;			/* the most recient status of process	*/
 #else
        int *status;
@@ -76,7 +76,7 @@ typedef FUNCTION_POINTER(void,SignalHandler,(int));
 
 	/* ASYNCHRONOUS IO INFORMATION */
 
-#ifdef SOLARIS
+#ifndef LINUX
 typedef	struct	fd_set	SelectMask;		/* the select mask type			*/
 #else
 typedef	fd_set	SelectMask;		/* the select mask type			*/
@@ -127,7 +127,7 @@ startChildProcessEvents(void)
 static Boolean
 readyChildProcessEvent(void)
 {
-#ifdef SOLARIS
+#ifndef LINUX
 	status_wait(0, (union wait *) 0);
 #else
 	status_wait(0, (int *) 0);
@@ -230,10 +230,10 @@ int system(char* s)
 {
   register int pid;			/* the (shard) process id		*/
   register int omask;			/* old signal mask			*/
-#ifdef SOLARIS
+#ifndef LINUX
   union	wait   status;			/* the return status			*/
 #else
-  int status;
+  int *status;
 #endif
 
   pid = vfork();
@@ -250,11 +250,15 @@ int system(char* s)
   else
     {/* parent process -- wait for termination */
       omask = sigblock(sigmask(SIGINT) | sigmask(SIGQUIT));
+#ifndef LINUX
       status_wait(pid, &status);
+#else
+      status_wait(pid, status);
+#endif
       sigsetmask(omask);
 #ifdef _AIX
       return (WIFEXITED(status)) ? status.w_retcode : status.w_termsig;
-#elif !defined(SOLARIS)
+#elif defined(LINUX)
       if (WIFEXITED(status)) 
 	return WEXITSTATUS(status); 
       else
@@ -268,7 +272,7 @@ int system(char* s)
 
 /* Replaces "wait3" with something that knows about other child pids.			*/
 void
-#ifdef SOLARIS
+#ifndef LINUX
 status_wait(int pid, union wait* status_ptr)
 #else
 status_wait(int pid, int* status_ptr)
@@ -276,7 +280,7 @@ status_wait(int pid, int* status_ptr)
 {
 register struct	cr_node	*current;		/* current entry in registration list	*/
 register int		new_pid;		/* the new ready child process id	*/
-#ifdef SOLARIS
+#ifndef LINUX
 union wait		status;			/* the return status			*/
 #else
 int*		status;			/* the return status			*/
@@ -302,7 +306,11 @@ int*		status;			/* the return status			*/
 		}
 	}
 
+#ifndef LINUX
 	while ((new_pid = wait3(&status, (pid) ? WUNTRACED : WUNTRACED|WNOHANG, (struct rusage *) 0)) > 0 && new_pid != pid)
+#else
+	while ((new_pid = wait3(status, (pid) ? WUNTRACED : WUNTRACED|WNOHANG, (struct rusage *) 0)) > 0 && new_pid != pid)
+#endif
 	{/* process a child that we are not interested in */
 		for (current = cr_list; current; current = current->next)
 		{/* check each entry in the list for new_pid match */

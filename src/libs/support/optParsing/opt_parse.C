@@ -1,4 +1,4 @@
-/* $Id: opt_parse.C,v 1.9 1997/06/25 15:18:09 carr Exp $ */
+/* $Id: opt_parse.C,v 1.10 1999/06/11 21:26:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,6 +31,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef LINUX
+#include <unistd.h>
+#endif
 
 #include <libs/support/msgHandlers/log_msg.h>
 #include <libs/support/strings/rn_string.h>
