@@ -1,4 +1,4 @@
-/* $Id: PrefetchList.h,v 1.4 1993/06/30 22:05:48 johnmc Exp $ */
+/* $Id: PrefetchList.h,v 1.5 1993/07/20 15:28:33 carr Exp $ */
 #ifndef PrefetchList_h
 #define PrefetchList_h
 
@@ -40,14 +40,6 @@ public:
 
 class PrefetchListIterator : public SinglyLinkedListIterator {
 public:
-	// old style
-	PrefetchListEntry *next_entry()
-	{ 
-	  // Steve: this next_entry interface is deprecated 
-	  // use ++ and Current() instead -- JMC 6/30/93
-	 (*((PrefetchListIterator *)this))++; 
-	 return (PrefetchListEntry *) SinglyLinkedListIterator::Current();
-	 };
 	PrefetchListEntry *current()
 	 {return (PrefetchListEntry *)SinglyLinkedListIterator::Current();};
 
