@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.27 1994/12/08 09:55:35 carr Exp $ */
+/* $Id: mh_walk.C,v 1.28 1994/12/08 13:47:54 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -1465,8 +1465,8 @@ void mh_walk_ast(int          selection,
 	          += walk_info.LoopStats->UniformRefs;
 	   LoopStats->NonUniformRefs
 	          += walk_info.LoopStats->NonUniformRefs;
-	   LoopStats->NonUniformLoops
-	          += walk_info.LoopStats->NonUniformLoops;
+	   LoopStats->NonUniformLoopsReplaced
+	          += walk_info.LoopStats->NonUniformLoopsReplaced;
            SRStatsDump(((config_type *)PED_MH_CONFIG(ped))->logfile,
 				       walk_info.LoopStats);
            break;
@@ -1713,7 +1713,7 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
    fprintf(logfile, "Total Number of Non-Uniform References = %d\n\n",
 			LoopStats->NonUniformRefs);
    fprintf(logfile, "Total Number of Loops w/ Non-Uniform References = %d\n\n",
-			LoopStats->NonUniformLoops);
+			LoopStats->NonUniformLoopsReplaced);
    fprintf(logfile, "Total Number of Loops w/ Non-Uniform References and no FP Pressure = %d\n\n",
 			LoopStats->NonUniformLoopsZeroFP);
 
