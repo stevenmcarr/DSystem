@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.23 1994/07/27 18:55:37 yguan Exp $ */
+/* $Id: mh_walk.C,v 1.24 1994/08/28 18:06:47 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -1486,7 +1486,7 @@ void ApplyMemoryCompiler(int         selection,
    if (LoopStats == NULL)
      LoopStats = (LoopStatsType *)calloc(1,sizeof(LoopStatsType));
    
-   printf("Analyzing %s...\n", ctxLocation(mod_context));
+   fprintf(stderr,"Analyzing %s...\n", ctxLocation(mod_context));
    
    mh_walk_ast(selection,ped,root,ft, mod_context, &ar);
   }
