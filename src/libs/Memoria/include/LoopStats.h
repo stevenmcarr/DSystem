@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.12 1994/11/30 15:46:21 carr Exp $ */
+/* $Id: LoopStats.h,v 1.13 1995/06/07 16:06:11 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -56,6 +56,7 @@ typedef struct loopstatstype {
           MemoryRatio[NESTING_DEPTH];
   float   PredictedFinalBalance,
           PredictedInitialBalance,
+          PredictedP_L,
           InitialBalanceWithInterlock,
           ActualFinalBalance,
           FinalBalanceWithInterlock,
