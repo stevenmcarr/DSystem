@@ -17,7 +17,7 @@
 
 EXTERN(void, message,(char *str));
  
-static int AddPrints(AST_INDEX Stmt)
+static void AddPrints(AST_INDEX Stmt)
 
 /****************************************************************************/
 /*                                                                          */
@@ -46,6 +46,14 @@ static int AddPrints(AST_INDEX Stmt)
      gen_put_text(node1,TextConstant,STR_TEXT_STRING);
      PrintList = list_create(node1);
      PrintList = list_insert_last(PrintList,pt_gen_ident("NumStores"));
+     NewStmt = gen_PRINT(AST_NIL,gen_STAR(),PrintList);
+     list_insert_before(Stmt,NewStmt);
+     node1 = gen_CONSTANT();
+     sprintf(TextConstant,"'%s'","Number of Memory Accesses = ");
+     gen_put_text(node1,TextConstant,STR_TEXT_STRING);
+     PrintList = list_create(node1);
+     PrintList = list_insert_last(PrintList,pt_gen_add(pt_gen_ident("NumStores"),
+						       pt_gen_ident("NumLoads")));
      NewStmt = gen_PRINT(AST_NIL,gen_STAR(),PrintList);
      list_insert_before(Stmt,NewStmt);
   }
@@ -142,9 +150,7 @@ static int InsertIncrements(AST_INDEX     stmt,
 	      is_close(stmt) || is_open(stmt) || is_rewind_short(stmt) ||
 	      is_rewind_long(stmt));
      else if (is_stop(stmt))
-       if (IncInfo->MainProgram)
-         AddPrints(stmt);
-       else;
+       AddPrints(stmt);
      else if (executable_stmt(stmt))
        { 
 	char errmsg[30];
