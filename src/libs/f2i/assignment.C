@@ -1,4 +1,4 @@
-/* $Id: assignment.C,v 1.2 1998/07/07 19:25:02 carr Exp $ */
+/* $Id: assignment.C,v 1.3 1998/07/07 20:25:53 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -146,7 +146,7 @@ static void NonCharacterAssignment(AST_INDEX	node)
      else
        lhs_index = getSubscriptLValue(lhs);
        
-     generate_store(lhs_index, rhs_index, rhs_type, Var, comment,Offset);
+     generate_store(lhs_index, rhs_index, rhs_type, Var, comment);
      free(comment);
 
      /* This move is extraneous from a correctness sense. 	*/

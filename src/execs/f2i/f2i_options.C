@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.7 1998/06/08 15:30:50 carr Exp $ */
+/* $Id: f2i_options.C,v 1.8 1998/07/07 20:26:43 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -58,6 +58,7 @@ Boolean ReuseModelDebugFlag = false;
  int aiRocket; /* compile with Rocket naming        */
  int aiRt;    /* generate code for Rt                 */
                         /* so default is for itoc  (cij 8/6/92) */
+ int aiOptimizeAddressCode; /* utilize non-zero offsets in address generation */
  int aiCache; /* do cache reuse analysis */
  int aiSpecialCache; /* do cache reuse analysis, self-spatial refs that are
 		        leaders of a group-spatial set are given no reuse */
@@ -218,6 +219,12 @@ static void f2i_opt_Rt(void *state)
  aiRt++;
 }
 
+static void f2i_opt_Address(void *state)
+  {
+   aiOptimizeAddressCode++;
+   aiCache++;
+  }
+
 static void f2i_opt_Cache(void *state)
   {
    aiCache++;
@@ -279,6 +286,12 @@ static struct flag_	AlignDoubles_f = {
 static struct flag_	Constants_f = {
   f2i_opt_Constants,
   "Constants flag",	
+  " ",
+};
+
+static struct flag_	Address_f = {
+  f2i_opt_Address,
+  "Address optimization flag",	
   " ",
 };
 
@@ -434,6 +447,8 @@ Option f2i_pgm_opt = {string, F2I_PGM_OPT,(Generic) "", true,(Generic)&program_s
 				(Generic)&AlignDoubles_f},
        f2i_Constants_flag ={flag, F2I_CONSTANTS_FLAG, (Generic)false,true, 
 			    (Generic)&Constants_f},
+       f2i_Address_flag = {flag, F2I_ADDRESSOPT_FLAG, (Generic)false, true, 
+			   (Generic)&Address_f},
        f2i_Cache_flag = {flag, F2I_CACHE_FLAG, (Generic)false, true, (Generic)&Cache_f},
        f2i_SpecialCache_flag = {flag, F2I_SPECIALCACHE_FLAG, (Generic)false, true, 
 				(Generic)&SpecialCache_f},
@@ -478,6 +493,7 @@ int f2i_init_options(int argc, char **argv)
   aiAnnotate  		= 1;
   aiAlignDoubles	= 1;
   aiConstants 		= 0;
+  aiOptimizeAddressCode	= 0;
   aiCache 		= 0;
   aiSpecialCache	= 0;
   aiLongIntegers	= 0;
@@ -503,6 +519,7 @@ int f2i_init_options(int argc, char **argv)
   f2iOptions.Add(&f2i_Annotate_flag);
   f2iOptions.Add(&f2i_AlignDoubles_flag);
   f2iOptions.Add(&f2i_Constants_flag);
+  f2iOptions.Add(&f2i_Address_flag);
   f2iOptions.Add(&f2i_Cache_flag);
   f2iOptions.Add(&f2i_SpecialCache_flag);
   f2iOptions.Add(&f2i_Debug_flag);
