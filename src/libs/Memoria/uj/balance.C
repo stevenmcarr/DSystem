@@ -1,4 +1,4 @@
-/* $Id: balance.C,v 1.2 1992/10/03 15:49:45 rn Exp $ */
+/* $Id: balance.C,v 1.3 1992/12/17 14:50:57 carr Exp $ */
 #include <balance.h>
 
 /****************************************************************************/
@@ -6,59 +6,24 @@
 /*                                                                          */
 /****************************************************************************/
 
-int mh_compute_x(int regs,
-		 int int_regs,
-		 int *reg_coeff,
-		 int *scalar_coeff,
-		 int *addr_coeff,
-		 int x,
-		 int i)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
+static int get_coeff_index(int x)
 
   {
-   int denom;
-   int rt,at;
-
-     if (x == 1)
+     switch (x-1)
        {
-	denom = reg_coeff[0] + scalar_coeff[0] + reg_coeff[3-i];
-	if (denom == 0) 
-	  if (scalar_coeff[i] == 0)
-	    rt = 1;
-	  else
-	    rt = regs;
-	else
-	  rt = (regs - reg_coeff[3] - (reg_coeff[i] + scalar_coeff[i]))/denom;
+	case 0: 
+	  return 0;
+	case 1: 
+          return 1;
+	default:
+	  return 2;
        }
-     else  
-       {
-	denom =  (reg_coeff[0] + scalar_coeff[0]) * x +
-	          reg_coeff[3-i] + scalar_coeff[3-i];
-	if (denom == 0)
-	  rt = 1; 
-	else
-	  rt = (regs - reg_coeff[3] - ((reg_coeff[i] + scalar_coeff[i])* x))
-	        / denom;
-       }
-     denom = addr_coeff[0]*x + addr_coeff[3-i];
-     if (denom == 0)
-       at = rt;
-     else
-       at = (int_regs - addr_coeff[3] - addr_coeff[i] * x)/denom;
-     if (at < rt)
-       return at;
-     else
-       return rt;
   }
 
-int mh_register_pressure(int *reg_coeff,
-			 int *scalar_coeff,
-			 int x1,
-			 int x2)
+int mh_fp_register_pressure(int reg_coeff[4][3][3],
+			    int *scalar_coeff,
+			    int x1,
+			    int x2)
 
 /****************************************************************************/
 /*                                                                          */
@@ -66,10 +31,14 @@ int mh_register_pressure(int *reg_coeff,
 /****************************************************************************/
 
   {
-   int regs;
+   int regs,cindex1,cindex2;
    
-     regs = (reg_coeff[0] + scalar_coeff[0]) * x1 * x2 + reg_coeff[1] * x1 + 
-            reg_coeff[2] * x2 + reg_coeff[3];
+     cindex1 = get_coeff_index(x1);
+     cindex2 = get_coeff_index(x2);
+     regs = (reg_coeff[0][cindex1][cindex2] + scalar_coeff[0]) * x1 * x2 +
+             reg_coeff[1][cindex1][cindex2] * x1 + 
+	     reg_coeff[2][cindex1][cindex2] * x2 + 
+	     reg_coeff[3][cindex1][cindex2];
      if (x1 != 1)
        regs += scalar_coeff[2] * x2;
      if (x2 != 1)
@@ -77,7 +46,28 @@ int mh_register_pressure(int *reg_coeff,
      return(regs);
   }
 
-float mh_loop_balance(int   *mem_coeff,
+int mh_addr_register_pressure(int addr_coeff[4][3][3],
+			      int x1,
+			      int x2)
+
+/****************************************************************************/
+/*                                                                          */
+/*                                                                          */
+/****************************************************************************/
+
+  {
+   int regs,cindex1,cindex2;
+   
+     cindex1 = get_coeff_index(x1);
+     cindex2 = get_coeff_index(x2);
+     regs = addr_coeff[0][cindex1][cindex2] * x1 * x2 +
+            addr_coeff[1][cindex1][cindex2] * x1 + 
+	    addr_coeff[2][cindex1][cindex2] * x2 + 
+	    addr_coeff[3][cindex1][cindex2];
+     return(regs);
+  }
+
+float mh_loop_balance(int   mem_coeff[4][3][3],
 		      int   flops,
 		      int   x1,
 		      int   x2)
@@ -89,9 +79,14 @@ float mh_loop_balance(int   *mem_coeff,
 
   {
    float num,denom;
+   int cindex1,cindex2;
 
-     num = (float)(mem_coeff[0] * x1 * x2 + mem_coeff[1] * x1 + mem_coeff[2] *
-		   x2 + mem_coeff[3]);
+     cindex1 = get_coeff_index(x1);
+     cindex2 = get_coeff_index(x2);
+     num = (float)(mem_coeff[0][cindex1][cindex2] * x1 * x2 + 
+		   mem_coeff[1][cindex1][cindex2] * x1 + 
+		   mem_coeff[2][cindex1][cindex2] * x2 + 
+		   mem_coeff[3][cindex1][cindex2]);
      denom = (float)(flops * x1 * x2);
      return(num/denom);
   }

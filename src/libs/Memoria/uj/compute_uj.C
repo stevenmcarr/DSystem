@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.8 1992/12/16 12:23:28 carr Exp $ */
+/* $Id: compute_uj.C,v 1.9 1992/12/17 14:51:06 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -819,6 +819,48 @@ static void get_distances(dep_info_type *dep_info,
        *distn = -(*distn);
   } 
 
+static int get_coeff_index(int dist)
+
+  {
+     switch (dist)
+       {
+	case 0: 
+	  return 0;
+	case 1: 
+          return 1;
+	default:
+	  return 2;
+       }
+  }
+
+static void update_gcoeff(int coeff[3][3],
+			  int index1,
+			  int index2,
+			  int val)
+
+  {
+   int i,j;
+   
+     for (i = 2; i >= index1; i--)
+       for (j = 2; j >= index2; j--)
+         coeff[i][j] += val;
+  }
+
+static void update_lcoeff(int coeff[3][3],
+			  int index1,
+			  int index2,
+			  int val)
+
+  {
+   int i,j;
+   
+     for (i = index1-1; i >= 0; i--)
+       for (j = 2; j >= 0; j--)
+         coeff[i][j] += val;
+     for (i = 2; i >= index1; i--)
+       for (j = index2-1; j >= 0; j--)
+         coeff[i][j] += val;
+  }
 
 static void compute_registers(dep_info_type *dep_info, 
 			      AST_INDEX     node,
@@ -826,7 +868,7 @@ static void compute_registers(dep_info_type *dep_info,
 
   {
    subscript_info_type *subp;
-   int refs, regs, dist1, dist2, distn; 
+   int refs, regs, dist1, dist2, distn, cindex1, cindex2; 
    int dvect[MAXLOOP];
 
      summarize_partition_vector(dvect,node,nlist,dep_info);
@@ -857,14 +899,16 @@ static void compute_registers(dep_info_type *dep_info,
      else
        {
 	get_distances(dep_info,dvect,&dist1,&dist2,&distn);
-	dep_info->reg_coeff[0] += (distn + 1) * regs;
-	dep_info->reg_coeff[1] -= dist2 * (distn + 1) * regs;
-	dep_info->reg_coeff[2] -= dist1 * (distn + 1) * regs;
-	dep_info->reg_coeff[3] += dist1 * dist2 * (distn + 1) * regs;
-	if (dist1 > dep_info->x1)
-	  dep_info->x1 = dist1;
-	if (dist2 > dep_info->x2)
-	  dep_info->x2 = dist2;
+	cindex1 = get_coeff_index(dist1);
+	cindex2 = get_coeff_index(dist2);
+	update_gcoeff(dep_info->reg_coeff[0],cindex1,cindex2,
+		      (distn + 1) * regs);
+	update_gcoeff(dep_info->reg_coeff[1],cindex1,cindex2,
+		      -(dist2*(distn+1)*regs));
+	update_gcoeff(dep_info->reg_coeff[2],cindex1,cindex2,
+		      -(dist1*(distn+1)*regs));
+	update_gcoeff(dep_info->reg_coeff[3],cindex1,cindex2,
+		      dist1*dist2*(distn+1)*regs);
        }
   }
 
@@ -880,7 +924,7 @@ static void compute_extra_regs(dep_info_type *dinfo,
    int     vector;
    int     dist1,sdist1,
            dist2,sdist2,
-           distn,sdistn,regs,refs;
+           distn,sdistn,regs,refs,cindex1,cindex2;
    int                 dvect[MAXLOOP];
 
      dg = dg_get_edge_structure( PED_DG(dinfo->ped));
@@ -891,19 +935,26 @@ static void compute_extra_regs(dep_info_type *dinfo,
      summarize_partition_vector(dvect,node,nlist,dinfo);
      get_machine_parms(node,&regs,&refs,dinfo);
      get_distances(dinfo,dg[edge].dt_data,&dist1,&dist2,&distn);
+     cindex1 = get_coeff_index(dist1);
+     cindex2 = get_coeff_index(dist2);
      get_distances(dinfo,dvect,&sdist1,&sdist2,&sdistn);
      if (dist1 != 0)
        if (dist2 != 0)
-         dinfo->reg_coeff[3] += dist1 * dist2 * (sdistn + 1) * regs;
+         update_gcoeff(dinfo->reg_coeff[3],cindex1,cindex2,
+		       dist1*dist2*(sdistn+1)*regs);
        else
 	 {
-	  dinfo->reg_coeff[2] += dist1 * (sdistn + 1) * regs;
-	  dinfo->reg_coeff[3] -= dist1 * sdist2 * (sdistn + 1) * regs;
+	  update_gcoeff(dinfo->reg_coeff[2],cindex1,cindex2,
+			dist1*(sdistn+1)*regs);
+	  update_gcoeff(dinfo->reg_coeff[3],cindex1,cindex2,
+			-(dist1*sdist2*(sdistn+1)*regs));
 	 }
      else
        {
-	dinfo->reg_coeff[1] += dist2 * (sdistn + 1) * regs;
-	dinfo->reg_coeff[3] -= sdist1 * dist2 * (sdistn + 1) * regs;
+	update_gcoeff(dinfo->reg_coeff[1],cindex1,cindex2,
+		      dist2*(sdistn+1)*regs);
+	update_gcoeff(dinfo->reg_coeff[3],cindex1,cindex2,
+		      -(sdist1*dist2*(sdistn+1)*regs));
        }
   }
 
@@ -931,20 +982,20 @@ static void update_coeff_for_invariants(AST_INDEX node,
 	 {
 	  if (NOT(vector_all_zeros(dvect,dep_info->inner_level)))
 	    {
-	     dep_info->mem_coeff[3] += refs;
+	     update_gcoeff(dep_info->mem_coeff[3],0,0,refs);
 	     if (index_in_outer_subscript(node,dep_info->index[2]))
-	       dep_info->addr_coeff[3]++;
+	       update_gcoeff(dep_info->addr_coeff[3],0,0,1);
 	    }
 	 }
        else
 	 {
 	  if (NOT(vector_all_zeros(dvect,dep_info->inner_level)))
 	    {
-	     dep_info->mem_coeff[1] += refs;
+	     update_gcoeff(dep_info->mem_coeff[1],0,0,refs);
 	     if (index_in_outer_subscript(node,dep_info->index[0]))
-  	       dep_info->addr_coeff[1]++;
+  	       update_gcoeff(dep_info->addr_coeff[1],0,0,1);
 	     else
-	       dep_info->addr_coeff[3]++;
+	       update_gcoeff(dep_info->addr_coeff[3],0,0,1);
 	    }
 	 }
      else
@@ -952,11 +1003,11 @@ static void update_coeff_for_invariants(AST_INDEX node,
 	 {
 	  if (NOT(vector_all_zeros(dvect,dep_info->inner_level)))
 	    {
-	     dep_info->mem_coeff[2] += refs;
+	     update_gcoeff(dep_info->mem_coeff[2],0,0,refs);
 	     if (index_in_outer_subscript(node,dep_info->index[1]))
-	       dep_info->addr_coeff[2]++;
+	       update_gcoeff(dep_info->addr_coeff[2],0,0,1);
 	     else
-	       dep_info->addr_coeff[3]++;
+	       update_gcoeff(dep_info->addr_coeff[3],0,0,1);
 	    }
 	 }
   }
@@ -967,28 +1018,34 @@ static void update_mem_coeff_with_vector(AST_INDEX node,
 					 int       refs)
 
   {
-   int dist1,dist2,distn;
+   int dist1,dist2,distn,cindex1,cindex2;
 
      get_distances(dep_info,dvect,&dist1,&dist2,&distn);
-     dep_info->mem_coeff[1] += dist2 * refs;
-     dep_info->mem_coeff[2] += dist1 * refs;
-     dep_info->mem_coeff[3] -= dist1 * dist2 * refs;
+     cindex1 = get_coeff_index(dist1);
+     cindex2 = get_coeff_index(dist2);
+     update_gcoeff(dep_info->mem_coeff[1],cindex1,cindex2,dist2 * refs);
+     update_gcoeff(dep_info->mem_coeff[2],cindex1,cindex2,dist1 * refs);
+     update_gcoeff(dep_info->mem_coeff[3],cindex1,cindex2,
+		   -(dist1 * dist2 * refs));
+     update_lcoeff(dep_info->mem_coeff[0],cindex1,cindex2,1);
   }
 
 static void update_addr_coeff_with_no_dep(AST_INDEX node,
 					  dep_info_type *dep_info)
 
   {
-   if (index_in_outer_subscript(node,dep_info->index[0]))
-     if (index_in_outer_subscript(node,dep_info->index[1]))
-       dep_info->addr_coeff[0]++;
+   int cindex;
+
+     if (index_in_outer_subscript(node,dep_info->index[0]))
+       if (index_in_outer_subscript(node,dep_info->index[1]))
+         update_gcoeff(dep_info->addr_coeff[0],0,0,1);
+       else
+         update_gcoeff(dep_info->addr_coeff[1],0,0,1);
      else
-       dep_info->addr_coeff[1]++;
-   else
-     if (index_in_outer_subscript(node,dep_info->index[1]))
-       dep_info->addr_coeff[2]++;
-     else
-       dep_info->addr_coeff[3]++;
+       if (index_in_outer_subscript(node,dep_info->index[1]))
+         update_gcoeff(dep_info->addr_coeff[2],0,0,1);
+       else
+         update_gcoeff(dep_info->addr_coeff[3],0,0,1);
   }
 
 static void update_addr_coeff_with_vector(AST_INDEX node,
@@ -996,21 +1053,34 @@ static void update_addr_coeff_with_vector(AST_INDEX node,
 					  int       *dvect)
   {
    int dist1,dist2,distn;
+   int cindex1,cindex2;
 
      get_distances(dep_info,dvect,&dist1,&dist2,&distn);
      if (index_in_outer_subscript(node,dep_info->index[0]))
        if (index_in_outer_subscript(node,dep_info->index[1]))
 	 {
-	  dep_info->addr_coeff[1] += dist2;
-	  dep_info->addr_coeff[2] += dist1;
-	  dep_info->addr_coeff[3] -= dist1 * dist2;
+	  cindex1 = get_coeff_index(dist1);
+	  cindex2 = get_coeff_index(dist2);
+	  update_gcoeff(dep_info->addr_coeff[1],cindex1,cindex2,dist2);
+	  update_gcoeff(dep_info->addr_coeff[2],cindex1,cindex2,dist1);
+	  update_gcoeff(dep_info->addr_coeff[3],cindex1,cindex2,
+			-(dist1 * dist2));
+          update_lcoeff(dep_info->addr_coeff[0],cindex1,cindex2,1);
 	 }
        else
-         dep_info->addr_coeff[3] += dist1;
+	 {
+	  cindex1 = get_coeff_index(dist1);
+	  update_gcoeff(dep_info->addr_coeff[3],cindex1,0,dist1);
+          update_lcoeff(dep_info->addr_coeff[1],cindex1,0,1);
+	 }
      else if (index_in_outer_subscript(node,dep_info->index[1]))
-       dep_info->addr_coeff[3] += dist2;
+       {
+	cindex2 = get_coeff_index(dist2);
+	update_gcoeff(dep_info->addr_coeff[3],0,cindex2,dist2);
+	update_lcoeff(dep_info->addr_coeff[2],0,cindex2,1);
+       }
      else
-       dep_info->addr_coeff[3]++;
+       update_gcoeff(dep_info->addr_coeff[3],0,0,1);
   }
 
 static void compute_mem_addr_coeffs(dep_info_type *dep_info,
@@ -1037,7 +1107,7 @@ static void compute_mem_addr_coeffs(dep_info_type *dep_info,
 	summarize_node_vector(memory_vec,address_vec,node,nlist,dep_info);
 	if (get_vec_DIS(memory_vec,1) == MAXINT)/* if no incoming dependence */
 	  {
-	   dep_info->mem_coeff[0] += refs;
+	   update_gcoeff(dep_info->mem_coeff[0],0,0,refs);
 	   if (get_vec_DIS(address_vec,1) == MAXINT) 
                      /* if no incoming dependence */
 	     update_addr_coeff_with_no_dep(node,dep_info);
@@ -1088,15 +1158,17 @@ static void compute_MIV_coefficients(AST_INDEX     node,
 	       {
 		if (dist < 0) 
 	          dist = -dist;
-		dinfo->reg_coeff[0] += (dist * coeff0 * dinfo->step[0]) /
-	                               (coeff2 * dinfo->step[2]);
+		update_gcoeff(dinfo->reg_coeff[0],0,0,
+			      (dist * coeff0 * dinfo->step[0]) /
+			      (coeff2 * dinfo->step[2]));
 	       }
 	     else
-	       dinfo->reg_coeff[0] += (coeff0 * dinfo->step[0]) /
-	                              (coeff2 * dinfo->step[2]);
+	       update_gcoeff(dinfo->reg_coeff[0],0,0,
+			     (coeff0 * dinfo->step[0]) /
+			     (coeff2 * dinfo->step[2]));
 	    }
 	  else 
-	    dinfo->reg_coeff[3] += 1;
+	    update_gcoeff(dinfo->reg_coeff[3],0,0,1);
 	if (dinfo->index[1] != NULL)
 	  if (pt_find_var(sub1,dinfo->index[1]))
 	    {
@@ -1106,44 +1178,46 @@ static void compute_MIV_coefficients(AST_INDEX     node,
 	       {
 		if (dist < 0) 
 	          dist = -dist;
-		dinfo->reg_coeff[0] += (dist * coeff1 * dinfo->step[1]) /
-	                               (coeff2 * dinfo->step[2]);
+		update_gcoeff(dinfo->reg_coeff[0],0,0,
+			      (dist * coeff1 * dinfo->step[1]) /
+			      (coeff2 * dinfo->step[2]));
 	       }
 	     else
-	       dinfo->reg_coeff[0] += (coeff0 * dinfo->step[0]) /
-	                              (coeff2 * dinfo->step[2]);
+	       update_gcoeff(dinfo->reg_coeff[0],0,0,
+			     (coeff0 * dinfo->step[0]) /
+			     (coeff2 * dinfo->step[2]));
 	    }
 	  else 
-	    dinfo->reg_coeff[3] += 1;
-	dinfo->mem_coeff[3] += 1;
-	dinfo->addr_coeff[3] += 1;
+	    update_gcoeff(dinfo->reg_coeff[3],0,0,1);
+	update_gcoeff(dinfo->mem_coeff[3],0,0,1);
+	update_gcoeff(dinfo->addr_coeff[3],0,0,1);
        }
      else 
        if (dinfo->index[0] != NULL)
          if (!pt_find_var(sub1,dinfo->index[0]))
            if (dinfo->index[1] != NULL)
              if (!pt_find_var(sub1,dinfo->index[1]))
-               dinfo->reg_coeff[3] += 1;
+               update_gcoeff(dinfo->reg_coeff[3],0,0,1);
 	     else
-               dinfo->reg_coeff[2] += 1;
+               update_gcoeff(dinfo->reg_coeff[2],0,0,1);
 	   else
-	     dinfo->reg_coeff[2] += 1;
+	     update_gcoeff(dinfo->reg_coeff[2],0,0,1);
 	 else
 	   if (dinfo->index[1] != NULL)
              if (!pt_find_var(sub1,dinfo->index[1]))
-	       dinfo->reg_coeff[1] += 1;
+	       update_gcoeff(dinfo->reg_coeff[1],0,0,1);
 	     else
-               dinfo->reg_coeff[0] += 1;
+               update_gcoeff(dinfo->reg_coeff[0],0,0,1);
 	   else
-	     dinfo->reg_coeff[0] += 1;
+	     update_gcoeff(dinfo->reg_coeff[0],0,0,1);
        else 
          if (dinfo->index[1] != NULL)
            if (!pt_find_var(sub1,dinfo->index[1]))
-	     dinfo->reg_coeff[1] += 1;
+	     update_gcoeff(dinfo->reg_coeff[1],0,0,1);
 	   else
-             dinfo->reg_coeff[0] += 1;
+             update_gcoeff(dinfo->reg_coeff[0],0,0,1);
 	 else
-	   dinfo->reg_coeff[0] += 1;
+	   update_gcoeff(dinfo->reg_coeff[0],0,0,1);
   }
 				     
 static Boolean node_is_consistent_MIV(AST_INDEX     node,
@@ -1281,15 +1355,17 @@ static void compute_two_loops(model_loop    *loop_data,
 /****************************************************************************/
 
   {
-   int   x1,x2,max_x2,min_x1,temp;
-   float min_obj,new_obj,abs_obj,regs;
+   int   x1,x2,max_x2,min_x1,temp,fp_regs,a_regs,mach_fp,mach_a;
+   float min_obj,new_obj,abs_obj;
    
      if ((loop_data[unroll_loops[0]].count == 0 &&
 	  dep_info->scalar_coeff[2] == 0 && dep_info->x2 == 1 && 
 	  loop_data[unroll_loops[1]].count == 0 &&
 	  dep_info->scalar_coeff[1] == 0 && dep_info->x1 == 1) ||
-	 (dep_info->reg_coeff[0] == 0 && dep_info->reg_coeff[1] == 0 &&
-	  dep_info->reg_coeff[2] == 0 && dep_info->scalar_coeff[1] == 0 && 
+	 (dep_info->reg_coeff[0][2][2] == 0 && 
+	  dep_info->reg_coeff[1][2][2] == 0 &&
+	  dep_info->reg_coeff[2][2][2] == 0 && 
+	  dep_info->scalar_coeff[1] == 0 && 
 	  dep_info->scalar_coeff[2] == 0))
        {
 	dep_info->x1 = 1;
@@ -1297,66 +1373,40 @@ static void compute_two_loops(model_loop    *loop_data,
        }
      else
        {
-	regs = mh_register_pressure(dep_info->reg_coeff,dep_info->scalar_coeff,
-				    dep_info->x1,dep_info->x2) + 
-				    dep_info->scalar_regs;
-	if (regs < ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs)
+	mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
+	mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped))->int_regs;
+	fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,
+					  dep_info->scalar_coeff,1,1) + 
+					  dep_info->scalar_regs;
+	a_regs = mh_addr_register_pressure(dep_info->addr_coeff,1,1);
+	if (fp_regs <= mach_fp && a_regs <= mach_a)
 	  {	
-	   x1 = mh_compute_x(((config_type *)PED_MH_CONFIG(dep_info->ped))
-			     ->max_regs-dep_info->scalar_regs,
-			     ((config_type *)PED_MH_CONFIG(dep_info->ped))
-			     ->int_regs,
-			     dep_info->reg_coeff,dep_info->scalar_coeff,
-			     dep_info->addr_coeff,dep_info->x2,2);
-	   max_x2 = mh_compute_x(((config_type *)PED_MH_CONFIG(dep_info->ped))
-				 ->max_regs - dep_info->scalar_regs,
-				 ((config_type *)PED_MH_CONFIG(dep_info->ped))
-				 ->int_regs,
-				 dep_info->reg_coeff,dep_info->scalar_coeff,
-				 dep_info->addr_coeff,dep_info->x1,1);
-	   if (x1 < dep_info->x1 || max_x2 < dep_info->x2)
+	   x1 = mach_fp;
+	   x2 = 1;
+	   min_obj = (float)MAXINT;
+	   while(min_obj > 0.01 && x1 >= 1 && x2 <= mach_fp)
 	     {
-	      dep_info->x1 = 1;
-	      dep_info->x2 = 1;
-	     }
-	   else
-	     {
-	      min_x1 = dep_info->x1;
-	      x2 = dep_info->x2;
-	      min_obj = (float)MAXINT;
-	      while(min_obj > 0.01 && x1 >= min_x1 && x2 <= max_x2)
-		{
-		 new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
-					   x1,x2)
+	      new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
+					x1,x2)
 	               - ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
-		 if (new_obj < 0.0)
-		   abs_obj = -new_obj;
-		 else
-	          abs_obj = new_obj;
-		 if (abs_obj < min_obj)
-		   {
-		    min_obj = abs_obj;
-		    dep_info->x1 = x1;
-		    dep_info->x2 = x2;
-		   }
-		 if (new_obj > 0.01)
-		   {
-		    x2++;
-		    temp = mh_compute_x(((config_type *)PED_MH_CONFIG(dep_info
-								      ->ped))
-					->max_regs - dep_info->scalar_regs,
-					((config_type *)PED_MH_CONFIG(dep_info
-								      ->ped))
-					->int_regs,
-					dep_info->reg_coeff,
-					dep_info->scalar_coeff,
-					dep_info->addr_coeff,x2,2);
-		    if (temp < x1)
-		      x1 = temp;
-		   }
-		 else if (new_obj < -0.01)
-		 x1--;
+	      if (new_obj < 0.0)
+	        abs_obj = -new_obj;
+	      else
+	        abs_obj = new_obj;
+	      fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,
+						dep_info->scalar_coeff,x1,x2) +
+						dep_info->scalar_regs;
+	      a_regs = mh_addr_register_pressure(dep_info->addr_coeff,x1,x2);
+	      if (abs_obj < min_obj && fp_regs <= mach_fp && a_regs <= mach_a)
+		{
+		 min_obj = abs_obj;
+		 dep_info->x1 = x1;
+		 dep_info->x2 = x2;
 		}
+	      if (new_obj > 0.01 && fp_regs <= mach_fp && a_regs <= mach_a)
+		 x2++;
+	      else 
+		 x1--;
 	     }
 	  }
 	else
@@ -1367,8 +1417,8 @@ static void compute_two_loops(model_loop    *loop_data,
        }
 
       /* sometimes loops that do not carry dependences will be considered
-	 because the contain multiple inner loops at the same level, where
-	 one  loop body has dependence carried at that level and another does
+	 because they contain multiple inner loops at the same level, where
+	 one loop body has dependence carried at that level and another does
 	 not.  This situation will not be caught earlier by checking the
 	 dependence count of a loop.  Therefore, this is a hack to check if
 	 unrolling one loop does nothing. */
@@ -1450,53 +1500,54 @@ static void compute_one_loop(model_loop    *loop_data,
 
   {
    float min_obj,new_obj,abs_obj;
-   int   x,min_x,max_x,regs;
+   int   x,min_x,max_x,fp_regs,a_regs,mach_fp,mach_a;
 
      if ((loop_data[unroll_loop].count == 0  &&
 	  dep_info->scalar_coeff[2] == 0 && dep_info->x2 == 1) ||
-	 (dep_info->reg_coeff[0] == 0 && dep_info->reg_coeff[1] == 0 &&
-	  dep_info->reg_coeff[2] == 0 && dep_info->scalar_coeff[2] == 0))
+	 (dep_info->reg_coeff[0][2][2] == 0 && 
+	  dep_info->reg_coeff[1][2][2] == 0 &&
+	  dep_info->reg_coeff[2][2][2] == 0 && 
+	  dep_info->scalar_coeff[2] == 0))
        dep_info->x1 = 1;
      else
        {
-	regs = mh_register_pressure(dep_info->reg_coeff,dep_info->scalar_coeff,
-				    dep_info->x1,dep_info->x2) + 
-				    dep_info->scalar_regs;
-	if (regs < ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs)
+	mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
+	mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped))->int_regs;
+	fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,
+					  dep_info->scalar_coeff,1,1) + 
+					  dep_info->scalar_regs;
+	a_regs = mh_addr_register_pressure(dep_info->addr_coeff,1,1);
+	if (fp_regs <= mach_fp && a_regs <= mach_a)
 	  {	
 	   min_obj = (float)MAXINT;
-	   min_x = dep_info->x1;
-	   max_x = mh_compute_x(((config_type *)PED_MH_CONFIG(dep_info->ped))
-				->max_regs - dep_info->scalar_regs,
-				((config_type *)PED_MH_CONFIG(dep_info->ped))
-				->int_regs,
-				dep_info->reg_coeff,dep_info->scalar_coeff,
-				dep_info->addr_coeff,dep_info->x2,2);
-	   if (max_x < min_x)
-	     dep_info->x1 = 1;
-	   else
-	     while(min_x <= max_x && min_obj > 0.01)
-	       {
-		x = (max_x + min_x) >> 1;
-		new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
-					  x,dep_info->x2) -
+	   min_x = 1;
+	   max_x = mach_fp;
+	   while(min_x <= max_x && min_obj > 0.01)
+	     {
+	      x = (max_x + min_x) >> 1;
+	      new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
+					x,1) -
 			 ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
-		if (new_obj < 0.0)
-	          abs_obj = -new_obj;
-		else
-	          abs_obj = new_obj;
-		if (abs_obj < min_obj)
-		  {
-		   min_obj = abs_obj;
-		   dep_info->x1 = x;
-		   if (new_obj > 0.0)
-		     min_x = x + 1;
-		   else
-		     max_x = x - 1;
-		  }
-		else
-	          max_x = x - 1;
-	       }
+	      if (new_obj < 0.0)
+	        abs_obj = -new_obj;
+	      else
+	        abs_obj = new_obj;
+	      fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,
+						dep_info->scalar_coeff,x,1) + 
+						dep_info->scalar_regs;
+	      a_regs = mh_addr_register_pressure(dep_info->addr_coeff,x,1);
+	      if (abs_obj < min_obj && a_regs <= mach_a && fp_regs <= mach_fp)
+		{
+		 min_obj = abs_obj;
+		 dep_info->x1 = x;
+		 if (new_obj > 0.0)
+		   min_x = x + 1;
+		 else
+		   max_x = x - 1;
+		}
+	      else
+	        max_x = x - 1;
+	     }
 	  }
 	else
 	  dep_info->x1 = 1;
@@ -1530,7 +1581,7 @@ static void do_computation(model_loop    *loop_data,
 /****************************************************************************/
 
   {
-   int           i,regs;
+   int           i,j,k,regs;
    float         rhoL_lp,bal;
    dep_info_type dep_info;
    reg_info_type reg_info;
@@ -1586,13 +1637,15 @@ static void do_computation(model_loop    *loop_data,
      else if (pt_eval(step,&dep_info.step[2]));
      for (i = 0; i < 4; i++)
        {
-	dep_info.reg_coeff[i] = 0;
-	dep_info.mem_coeff[i] = 0;
-	dep_info.addr_coeff[i] = 0;
+	for (j = 0; j < 3; j++)
+	  for (k = 0; k < 3; k++)
+	    {
+	     dep_info.reg_coeff[i][j][k] = 0;
+	     dep_info.mem_coeff[i][j][k] = 0;
+	     dep_info.addr_coeff[i][j][k] = 0;
+	    }
 	if (i < 3)
-	  {
-	   dep_info.scalar_coeff[i] = 0;
-	  }
+	  dep_info.scalar_coeff[i] = 0;
        }
      dep_info.scalar_regs = 0;
      dep_info.flops = 0;
@@ -1649,7 +1702,8 @@ static void do_computation(model_loop    *loop_data,
 	else if (count == 1)
 	  compute_one_loop(loop_data,unroll_vector,unroll_loops[0],&dep_info,
 			   rhoL_lp);
-	else if ((regs = dep_info.reg_coeff[0] + dep_info.scalar_coeff[0]) > 0)
+	else if ((regs = dep_info.reg_coeff[0][2][2] + 
+		  dep_info.scalar_coeff[0]) > 0)
 	  loop_data[unroll_loops[0]].max = (((config_type *)PED_MH_CONFIG(ped))
 	                                  ->max_regs - dep_info.scalar_regs) /
 					  regs - 1;

@@ -1,4 +1,4 @@
-/* $Id: compute_uj.h,v 1.5 1992/12/11 11:23:35 carr Exp $ */
+/* $Id: compute_uj.h,v 1.6 1992/12/17 14:51:13 carr Exp $ */
 
 #ifndef compute_uj_h
 #define compute_uj_h
@@ -50,9 +50,9 @@ typedef struct compinfotype {
  } comp_info_type;
 
 typedef struct depinfotype {
-  int      reg_coeff[4],
-           mem_coeff[4],
-           addr_coeff[4],
+  int      reg_coeff[4][3][3],
+           mem_coeff[4][3][3],
+           addr_coeff[4][3][3],
            scalar_coeff[3],
            step[3],
            scalar_regs,
