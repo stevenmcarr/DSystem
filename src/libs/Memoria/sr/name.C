@@ -1,4 +1,4 @@
-/* $Id: name.C,v 1.12 1995/04/28 09:36:06 carr Exp $ */
+/* $Id: name.C,v 1.13 1995/09/14 14:49:12 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -173,6 +173,21 @@ static int calc_distances(AST_INDEX node,
    return(max_dist);
   }
 
+static Boolean NoInputOrTrueDep(PedInfo ped,
+				DG_Edge *dg,
+				int sink_ref)
+  {
+   EDGE_INDEX edge;
+
+     for (edge = dg_first_sink_ref( PED_DG(ped),sink_ref);
+	  edge != END_OF_LIST;
+	  edge = dg_next_sink_ref( PED_DG(ped),edge)) 
+       if (dg[edge].type == dg_true || dg[edge].type == dg_input)
+         return(false);
+     return(true);
+  }
+
+
 static void check_if_oldest_value(AST_INDEX node,
 				  UtilList  *nlist,
 				  Boolean   *gen_not_found,
@@ -191,7 +206,7 @@ static void check_if_oldest_value(AST_INDEX node,
    scalar_info_type *sptr;
 
      sink_ref = get_info(ped,node,type_levelv);
-     if (dg_first_sink_ref(PED_DG(ped),sink_ref) == END_OF_LIST && LengthOne)
+     if (NoInputOrTrueDep(ped,dg,sink_ref) && LengthOne)
        *gen_not_found = true;
      else
        *gen_not_found = false;
