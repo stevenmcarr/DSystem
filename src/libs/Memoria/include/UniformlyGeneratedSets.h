@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.h,v 1.9 1997/10/30 15:11:09 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.h,v 1.10 2000/03/31 18:07:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -112,12 +112,13 @@ public:
   Boolean SingleNodeHasSelfSpatialReuse();
   Boolean SameUniformlyGeneratedSet(AST_INDEX node,la_matrix nodeH);
   void InterchangeRows(int *IV);
-  la_vect getLocal() { return LocalizedIterationSpace;};
-  int getNestl() { return NestingLevel;};
-  int getSubs() { return Subscripts;};
-  char* getName() { return name; };
-  la_matrix getH() { return H;};
+  la_vect getLocal() { return LocalizedIterationSpace;}
+  int getNestl() { return NestingLevel;}
+  int getSubs() { return Subscripts;}
+  char* getName() { return name; }
+  la_matrix getH() { return H;}
   void PrintOut();
+  Boolean getUniform() {return Uniform;}
  };
 
 
@@ -148,9 +149,9 @@ class UniformlyGeneratedSets : public GenericList {
   UniformlyGeneratedSetsEntry *GetUniformlyGeneratedSet(AST_INDEX node, la_matrix NodeH);
   void Append(la_matrix nodeH, AST_INDEX node, int NumSubs, Boolean uniform );
   int GetIndex(char *ivar);
-  void ComputeH(AST_INDEX node,la_matrix nodeH,Boolean *uniform,AST_INDEX expr,
+  void ComputeH(AST_INDEX node,la_matrix nodeH,Boolean& uniform,AST_INDEX expr,
 		int SubPos);
-  void GetH(AST_INDEX node,la_matrix nodeH,Boolean *uniform);
+  void GetH(AST_INDEX node,la_matrix nodeH,Boolean& uniform);
 
 
 public:

@@ -1,4 +1,4 @@
-/* $Id: la.h,v 1.8 1998/08/05 19:31:54 carr Exp $ */
+/* $Id: la.h,v 1.9 2000/03/31 18:07:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -213,8 +213,9 @@ class GroupSpatialSet :
 		Boolean NegativeStep;
 		ComputeBoard *computeboard;
 	 	la_matrix H;	
+		Boolean Uniform;
 	 public:
-		GroupSpatialSet(la_vect, int, int, char*, la_matrix);
+		GroupSpatialSet(la_vect, int, int, char*, la_matrix,Boolean);
 		~GroupSpatialSet() {};
 		void PutintoGSEntry( AST_INDEX, la_vect );
 		void PrintGSSet();
@@ -231,6 +232,7 @@ class GroupSpatialSet :
 		float ComputePrefetch(int, int);
 		Boolean HasSelfSpatial() {return BOOL(IsSelfSpatial);};
 		Boolean HasSelfTemporal() {return BOOL(IsSelfTemporal);};
+		Boolean getUniform() {return Uniform;}
 	};
 
 class GSSetIter:

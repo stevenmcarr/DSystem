@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.C,v 1.9 1998/06/08 15:23:48 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.C,v 1.10 2000/03/31 18:07:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -18,8 +18,10 @@ Boolean UniformlyGeneratedSetsEntry::SameUniformlyGeneratedSet(AST_INDEX node,
   {
    int i,j;
 
-     if (NOT(Uniform) || strcmp(name,gen_get_text(gen_SUBSCRIPT_get_name(node)))) 
+     if (strcmp(name,gen_get_text(gen_SUBSCRIPT_get_name(node)))) 
        return (false);
+     else if (NOT(Uniform))
+       return BOOL(node == QueryEntry(node));
      for (i = 0; i < Subscripts; i++)
        for (j = 0; j < NestingLevel; j++)
          if (H[i][j] != nodeH[i][j])
@@ -503,28 +505,27 @@ int UniformlyGeneratedSets::GetIndex(char *ivar)
 
 
 void UniformlyGeneratedSets::ComputeH(AST_INDEX node,la_matrix nodeH,
-				      Boolean *uniform, AST_INDEX expr,
+				      Boolean& uniform, AST_INDEX expr,
 				      int SubPos)
   {
    Boolean linear;
    int coeff,index;
 
      if (is_identifier(node))
-       {
-	pt_get_coeff(expr,gen_get_text(node),&linear,&coeff);
-	*(uniform) = BOOL(*(uniform) && linear);
-	index = GetIndex(gen_get_text(node));
-	if (*uniform)
-	  nodeH[SubPos][index] = coeff;
-	else
-	  nodeH[SubPos][index] = MININT;
-       }
+       if ((index = GetIndex(gen_get_text(node))) != -1)
+	 {
+	   pt_get_coeff(expr,gen_get_text(node),&linear,&coeff);
+	   if ((uniform = BOOL(uniform && linear)))
+	     nodeH[SubPos][index] = coeff;
+	 }
+       else
+	 uniform = false;
   }
    
 
 void UniformlyGeneratedSets::GetH(AST_INDEX node,
 				  la_matrix nodeH,
-				  Boolean *uniform)
+				  Boolean& uniform)
 
   {
    AST_INDEX sublist,sub,Inode;
@@ -546,7 +547,7 @@ void UniformlyGeneratedSets::AddNode(AST_INDEX node)
 
   {
    UniformlyGeneratedSetsEntry *UGSEntry;
-   Boolean uniform = true;
+   Boolean uniform;
    int **nodeH,i,j,Subscripts;
 
      Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(node));
@@ -557,7 +558,7 @@ void UniformlyGeneratedSets::AddNode(AST_INDEX node)
 	 for (j = 0; j < NestingLevel; j++)
 	   nodeH[i][j] = 0;
        }
-     GetH(node,nodeH,&uniform);
+     GetH(node,nodeH,uniform);
      if (uniform && (UGSEntry = GetUniformlyGeneratedSet(node,nodeH)) != NULL)
       {
        char Text[80];

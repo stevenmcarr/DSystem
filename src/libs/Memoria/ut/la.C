@@ -1,4 +1,4 @@
-/* $Id: la.C,v 2.2 1999/06/11 15:03:48 carr Exp $ */
+/* $Id: la.C,v 2.3 2000/03/31 18:08:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -252,7 +252,8 @@ DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse) :
 			     (int)ugse->getNestl(),
 			     (int)ugse->getSubs(),
                              ugse->getName(),
-			     (la_matrix)ugse->getH() );
+			     (la_matrix)ugse->getH(),
+			     ugse->getUniform());
  while((node = (AST_INDEX)ugseiter()) && node)
    {
      if (ReuseModelDebugFlag)
@@ -268,11 +269,13 @@ DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse) :
 }
 
 GroupSpatialSet::GroupSpatialSet(la_vect lisp,
-                                int nestl, int subscript, 
-				char *name_in,
-				 la_matrix inH) : SinglyLinkedList()
+				 int nestl, int subscript, 
+				 char *name_in,
+				 la_matrix inH,
+				 Boolean uniform) : SinglyLinkedList()
 {
  size = 0;
+ Uniform = uniform;
  (void)strcpy(Name, name_in);
  if (ReuseModelDebugFlag)
    cout<<"Nestl = "<< nestl << endl;
@@ -285,7 +288,8 @@ GroupSpatialSet::GroupSpatialSet(la_vect lisp,
  H = la_matNew(Subs, Nestl);
  la_matCopy(inH, H, Subs, Nestl);
  IsSelfTemporal = IsSelfSpatial = False;
- FindSelfReuse();
+ if (Uniform)
+   FindSelfReuse();
 }
 
 void GroupSpatialSet::FindSelfReuse()
