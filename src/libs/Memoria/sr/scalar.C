@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.22 1994/12/08 14:41:36 carr Exp $ */
+/* $Id: scalar.C,v 1.23 1995/03/29 08:06:39 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -859,7 +859,8 @@ static int pre_scalar(AST_INDEX     stmt,
 		     (WK_EXPR_CLBACK)set_surrounding_do,NOFUNC,
 		     (Generic)do_info->ar);
    else if (is_if(stmt) || is_continue(stmt) || is_goto(stmt) ||
-	    is_computed_goto(stmt));
+	    is_computed_goto(stmt) || is_assigned_goto(stmt) || 
+	    is_format(stmt) || is_stop(stmt));
    else if (executable_stmt(stmt))
      { 
       char errmsg[30];
