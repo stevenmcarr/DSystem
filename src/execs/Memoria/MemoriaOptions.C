@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.8 1998/06/08 15:37:25 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.9 1998/07/07 20:45:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -104,7 +104,7 @@ static void mc_set_cache_level(void *state)
 
   {
    aiCache = 2;
-   selection = CACHE_ANALYSIS;
+   selection = F2I_ANALYSIS;
    select_char = 'h';
   }
 
