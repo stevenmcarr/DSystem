@@ -147,7 +147,7 @@ static void walk_loops(CacheInfoType  *CacheInfo,
    int i;
 
      CacheInfo->IVar[CacheInfo->loop_data[loop].level-1] = 
-          gen_get_text(gen_DO_get_control(gen_INDUCTIVE_get_name(
+          gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
                        CacheInfo->loop_data[loop].node)));
      if (CacheInfo->loop_data[loop].inner_loop == -1)
        {
