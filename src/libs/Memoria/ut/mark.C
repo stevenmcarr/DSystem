@@ -1,6 +1,8 @@
-/* $Id: mark.C,v 1.3 1992/10/03 15:50:40 rn Exp $ */
+/* $Id: mark.C,v 1.4 1992/12/07 10:23:54 carr Exp $ */
+
 #include <mh.h>
 #include <mark.h>
+#include <dialogs/message.h>
 
 static int set_surrounding_do(AST_INDEX       node,
 			      pre_info_type   *pre_info)
@@ -40,8 +42,8 @@ int ut_mark_do_pre(AST_INDEX       stmt,
    create_stmt_info_ptr(stmt,((pre_info_type *)pre_info)->ar);
    get_stmt_info_ptr(stmt)->stmt_num = ((pre_info_type *)pre_info)->stmt_num++;
    get_stmt_info_ptr(stmt)->surrounding_do = 
-             ((pre_info_type *)pre_info)->surround_node;
-   get_stmt_info_ptr(stmt)->surrounding_do = 
+             ((pre_info_type *)pre_info)->surrounding_do;
+   get_stmt_info_ptr(stmt)->surround_node = 
              ((pre_info_type *)pre_info)->surround_node;
    get_stmt_info_ptr(stmt)->level = level;
    if (is_do(stmt))

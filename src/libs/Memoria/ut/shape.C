@@ -1,4 +1,5 @@
-/* $Id: shape.C,v 1.4 1992/10/03 15:50:29 rn Exp $ */
+/* $Id: shape.C,v 1.5 1992/12/07 10:24:15 carr Exp $ */
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -210,9 +211,7 @@ void ut_compare_loops(model_loop *loop_data,
 	 case TRI_LR:
 	 case TRI_UL:
 	 case TRI_UR:
-	   if (loop_data[inner].level == 
-	       loop_data[loop_data[outer].tri_loop].level)
-	     loop_data[outer].type = MULT;
+	   loop_data[outer].type = COMPLEX;
 	   loop_data[outer].max = 0;
 	   loop_data[outer].val = 0;
 	   break;
