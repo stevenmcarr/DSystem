@@ -1,4 +1,4 @@
-# $Id: Makeinclude,v 1.4 2000/02/01 16:28:16 mjbedy Exp $
+# $Id: Makeinclude,v 1.5 2000/02/01 19:53:06 carr Exp $
 ###########################################################################
 #
 # File:
@@ -936,6 +936,9 @@ ifneq "$(STUB_OBJS)" ""
 	$(SANITIZE); $(MAKE) $(STUB_OBJS)
 endif # "$(STUB_OBJS)" ""
 	$(LINK.CXX.g) -o $@ $^ $(LOCAL_LIBS) $(ARCH_LIBS)
+ifdef LOADERCONFIG
+	$(LOADERCONFIG) $@
+endif
 
 ifeq "$(DSYSTEM_OS)" "Linux-alpha"
 	/dragon/resrch1/DSystem/tools/develop/bin/Linux-alpha/32bithack/taso $@
