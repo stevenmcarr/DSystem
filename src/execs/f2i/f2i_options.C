@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.17 2002/02/20 16:19:10 carr Exp $ */
+/* $Id: f2i_options.C,v 1.18 2002/05/08 14:09:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -46,6 +46,7 @@ Boolean DDGDebugFlag = false;
 Boolean MinDistDebugFlag = false;
 Boolean CheckRecurrencesForPrefetching = false;
 Boolean GeneratePreLoop = true;
+Boolean ReplaceMIVReferences = false;
 
  int aiAnnotate;   /* automatically generate comments      */
  int aiCheapGoto;  /* controls assigned goto generation    */
