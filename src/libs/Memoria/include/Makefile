@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.7 1994/01/25 15:02:24 carr Exp $
+# $Id: Makefile,v 1.8 1997/04/07 16:11:31 carr Exp $
 #
 #
 
-HERE = libs/mc_lib/include
+HERE = libs/Memoria/include
 
 include Makeinclude
