@@ -1,4 +1,4 @@
-/* $Id: edges_dg.C,v 1.1 1997/06/25 15:06:11 carr Exp $ */
+/* $Id: edges_dg.C,v 1.2 2001/09/14 17:12:06 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -25,7 +25,7 @@
 #include <libs/moduleAnalysis/dependence/dependenceGraph/dg_instance.h>
 #include <libs/moduleAnalysis/dependence/dependenceGraph/dg_header.h>
 
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(LINUX)
 EXTERN(void,bzero,(char *s, size_t n));
 #endif
 
