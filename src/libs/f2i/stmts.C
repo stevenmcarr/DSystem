@@ -1,4 +1,4 @@
-/* $Id: stmts.C,v 1.3 1997/11/19 14:46:10 carr Exp $ */
+/* $Id: stmts.C,v 1.4 1998/02/12 15:46:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -180,6 +180,9 @@ void aiStmtList(AST_INDEX StmtList)
 		     "Start of the program");
 	  else if (aiRt)
 	    generate_string("_.MAIN_", FRAME, aiStackSize, (Generic) parms, 0, 
+		     "Start of the program");
+	  else if (aiRocket)
+	    generate_string("main", FRAME, aiStackSize, (Generic) parms, 0,
 		     "Start of the program");
 	  else
 	    generate_string("_main", FRAME, aiStackSize, (Generic) parms, 0,

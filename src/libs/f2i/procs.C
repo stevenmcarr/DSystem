@@ -1,4 +1,4 @@
-/* $Id: procs.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: procs.C,v 1.3 1998/02/12 15:46:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -155,14 +155,16 @@ void aiProcedures(AST_INDEX root, FortTree ft)
 	  proc_name = ssave("_.MAIN_");
 	  aiRecordStaticLabel("_MAIN_");
 	}
-	else
-	{
-	  proc_name = ssave("_main");
-	  if (aiRocket)
+	else if (aiRocket)
+	  {
+	    proc_name = ssave("main");
 	    aiRecordStaticLabel("__main");
-	  else
+	  }
+	else
+	  {
+	    proc_name = ssave("_main");
 	    aiRecordStaticLabel("_main");
-	}
+	  }
 	proc_text = ssave("main");
 
 	aiParameters(stmt_list);
@@ -186,9 +188,9 @@ void aiProcedures(AST_INDEX root, FortTree ft)
 	  (void) sprintf(name_buffer, "_%s_", proc_name);
 	}
 	else if (aiRocket) {
-	  (void) sprintf(name_buffer, "__%s_", proc_name);
+	  (void) sprintf(name_buffer, "__%s", proc_name);
 	  aiRecordStaticLabel(name_buffer);
-	  (void) sprintf(name_buffer, "_%s_", proc_name);
+	  (void) sprintf(name_buffer, "%s", proc_name);
 	}
 	else {
 	  (void) sprintf(name_buffer, "_%s_", proc_name);
@@ -209,7 +211,7 @@ void aiProcedures(AST_INDEX root, FortTree ft)
 	if (aiSparc > 0)
 	  (void) sprintf(name_buffer, "_.%s_", proc_name);
 	else if (aiRocket)
-	  (void) sprintf(name_buffer, "__%s_", proc_name);
+	  (void) sprintf(name_buffer, "__%s", proc_name);
 	else
 	  (void) sprintf(name_buffer, "_%s_", proc_name);
 	
@@ -242,7 +244,7 @@ void aiProcedures(AST_INDEX root, FortTree ft)
 	if (aiSparc > 0)
 	  (void) sprintf(name_buffer, "_%s_", proc_name);
 	else if (aiRocket)
-	  (void) sprintf(name_buffer, "_%s_", proc_name);
+	  (void) sprintf(name_buffer, "%s", proc_name);
 	else
 	  (void) sprintf(name_buffer, "_.%s_", proc_name);
 	
