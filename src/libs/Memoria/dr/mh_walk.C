@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.8 1993/06/15 14:03:46 carr Exp $ */
+/* $Id: mh_walk.C,v 1.9 1993/07/20 15:27:19 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -324,7 +324,7 @@ static void ScalarReplacement(AST_INDEX      stmt,
   {
      /* perform scalar replacement */
    memory_scalar_replacement(walk_info->ped,stmt,level,walk_info->symtab,
-			     walk_info->ar);
+			     walk_info->ar,&walk_info->LoopStats);
 
      /* re-initialize scratch field (no dangling pointers) */
    walk_expression(stmt,set_scratch,NOFUNC,
@@ -362,12 +362,35 @@ static AST_INDEX UnrollAndJam(AST_INDEX      stmt,
 
            /* perform unroll-and-jam */
      new_stmt = memory_unroll_and_jam(walk_info->ped,stmt,level,2,
-				      walk_info->symtab,walk_info->ar);
+				      walk_info->symtab,walk_info->ar,
+				      &walk_info->LoopStats);
 
            /* cleanup space */
      walk_info->ar->arena_deallocate(LOOP_ARENA);
      fst_KillField(walk_info->symtab,EXPAND_LVL);
      return(new_stmt);
+  }
+
+
+
+static void UnrollStats(AST_INDEX      stmt,
+			int            level,
+			walk_info_type *walk_info)
+  {
+   AST_INDEX new_stmt;
+
+           /* symbol table field for scalar expansion */
+     fst_InitField(walk_info->symtab,EXPAND_LVL,0,0);
+
+           /* get unroll-and-jam statistics */
+     ((config_type *)PED_MH_CONFIG(walk_info->ped))->logging = 1;
+     new_stmt = memory_unroll_and_jam(walk_info->ped,stmt,level,2,
+				      walk_info->symtab,walk_info->ar,
+				      &walk_info->LoopStats);
+
+           /* cleanup space */
+     walk_info->ar->arena_deallocate(LOOP_ARENA);
+     fst_KillField(walk_info->symtab,EXPAND_LVL);
   }
 
 
@@ -476,6 +499,8 @@ static int post_walk(AST_INDEX      stmt,
 	case INTERCHANGE:    Interchange(stmt,level,walk_info);
 	                     break;
 	case SCALAR_REP:     ScalarReplacement(stmt,level,walk_info);
+	                     break;
+	case UNROLLSTATS:    UnrollStats(stmt,level,walk_info);
 	                     break;
 	case UNROLL_AND_JAM: (void)UnrollAndJam(stmt,level,walk_info);
 	                     break;
@@ -1100,7 +1125,35 @@ void mh_walk_ast(int          selection,
      walk_info.program = ctxLocation(mod_context); 
      walk_info.LoopStats.Nests = 0;
 
-     if (selection == INTERSTATS)
+     if (selection == UNROLLSTATS)
+       {
+	walk_info.LoopStats.PredictedFinalBalance = 0.0;
+	walk_info.LoopStats.PredictedInitialBalance = 0.0;
+	walk_info.LoopStats.InitialBalanceWithInterlock = 0.0;
+	walk_info.LoopStats.ActualFinalBalance = 0.0;
+	walk_info.LoopStats.FinalBalanceWithInterlock = 0.0;
+	walk_info.LoopStats.InitialInterlock = 0.0;
+	walk_info.LoopStats.FinalInterlock = 0.0;
+	walk_info.LoopStats.PredictedFPRegisterPressure = 0;
+	walk_info.LoopStats.ActualFPRegisterPressure = 0;
+	walk_info.LoopStats.UnrolledLoops = 0;
+	walk_info.LoopStats.NotUnrolled = 0;
+	walk_info.LoopStats.SingleDepth = 0;
+        walk_info.LoopStats.NotUnrolledBalance = 0.0;
+        walk_info.LoopStats.NotUnrolledInterlock = 0.0;
+	walk_info.LoopStats.NotUnrolledBalanceWithInterlock = 0.0;
+	walk_info.LoopStats.NotUnrolledFPRegisterPressure = 0;
+	walk_info.LoopStats.SingleDepthBalance = 0.0;
+	walk_info.LoopStats.SingleDepthInterlock = 0.0;
+	walk_info.LoopStats.SingleDepthBalanceWithInterlock = 0.0;
+	walk_info.LoopStats.SingleDepthFPRegisterPressure = 0 ;
+	walk_info.LoopStats.Distribute = 0 ;
+	walk_info.LoopStats.Interchange = 0 ;
+	walk_info.LoopStats.NoImprovement = 0 ;
+	walk_info.LoopStats.AlreadyBalanced = 0 ;
+	walk_info.LoopStats.InterlockCausedUnroll = 0 ;
+       }
+     else if (selection == INTERSTATS)
        {
 	walk_info.LoopStats.TotalLoops = 0;
 	walk_info.LoopStats.NotInMemoryOrder = 0;
@@ -1167,7 +1220,60 @@ void mh_walk_ast(int          selection,
      walk_statements(root,LEVEL1,get_symtab_for_decls,NOFUNC,
 		     (Generic)ft);
 
-     if (selection == INTERSTATS)
+     if (selection == UNROLLSTATS)
+       {
+	memory_walk_info.LoopStats.PredictedFinalBalance  +=
+	    walk_info.LoopStats.PredictedFinalBalance; 
+	memory_walk_info.LoopStats.PredictedInitialBalance +=
+	    walk_info.LoopStats.PredictedInitialBalance;
+	memory_walk_info.LoopStats.InitialBalanceWithInterlock +=
+	    walk_info.LoopStats.InitialBalanceWithInterlock;
+	memory_walk_info.LoopStats.ActualFinalBalance +=
+	    walk_info.LoopStats.ActualFinalBalance;
+	memory_walk_info.LoopStats.FinalBalanceWithInterlock +=
+	    walk_info.LoopStats.FinalBalanceWithInterlock;
+	memory_walk_info.LoopStats.InitialInterlock +=
+	    walk_info.LoopStats.InitialInterlock; 
+	memory_walk_info.LoopStats.FinalInterlock +=
+	    walk_info.LoopStats.FinalInterlock; 
+	memory_walk_info.LoopStats.PredictedFPRegisterPressure +=
+	    walk_info.LoopStats.PredictedFPRegisterPressure;
+	memory_walk_info.LoopStats.ActualFPRegisterPressure +=
+	    walk_info.LoopStats.ActualFPRegisterPressure;
+	memory_walk_info.LoopStats.UnrolledLoops +=
+	    walk_info.LoopStats.UnrolledLoops;
+	memory_walk_info.LoopStats.NotUnrolled +=
+	    walk_info.LoopStats.NotUnrolled;
+	memory_walk_info.LoopStats.SingleDepth +=
+	    walk_info.LoopStats.SingleDepth;
+        memory_walk_info.LoopStats.NotUnrolledBalance +=
+            walk_info.LoopStats.NotUnrolledBalance;
+	memory_walk_info.LoopStats.NotUnrolledBalanceWithInterlock +=
+	    walk_info.LoopStats.NotUnrolledBalanceWithInterlock;
+        memory_walk_info.LoopStats.NotUnrolledInterlock +=
+            walk_info.LoopStats.NotUnrolledInterlock;
+	memory_walk_info.LoopStats.NotUnrolledFPRegisterPressure +=
+	    walk_info.LoopStats.NotUnrolledFPRegisterPressure;
+	memory_walk_info.LoopStats.SingleDepthBalance +=
+	    walk_info.LoopStats.SingleDepthBalance;
+	memory_walk_info.LoopStats.SingleDepthBalanceWithInterlock +=
+	    walk_info.LoopStats.SingleDepthBalanceWithInterlock;
+	memory_walk_info.LoopStats.SingleDepthInterlock +=
+	    walk_info.LoopStats.SingleDepthInterlock;
+	memory_walk_info.LoopStats.SingleDepthFPRegisterPressure +=
+	    walk_info.LoopStats.SingleDepthFPRegisterPressure;
+	memory_walk_info.LoopStats.Distribute +=
+	    walk_info.LoopStats.Distribute;
+	memory_walk_info.LoopStats.Interchange +=
+	    walk_info.LoopStats.Interchange;
+	memory_walk_info.LoopStats.NoImprovement +=
+	    walk_info.LoopStats.NoImprovement;
+	memory_walk_info.LoopStats.AlreadyBalanced +=
+	    walk_info.LoopStats.AlreadyBalanced;
+	memory_walk_info.LoopStats.InterlockCausedUnroll +=
+	    walk_info.LoopStats.InterlockCausedUnroll;
+       }
+     else if (selection == INTERSTATS)
        {
 
        memory_walk_info.LoopStats.TotalLoops 
@@ -1347,5 +1453,94 @@ void memory_stats_total(char *program)
      memory_stats_dump(logfile,&memory_walk_info);
      fclose(logfile);
   }
+
+
+void UnrollStatsDump(FILE *logfile, walk_info_type *w)
+
+  {
+     fprintf(logfile,"Loops Unrolled %d\n\n",w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"Average Predicted Unroll-and-Jam Statistics\n");
+     fprintf(logfile,"===========================================\n\n");
+     fprintf(logfile,"Initial Loop Balance = %.4f\n",
+	     w->LoopStats.PredictedInitialBalance/
+	     (float)w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"Initial Loop Balance With Interlock= %.4f\n",
+	     w->LoopStats.InitialBalanceWithInterlock/
+	     (float)w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"Final Loop Balance   = %.4f\n",
+	     w->LoopStats.PredictedFinalBalance/
+	     (float)w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"FP Register Pressure = %d\n",
+	     w->LoopStats.PredictedFPRegisterPressure/
+	     (float)w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"Initial Interlock Factor     = %.4f\n",
+	     w->LoopStats.InitialInterlock/(float)w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"\n\nAverage Actual Unroll-and-Jam Statistics\n");
+     fprintf(logfile,"========================================\n\n");
+     fprintf(logfile,"FP Register Pressure = %d\n",
+	     w->LoopStats.ActualFPRegisterPressure/
+	     (float)w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"Final Loop Balance   = %.4f\n",
+	     w->LoopStats.ActualFinalBalance/
+	     (float)w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"Final Loop Balance With Interlock  = %.4f\n",
+	     w->LoopStats.FinalBalanceWithInterlock/
+	     (float)w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"Final Interlock Factor     = %.4f\n",
+	     w->LoopStats.FinalInterlock/(float)w->LoopStats.UnrolledLoops);
+     fprintf(logfile,"Interlock Caused Unrolling = %d\n",
+	     w->LoopStats.InterlockCausedUnroll);
+     fprintf(logfile,"\n\nLoops Not Unrolled %d\n\n",w->LoopStats.NotUnrolled);
+     fprintf(logfile,"Average Not Unrolled Statistics\n");
+     fprintf(logfile,"===============================\n\n");
+     fprintf(logfile,"Loop Balance = %.4f\n",
+	     w->LoopStats.NotUnrolledBalance/(float)w->LoopStats.NotUnrolled);
+     fprintf(logfile,"Loop Balance with Interlock = %.4f\n",
+	     w->LoopStats.NotUnrolledBalanceWithInterlock/
+	     (float)w->LoopStats.NotUnrolled);
+     fprintf(logfile,"FP Register Pressure = %d\n",
+	     w->LoopStats.NotUnrolledFPRegisterPressure/(float)w->LoopStats.NotUnrolled);
+     fprintf(logfile,"Interlock Factor     = %.4f\n",
+	     w->LoopStats.NotUnrolledInterlock/(float)w->LoopStats.NotUnrolled);
+     fprintf(logfile,"Failed -- Distribution %d\n",w->LoopStats.Distribute);
+     fprintf(logfile,"Failed -- Interchange %d\n",w->LoopStats.Interchange);
+     fprintf(logfile,"No Improvement Possible %d\n",w->LoopStats.NoImprovement);
+     fprintf(logfile,"\n\nSingle Depth Loops %d\n\n",w->LoopStats.SingleDepth);
+     fprintf(logfile,"Average Single Depth Statistics\n");
+     fprintf(logfile,"===============================\n\n");
+     fprintf(logfile,"Loop Balance = %.4f\n",
+	     w->LoopStats.SingleDepthBalance/(float)w->LoopStats.SingleDepth);
+     fprintf(logfile,"Loop Balance with Interlock= %.4f\n",
+	     w->LoopStats.SingleDepthBalanceWithInterlock/
+	     (float)w->LoopStats.SingleDepth);
+     fprintf(logfile,"FP Register Pressure = %d\n",
+	     w->LoopStats.SingleDepthFPRegisterPressure/(float)w->LoopStats.SingleDepth);
+     fprintf(logfile,"Interlock Factor     = %.4f\n",
+	     w->LoopStats.SingleDepthInterlock/(float)w->LoopStats.SingleDepth);
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   memory_UnrollStatsTotal                                    */
+/*                                                                          */
+/*   Input:      program - name of program being processed                  */
+/*                                                                          */
+/*   Description:  print out the unroll statistics for an entire program    */
+/*                                                                          */
+/****************************************************************************/
+
+void memory_UnrollStatsTotal(char *program)
+
+  {
+   char fn[DB_PATH_LENGTH];
+   FILE *logfile;
+
+     sprintf(fn,"%s.STATSLOG",program);
+     logfile = fopen(fn,"w");
+     UnrollStatsDump(logfile,&memory_walk_info);
+     fclose(logfile);
+  }
+
 
 
