@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.20 1996/10/14 19:25:17 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.21 1996/10/15 15:19:19 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -534,8 +534,8 @@ static Boolean HasGroupSpatial(AST_INDEX  node,
 		//  Record for DEAD instructions.  Need to now how far behind
 		//  to make a cache line dead
 
-		sptr->GroupSpatialDistance = MAX(sptr->GroupSpatialDistance,
-						 gen_get_dt_DIS(Edge,Edge->level));
+		sptr->GroupDistance = MAX(sptr->GroupDistance,
+					  gen_get_dt_DIS(Edge,Edge->level));
 	      return(true);
 	    }
     return(false);
@@ -615,6 +615,7 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
    EDGE_INDEX edge;
    Boolean   GroupSpatial = false;
    Boolean   GroupTemporalCache = false;
+   subscript_info_type *sptr;
   
      if (gen_get_converted_type(node) == TYPE_DOUBLE_PRECISION ||
 	 gen_get_converted_type(node) == TYPE_COMPLEX)
@@ -628,31 +629,45 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
 	  edge != END_OF_LIST;
 	  edge = dg_next_sink_ref( PED_DG(ped),edge))
 
-            /* look for an edge that represents reuse */
+       /* look for an edge that represents reuse */
 
-       if (dg[edge].consistent != inconsistent && !dg[edge].symbolic)
-         if (dg[edge].level == loop_data[loop].level || 
-	     dg[edge].level == LOOP_INDEPENDENT)
-           if (dg[edge].type == dg_true || dg[edge].type == dg_input)
-	     {
-	      get_subscript_ptr(dg[edge].src)->uses_regs = true;
-	      if (dg[edge].src == dg[edge].sink)
-		return(SELF_TEMPORAL);
-	     else 
-		return(GROUP_TEMPORAL);
-	     }
-	   else if (((config_type *)PED_MH_CONFIG(ped))->write_back)
-	      if (dg[edge].src == dg[edge].sink)
-		return(SELF_TEMPORAL);
-	      else
-	        if (dg[edge].level == LOOP_INDEPENDENT && dg[edge].type == dg_output)
-		  return(GROUP_TEMPORAL);
-                else
-	         GroupTemporalCache = true;
-	   else;
+       {
+	 sptr = get_subscript_ptr(dg[edge].src);
+	 if (dg[edge].consistent != inconsistent && !dg[edge].symbolic)
+	   if (dg[edge].level == loop_data[loop].level || 
+	       dg[edge].level == LOOP_INDEPENDENT)
+	     if (dg[edge].type == dg_true || dg[edge].type == dg_input)
+	       {
+		 sptr->uses_regs = true;
+		 if (dg[edge].src == dg[edge].sink)
+		   return(SELF_TEMPORAL);
+		 else 
+		   {
+		     // This distance is needed for DEAD instructions
 
-	 else if (HasGroupSpatial(node,&dg[edge],loop_data,words,UGS))
-	   GroupSpatial = true;
+		     sptr->GroupDistance = MAX(sptr->GroupDistance,
+					       gen_get_dt_DIS(&dg[edge],dg[edge].level));
+		     return(GROUP_TEMPORAL);
+		   }
+	       }
+	     else if (((config_type *)PED_MH_CONFIG(ped))->write_back)
+	       if (dg[edge].src == dg[edge].sink)
+		 return(SELF_TEMPORAL);
+	       else
+		 {
+		     // This distance is needed for DEAD instructions
+
+		   sptr->GroupDistance = MAX(sptr->GroupDistance,
+					     gen_get_dt_DIS(&dg[edge],dg[edge].level));
+		   if (dg[edge].level == LOOP_INDEPENDENT && dg[edge].type == dg_output)
+		     return(GROUP_TEMPORAL);
+		   else
+		     GroupTemporalCache = true;
+		 }
+	     else;
+	   else if (HasGroupSpatial(node,&dg[edge],loop_data,words,UGS))
+	     GroupSpatial = true;
+       }
      if (GroupTemporalCache)
        return(GROUP_TEMPORAL_CACHE);
      if (GroupSpatial)
