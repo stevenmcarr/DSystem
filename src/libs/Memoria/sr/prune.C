@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.8 1994/07/20 11:32:53 carr Exp $ */
+/* $Id: prune.C,v 1.9 1994/11/30 15:43:49 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -196,25 +196,27 @@ static int check_gen(AST_INDEX       node,
 	   prune_dependence_edges(name,scalar_info->gen_distance,
 				  gen_info);
 	  }
-	else if (scalar_info->gen_type == LCPAV &&
-		 (ut_member_number(gen_info->entry->LC_antic_in,
-				   scalar_info->generator) ||
-		  (((config_type *)PED_MH_CONFIG(gen_info->ped))->aggressive &&
-		 gen_info->array_table[scalar_info->generator].profit > 0.0)))
-
-	/* loop-carried partially available generator */
-
+	else 
 	  {
-	   prune_dependence_edges(name,scalar_info->gen_distance,
-				  gen_info);
-	  }
-	else
+	    /* loop-carried partially available generator */
 
-	/* partially availiable but not anticipated on all paths */
+	    prune_dependence_edges(name,scalar_info->gen_distance,gen_info);
+	    
+	    if (scalar_info->gen_type != LCPAV ||
+		(!ut_member_number(gen_info->entry->LC_antic_in,
+				   scalar_info->generator) &&
+		 (NOT(((config_type*)PED_MH_CONFIG(gen_info->ped))->aggressive)
+		  || NOT(scalar_info->scalar) || scalar_info->prevent_slr)))
 
-	  {
-	   scalar_info->generator = -1;
-	   prune_dependence_edges(name,-2,gen_info);
+
+	      /* partially availiable but not anticipated on all paths */
+
+	      {
+		scalar_info->generator = -1;
+		prune_dependence_edges(name,-2,gen_info);
+		if (scalar_info->scalar)
+		  scalar_info->is_generator = false;
+	      }
 	  }
        }
    return(WALK_CONTINUE);
