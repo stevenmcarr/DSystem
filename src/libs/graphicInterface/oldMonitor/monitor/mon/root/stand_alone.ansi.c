@@ -1,4 +1,4 @@
-/* $Id: stand_alone.ansi.c,v 1.10 1997/06/25 14:52:22 carr Exp $ */
+/* $Id: stand_alone.ansi.c,v 1.11 1999/03/31 22:05:36 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -211,7 +211,7 @@ int		num_files;		/* the number of files allowed	*/
 short           i;                      /* file list index              */
 
     /* start up the environment */
-        startEvents();
+/* startEvents();  I don't need this for Memoria and f2i, plus it's seg faulting*/
 
     /* initialize the management info */
 	num_files = getdtablesize();
@@ -252,7 +252,7 @@ aMgrInst        *inst;                  /* the manager instance         */
         }
 
     /* fire-down the environment */
-        stopEvents();
+        /* stopEvents(); not needed for Memoria and f2i */
     free_mem((void*) fd_owners);
 }
 

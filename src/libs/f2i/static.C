@@ -1,4 +1,4 @@
-/* $Id: static.C,v 1.2 1997/06/25 15:21:51 carr Exp $ */
+/* $Id: static.C,v 1.3 1999/03/31 22:07:28 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -32,8 +32,8 @@ void aiGenerateStaticArea()
   FILE	*fd;
 
   char command[128];
-  char *template1 = "/tmp/aiDataInXXXXXX";
-  char *template2 = "/tmp/aiDataOutXXXXXX";
+  char *TempIn = ".aiDataIn";
+  char *TempOut = ".aiDataOut";
   int offset;
   int size;
 
@@ -47,20 +47,17 @@ void aiGenerateStaticArea()
     generate(0, NAME, (Generic) proc_name, 0, 0, NOCOMMENT);
   }
 
-  /*  open a temporary file and process data statements  */
-  (void) mktemp(template1);
-  (void) mktemp(template2);
-  fd = fopen(template1, "w");
+  fd = fopen(TempIn, "w");
 
   if (fd == NULL)
   {
-    (void) sprintf(error_buffer, "Cannot open temporary file '%s'", template1);
+    (void) sprintf(error_buffer, "Cannot open temporary file '%s'", TempIn);
     ERROR("aiGenerateStaticArea", error_buffer, FATAL);
   }
 
   if (aiDebug > 0)
      (void) fprintf(stdout, "\tGenerateStaticArea: using filenames '%s' and '%s'.\n", 
-	     template1, template2);
+	     TempIn, TempOut);
 
 
   generate(0, NOP, 0, 0, 0, "Initialized data");
@@ -90,14 +87,14 @@ void aiGenerateStaticArea()
   /*  close the temporary file  */
   (void) fclose(fd);
 
-  (void) sprintf(command, "sort %s >%s", template1, template2);
+  (void) sprintf(command, "sort %s >%s", TempIn, TempOut);
   (void) system(command);
 
-  fd = fopen(template2, "r");
+  fd = fopen(TempOut, "r");
 
   if (fd == NULL)
   {
-    (void) sprintf(error_buffer, "Cannot open temporary file '%s'", template2);
+    (void) sprintf(error_buffer, "Cannot open temporary file '%s'", TempOut);
     ERROR("aiGenerateStaticArea", error_buffer, FATAL);
   }
 
@@ -107,8 +104,8 @@ void aiGenerateStaticArea()
 
   if (aiDebug < 1)
   {
-    (void) unlink(template1);
-    (void) unlink(template2);
+    (void) unlink(TempIn);
+    (void) unlink(TempOut);
   }
 
   if (aiNextStack > aiStackSize)
