@@ -1,4 +1,5 @@
-/* $Id: interchange.C,v 1.6 1992/10/03 15:50:22 rn Exp $ */
+/* $Id: interchange.C,v 1.7 1992/12/07 10:14:48 carr Exp $ */
+
 #include <mh.h>
 #include <fort/gi.h>
 #include <interchange.h>
@@ -513,6 +514,7 @@ static void distribute_loop(model_loop    *loop_data,
      info.ped = ped;
      info.level = loop_data[loop].level;
      tree_free(gen_DO_get_stmt_LIST(loop_data[loop].node));
+     gen_DO_put_stmt_LIST(loop_data[loop].node,AST_NIL);
      for (j = i-1; j > 0; j--)
        {
 	walk_expression(stmt_list[j],update_edges,NOFUNC,(Generic)&info);
