@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.11 1994/07/25 13:56:27 yguan Exp $ */
+/* $Id: moderate.C,v 1.12 1994/07/27 18:54:42 yguan Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -676,16 +676,6 @@ void sr_moderate_pressure(PedInfo  ped,
    heap_type *heap;
 
      build_cost_info(glist,&NumPartitions,&NumReferences,&regs,ped);
-     if (logfile != NULL)
-       {
-	fprintf(logfile,"FP Register Pressure = %d\n",
-	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs));
-        LoopStats->FPRegisterPressure += 
-	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs);
-	fprintf(logfile,"Free Registers = %d\n",free_regs-regs);
-	LoopStats->ActualFPRegisterPressure += 
-	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs);
-       }
      if (regs > free_regs)
        {
 
@@ -709,6 +699,27 @@ void sr_moderate_pressure(PedInfo  ped,
         regs = 0;
         build_cost_info(glist,&NumPartitions,&NumReferences,&regs,ped);
        }
+
+     if (logfile != NULL)
+       {
+	/* accumulate SR pressure */
+
+	fprintf(logfile,"# of registers used for scalar replacement = %d\n",
+		      regs);
+        LoopStats->SRRegisterPressure += regs;
+
+	/* accumulate FP pressure */
+
+	fprintf(logfile,"FP Register Pressure = %d\n",
+	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs));
+        LoopStats->FPRegisterPressure += 
+	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs);
+
+	fprintf(logfile,"Free Registers = %d\n",free_regs-regs);
+	LoopStats->ActualFPRegisterPressure += 
+	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs);
+       }
+
    *redo = false;
    LoopStats->NumRefRep += NumReferences;
    complete_temp_names(glist,redo,array_table);
