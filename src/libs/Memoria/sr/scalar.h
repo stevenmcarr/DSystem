@@ -1,4 +1,4 @@
-/* $Id: scalar.h,v 1.7 1994/06/30 14:36:06 carr Exp $ */
+/* $Id: scalar.h,v 1.8 1994/11/30 15:44:51 carr Exp $ */
 
 #ifndef scalar_h
 #define scalar_h
@@ -58,6 +58,8 @@ typedef struct preliminfotype {
   SymDescriptor    symtab;
   PedInfo          ped;
   arena_type       *ar;
+  int              UniformRefs,
+                   NonUniformRefs;
 }  prelim_info_type;
 
 typedef struct doinfotype {
