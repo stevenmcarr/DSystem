@@ -1,6 +1,10 @@
-/* $Id: mh_walk.C,v 1.6 1992/12/11 11:17:33 carr Exp $ */
+/* $Id: mh_walk.C,v 1.7 1992/12/16 11:34:49 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
+/*    File:  mh_walk.C                                                      */
+/*                                                                          */
+/*    Description:  Walk the AST to find all outermost loops.  At each      */
+/*                  loop nest, perform the requested transformations        */
 /*                                                                          */
 /****************************************************************************/
 
@@ -33,20 +37,46 @@
 #include <dialogs/message.h>
 #endif
 
-static walk_info_type memory_walk_info;
+static walk_info_type memory_walk_info;  /* permutation statistics for an
+					    entire composition or list of
+					    files */
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   set_scratch                                                */
+/*                                                                          */
+/*   Input:      node - a node in the AST                                   */
+/*               dummy - anything                                           */
+/*                                                                          */
+/*   Description: This function is called by walk_expression on each AST    */
+/*                node.  It sets the scratch field to NULL so no spurrious  */
+/*                pointers to space exist.                                  */
+/*                                                                          */
+/****************************************************************************/
 
 static int set_scratch(AST_INDEX node,
 		       int       dummy)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
 
   {
    set_scratch_to_NULL(node);
    return(WALK_CONTINUE);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   remove_do_labels                                           */
+/*                                                                          */
+/*   Input:      stmt - a statement in the AST                              */
+/*               level - the nesting level of stmt                          */
+/*               dummy - anything                                           */
+/*                                                                          */
+/*   Description: This function removes references to labels to labels in   */
+/*                DO statements so that all are in a DO - ENDDO format.     */
+/*                This function is called by walk_statements.               */
+/*                                                                          */
+/****************************************************************************/
 
 static int remove_do_labels(AST_INDEX stmt,
 			    int       level,
@@ -57,6 +87,22 @@ static int remove_do_labels(AST_INDEX stmt,
      gen_DO_put_lbl_ref(stmt,AST_NIL);
    return(WALK_CONTINUE);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:  pre_walk                                                    */
+/*                                                                          */
+/*   Input:     stmt - statement in the AST                                 */
+/*              level - nesting level of stmt                               */
+/*              walk_info - structure to hold information such as the       */
+/*                          symbol table.                                   */
+/*                                                                          */
+/*   Description:  This function gets the symbol table for the function     */
+/*                 being processed.  It is called by walk_statements in     */
+/*                 preorder.                                                */
+/*                                                                          */
+/****************************************************************************/
 
 static int pre_walk(AST_INDEX      stmt,
 		    int            level,
@@ -85,48 +131,118 @@ static int pre_walk(AST_INDEX      stmt,
   }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   InterchangeStats                                           */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description:  Calls the function to gather statistics about loop       */
+/*                 interchange on a given loop.                             */
+/*                                                                          */
+/****************************************************************************/
+
 static void InterchangeStats(AST_INDEX      stmt,
 			     int            level,
 			     walk_info_type *walk_info)
   {
+      /* gather statistics */
    memory_interchange_stats(walk_info->ped,stmt,
 			    LEVEL1,
 			    &walk_info->LoopStats,
 			    walk_info->symtab,
 			    walk_info->ar);
+
+     /* re-initialize scratch field (no dangling pointers) */
    walk_expression(stmt,set_scratch,NOFUNC,
 		   (Generic)NULL);
+
+     /* free up space used */
    walk_info->ar->arena_deallocate(LOOP_ARENA);
    if (NOT(walk_info->LoopStats.Perfect))
      walk_info->LoopStats.Imperfect++;
   }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   Interchange                                                */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description: Call function to perform loop interchange for memory      */
+/*                performance.                                              */
+/*                                                                          */
+/****************************************************************************/
+
 static void Interchange(AST_INDEX      stmt,
 			int            level,
 			walk_info_type *walk_info)
   {
+      /* perform loop interchange */
    memory_loop_interchange(walk_info->ped,stmt,
 			   LEVEL1,walk_info->symtab,
 			   walk_info->ar);
+
+     /* re-initialize scratch field (no dangling pointers) */
    walk_expression(stmt,set_scratch,NOFUNC,
 		   (Generic)NULL);
+
+     /* free up space used */
    walk_info->ar->arena_deallocate(LOOP_ARENA);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   ScalarReplacement                                          */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description: Call function to perform scalar replacement on a loop     */
+/*                nest.                                                     */
+/*                                                                          */
+/****************************************************************************/
 
 static void ScalarReplacement(AST_INDEX      stmt,
 			      int            level,
 			      walk_info_type *walk_info)
   {
+     /* perform scalar replacement */
    memory_scalar_replacement(walk_info->ped,stmt,
 			     walk_info->symtab,
 			     walk_info->ar);
+
+     /* re-initialize scratch field (no dangling pointers) */
    walk_expression(stmt,set_scratch,NOFUNC,
+
 		   (Generic)NULL);
+     /* free up space used */
    walk_info->ar->arena_deallocate(LOOP_ARENA);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   UnrollAndJam                                               */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Output:     the AST_INDEX of the outermost loop after unroll-and-jam.  */
+/*               It may be an index to a pre-loop.                          */
+/*                                                                          */
+/*   Description: Call function to perform unroll-and-jam on a loop         */
+/*                nest.                                                     */
+/*                                                                          */
+/****************************************************************************/
 
 static AST_INDEX UnrollAndJam(AST_INDEX      stmt,
 			      int            level,
@@ -134,24 +250,37 @@ static AST_INDEX UnrollAndJam(AST_INDEX      stmt,
   {
    AST_INDEX new_stmt;
 
+           /* symbol table field for scalar expansion */
      fst_InitField(walk_info->symtab,EXPAND_LVL,0,0);
-     walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
+
+           /* perform unroll-and-jam */
      new_stmt = memory_unroll_and_jam(walk_info->ped,stmt,level,2,
 				      walk_info->symtab,walk_info->ar);
+
+           /* cleanup space */
      walk_info->ar->arena_deallocate(LOOP_ARENA);
      fst_KillField(walk_info->symtab,EXPAND_LVL);
      return(new_stmt);
   }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   post_walk                                                  */
+/*                                                                          */
+/*   Input:      stmt - a statement in the AST                              */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description: On each do loop found at the outermost nesting level      */
+/*                perform the memory optimizations requested.  This         */
+/*                function is called by walk_statements                     */
+/*                                                                          */
+/****************************************************************************/
+
 static int post_walk(AST_INDEX      stmt,
 		     int            level,
 		     walk_info_type *walk_info)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
 
   {
    AST_INDEX new_stmt;
@@ -171,6 +300,10 @@ static int post_walk(AST_INDEX      stmt,
 	case UNROLL_AND_JAM: (void)UnrollAndJam(stmt,level,walk_info);
 	                     break;
 	case UNROLL_SCALAR:  new_stmt = UnrollAndJam(stmt,level,walk_info);
+
+			        /* perform scalar replacement on each of the
+				   loop bodies created by unroll-and-jam */
+
                              while (new_stmt != stmt)
 			       {
 				if (is_do(new_stmt))
@@ -190,6 +323,10 @@ static int post_walk(AST_INDEX      stmt,
 	                     break;
 	case MEM_ALL:        Interchange(stmt,level,walk_info);
 			     new_stmt = UnrollAndJam(stmt,level,walk_info);
+
+			        /* perform scalar replacement on each of the
+				   loop bodies created by unroll-and-jam */
+
                              while (new_stmt != stmt)
 			       {
 				if (is_do(new_stmt))
@@ -206,6 +343,20 @@ static int post_walk(AST_INDEX      stmt,
      } 
    return(WALK_CONTINUE);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   build_label_symtab                                         */
+/*                                                                          */
+/*   Input:      stmt - a statement in the AST                              */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description: Mark any label that is referenced in the symbol table     */
+/*                Any label that is not referenced will be removed.         */
+/*                                                                          */
+/****************************************************************************/
 
 static int build_label_symtab(AST_INDEX   stmt,
                               int         level,
@@ -256,6 +407,20 @@ static int build_label_symtab(AST_INDEX   stmt,
   }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   remove_bogus_labels                                        */
+/*                                                                          */
+/*                                                                          */
+/*   Input:      stmt - a statement in the AST                              */
+/*               level - nesting level of stmt                              */
+/*               symtab - symbol table                                      */
+/*                                                                          */
+/*   Description: Remove any label that is not referenced.  If the label    */
+/*                is for a continue statement, remove the statement also.   */
+/*                                                                          */
+/****************************************************************************/
+
 static int remove_bogus_labels(AST_INDEX     stmt,
                                int           level,
                                SymDescriptor symtab)
@@ -275,6 +440,20 @@ static int remove_bogus_labels(AST_INDEX     stmt,
             pt_tree_replace(label,AST_NIL);
      return(WALK_CONTINUE);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   check_labels                                               */
+/*                                                                          */
+/*   Input:      stmt - a statement in the AST                              */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*                                                                          */
+/*   Description: Call label removing function for each routine.            */
+/*                                                                          */
+/****************************************************************************/
 
 static int check_labels(AST_INDEX   stmt,
                         int         level,
@@ -301,6 +480,21 @@ static int check_labels(AST_INDEX   stmt,
      }
    return(WALK_CONTINUE);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   check_decls                                                */
+/*                                                                          */
+/*   Input:      symtab - symbol table                                      */
+/*               index  - symbol table index                                */
+/*               decl_lists - lists of new variables to be declared         */
+/*                                                                          */
+/*   Description:  Searches ast for any varibles created by memory          */
+/*                 optimizations and creates a declaration for those        */
+/*                 variables                                                */
+/*                                                                          */
+/****************************************************************************/
 
 static void check_decl(SymDescriptor  symtab,
                        fst_index_t    index,
@@ -335,6 +529,19 @@ static void check_decl(SymDescriptor  symtab,
        }
      }
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:  make_decls                                                  */
+/*                                                                          */
+/*   Input:     symtab - symbol table                                       */
+/*              stmt_list - list of statements in a routine                 */
+/*                                                                          */
+/*   Description:  Create declaration statements for generated variables    */
+/*                 and insert them at the top of the routine.               */
+/*                                                                          */
+/****************************************************************************/
 
 static void make_decls(SymDescriptor symtab,
                        AST_INDEX     stmt_list)
@@ -380,6 +587,20 @@ static void make_decls(SymDescriptor symtab,
 				       
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   get_symtab_for_decls                                       */
+/*                                                                          */
+/*   Input:      stmt - statement in the AST                                */
+/*               level - nesting level of stmt                              */
+/*               ft - fort tree for getting symbol table                    */
+/*                                                                          */
+/*   Description: Search ast for routine declaration to get symbol table.   */
+/*                Call declaration making routine.                          */
+/*                                                                          */
+/****************************************************************************/
+
 static int get_symtab_for_decls(AST_INDEX     stmt,
                                 int           level,
                                 FortTree      ft)
@@ -412,6 +633,16 @@ static int get_symtab_for_decls(AST_INDEX     stmt,
        return(WALK_CONTINUE);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   print_RefGroups                                            */
+/*                                                                          */
+/*   Input:      logfile - file to dump statistics                          */
+/*               title - title for statistics                               */
+/*                                                                          */
+/*   Description: print statistics for RefGroups.                           */
+/*                                                                          */
 /****************************************************************************/
 
 static void print_RefGroups(FILE *logfile, char *title,
@@ -448,6 +679,17 @@ static void print_RefGroups(FILE *logfile, char *title,
 	fprintf(logfile,"\tOther Spatial:   %d\n\n\n",os);
 }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:  memory_stats_dump                                           */
+/*                                                                          */
+/*   Input:     logfile - file for statistics output                        */
+/*              w - interchange statistics                                  */
+/*                                                                          */
+/*   Description: print out the interchange statistics to a file            */
+/*                                                                          */
+/****************************************************************************/
 
 static void memory_stats_dump(FILE *logfile, walk_info_type *w)
 {
@@ -628,17 +870,28 @@ static void memory_stats_dump(FILE *logfile, walk_info_type *w)
 }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   mh_walk_ast                                                */
+/*                                                                          */
+/*   Input:      selection - transformation to be performed on ast          */
+/*               ped - structure containing dependence graph                */
+/*               root - AST root of program                                 */
+/*               ft - fort tree of program                                  */
+/*               mod_context - context of module being tranformed           */
+/*               ar - arena object for arena-based memory allocation        */
+/*                                                                          */
+/*   Description: Walk the AST to perform selected transformations on each  */
+/*                loop nest.  Maintain interchange statistics.              */
+/*                                                                          */
+/****************************************************************************/
+
 void mh_walk_ast(int          selection,
                  PedInfo      ped,
                  AST_INDEX    root,
 		 FortTree     ft,
 		 Context      mod_context,
 		 arena_type   *ar)
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
 
   {
    walk_info_type walk_info;
@@ -659,61 +912,65 @@ void mh_walk_ast(int          selection,
      walk_info.ped = ped;
      walk_info.ft = ft;
      walk_info.ar = ar;
-     walk_info.LoopStats.TotalLoops = 0;
-     walk_info.LoopStats.NotInMemoryOrder = 0;
-     walk_info.LoopStats.InMemoryOrder = 0;
-     walk_info.LoopStats.NearbyPermutationAttained = 0;
-     walk_info.LoopStats.InterchangedIntoMemoryOrder = 0;
-     walk_info.LoopStats.TimeStepPreventedMemoryOrder = 0;
-     walk_info.LoopStats.ObtainedInnerLoop = 0;
-     walk_info.LoopStats.InnerLoopAlreadyCorrect = 0;
-     walk_info.LoopStats.WrongInnerLoop = 0;
-     walk_info.LoopStats.DesiredInnerTimeStep = 0;
-     walk_info.LoopStats.NextInnerLoop = 0;
-     walk_info.LoopStats.UnsafeInterchange = 0;
-     walk_info.LoopStats.DistributionUnsafe = 0;
-     walk_info.LoopStats.NeedsScalarExpansion = 0;
-     walk_info.LoopStats.TimeStepPreventedMemoryOrder = 0;
-     walk_info.LoopStats.TooComplex = 0;
-     walk_info.LoopStats.Nests = 0;
-     walk_info.LoopStats.Imperfect = 0;
-     walk_info.LoopStats.OriginalLocalityMatrix.SingleGroups.Invariant = 0;
-     walk_info.LoopStats.OriginalLocalityMatrix.SingleGroups.Spatial = 0;
-     walk_info.LoopStats.OriginalLocalityMatrix.SingleGroups.None = 0;
-     walk_info.LoopStats.FinalLocalityMatrix.SingleGroups.Invariant = 0;
-     walk_info.LoopStats.FinalLocalityMatrix.SingleGroups.Spatial = 0;
-     walk_info.LoopStats.FinalLocalityMatrix.SingleGroups.None = 0;
-     walk_info.LoopStats.MemoryLocalityMatrix.SingleGroups.Invariant = 0;
-     walk_info.LoopStats.MemoryLocalityMatrix.SingleGroups.Spatial = 0;
-     walk_info.LoopStats.MemoryLocalityMatrix.SingleGroups.None = 0;
-     walk_info.LoopStats.OriginalLocalityMatrix.MultiGroups.Invariant = 0;
-     walk_info.LoopStats.OriginalLocalityMatrix.MultiGroups.Spatial = 0;
-     walk_info.LoopStats.OriginalLocalityMatrix.MultiGroups.None = 0;
-     walk_info.LoopStats.OriginalLocalityMatrix.MultiRefs.Invariant = 0;
-     walk_info.LoopStats.OriginalLocalityMatrix.MultiRefs.Spatial = 0;
-     walk_info.LoopStats.OriginalLocalityMatrix.MultiRefs.None = 0;
-     walk_info.LoopStats.FinalLocalityMatrix.MultiGroups.Invariant = 0;
-     walk_info.LoopStats.FinalLocalityMatrix.MultiGroups.Spatial = 0;
-     walk_info.LoopStats.FinalLocalityMatrix.MultiGroups.None = 0;
-     walk_info.LoopStats.FinalLocalityMatrix.MultiRefs.Invariant = 0;
-     walk_info.LoopStats.FinalLocalityMatrix.MultiRefs.Spatial = 0;
-     walk_info.LoopStats.FinalLocalityMatrix.MultiRefs.None = 0;
-     walk_info.LoopStats.MemoryLocalityMatrix.MultiGroups.Invariant = 0;
-     walk_info.LoopStats.MemoryLocalityMatrix.MultiGroups.Spatial = 0;
-     walk_info.LoopStats.MemoryLocalityMatrix.MultiGroups.None = 0;
-     walk_info.LoopStats.MemoryLocalityMatrix.MultiRefs.Invariant = 0;
-     walk_info.LoopStats.MemoryLocalityMatrix.MultiRefs.Spatial = 0;
-     walk_info.LoopStats.MemoryLocalityMatrix.MultiRefs.None = 0;
-     walk_info.LoopStats.OriginalOtherSpatialGroups = 0;
-     walk_info.LoopStats.FinalOtherSpatialGroups = 0;
-     walk_info.LoopStats.MemoryOtherSpatialGroups = 0;
-     for (i = 0; i < NESTING_DEPTH; i++)
-       {
-	walk_info.LoopStats.FinalRatio[i] = 0.0;
-	walk_info.LoopStats.MemoryRatio[i] = 0.0;
-        walk_info.LoopStats.NestingDepth[i] = 0;
-       }
 
+     if (selection == INTERSTATS)
+       {
+	walk_info.LoopStats.TotalLoops = 0;
+	walk_info.LoopStats.NotInMemoryOrder = 0;
+	walk_info.LoopStats.InMemoryOrder = 0;
+	walk_info.LoopStats.NearbyPermutationAttained = 0;
+	walk_info.LoopStats.InterchangedIntoMemoryOrder = 0;
+	walk_info.LoopStats.TimeStepPreventedMemoryOrder = 0;
+	walk_info.LoopStats.ObtainedInnerLoop = 0;
+	walk_info.LoopStats.InnerLoopAlreadyCorrect = 0;
+	walk_info.LoopStats.WrongInnerLoop = 0;
+	walk_info.LoopStats.DesiredInnerTimeStep = 0;
+	walk_info.LoopStats.NextInnerLoop = 0;
+	walk_info.LoopStats.UnsafeInterchange = 0;
+	walk_info.LoopStats.DistributionUnsafe = 0;
+	walk_info.LoopStats.NeedsScalarExpansion = 0;
+	walk_info.LoopStats.TimeStepPreventedMemoryOrder = 0;
+	walk_info.LoopStats.TooComplex = 0;
+	walk_info.LoopStats.Nests = 0;
+	walk_info.LoopStats.Imperfect = 0;
+	walk_info.LoopStats.OriginalLocalityMatrix.SingleGroups.Invariant = 0;
+	walk_info.LoopStats.OriginalLocalityMatrix.SingleGroups.Spatial = 0;
+	walk_info.LoopStats.OriginalLocalityMatrix.SingleGroups.None = 0;
+	walk_info.LoopStats.FinalLocalityMatrix.SingleGroups.Invariant = 0;
+	walk_info.LoopStats.FinalLocalityMatrix.SingleGroups.Spatial = 0;
+	walk_info.LoopStats.FinalLocalityMatrix.SingleGroups.None = 0;
+	walk_info.LoopStats.MemoryLocalityMatrix.SingleGroups.Invariant = 0;
+	walk_info.LoopStats.MemoryLocalityMatrix.SingleGroups.Spatial = 0;
+	walk_info.LoopStats.MemoryLocalityMatrix.SingleGroups.None = 0;
+	walk_info.LoopStats.OriginalLocalityMatrix.MultiGroups.Invariant = 0;
+	walk_info.LoopStats.OriginalLocalityMatrix.MultiGroups.Spatial = 0;
+	walk_info.LoopStats.OriginalLocalityMatrix.MultiGroups.None = 0;
+	walk_info.LoopStats.OriginalLocalityMatrix.MultiRefs.Invariant = 0;
+	walk_info.LoopStats.OriginalLocalityMatrix.MultiRefs.Spatial = 0;
+	walk_info.LoopStats.OriginalLocalityMatrix.MultiRefs.None = 0;
+	walk_info.LoopStats.FinalLocalityMatrix.MultiGroups.Invariant = 0;
+	walk_info.LoopStats.FinalLocalityMatrix.MultiGroups.Spatial = 0;
+	walk_info.LoopStats.FinalLocalityMatrix.MultiGroups.None = 0;
+	walk_info.LoopStats.FinalLocalityMatrix.MultiRefs.Invariant = 0;
+	walk_info.LoopStats.FinalLocalityMatrix.MultiRefs.Spatial = 0;
+	walk_info.LoopStats.FinalLocalityMatrix.MultiRefs.None = 0;
+	walk_info.LoopStats.MemoryLocalityMatrix.MultiGroups.Invariant = 0;
+	walk_info.LoopStats.MemoryLocalityMatrix.MultiGroups.Spatial = 0;
+	walk_info.LoopStats.MemoryLocalityMatrix.MultiGroups.None = 0;
+	walk_info.LoopStats.MemoryLocalityMatrix.MultiRefs.Invariant = 0;
+	walk_info.LoopStats.MemoryLocalityMatrix.MultiRefs.Spatial = 0;
+	walk_info.LoopStats.MemoryLocalityMatrix.MultiRefs.None = 0;
+	walk_info.LoopStats.OriginalOtherSpatialGroups = 0;
+	walk_info.LoopStats.FinalOtherSpatialGroups = 0;
+	walk_info.LoopStats.MemoryOtherSpatialGroups = 0;
+	for (i = 0; i < NESTING_DEPTH; i++)
+	  {
+	   walk_info.LoopStats.FinalRatio[i] = 0.0;
+	   walk_info.LoopStats.MemoryRatio[i] = 0.0;
+	   walk_info.LoopStats.NestingDepth[i] = 0;
+	  }
+       }
+	
      walk_statements(root,LEVEL1,remove_do_labels,NOFUNC,(Generic)NULL);
      walk_statements(root,LEVEL1,build_label_symtab,check_labels,
 		     (Generic)&walk_info);
@@ -825,18 +1082,19 @@ void mh_walk_ast(int          selection,
            += walk_info.LoopStats.FinalOtherSpatialGroups;
        memory_walk_info.LoopStats.MemoryOtherSpatialGroups 
            += walk_info.LoopStats.MemoryOtherSpatialGroups;
-     for (i = 0; i < NESTING_DEPTH; i++)
-       {
-	memory_walk_info.LoopStats.FinalRatio[i] 
-           += walk_info.LoopStats.FinalRatio[i];
-	memory_walk_info.LoopStats.MemoryRatio[i] 
-           += walk_info.LoopStats.MemoryRatio[i];
-        memory_walk_info.LoopStats.NestingDepth[i]
-            += walk_info.LoopStats.NestingDepth[i];
-       }
+       for (i = 0; i < NESTING_DEPTH; i++)
+	 {
+	  memory_walk_info.LoopStats.FinalRatio[i] 
+	    += walk_info.LoopStats.FinalRatio[i];
+	  memory_walk_info.LoopStats.MemoryRatio[i] 
+	    += walk_info.LoopStats.MemoryRatio[i];
+	  memory_walk_info.LoopStats.NestingDepth[i]
+	    += walk_info.LoopStats.NestingDepth[i];
+	 }
 
-	memory_stats_dump(((config_type *)PED_MH_CONFIG(ped))->logfile, &walk_info);
-       }
+	memory_stats_dump(((config_type *)PED_MH_CONFIG(ped))->logfile,
+			  &walk_info);
+      }
      if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
 	 selection == INTERSTATS)
        fclose(((config_type *)PED_MH_CONFIG(ped))->logfile);
@@ -845,19 +1103,34 @@ void mh_walk_ast(int          selection,
 
 
 /****************************************************************************/
+/*                                                                          */
+/*   Function:   ApplyMemoryCompiler                                        */
+/*                                                                          */
+/*   Input:      selection - transformation to be performed on ast          */
+/*               ped - structure containing dependence graph                */
+/*               root - AST root of program                                 */
+/*               ft - fort tree of program                                  */
+/*               mod_context - context of module being tranformed           */
+/*               config_file - name of configuration file                   */
+/*                                                                          */
+/*   Description: Entry point for stand alone memory compiler.  Calls       */
+/*                mh_walk_ast to perform the requested transformations.     */
+/*                                                                          */
+/****************************************************************************/
 
 void ApplyMemoryCompiler(int         selection,
 			 PedInfo     ped, 
 			 AST_INDEX   root, 
 			 FortTree    ft, 
-			 Context     mod_context)
+			 Context     mod_context,
+			 char        *config_file)
   {
    arena_type   ar(1);
    
    if (!PED_MH_CONFIG(ped))
      {
       PED_MH_CONFIG(ped) = (int) get_mem(sizeof(config_type), "memory_stats");
-      mh_get_config(PED_MH_CONFIG(ped));
+      mh_get_config((config_type *)PED_MH_CONFIG(ped),config_file);
      }
    
    printf("Analyzing %s...\n", ctxLocation(mod_context));
@@ -865,6 +1138,15 @@ void ApplyMemoryCompiler(int         selection,
    mh_walk_ast(selection,ped,root,ft, mod_context, &ar);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   memory_stats_total                                         */
+/*                                                                          */
+/*   Input:      program - name of program being processed                  */
+/*                                                                          */
+/*   Description:  print out the total statistics for an entire program     */
+/*                                                                          */
 /****************************************************************************/
 
 void memory_stats_total(char *program)

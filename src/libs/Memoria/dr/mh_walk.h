@@ -1,4 +1,4 @@
-/* $Id: mh_walk.h,v 1.5 1992/12/11 11:17:38 carr Exp $ */
+/* $Id: mh_walk.h,v 1.6 1992/12/16 11:34:51 carr Exp $ */
 
 #ifndef mh_walk_h
 #define mh_walk_h
@@ -52,9 +52,9 @@ EXTERN(void, mh_walk_ast,(int selection,PedInfo ped,AST_INDEX root,
 			  FortTree ft, Context mod_context,
 			  arena_type *ar));
 
-EXTERN (void, mh_get_config, (int config));
 EXTERN (void, ApplyMemoryCompiler, (int selection, PedInfo ped, AST_INDEX root,
-				    FortTree ft, Context mod_context));
+				    FortTree ft, Context mod_context,
+				    char *config_file));
 EXTERN (void, memory_stats_total, ());
 
 #endif
