@@ -1,4 +1,4 @@
-/* $Id: analyze.C,v 1.15 1995/08/22 14:37:43 carr Exp $ */
+/* $Id: analyze.C,v 1.16 1996/10/14 14:48:03 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -248,6 +248,7 @@ static int build_pre(AST_INDEX       stmt, int             level,
 	build_info->loop_data[loop_num].transform = true;
 	build_info->loop_data[loop_num].reduction = false;
 	build_info->loop_data[loop_num].reversed = false;
+	build_info->loop_data[loop_num].unroll = false;
 	build_info->loop_data[loop_num].interchange = true;
 	build_info->loop_data[loop_num].distribute = true;
 	build_info->loop_data[loop_num].expand = false;
@@ -265,6 +266,7 @@ static int build_pre(AST_INDEX       stmt, int             level,
 	build_info->loop_data[loop_num].type = RECT;
 	build_info->loop_data[loop_num].inner_stmts = MAXLOOP;
 	build_info->loop_data[loop_num].outer_stmts = -1;
+	build_info->loop_data[loop_num].CarriedDependences= 0;
 	build_info->loop_data[loop_num].OutermostLvl = 0;
 	build_info->loop_data[loop_num].GroupList = 
 	                                util_list_alloc((Generic)NULL,NULL);
