@@ -1,4 +1,4 @@
-/* $Id: name.C,v 1.13 1995/09/14 14:49:12 carr Exp $ */
+/* $Id: name.C,v 1.14 1995/12/27 16:13:01 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -131,13 +131,12 @@ static int calc_distances(AST_INDEX node,
    int              refl,
                     edist,
                     total,
-                    max_dist = 0;
+                    max_dist = distance;
    EDGE_INDEX       edge;
 
      sptr = get_scalar_info_ptr(node);
      if (sptr->visited)
        {
-	max_dist = distance;
 	sptr->gen_distance = distance;
 	sptr->visited = false;
 	refl = get_info(ped,node,type_levelv);
