@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.12 1994/04/13 14:23:23 carr Exp $ */
+/* $Id: mh_walk.C,v 1.13 1994/05/31 15:03:35 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -427,6 +427,16 @@ static void AnnotateCodeForCache(AST_INDEX      stmt,
   }
 
 
+static void PerformCacheAnalysis(AST_INDEX stmt,
+				 int level,
+				 walk_info_type *walk_info)
+
+  {
+   memory_PerformCacheAnalysis(walk_info->ped,walk_info->symtab,walk_info->ar,
+			       stmt,level);
+  }
+
+
 /****************************************************************************/
 /*                                                                          */
 /*   Function:   post_walk                                                  */
@@ -509,6 +519,8 @@ static int post_walk(AST_INDEX      stmt,
 	case ANNOTATE:       if (mc_program == NULL && mc_module_list == NULL)
 	                       AnnotateCodeForCache(stmt,level,walk_info);
 	                     break;
+	case CACHE_ANALYSIS: PerformCacheAnalysis(stmt,level,walk_info);
+			     break;
        }
       return(WALK_FROM_OLD_NEXT);
      } 
@@ -665,19 +677,22 @@ static int check_labels(AST_INDEX   stmt,
    if (is_program(stmt))
      {
       walk_statements(gen_PROGRAM_get_stmt_LIST(stmt),level,
-		      remove_bogus_labels,NOFUNC,(Generic)walk_info->symtab);
+		      (WK_STMT_CLBACK)remove_bogus_labels,NOFUNC,
+		      (Generic)walk_info->symtab);
       fst_KillField(walk_info->symtab,REFD);
      }
    else if (is_subroutine(stmt))
      {
       walk_statements(gen_SUBROUTINE_get_stmt_LIST(stmt),level,
-		      remove_bogus_labels,NOFUNC,(Generic)walk_info->symtab);
+		      (WK_STMT_CLBACK)remove_bogus_labels,NOFUNC,
+		      (Generic)walk_info->symtab);
       fst_KillField(walk_info->symtab,REFD);
      }
    else if (is_function(stmt))
      {
       walk_statements(gen_FUNCTION_get_stmt_LIST(stmt),level,
-		      remove_bogus_labels,NOFUNC,(Generic)walk_info->symtab);
+		      (WK_STMT_CLBACK)remove_bogus_labels,NOFUNC,
+		      (Generic)walk_info->symtab);
       fst_KillField(walk_info->symtab,REFD);
      }
    return(WALK_CONTINUE);
@@ -755,7 +770,7 @@ static void make_decls(SymDescriptor symtab,
      decl_lists.dbl_prec_list = list_create(AST_NIL);
      decl_lists.real_list = list_create(AST_NIL);
      decl_lists.cmplx_list = list_create(AST_NIL);
-     fst_ForAll(symtab,check_decl,(Generic)&decl_lists);
+     fst_ForAll(symtab,(fst_ForAllCallback)check_decl,(Generic)&decl_lists);
      if (!list_empty(decl_lists.dbl_prec_list))
        {
 	type_stmt = gen_TYPE_STATEMENT(AST_NIL,gen_TYPE_LEN(gen_REAL(),
@@ -961,6 +976,9 @@ static void memory_stats_dump(FILE *logfile, LoopStatsType *LoopStats)
 		"\tNeeds Scalar Expansion:                         %d\n",
 		LoopStats->NeedsScalarExpansion);
 	fprintf(logfile,
+		"\tLoops Reversed:                                 %d\n",
+		LoopStats->Reversed);
+	fprintf(logfile,
 		"\tToo Complex:                                    %d\n\n\n",
 		LoopStats->TooComplex);
 
@@ -1118,18 +1136,20 @@ void mh_walk_ast(int          selection,
      walk_info.LoopStats = (LoopStatsType *)calloc(1,sizeof(LoopStatsType));
      walk_info.MainProgram = false;
 	
-     walk_statements(root,LEVEL1,remove_do_labels,NOFUNC,(Generic)NULL);
-     walk_statements(root,LEVEL1,build_label_symtab,check_labels,
-		     (Generic)&walk_info);
-     walk_statements(root,LEVEL1,NOFUNC,ut_change_logical_to_block_if,
-			   (Generic)NULL);
-     walk_statements(root,LEVEL1,pre_walk,post_walk,
+     walk_statements(root,LEVEL1,(WK_STMT_CLBACK)remove_do_labels,NOFUNC,
+		     (Generic)NULL);
+     walk_statements(root,LEVEL1,(WK_STMT_CLBACK)build_label_symtab,
+		     (WK_STMT_CLBACK)check_labels,(Generic)&walk_info);
+     walk_statements(root,LEVEL1,NOFUNC,
+		     (WK_STMT_CLBACK)ut_change_logical_to_block_if,(Generic)NULL);
+     walk_statements(root,LEVEL1,(WK_STMT_CLBACK)pre_walk,(WK_STMT_CLBACK)post_walk,
 		     (Generic)&walk_info);
      if (selection == LI_FUSION)
-       walk_statements(root,LEVEL1,TryFusionToCleanup,NOFUNC,(Generic)ped);
-     walk_statements(root,LEVEL1,build_label_symtab,check_labels,
-		     (Generic)&walk_info);
-     walk_statements(root,LEVEL1,get_symtab_for_decls,NOFUNC,
+       walk_statements(root,LEVEL1,(WK_STMT_CLBACK)TryFusionToCleanup,NOFUNC,
+		       (Generic)ped);
+     walk_statements(root,LEVEL1,(WK_STMT_CLBACK)build_label_symtab,
+		     (WK_STMT_CLBACK)check_labels,(Generic)&walk_info);
+     walk_statements(root,LEVEL1,(WK_STMT_CLBACK)get_symtab_for_decls,NOFUNC,
 		     (Generic)ft);
 
      if (selection == UNROLLSTATS)
@@ -1297,6 +1317,7 @@ void mh_walk_ast(int          selection,
 	  LoopStats->NestingDepth[i]
 	    += walk_info.LoopStats->NestingDepth[i];
 	 }
+       LoopStats->Reversed += walk_info.LoopStats->Reversed;
 
 	memory_stats_dump(((config_type *)PED_MH_CONFIG(ped))->logfile,
 			  walk_info.LoopStats);
