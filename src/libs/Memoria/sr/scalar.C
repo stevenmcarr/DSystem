@@ -1,4 +1,5 @@
-/* $Id: scalar.C,v 1.5 1992/10/03 15:48:46 rn Exp $ */
+/* $Id: scalar.C,v 1.6 1992/12/07 10:19:49 carr Exp $ */
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -393,8 +394,10 @@ static int count_regs(AST_INDEX     stmt,
 			(Generic)reg_info);
        }    
      else if (is_guard(stmt))
-       walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,get_expr_regs,
-		       (Generic)reg_info);
+       if (gen_GUARD_get_rvalue(stmt) != AST_NIL)
+         walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,get_expr_regs,
+			 (Generic)reg_info);
+       else;
      else if (is_arithmetic_if(stmt))
        walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,get_expr_regs,
 		       (Generic)reg_info);
