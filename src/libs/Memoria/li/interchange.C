@@ -513,7 +513,7 @@ static void distribute_loop(model_loop    *loop_data,
      for (j = i-1; j > 0; j--)
        {
 	walk_expression(stmt_list[j],update_edges,NOFUNC,(Generic)&info);
-	new_do = tree_copy(loop_data[loop].node);
+	new_do = tree_copy_with_type(loop_data[loop].node);
 	gen_DO_put_stmt_LIST(new_do,stmt_list[j]);
 	list_insert_after(loop_data[loop].node,new_do);
 	memory_loop_interchange(ped,new_do,loop_data[loop].level,symtab,ar);
@@ -584,48 +584,48 @@ static void shift_loop(model_loop *loop_data,
 	              pt_tree_replace(upb2,pt_simplify_expr(
 					   pt_gen_add(pt_gen_mul(
                                                       pt_gen_int(coeff),
-						      tree_copy(lwb1)),
-						      tree_copy(const1))));
+						      tree_copy_with_type(lwb1)),
+						      tree_copy_with_type(const1))));
 		      pt_tree_replace(upb1,pt_simplify_expr(
 					   pt_gen_div(
-					   pt_gen_sub(tree_copy(ivar),
-						      tree_copy(const1)),
+					   pt_gen_sub(tree_copy_with_type(ivar),
+						      tree_copy_with_type(const1)),
 					   pt_gen_int(coeff))));
 		      break;
 	  case TRI_LR:
 	              pt_tree_replace(upb2,pt_simplify_expr(
 					   pt_gen_add(pt_gen_mul(
                                                       pt_gen_int(coeff),
-						      tree_copy(upb1)),
-						      tree_copy(const1))));
+						      tree_copy_with_type(upb1)),
+						      tree_copy_with_type(const1))));
 		      pt_tree_replace(lwb1,pt_simplify_expr(
 					   pt_gen_div(
-					   pt_gen_sub(tree_copy(ivar),
-						      tree_copy(const1)),
+					   pt_gen_sub(tree_copy_with_type(ivar),
+						      tree_copy_with_type(const1)),
 					   pt_gen_int(coeff))));
 		      break;
 	  case TRI_UL:
 	              pt_tree_replace(lwb2,pt_simplify_expr(
 					   pt_gen_add(pt_gen_mul(
                                                       pt_gen_int(coeff),
-						      tree_copy(lwb1)),
-						      tree_copy(const1))));
+						      tree_copy_with_type(lwb1)),
+						      tree_copy_with_type(const1))));
 		      pt_tree_replace(upb1,pt_simplify_expr(
 					   pt_gen_div(
-					   pt_gen_sub(tree_copy(ivar),
-						      tree_copy(const1)),
+					   pt_gen_sub(tree_copy_with_type(ivar),
+						      tree_copy_with_type(const1)),
 					   pt_gen_int(coeff))));
 		      break;
 	  case TRI_UR:
 	              pt_tree_replace(lwb2,pt_simplify_expr(
                                           pt_gen_add(pt_gen_mul(
                                                       pt_gen_int(coeff),
-						      tree_copy(upb1)),
-						      tree_copy(const1))));
+						      tree_copy_with_type(upb1)),
+						      tree_copy_with_type(const1))));
 		      pt_tree_replace(lwb1,pt_simplify_expr(
 					   pt_gen_div(
-					   pt_gen_sub(tree_copy(ivar),
-						      tree_copy(const1)),
+					   pt_gen_sub(tree_copy_with_type(ivar),
+						      tree_copy_with_type(const1)),
 					   pt_gen_int(coeff))));
 		      break;
 	 }
