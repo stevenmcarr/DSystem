@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.16 1997/06/30 18:43:10 carr Exp $ */
+/* $Id: LoopStats.h,v 1.17 2000/04/05 17:28:34 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -114,9 +114,13 @@ typedef struct loopstatstype {
   
 
   int 	  NumberOfTrueDependences;
+  int     NumberOfLoopCarriedTrueDependences;
   int 	  NumberOfAntiDependences;
+  int     NumberOfLoopCarriedAntiDependences;
   int 	  NumberOfOutputDependences;
+  int     NumberOfLoopCarriedOutputDependences;
   int 	  NumberOfInputDependences;
+  int     NumberOfLoopCarriedInputDependences;
  } LoopStatsType;
 
 #endif
