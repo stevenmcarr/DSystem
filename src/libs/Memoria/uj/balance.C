@@ -1,4 +1,4 @@
-/* $Id: balance.C,v 1.5 1994/01/18 14:26:23 carr Exp $ */
+/* $Id: balance.C,v 1.6 1994/07/11 13:43:21 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -132,64 +132,47 @@ float mh_loop_balance(int   mem_coeff[4][3][3],
 		      int   x2)
 
   {
-   float num,denom;
+   float ML,FL;
    int cindex1,cindex2;
 
      cindex1 = get_coeff_index(x1);
      cindex2 = get_coeff_index(x2);
-     num = (float)(mem_coeff[0][cindex1][cindex2] * x1 * x2 + 
+     ML = (float)(mem_coeff[0][cindex1][cindex2] * x1 * x2 + 
 		   mem_coeff[1][cindex1][cindex2] * x1 + 
 		   mem_coeff[2][cindex1][cindex2] * x2 + 
 		   mem_coeff[3][cindex1][cindex2]);
-     denom = (float)(flops * x1 * x2);
-     if (denom == 0)
+     FL = (float)(flops * x1 * x2);
+     if (FL == 0)
        return(0.0);
      else
-       return(num/denom);
+       return(ML/FL);
   }
 
     
-float mh_loop_balance_cache(int       mem_coeff[4][3][3],
-			    CoeffType PrefetchCoeff,
-			    int       flops,
-			    int       LineSize,
-			    int       x1,
-			    int       x2)
+float mh_CacheBalance(int       mem_coeff[4][3][3],
+		      float     PrefetchCoeff[4][3][3],
+		      int       flops,
+		      int       x1,
+		      int       x2,
+		      float       MissCost)
 
   {
-   float P0,PC,PI,denom;
+   float PL,FL,MemBal;
    int cindex1,cindex2;
 
+     MemBal = mh_loop_balance(mem_coeff,flops,x1,x2);
      cindex1 = get_coeff_index(x1);
      cindex2 = get_coeff_index(x2);
 
-     P0 = ((float)PrefetchCoeff.V0[0][cindex1][cindex2] * x1 * x2) / (float)LineSize +
-          (float)PrefetchCoeff.V0[1][cindex1][cindex2] * x2 * ceil_ab(x1,LineSize) +
-	  (float)PrefetchCoeff.V0[2][cindex1][cindex2] * x1 * ceil_ab(x2,LineSize) +
-	  (float)PrefetchCoeff.V0[3][cindex1][cindex2] * x1 * x2;
-     PC = ((float)(PrefetchCoeff.VC[0][0][cindex1][cindex2] * x1 * x2 + 
-		   PrefetchCoeff.VC[0][1][cindex1][cindex2] * x1 + 
-		   PrefetchCoeff.VC[0][2][cindex1][cindex2] * x2 + 
-		   PrefetchCoeff.VC[0][3][cindex1][cindex2]) / LineSize) +
-          (float)(PrefetchCoeff.VC[1][0][cindex1][cindex2] * x2 * ceil_ab(x1,LineSize) +
-		  PrefetchCoeff.VC[1][1][cindex1][cindex2] * ceil_ab(x1,LineSize) +
-		  ceil_ab(PrefetchCoeff.VC[1][3][cindex1][cindex2],LineSize)) +
-          (float)(PrefetchCoeff.VC[2][0][cindex1][cindex2] * x1 * ceil_ab(x2,LineSize) +
-		  PrefetchCoeff.VC[2][2][cindex1][cindex2] * ceil_ab(x2,LineSize) +
-		  ceil_ab(PrefetchCoeff.VC[1][3][cindex1][cindex2],LineSize)) +
-	  (float)(PrefetchCoeff.VC[3][0][cindex1][cindex2] * x1 * x2 + 
-		  PrefetchCoeff.VC[3][1][cindex1][cindex2] * x1 + 
-		  PrefetchCoeff.VC[3][2][cindex1][cindex2] * x2 + 
-		  PrefetchCoeff.VC[3][3][cindex1][cindex2]);
-     PI = ((float)(PrefetchCoeff.VI[0][1][cindex1][cindex2] * x1 +
-		   PrefetchCoeff.VI[0][2][cindex1][cindex2] * x2 +
-		   PrefetchCoeff.VI[0][3][cindex1][cindex2]) / (float)LineSize) +
-          ((float)(PrefetchCoeff.VI[1][2][cindex1][cindex2] * x2))/(float)LineSize +
-          ((float)(PrefetchCoeff.VI[2][1][cindex1][cindex2] * x1))/(float)LineSize +
-          ((float)(PrefetchCoeff.VI[0][1][cindex1][cindex2] * x1 +
-		   PrefetchCoeff.VI[0][2][cindex1][cindex2] * x2 +
-		   PrefetchCoeff.VI[0][3][cindex1][cindex2]));
-     denom = (float)(flops * x1 * x2);
-     return((P0 + PC + PI)/denom);
+     PL = PrefetchCoeff[0][cindex1][cindex2] * x1 * x2 +
+          PrefetchCoeff[1][cindex1][cindex2] * x1 +
+	  PrefetchCoeff[2][cindex1][cindex2] * x2 +
+	  PrefetchCoeff[3][cindex1][cindex2];
+
+     FL = (float)(flops * x1 * x2);
+     if (FL == 0)
+       return(0.0);
+     else
+       return((PL*MissCost)/FL + MemBal);
   }
      

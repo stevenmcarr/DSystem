@@ -1,4 +1,4 @@
-/* $Id: compute_uj.h,v 1.7 1993/06/21 13:48:51 carr Exp $ */
+/* $Id: compute_uj.h,v 1.8 1994/07/11 13:43:37 carr Exp $ */
 
 #ifndef compute_uj_h
 #define compute_uj_h
@@ -45,12 +45,6 @@ typedef struct compinfotype {
   SymDescriptor symtab;
  } comp_info_type;
 
-typedef struct CoeffTypeTag {
-  int V0[4][3][3],
-      VC[4][4][3][3],
-      VI[4][4][3][3];
- } CoeffType;
-
 typedef struct depinfotype {
   int      reg_coeff[4][3][3],
            mem_coeff[4][3][3],
@@ -70,7 +64,7 @@ typedef struct depinfotype {
   PedInfo  ped;
   arena_type *ar;
   model_loop *loop_data;
-  CoeffType  PrefetchCoeff;
+  float    PrefetchCoeff[4][3][3];
  } dep_info_type;
 
 typedef struct reginfotype {

@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.13 1994/01/18 14:26:24 carr Exp $ */
+/* $Id: compute_uj.C,v 1.14 1994/07/11 13:43:29 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -36,7 +36,7 @@
 
 #include <mem_util.h>
 
-Boolean mc_aggressive = false;  /* brought from mc_options.C - tseng 7/93 */
+extern Boolean mc_unroll_cache;
 
 /****************************************************************************/
 /*                                                                          */
@@ -897,7 +897,7 @@ static void summarize_partition_vector(int *dvec,
 		   dist1 = 0;
 	       else if (dist1 < 0)
 	         dist1 = -dist1;
-	       if (get_vec_DIS(dvec,i) > dist1 || first)
+	       if (first || get_vec_DIS(dvec,i) > dist1)
 	         put_vec_DIS(dvec,i,dist1);
 	      }
 	    i = gen_get_dt_LVL(&dg[edge]);
@@ -909,7 +909,7 @@ static void summarize_partition_vector(int *dvec,
 	        dist1 = 0;
 	    else if (dist1 < 0) 
 	      dist1 = -dist1;
-	    if (get_vec_DIS(dvec,i) < dist1 || first)
+	    if (first || get_vec_DIS(dvec,i) < dist1)
 	      put_vec_DIS(dvec,i,dist1);
 	    first = false;
 	   } 
@@ -1186,6 +1186,105 @@ static void update_lcoeff(int coeff[3][3],
 /****************************************************************************/
 
 
+static void update_GGCoeff(float coeff[3][3],
+			   int index1,
+			   int index2,
+			   float val)
+
+  {
+   int i,j;
+   
+     for (i = 2; i >= index1; i--)
+       for (j = 2; j >= index2; j--)
+         coeff[i][j] += val;
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static void update_LLCoeff(float coeff[3][3],
+			   int index1,
+			   int index2,
+			   float val)
+
+  {
+   int i,j;
+   
+     for (i = index1-1; i >= 0; i--)
+       for (j = index2-1; j >= 0; j--)
+         coeff[i][j] += val;
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static void update_LGCoeff(float coeff[3][3],
+			   int index1,
+			   int index2,
+			   float val)
+
+  {
+   int i,j;
+   
+     for (i = index1-1; i >= 0; i--)
+       for (j = 2; j >= index2; j--)
+         coeff[i][j] += val;
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static void update_GLCoeff(float coeff[3][3],
+			   int index1,
+			   int index2,
+			   float val)
+
+  {
+   int i,j;
+   
+     for (i = 2; i >= index1; i--)
+       for (j = index2-1; j >= 0; j--)
+         coeff[i][j] += val;
+  }
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void compute_registers(dep_info_type *dep_info, 
 			      AST_INDEX     node,
 			      UtilList      *nlist) 
@@ -1442,7 +1541,7 @@ static Boolean HasGroupSpatial(AST_INDEX  node,
 			       int        level,
 			       int        max_level)
   {
-   if (CanMoveToInnermost(vector,level,max_level))
+   if (level > 1 && CanMoveToInnermost(vector,level,max_level))
      if (OnlyInInnermostPosition(loop_data,node,level))
        if (vector[level] < words)
          return(true);
@@ -1514,16 +1613,31 @@ SpatialLocalityType GetSpatialType(AST_INDEX  node,
      if (vector != NULL)
        if (HasGroupSpatial(node,vector,dinfo->loop_data,words,level,max_level))
          return(GROUP);
-     if (IsSpatial(node,dinfo->index[3],words))
+     if (IsSpatial(node,dinfo->index[2],words))
        return(SELF);
-     else if (IsSpatial(node,dinfo->index[1],words))
+     else if (IsSpatial(node,dinfo->index[0],words))
        return(SELF1);
-     else if (IsSpatial(node,dinfo->index[2],words))
+     else if (IsSpatial(node,dinfo->index[1],words))
        return(SELF2);
      else
        return(NONE);
   }
 
+static int GetStride(AST_INDEX node,
+		     char      *ivar,
+		     int       step)
+
+  {
+   AST_INDEX sub_list,sub;
+   char      *var;
+   int       coeff;
+   Boolean   lin;
+
+     sub_list = gen_SUBSCRIPT_get_rvalue_LIST(node);
+     sub = list_first(sub_list);
+     pt_get_coeff(sub,ivar,&lin,&coeff);
+     return(coeff*step);
+  }
 
 /****************************************************************************/
 /*                                                                          */
@@ -1540,19 +1654,34 @@ static void UpdatePrefetchCoeffFor_V0(AST_INDEX node,
 				      dep_info_type *dinfo,
 				      int refs)
   {
+   int stride,CacheLineSize;
+   float denom,f_refs;
+
+   node = tree_out(node);
+   f_refs = (float)refs;
+   if (gen_get_converted_type(node) == TYPE_REAL)
+     CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 2;
+   else
+     CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 3;
    switch (GetSpatialType(node,dinfo,NULL,0,0))
      {
       case SELF:
-        update_gcoeff(dinfo->PrefetchCoeff.V0[0],0,0,refs);
+        stride = GetStride(node,dinfo->index[2],dinfo->step[2]);
+        denom = (float)floor_ab(CacheLineSize,stride);
+        update_GGCoeff(dinfo->PrefetchCoeff[0],0,0,f_refs/denom);
         break;
       case SELF1:
-        update_gcoeff(dinfo->PrefetchCoeff.V0[1],0,0,refs);
+        stride = GetStride(node,dinfo->index[0],dinfo->step[0]);
+        denom = (float)floor_ab(CacheLineSize,stride);
+        update_GGCoeff(dinfo->PrefetchCoeff[1],0,0,f_refs/denom);
         break;
       case SELF2:
-        update_gcoeff(dinfo->PrefetchCoeff.V0[2],0,0,refs);
+        stride = GetStride(node,dinfo->index[1],dinfo->step[1]);
+        denom = (float)floor_ab(CacheLineSize,stride);
+        update_GGCoeff(dinfo->PrefetchCoeff[2],0,0,f_refs/denom);
         break;
       case S_NONE:
-        update_gcoeff(dinfo->PrefetchCoeff.V0[3],0,0,refs);
+        update_GGCoeff(dinfo->PrefetchCoeff[3],0,0,f_refs);
         break;
       default:
         break;
@@ -1578,36 +1707,100 @@ static void UpdatePrefetchCoeffFor_VC(AST_INDEX node,
 				      int max_level,
 				      int refs)
   {
-   int dist1,dist2,distn,cindex1,cindex2,dvect[MAXLOOP];
+   int dist1,dist2,distn,cindex1,cindex2;
+   int stride;
+   float denom,f_refs;
+   int CacheLineSize;
 
-     get_distances(dinfo,dvect,&dist1,&dist2,&distn);
+     node = tree_out(node);
+     get_distances(dinfo,vector,&dist1,&dist2,&distn);
      cindex1 = get_coeff_index(dist1);
      cindex2 = get_coeff_index(dist2);
+     if (gen_get_converted_type(node) == TYPE_REAL)
+       CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 2;
+     else
+       CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 3;
+     f_refs = (float)refs;
      switch (GetSpatialType(node,dinfo,vector,level,max_level))
        {
         case SELF:
-	  update_lcoeff(dinfo->PrefetchCoeff.VC[0][0],cindex1,cindex2,refs);
-	  update_gcoeff(dinfo->PrefetchCoeff.VC[0][1],cindex1,cindex2,dist2 * refs);
-	  update_gcoeff(dinfo->PrefetchCoeff.VC[0][2],cindex1,cindex2,dist1 * refs);
-	  update_gcoeff(dinfo->PrefetchCoeff.VC[0][3],cindex1,cindex2,
-			-(dist1 * dist2 * refs));
+          stride = GetStride(node,dinfo->index[2],dinfo->step[2]);
+          denom=(float)floor_ab(CacheLineSize,stride);
+	  update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
+			 f_refs/denom);
+	  update_LGCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
+			 f_refs/denom);
+	  update_GLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
+			 f_refs/denom);
+	  update_GGCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
+			 (dist2 * f_refs)/denom);
+	  update_GGCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
+			 (dist1 * f_refs)/denom);
+	  update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
+			 -(dist1 * dist2 * f_refs)/denom);
           break;
         case SELF1:
-	  update_lcoeff(dinfo->PrefetchCoeff.VC[1][0],cindex1,cindex2,refs);
-	  update_lcoeff(dinfo->PrefetchCoeff.VC[1][1],cindex1,cindex2,dist2*refs);
-	  update_gcoeff(dinfo->PrefetchCoeff.VC[1][3],cindex1,cindex2,dist1*dist2*refs);
-          break;
+	  stride = GetStride(node,dinfo->index[0],dinfo->step[0]);
+          denom=(float)floor_ab(CacheLineSize,stride);
+	  if (distn == 0)
+	    {
+	     update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,f_refs);
+	     update_LGCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
+			    (dist1-CacheLineSize+1)*f_refs);
+	     update_GLCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
+			    dist2*f_refs);
+	     update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
+			    (dist2*(dist1-CacheLineSize+1))*f_refs);
+	    }
+	  else
+	    {
+	     update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,f_refs);
+	     update_LGCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
+			    dist1*f_refs);
+	     update_GLCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
+			    dist2*f_refs);
+	     update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
+			    dist2*dist1*f_refs);
+	    }
+	  break;
         case SELF2:
-	  update_lcoeff(dinfo->PrefetchCoeff.VC[2][0],cindex1,cindex2,refs);
-	  update_lcoeff(dinfo->PrefetchCoeff.VC[2][2],cindex1,cindex2,dist1 * refs);
-	  update_gcoeff(dinfo->PrefetchCoeff.VC[2][3],cindex1,cindex2,dist1*dist2*refs);
+          stride = GetStride(node,dinfo->index[1],dinfo->step[1]);
+          denom=(float)floor_ab(CacheLineSize,stride);
+	  if (distn == 0)
+	    {
+	     update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,f_refs);
+	     update_LGCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
+			    (dist2-CacheLineSize+1)*f_refs);
+	     update_GLCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
+			    dist1*f_refs);
+	     update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
+			    (dist1*(dist2-CacheLineSize+1))*f_refs);
+	    }
+	  else
+	    {
+	     update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,f_refs);
+	     update_LGCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
+			    dist2*f_refs);
+	     update_GLCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
+			    dist1*f_refs);
+	     update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
+			    dist1*dist2*f_refs);
+	    }
           break;
         case S_NONE:
-	  update_lcoeff(dinfo->PrefetchCoeff.VC[3][0],cindex1,cindex2,1);
-	  update_gcoeff(dinfo->PrefetchCoeff.VC[3][1],cindex1,cindex2,dist2 * refs);
-	  update_gcoeff(dinfo->PrefetchCoeff.VC[3][2],cindex1,cindex2,dist1 * refs);
-	  update_gcoeff(dinfo->PrefetchCoeff.VC[3][3],cindex1,cindex2,
-			-(dist1 * dist2 * refs));
+	  update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
+			 f_refs);
+	  update_LGCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
+			 f_refs);
+	  update_GLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
+			 f_refs);
+	  update_GGCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
+			 (dist2 * f_refs));
+	  update_GGCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
+			 (dist1 * f_refs));
+	  update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
+			 -(dist1 * dist2 * f_refs));
+          break;
           break;
         default:
           break;
@@ -1634,49 +1827,51 @@ static void UpdatePrefetchCoeffFor_VI(AST_INDEX node,
 				      int refs)
   {
    subscript_info_type *sptr;
-   int dist1,dist2,distn,cindex1,cindex2,dvect[MAXLOOP];
+   int dist1,dist2,distn,cindex1,cindex2;
+   int stride,CacheLineSize;
+   float denom,f_refs;
 
-     get_distances(dinfo,dvect,&dist1,&dist2,&distn);
+     node = tree_out(node);
+     if (gen_get_converted_type(node) == TYPE_REAL)
+       CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 2;
+     else
+       CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 3;
+     f_refs = (float)refs;
+     get_distances(dinfo,vector,&dist1,&dist2,&distn);
      sptr = get_subscript_ptr(gen_SUBSCRIPT_get_name(node));
      switch (GetSpatialType(node,dinfo,vector,level,max_level))
        {
 	case SELF:
+          stride = GetStride(node,dinfo->index[2],dinfo->step[2]);
+          denom=(float)floor_ab(CacheLineSize,stride);
 	  if (sptr->is_scalar[1])
 	    if (sptr->is_scalar[0])
-	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
-	        update_gcoeff(dinfo->PrefetchCoeff.VI[0][3],0,0,refs);
-	      else;
+	      update_GGCoeff(dinfo->PrefetchCoeff[3],0,0,f_refs/denom);
 	    else
-	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
-	        update_gcoeff(dinfo->PrefetchCoeff.VI[0][1],0,0,refs);
-	      else;
+	      update_GGCoeff(dinfo->PrefetchCoeff[1],0,0,f_refs/denom);
 	  else
 	    if (sptr->is_scalar[0])
-	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
-	        update_gcoeff(dinfo->PrefetchCoeff.VI[0][2],0,0,refs);
+	      update_GGCoeff(dinfo->PrefetchCoeff[2],0,0,f_refs/denom);
           break;
         case SELF1:
-	   if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
-	     update_gcoeff(dinfo->PrefetchCoeff.VI[1][2],0,0,refs);
+          stride = GetStride(node,dinfo->index[0],dinfo->step[0]);
+          denom=(float)floor_ab(CacheLineSize,stride);
+	  update_GGCoeff(dinfo->PrefetchCoeff[1],0,0,f_refs/denom);
           break;
         case SELF2:
-	   if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
-	     update_gcoeff(dinfo->PrefetchCoeff.VI[2][1],0,0,refs);
+          stride = GetStride(node,dinfo->index[1],dinfo->step[1]);
+          denom=(float)floor_ab(CacheLineSize,stride);
+	  update_GGCoeff(dinfo->PrefetchCoeff[2],0,0,f_refs/denom);
           break;
         case S_NONE:
 	  if (sptr->is_scalar[1])
 	    if (sptr->is_scalar[0])
-	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
-	        update_gcoeff(dinfo->PrefetchCoeff.VI[3][3],0,0,refs);
-	      else;
+	      update_GGCoeff(dinfo->PrefetchCoeff[3],0,0,f_refs);
 	    else
-	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
-	        update_gcoeff(dinfo->PrefetchCoeff.VI[3][1],0,0,refs);
-	      else;
+	      update_GGCoeff(dinfo->PrefetchCoeff[1],0,0,f_refs);
 	  else
 	    if (sptr->is_scalar[0])
-	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
-	        update_gcoeff(dinfo->PrefetchCoeff.VI[3][2],0,0,refs);
+	      update_GGCoeff(dinfo->PrefetchCoeff[2],0,0,f_refs);
           break;
         default:
           break;
@@ -1881,7 +2076,7 @@ static void compute_mem_addr_coeffs(dep_info_type *dep_info,
 	if (get_vec_DIS(memory_vec,1) == MAXINT)/* if no incoming dependence */
 	  {
 	   update_gcoeff(dep_info->mem_coeff[0],0,0,refs);
-	   if (mc_aggressive)
+	   if (mc_unroll_cache)
 	     UpdatePrefetchCoeffFor_V0(node,dep_info,refs);
 	   if (get_vec_DIS(address_vec,1) == MAXINT) 
                      /* if no incoming dependence */
@@ -1897,12 +2092,12 @@ static void compute_mem_addr_coeffs(dep_info_type *dep_info,
 	       {
 		update_coeff_for_invariants(node,sptr,dep_info,memory_vec,
 					    refs);
-		if (mc_aggressive)
+		if (mc_unroll_cache)
 		  UpdatePrefetchCoeffFor_VI(node,memory_vec,dep_info,level,max_level,refs);
 	       }
 	     else
 	       {
-		if (mc_aggressive)
+		if (mc_unroll_cache)
 		  UpdatePrefetchCoeffFor_VC(node,memory_vec,dep_info,level,max_level,refs);
 		update_mem_coeff_with_vector(node,dep_info,memory_vec,refs);
 		update_addr_coeff_with_vector(node,dep_info,address_vec);
@@ -2198,7 +2393,7 @@ static void compute_two_loops(model_loop    *loop_data,
 
   {
    int   x1,x2,max_x2,min_x1,temp,fp_regs,a_regs,mach_fp,mach_a;
-   float min_obj,new_obj,abs_obj;
+   float min_obj,new_obj,abs_obj,MissCost;
    
      if ((loop_data[unroll_loops[0]].count == 0 &&
 	  dep_info->scalar_coeff[2] == 0 && dep_info->x2 == 1 && 
@@ -2218,6 +2413,8 @@ static void compute_two_loops(model_loop    *loop_data,
        {
 	mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
 	mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped))->int_regs;
+	MissCost=(float)((config_type *)PED_MH_CONFIG(dep_info->ped))->miss_cycles /
+	         (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->hit_cycles;
 	fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,
 					  dep_info->scalar_coeff,1,1) + 
 					  dep_info->scalar_regs;
@@ -2229,9 +2426,15 @@ static void compute_two_loops(model_loop    *loop_data,
 	   min_obj = (float)MAXINT;
 	   while(min_obj > 0.01 && x1 >= 1 && x2 <= mach_fp)
 	     {
-	      new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
-					x1,x2)
-	               - ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
+	      if (mc_unroll_cache)
+	        new_obj = mh_CacheBalance(dep_info->mem_coeff,
+					  dep_info->PrefetchCoeff,
+					  dep_info->flops,x1,x2,MissCost)
+	                  - ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
+	      else
+	        new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
+					  x1,x2)
+	                  - ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
 	      if (new_obj < 0.0)
 	        abs_obj = -new_obj;
 	      else
@@ -2268,7 +2471,13 @@ static void compute_two_loops(model_loop    *loop_data,
 
       if (dep_info->x1 > 1)
         {
-	 new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
+	 if (mc_unroll_cache)
+	   new_obj = mh_CacheBalance(dep_info->mem_coeff,
+				     dep_info->PrefetchCoeff,
+				     dep_info->flops,1,x2,MissCost)
+	               - ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
+	 else
+	   new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
 				   1,x2)
 	               - ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
 	 if (new_obj < 0.0)
@@ -2367,7 +2576,7 @@ static void compute_one_loop(model_loop    *loop_data,
 			     float           rhoL_lp)
 
   {
-   float min_obj,new_obj,abs_obj;
+   float min_obj,new_obj,abs_obj,MissCost;
    int   x,min_x,max_x,fp_regs,a_regs,mach_fp,mach_a;
 
      if ((loop_data[unroll_loop].count == 0  &&
@@ -2384,6 +2593,8 @@ static void compute_one_loop(model_loop    *loop_data,
        {
 	mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
 	mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped))->int_regs;
+	MissCost=(float)((config_type *)PED_MH_CONFIG(dep_info->ped))->miss_cycles /
+	         (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->hit_cycles;
 	fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,
 					  dep_info->scalar_coeff,1,1) + 
 					  dep_info->scalar_regs;
@@ -2396,8 +2607,14 @@ static void compute_one_loop(model_loop    *loop_data,
 	   while(min_x <= max_x && min_obj > 0.01)
 	     {
 	      x = (max_x + min_x) >> 1;
-	      new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
-					x,1) -
+	      if (NOT(mc_unroll_cache))
+	        new_obj = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,
+					  x,1) -
+			 ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
+	      else
+	        new_obj = mh_CacheBalance(dep_info->mem_coeff,
+					  dep_info->PrefetchCoeff,
+					  dep_info->flops,x,1,MissCost) -
 			 ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
 	      if (new_obj < 0.0)
 	        abs_obj = -new_obj;
@@ -2449,167 +2666,6 @@ static void compute_one_loop(model_loop    *loop_data,
        }
   }   
   
-
-/****************************************************************************/
-/*                                                                          */
-/*    Function:
-/*                                                                          */
-/*    Input:
-/*                                                                          */
-/*    Description:
-/*                                                                          */
-/****************************************************************************/
-
-
-static void compute_two_cache(model_loop    *loop_data,
-			      int           *unroll_vector,
-			      int           *unroll_loops,
-			      dep_info_type *dep_info,
-			      float         rhoL_lp)
-
-  {
-   int   x1,x2,max_x2,min_x1,temp,fp_regs,a_regs,mach_fp,mach_a;
-   float min_obj,new_obj,abs_obj;
-   
-     mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
-     mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped))->int_regs;
-     min_obj = (float)MAXINT;
-     for (x1 = 1; min_obj > 0.01 && x1 <= mach_fp; x1++)
-       for (x2 = 1; min_obj > 0.01 && x2 <= mach_fp; x2++)
-	 {
-	  new_obj = mh_loop_balance_cache(dep_info->mem_coeff,dep_info->PrefetchCoeff,
-				  ((config_type*)PED_MH_CONFIG(dep_info->ped))->line,
-					  dep_info->flops,x1,x2)
-	               - ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
-	  if (new_obj < 0.0)
-	    abs_obj = -new_obj;
-	  else
-	    abs_obj = new_obj;
-	  fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,dep_info->scalar_coeff,
-					    x1,x2) + dep_info->scalar_regs;
-	  a_regs = mh_addr_register_pressure(dep_info->addr_coeff,x1,x2);
-	  if (abs_obj < min_obj && fp_regs <= mach_fp && a_regs <= mach_a)
-	    {
-	     min_obj = abs_obj;
-	     dep_info->x1 = x1;
-	     dep_info->x2 = x2;
-	    }
-	  if (fp_regs > mach_fp || a_regs > mach_a)
-	    x2 = mach_fp + 1;
-	 }
-
-     if (dep_info->x1 <= loop_data[unroll_loops[0]].max)
-       if (dep_info->x2 <= loop_data[unroll_loops[1]].max)
-	 {
-	  if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
-	      dep_info->flops > 0)
-	    {
-	     dep_info->x1 = mh_increase_unroll(loop_data[unroll_loops[0]].max,
-					       dep_info->x2 * dep_info->flops,
-					       rhoL_lp);
-	     if (rhoL_lp > dep_info->x1 * dep_info->x2 * dep_info->flops)
-	       dep_info->x2 =mh_increase_unroll(loop_data[unroll_loops[1]].max,
-						dep_info->x1 * dep_info->flops,
-						rhoL_lp);
-	    }
-	  unroll_vector[loop_data[unroll_loops[0]].level-1] = dep_info->x1 - 1;
-	  unroll_vector[loop_data[unroll_loops[1]].level-1] = dep_info->x2 - 1;
-	 }
-       else
-	 {
-	  unroll_vector[loop_data[unroll_loops[1]].level-1] = 
-                          loop_data[unroll_loops[1]].max;
-	  dep_info->x2 = unroll_vector[loop_data[unroll_loops[1]].level-1] + 1;
-	  if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
-	      dep_info->flops > 0)
-	    dep_info->x1 = mh_increase_unroll(loop_data[unroll_loops[0]].max,
-					      dep_info->x2 * dep_info->flops,
-					      rhoL_lp);
-	  unroll_vector[loop_data[unroll_loops[0]].level-1] = dep_info->x1 - 1;
-	 }
-     else 
-       if (dep_info->x2 <= loop_data[unroll_loops[1]].max)
-	 {
-	  unroll_vector[loop_data[unroll_loops[0]].level-1] = 
-	             loop_data[unroll_loops[0]].max;
-	  dep_info->x1 = unroll_vector[loop_data[unroll_loops[0]].level-1] + 1;
-	  if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
-	      dep_info->flops > 0)
-	    dep_info->x2 = mh_increase_unroll(loop_data[unroll_loops[1]].max,
-					      dep_info->x1 * dep_info->flops,
-					      rhoL_lp);
-	  unroll_vector[loop_data[unroll_loops[1]].level-1] = dep_info->x2 - 1;
-	 }
-       else
-	 {
-	  unroll_vector[loop_data[unroll_loops[0]].level-1] = 
-	                loop_data[unroll_loops[0]].max;
-	  unroll_vector[loop_data[unroll_loops[1]].level-1] = 
-	                loop_data[unroll_loops[1]].max;
-	 }
-  }
-  
-
-/****************************************************************************/
-/*                                                                          */
-/*    Function:
-/*                                                                          */
-/*    Input:
-/*                                                                          */
-/*    Description:
-/*                                                                          */
-/****************************************************************************/
-
-
-static void compute_one_cache(model_loop    *loop_data,
-			      int           *unroll_vector,
-			      int           unroll_loop,
-			      dep_info_type *dep_info,
-			      float           rhoL_lp)
-
-  {
-   float min_obj,new_obj,abs_obj;
-   int   x,min_x,max_x,fp_regs,a_regs,mach_fp,mach_a;
-
-     mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
-     mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped))->int_regs;
-     min_obj = (float)MAXINT;
-     for (x = 1; x <= mach_fp && min_obj > 0.01; x++)
-       {
-	new_obj = mh_loop_balance_cache(dep_info->mem_coeff,dep_info->PrefetchCoeff,
-				((config_type*)PED_MH_CONFIG(dep_info->ped))->line,
-					dep_info->flops,x,1) -
-			 ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
-	if (new_obj < 0.0)
-	  abs_obj = -new_obj;
-	else
-	  abs_obj = new_obj;
-	fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,dep_info->scalar_coeff,x,
-					  1) + dep_info->scalar_regs;
-	a_regs = mh_addr_register_pressure(dep_info->addr_coeff,x,1);
-	if (abs_obj < min_obj && a_regs <= mach_a && fp_regs <= mach_fp)
-	  {
-	   min_obj = abs_obj;
-	   dep_info->x1 = x;
-	  }
-	if (a_regs > mach_a || fp_regs > mach_fp)
-	  x = mach_fp + 1;
-       }
-     if (dep_info->x1 <= loop_data[unroll_loop].max)
-       {
-	if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
-	    dep_info->flops > 0)
-	  dep_info->x1 = mh_increase_unroll(loop_data[unroll_loop].max,
-					    dep_info->x2 * dep_info->flops,
-					    rhoL_lp);
-	unroll_vector[loop_data[unroll_loop].level-1]= dep_info->x1 - 1;
-       }
-     else
-       unroll_vector[loop_data[unroll_loop].level-1] = 
-                  loop_data[unroll_loop].max;
-  }   
-  
-
 /****************************************************************************/
 /*                                                                          */
 /*    Function:
@@ -2694,6 +2750,7 @@ static void do_computation(model_loop    *loop_data,
 	     dep_info.reg_coeff[i][j][k] = 0;
 	     dep_info.mem_coeff[i][j][k] = 0;
 	     dep_info.addr_coeff[i][j][k] = 0;
+	     dep_info.PrefetchCoeff[i][j][k] = 0.0;
 	    }
 	if (i < 3)
 	  dep_info.scalar_coeff[i] = 0;
@@ -2760,17 +2817,9 @@ static void do_computation(model_loop    *loop_data,
      else
        {
 	if (count == 2)
-	 if (mc_aggressive)
-	  compute_two_cache(loop_data,unroll_vector,unroll_loops,&dep_info,
-			    rhoL_lp);
-	 else
 	  compute_two_loops(loop_data,unroll_vector,unroll_loops,loop,&dep_info,
 			    rhoL_lp);
 	else if (count == 1)
-	 if (mc_aggressive)
-	  compute_one_cache(loop_data,unroll_vector,unroll_loops[0],&dep_info,
-			    rhoL_lp);
-	 else
 	  compute_one_loop(loop_data,unroll_vector,unroll_loops[0],loop,&dep_info,
 			   rhoL_lp);
 	else if ((regs = dep_info.reg_coeff[0][2][2] + 

@@ -1,4 +1,4 @@
-/* $Id: do_dist.C,v 1.4 1992/12/11 11:23:20 carr Exp $ */
+/* $Id: do_dist.C,v 1.5 1994/07/11 13:43:32 carr Exp $ */
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -62,7 +62,9 @@ static void distribute_loop(model_loop    *loop_data,
 	  }
 	i++;
        }
-     tree_free(gen_DO_get_stmt_LIST(loop_data[loop].node));
+     temp = gen_DO_get_stmt_LIST(loop_data[loop].node);
+     gen_DO_put_stmt_LIST(loop_data[loop].node,AST_NIL);
+     tree_free(temp);
      do_template = tree_copy_with_type(loop_data[loop].node);
      prev = loop;
      prev_do = loop_data[loop].node;
