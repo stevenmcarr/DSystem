@@ -96,8 +96,11 @@ class RefGroupMemberIter : public IntegerListIter {
 
    AST_INDEX operator() ()
     {
-     return (AST_INDEX) 
-            (IntegerListIter::operator()())->GetValue();
+     IntegerListEntry *Entry = IntegerListIter::operator()();
+     if (Entry != NULL)
+       return (AST_INDEX) Entry->GetValue();
+     else
+       return AST_NIL;
     } 
 
 };
@@ -109,7 +112,7 @@ class RefGroupSet : public IntegerList, RefGroupCore {
 
   UniformlyGeneratedSets *UGS;
   Boolean UseUniformlyGeneratedSets;
-
+  
   void PartitionNames(AST_INDEX node, RefInfoType& RefInfo);
   void DoPartition(AST_INDEX name,RefGroupMember *RG,DG_Edge *dg,PedInfo ped,
 	   int level,int MinLevel,Boolean VisitedMark,model_loop *loop_data);
@@ -138,8 +141,11 @@ class RefGroupSetIter : public IntegerListIter {
 
    RefGroupMember *operator() ()
     {
-     return (RefGroupMember *) 
-            (IntegerListIter::operator()())->GetValue();
+     IntegerListEntry *Entry = IntegerListIter::operator()();
+     if (Entry != NULL)
+       return (RefGroupMember *) Entry->GetValue();
+     else
+       return NULL;
     } 
 
 };
