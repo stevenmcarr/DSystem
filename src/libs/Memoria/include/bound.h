@@ -1,4 +1,4 @@
-/* $Id: bound.h,v 1.4 1992/12/11 11:19:43 carr Exp $ */
+/* $Id: bound.h,v 1.5 1995/07/07 11:38:51 carr Exp $ */
 
 #ifndef bound_h
 #define bound_h
@@ -11,5 +11,7 @@
 #endif
 
 EXTERN(void, ut_update_bounds,(AST_INDEX loop,AST_INDEX copy,
+			       int val));
+EXTERN(void, ut_update_bounds_post,(AST_INDEX loop,AST_INDEX copy,
 			       int val));
 #endif
