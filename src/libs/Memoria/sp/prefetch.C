@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.15 1998/02/24 16:23:56 carr Exp $ */
+/* $Id: prefetch.C,v 1.16 1998/03/30 16:30:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -158,8 +158,6 @@ static int CheckLocality(AST_INDEX          node,
 					     locality_info->loop,
 					     locality_info->ped,
 					     locality_info->UGS);
-        printf("here w/locality %d!\n",sptr->Locality);
-        return(WALK_SKIP_CHILDREN);
 	return(WALK_SKIP_CHILDREN);
        }
      return(WALK_CONTINUE);
