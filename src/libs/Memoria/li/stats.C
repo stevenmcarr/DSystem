@@ -1,4 +1,4 @@
-/* $Id: stats.C,v 1.6 1994/04/13 14:20:48 carr Exp $ */
+/* $Id: stats.C,v 1.7 1994/05/31 15:01:23 carr Exp $ */
 
 /****************************************************************/
 /*                                                              */
@@ -244,9 +244,14 @@ static void DumpLoopStats(model_loop *loop_data,
 
      fprintf(logfile,"Statistics for Loop at Level %d\n",
 	     loop_data[loop].level);
-     fprintf(logfile,"Induction variable %s\n\n",
+     fprintf(logfile,"Induction variable %s\n",
 	     gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
 			 loop_data[loop].node))));
+     if (loop_data[loop].reversed)
+       {
+	fprintf(logfile,"Loop was reversed\n\n");
+	LoopStats->Reversed++;
+       }
      i = 0;
      for (GroupNode = UTIL_HEAD(GroupList);
 	  GroupNode != NULLNODE;

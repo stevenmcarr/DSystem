@@ -1,4 +1,4 @@
-/* $Id: interchange.C,v 1.11 1994/04/13 14:20:16 carr Exp $ */
+/* $Id: interchange.C,v 1.12 1994/05/31 15:01:18 carr Exp $ */
 
 /****************************************************************/
 /*                                                              */
@@ -207,7 +207,7 @@ static model_loop *PrepareLoopForInterchange(PedInfo       ped,
 
              /* remove dependence edges not wanted */
 
-     walk_statements(root,level,RemoveEdges,NOFUNC,(Generic)ped);
+     walk_statements(root,level,(WK_STMT_CLBACK)RemoveEdges,NOFUNC,(Generic)ped);
 
      loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 					 pre_info.loop_num*sizeof(model_loop));
@@ -338,7 +338,6 @@ static void add_edge(PedInfo      ped,
 
   {
    EDGE_INDEX new_edge;
-   int        j;
    int        dir;
    int        source,sink,temp,
               src_stmt,sink_stmt;
@@ -801,7 +800,7 @@ static int update_vectors(AST_INDEX     node,
 
   {
    EDGE_INDEX edge,next_edge;
-   int        vector,i,l;
+   int        vector,i;
    DG_Edge    *dg;
    int        temp_vec[MAXLOOP],dist,nlevel;
    AST_INDEX  name;
@@ -828,8 +827,18 @@ static int update_vectors(AST_INDEX     node,
 	       /* rearrange the edge's direction vector */
 
 	    for (i = 0; i < upd_info->num_loops;i++)
-	      gen_put_dt_DIS(&dg[edge],i+1,temp_vec[upd_info->
-			     loop_data[upd_info->heap[i].index].level-1]);
+	      if (upd_info->loop_data[upd_info->heap[i].index].reversed)
+		{
+		 dist = temp_vec[upd_info->loop_data[upd_info->heap[i].index].level
+				 -1];
+		 if (dist < DDATA_BASE)
+		   gen_put_dt_DIS(&dg[edge],i+1,new_dir(dist));
+		 else
+		   gen_put_dt_DIS(&dg[edge],i+1,-dist);
+		}
+	      else
+	         gen_put_dt_DIS(&dg[edge],i+1,temp_vec[upd_info->
+			        loop_data[upd_info->heap[i].index].level-1]);
 
 	       /* get the new nesting level */
 
@@ -847,12 +856,12 @@ static int update_vectors(AST_INDEX     node,
 		  if (dist < DDATA_BASE)
 		    gen_put_dt_DIS(&dg[edge],nlevel,new_dir(dist));
 		  else
-		    gen_put_dt_DIS(&dg[edge],i,-dist);
+		    gen_put_dt_DIS(&dg[edge],nlevel,-dist);
 		  for (i = nlevel+1; i <= upd_info->num_loops; i++)
 		    {
 		     dist = gen_get_dt_DIS(&dg[edge],i);
 		     if (dist < DDATA_BASE)
-		       gen_put_dt_DIS(&dg[edge],nlevel,new_dir(dist));
+		       gen_put_dt_DIS(&dg[edge],i,new_dir(dist));
 		     else
 		       gen_put_dt_DIS(&dg[edge],i,-dist);
 		    }

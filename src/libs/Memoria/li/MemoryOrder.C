@@ -18,6 +18,7 @@
 #include <pt_util.h>
 #include <mh_config.h>
 #include <MemoryOrder.h>
+#include <Reversal.h>
 
 #ifndef header_h
 #include <header.h>
@@ -910,18 +911,18 @@ static void ComputeLoopOrder(model_loop *loop_data,
 
 /****************************************************************/
 /*                                                              */
-/*   Function:   GeneratePreventingEdgeList                     */
+/*   Function:   GenerateEdgeList                               */
 /*                                                              */
 /*   Input:      node - ast node                                */
 /*               EdgeInfo - dependence graph, edge list, etc.   */
 /*                                                              */
-/*   Description: Search for dependence edges that could        */
-/*                memory order and append them to a list.       */
+/*   Description: Make a list of all carried true, anti and     */
+/*   output edges                                               */
 /*                                                              */
 /****************************************************************/
 
-static int GeneratePreventingEdgeList(AST_INDEX node,
-				      EdgeInfoType *EdgeInfo)
+static int GenerateEdgeList(AST_INDEX node,
+			    EdgeInfoType *EdgeInfo)
 
   {
    AST_INDEX name;
@@ -939,42 +940,10 @@ static int GeneratePreventingEdgeList(AST_INDEX node,
 	     edge != END_OF_LIST;
 	     edge = dg_next_src_ref( PED_DG(EdgeInfo->ped),edge))
 	  {
-	   if (dg[edge].type == dg_input)  /* inputs can change direction */
+	   if (dg[edge].type == dg_input || /* inputs can change direction */
+	       dg[edge].level == LOOP_INDEPENDENT)
 	     continue;
-	   less = false;
-	   i = dg[edge].level + 1;
-
-	            /* found (<), now look for inner (>) */
-
-	   while(i <= gen_get_dt_LVL(&dg[edge]) && !less)
-	     {
-	      dist = gen_get_dt_DIS(&dg[edge],i);
-	      switch(dist) {
-	        case DDATA_NE:
-		case DDATA_GE:
-		case DDATA_GT:  less = true;
-			        break;
-
-		case DDATA_LT:
-	        case DDATA_LE:  break;
-
-	        case DDATA_ANY: if (dg[edge].consistent == inconsistent || 
-				    (dg[edge].consistent == consistent_MIV &&
-				     dg[edge].src != dg[edge].sink) ||
-				    dg[edge].symbolic)  /*rule out invariants*/
-	                          less = true;
-	                        break;
-
-	        case DDATA_ERROR: break;
-
-	        default:
-	          if (dist < 0)
-	            less = true;
-	       }
-	      i++;
-	      if (less)
-	        util_append(EdgeInfo->EdgeList,util_node_alloc(edge,NULL));
-	     }
+	   util_append(EdgeInfo->EdgeList,util_node_alloc(edge,NULL));
 	  }
        }
      return(WALK_CONTINUE);
@@ -1144,7 +1113,7 @@ static void ComputeLegalOrder(model_loop *loop_data,
 			      arena_type *ar)
   {
    heap_type *new_heap;
-   Boolean loop_not_chosen;
+   Boolean loop_not_chosen, Legal;
    int i,j;
    Set LoopChosen;
 
@@ -1200,20 +1169,27 @@ static void ComputeLegalOrder(model_loop *loop_data,
 	         /* check if placement at level "i" does not change the
 		    direction of a dependence */
 
-	     else if (LegalPosition(EdgeList,ped,i+1,
-				    loop_data[new_heap[j].index].level))
-		 {
-		  heap[i] =  new_heap[j];
-		  loop_not_chosen = false;
-		  ut_add_number(LoopChosen,j);
-		  CleanEdgeList(EdgeList,ped,
-				loop_data[new_heap[j].index].level);
-		 }
-	     else
+	     else 
 	       {
-		loop_data[loop].interchange = false;
-		ut_add_number(loop_data[loop].PreventLvl[i],
-			      loop_data[new_heap[j].index].level);
+		Legal = LegalPosition(EdgeList,ped,i+1,
+				      loop_data[new_heap[j].index].level);
+		if (NOT(Legal))
+		  Legal = li_LoopReversal(loop_data,new_heap[j].index,EdgeList,
+					  ped);
+		if (Legal)
+		  {
+		   heap[i] =  new_heap[j];
+		   loop_not_chosen = false;
+		   ut_add_number(LoopChosen,j);
+		   CleanEdgeList(EdgeList,ped,
+				 loop_data[new_heap[j].index].level);
+		  }
+		else
+		  {
+		   loop_data[loop].interchange = false;
+		   ut_add_number(loop_data[loop].PreventLvl[i],
+				 loop_data[new_heap[j].index].level);
+		  }
 	       }
 	   j++;
 	  }
@@ -1330,29 +1306,15 @@ static void CheckInterchange(model_loop    *loop_data,
 	    /* build list of edges that can prevent memory order */
 
 	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-			GeneratePreventingEdgeList,NOFUNC,(Generic)&EdgeInfo);
-	if (outermost_lvl > 1 || NOT(util_list_empty(EdgeInfo.EdgeList)))
-	  {
-
-	      /* if there are preventing edges or if distribution or loop
-		 shape, etc. prevents moving certain loops, compute the 
-		 closest legal permutation. */
-
-	   for (i = 0; i < num_loops; i++)
-	     loop_data[loop].PreventLvl[i] = ut_create_set(ar,LOOP_ARENA,
+			GenerateEdgeList,NOFUNC,(Generic)&EdgeInfo);
+	for (i = 0; i < num_loops; i++)
+	  loop_data[loop].PreventLvl[i] = ut_create_set(ar,LOOP_ARENA,
 							   num_loops);
 
 	       /* compute NearbyPermutation */
 
-	   ComputeLegalOrder(loop_data,loop,num_loops,ped,heap,outermost_lvl,
-			     EdgeInfo.EdgeList,ar);
-	  }
-	else
-	  for (i = 0; i < num_loops; i++)
-	    {
-	     loop_data[loop].FinalOrder[i] = loop_data[heap[i].index].level; 
-	     loop_data[loop].MemoryOrder[i] = loop_data[heap[i].index].level; 
-	    }
+	ComputeLegalOrder(loop_data,loop,num_loops,ped,heap,outermost_lvl,
+			  EdgeInfo.EdgeList,ar);
        }
      else
        for (i = 0; i < num_loops; i++)
