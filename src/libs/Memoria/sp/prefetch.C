@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.18 1998/06/02 13:55:38 carr Exp $ */
+/* $Id: prefetch.C,v 1.19 1998/07/07 19:43:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -460,8 +460,8 @@ static void AllocatePrefetches(PrefetchListIterator WordIterator,
     {
       if (RecurrenceOnly)
 	{
-	  AST_INDEX stmt = ut_get_stmt(WordIterator.current()->GetValue());
-	  OnRecurrence = RData.IsReferenceOnRecurrence(stmt);
+	  OnRecurrence = 
+	    RData.IsReferenceOnRecurrence(WordIterator.current()->GetValue());
  	  if (OnRecurrence)
  	    {
  	      cout << "**Node is on Recurrence**" << endl;
@@ -494,8 +494,8 @@ static void AllocatePrefetches(PrefetchListIterator WordIterator,
     {
       if (RecurrenceOnly)
 	{
-	  AST_INDEX stmt = ut_get_stmt(LineIterator.current()->GetValue());
-	  OnRecurrence = RData.IsReferenceOnRecurrence(stmt);
+	  OnRecurrence = 
+	    RData.IsReferenceOnRecurrence(LineIterator.current()->GetValue());
 	}
       else
 	OnRecurrence = true;
