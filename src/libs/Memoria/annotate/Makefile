@@ -1,8 +1,9 @@
-# $Id: Makefile,v 1.7 1997/06/30 18:43:01 carr Exp $
+# $Id: Makefile,v 1.8 1998/07/07 19:28:33 carr Exp $
 HERE = libs/Memoria/annotate
 ARCHIVE		= ../Memoria-$(DSYSTEM_OS)-g.a
 SRCS		= annotate.C CacheAnalysis.C ldst.C lexDirectives.c yaccDirectives.c \
-		  DepGraphStat.C
+		  DepGraphStat.C AddressEquivalenceClassSet.C AddressOptimization.C \
+		  f2iAnalysis.C
 
 %.h %.c: %.y
 	$(YACC.y) -d $<
