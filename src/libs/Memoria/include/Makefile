@@ -1,7 +1,8 @@
-# $Id: Makefile,v 1.5 1992/11/20 13:51:03 joel Exp $
+# $Id: Makefile,v 1.6 1994/01/18 14:24:45 carr Exp $
 #
 #
+ENV_FLAG := -g
 
-HERE = libs/ped_cp/memory/include
+HERE = libs/mc_lib/include
 
 include Makeinclude

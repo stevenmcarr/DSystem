@@ -1,7 +1,8 @@
-# $Id: Makefile,v 1.7 1993/06/15 14:10:03 carr Exp $
-HERE = libs/ped_cp/memory
+# $Id: Makefile,v 1.8 1994/01/18 14:22:34 carr Exp $
+ENV_FLAG := -g
+HERE = libs/mc_lib
 DIRS		= annotate dr li sp sr uj ut include 
-ARCHIVE		= ped-$(RN_ARCH)$(ENV_FLAG).a
+ARCHIVE		= mc-$(RN_ARCH)$(ENV_FLAG).a
 
 include Makeinclude
 

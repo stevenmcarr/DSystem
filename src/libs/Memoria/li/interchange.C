@@ -1,4 +1,4 @@
-/* $Id: interchange.C,v 1.9 1993/06/15 14:04:05 carr Exp $ */
+/* $Id: interchange.C,v 1.10 1994/01/18 14:25:17 carr Exp $ */
 
 /****************************************************************/
 /*                                                              */
@@ -319,7 +319,7 @@ static void check_interchange(model_loop    *loop_data,
 	   /* compute the cost in memory cycles of one iteration of a loop as if it
 	      were innermost */
 
-	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_ComputeBalance,
+	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)ut_ComputeBalance,
 			NOFUNC,(Generic)&StatsInfo);
 	loop_data[StatsInfo.loop].stride = (int)(StatsInfo.mops * 100.0);
        }
@@ -367,7 +367,7 @@ static void walk_loops(model_loop    *loop_data,
    int next;
 
      util_append(loop_list,util_node_alloc(loop,"loop node"));
-     fst_PutField(symtab,gen_get_text(gen_INDUCTIVE_get_name(
+     fst_PutField(symtab,(fst_index_t)gen_get_text(gen_INDUCTIVE_get_name(
 		  gen_DO_get_control(loop_data[loop].node))),INDEX,loop);
      if (!loop_data[loop].transform || !loop_data[loop].interchange ||
 	 !loop_data[loop].distribute || loop_data[loop].type == COMPLEX ||
@@ -626,7 +626,7 @@ static void distribute_loop(model_loop    *loop_data,
 
      for (j = i-1; j > 0; j--)
        {
-	walk_expression(stmt_list[j],update_edges,NOFUNC,(Generic)&info);
+	walk_expression(stmt_list[j],(WK_EXPR_CLBACK)update_edges,NOFUNC,(Generic)&info);
 	new_do = tree_copy_with_type(loop_data[loop].node);
 	gen_DO_put_stmt_LIST(new_do,stmt_list[j]);
 	list_insert_after(loop_data[loop].node,new_do);
@@ -635,7 +635,7 @@ static void distribute_loop(model_loop    *loop_data,
 
 	memory_loop_interchange(ped,new_do,loop_data[loop].level,symtab,ar);
        }
-     walk_expression(stmt_list[0],update_edges,NOFUNC,(Generic)&info);
+     walk_expression(stmt_list[0],(WK_EXPR_CLBACK)update_edges,NOFUNC,(Generic)&info);
      gen_DO_put_stmt_LIST(loop_data[loop].node,stmt_list[0]);
      memory_loop_interchange(ped,loop_data[loop].node,loop_data[loop].level,
 			     symtab,ar);
@@ -1040,7 +1040,7 @@ static void perform_interchange(model_loop *loop_data,
 	   /* update the dependence graph */
 
 	walk_expression(loop_data[heap[num_loops-1].index].node,
-			update_vectors,NOFUNC,(Generic)&upd_info);
+			(WK_EXPR_CLBACK)update_vectors,NOFUNC,(Generic)&upd_info);
        }
   }
 
@@ -1279,14 +1279,14 @@ void memory_loop_interchange(PedInfo       ped,
 
        /* prepare nest for analyzing, record surrounding do information */
 
-     walk_statements(root,level,ut_mark_do_pre,ut_mark_do_post,
+     walk_statements(root,level,(WK_STMT_CLBACK)ut_mark_do_pre,(WK_STMT_CLBACK)ut_mark_do_post,
 		     (Generic)&pre_info);
      if (pre_info.abort)
        return;
 
        /* remove unnecessary dependence edges */
 
-     walk_statements(root,level,remove_edges,NOFUNC,(Generic)ped);
+     walk_statements(root,level,(WK_STMT_CLBACK)remove_edges,NOFUNC,(Generic)ped);
      loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 					 pre_info.loop_num*sizeof(model_loop));
        /* create loop structure */

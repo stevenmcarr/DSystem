@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.10 1993/07/20 15:29:23 carr Exp $ */
+/* $Id: mh.h,v 1.11 1994/01/18 14:24:43 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -35,6 +35,9 @@
 #endif 
 #ifndef header_h
 #include <header.h>
+#endif
+#ifndef mem_util_h
+#include <mem_util.h>
 #endif
 
 #define  MAX_LEVEL  20
@@ -101,8 +104,6 @@ struct loop_struct {
   Boolean         InterlockCausedUnroll;
  };
 
-typedef enum {UNDEFINED,NONE,SELF_TEMPORAL,GROUP_TEMPORAL,SELF_SPATIAL,
-	      GROUP_SPATIAL,SELF_TEMPORAL_CACHE,GROUP_TEMPORAL_CACHE} LocalityType;
 
 typedef struct subscriptinfotype {
   int       surrounding_do;

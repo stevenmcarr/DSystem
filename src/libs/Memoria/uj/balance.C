@@ -1,4 +1,4 @@
-/* $Id: balance.C,v 1.4 1993/07/20 16:34:05 carr Exp $ */
+/* $Id: balance.C,v 1.5 1994/01/18 14:26:23 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -142,7 +142,10 @@ float mh_loop_balance(int   mem_coeff[4][3][3],
 		   mem_coeff[2][cindex1][cindex2] * x2 + 
 		   mem_coeff[3][cindex1][cindex2]);
      denom = (float)(flops * x1 * x2);
-     return(num/denom);
+     if (denom == 0)
+       return(0.0);
+     else
+       return(num/denom);
   }
 
     

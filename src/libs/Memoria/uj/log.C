@@ -1,4 +1,4 @@
-/* $Id: log.C,v 1.5 1993/09/06 14:56:05 carr Exp $ */
+/* $Id: log.C,v 1.6 1994/01/18 14:26:25 carr Exp $ */
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -158,6 +158,22 @@ static void print_actual_info(model_loop *loop_data,
      fprintf(logfile,"\n\n\n");
   }
 
+static void CheckForTriangular(model_loop *loop_data,
+			       int        loop,
+			       LoopStatsType *LoopStats,
+			       FILE       *logfile)
+
+  {
+   if (loop_data[loop].tri_loop != -1 ||
+       loop_data[loop].trap_loop != -1)
+     {
+      LoopStats->Normalized++;
+      fprintf(logfile,"Normalization may have caused a problem\n");
+     }
+   else
+     if (loop_data[loop].parent != -1)
+       CheckForTriangular(loop_data,loop_data[loop].parent,LoopStats,logfile);
+  }
 
 static void print_NotUnrolledInfo(model_loop *loop_data,
 				  int        loop,
@@ -195,7 +211,10 @@ static void print_NotUnrolledInfo(model_loop *loop_data,
 	fprintf(logfile,"Balance with Interlock = %.4f\n",Stats.mops/rhoL_lp);
 	LoopStats->NotUnrolledBalanceWithInterlock += Stats.mops/rhoL_lp;
        }
-     loop_data[loop].ibalance = Stats.mops/Stats.flops;
+     if (Stats.flops > 0)
+       loop_data[loop].ibalance = Stats.mops/Stats.flops;
+     else 
+       loop_data[loop].ibalance = 0;
      fprintf(logfile,"Loop Balance   = %.4f\n",loop_data[loop].ibalance);
      LoopStats->NotUnrolledBalance += loop_data[loop].ibalance;
      Temp = LoopStats->ActualFPRegisterPressure;
@@ -220,6 +239,7 @@ static void print_NotUnrolledInfo(model_loop *loop_data,
        {
 	fprintf(logfile,"\tNo Improvement Possible\n");
 	LoopStats->NoImprovement++;
+	CheckForTriangular(loop_data,loop,LoopStats,logfile);
        }
      if (loop_data[loop].ibalance <= ((config_type *)PED_MH_CONFIG(ped))->beta_m)
        {
@@ -266,7 +286,10 @@ static void print_SingleDepthInfo(model_loop *loop_data,
 	fprintf(logfile,"Balance with Interlock = %.4f\n",Stats.mops/rhoL_lp);
 	LoopStats->SingleDepthBalanceWithInterlock += Stats.mops/rhoL_lp;
        }
-     loop_data[loop].ibalance = Stats.mops/Stats.flops;
+     if (Stats.flops > 0)
+       loop_data[loop].ibalance = Stats.mops/Stats.flops;
+     else
+       loop_data[loop].ibalance = 0;
      fprintf(logfile,"Loop Balance   = %.4f\n",loop_data[loop].ibalance);
      LoopStats->SingleDepthBalance += loop_data[loop].ibalance;
      Temp = LoopStats->ActualFPRegisterPressure;

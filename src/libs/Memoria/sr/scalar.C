@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.10 1993/09/06 14:55:25 carr Exp $ */
+/* $Id: scalar.C,v 1.11 1994/01/18 14:25:39 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -684,8 +684,11 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 	bal_info.flops = 0;
 	bal_info.ped = do_info->ped;
 	walk_expression(root,compute_balance,NOFUNC,(Generic)&bal_info);
-	fprintf(logfile,"Final Loop Balance = %.4f\n",
-		((float) bal_info.mem)/((float) bal_info.flops));
+	if (bal_info.flops > 0)
+	  fprintf(logfile,"Final Loop Balance = %.4f\n",
+		  ((float) bal_info.mem)/((float) bal_info.flops));
+	else
+	  fprintf(logfile,"Final Loop Balance = 0.0\n");
        }
      fst_KillField(do_info->symtab,LBL_STMT);
      fst_KillField(do_info->symtab,REFS);

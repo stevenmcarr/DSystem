@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.12 1993/09/06 14:56:15 carr Exp $ */
+/* $Id: compute_uj.C,v 1.13 1994/01/18 14:26:24 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -887,7 +887,9 @@ static void summarize_partition_vector(int *dvec,
 	   { 
 	    for (i = 1; i < gen_get_dt_LVL(&dg[edge]); i++)
 	      {
-	       if ((dist1 = gen_get_dt_DIS(&dg[edge],i)) < DDATA_BASE)
+	       if (dg[edge].level == LOOP_INDEPENDENT)
+	          dist1 = 0;
+	       else if ((dist1 = gen_get_dt_DIS(&dg[edge],i)) < DDATA_BASE)
 	         if (i == dinfo->level1 || i == dinfo->level2 ||
 		     i == dinfo->inner_level)
 	           dist1 = 1;
@@ -957,14 +959,17 @@ static void summarize_node_vector(int *memory_vec,
 		     *level;
 	    for (i = 1; i <= gen_get_dt_LVL(&dg[edge]); i++)
 	      {
-	       if ((dist1 = gen_get_dt_DIS(&dg[edge],i)) < DDATA_BASE)
-	         if (i == dinfo->level1 || i == dinfo->level2 ||
-		     i == dinfo->inner_level)
-		   dist1 = 1;
-		 else
-		   dist1 = 0;
-	       else if (dist1 < 0)
-	         dist1 = -dist1;
+	       if (dg[edge].level == LOOP_INDEPENDENT)
+	          dist1 = 0;
+	       else 
+	         if ((dist1 = gen_get_dt_DIS(&dg[edge],i)) < DDATA_BASE)
+	           if (i == dinfo->level1 || i == dinfo->level2 ||
+		       i == dinfo->inner_level)
+		     dist1 = 1;
+		   else
+		     dist1 = 0;
+		 else if (dist1 < 0)
+	           dist1 = -dist1;
 	       if (dg[edge].type != dg_anti)
 	         if (get_vec_DIS(memory_vec,i) > dist1)
 	           put_vec_DIS(memory_vec,i,dist1);
@@ -2817,7 +2822,8 @@ static void compute_values(model_loop    *loop_data,
 	  do_computation(loop_data,loop,unroll_vector,unroll_loops,count,ped,
 			 symtab,ar);
 	 }
-       else;
+       else
+         loop_data[loop].NoImprovement = true;
      else
        {
 	if (loop_data[loop].unroll)

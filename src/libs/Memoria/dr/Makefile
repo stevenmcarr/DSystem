@@ -1,8 +1,9 @@
-# $Id: Makefile,v 1.8 1992/11/20 13:50:21 joel Exp $
-HERE = libs/ped_cp/memory/dr
-INCLUDEDIRS	= libs/ped_cp/memory/include libs/ped_cp/ped_include
-ARCHIVE		= ../ped-$(RN_ARCH)$(ENV_FLAG).a
-SRCS		= memory_menu.C mh_config.c mh_walk.C
+# $Id: Makefile,v 1.9 1994/01/18 14:23:13 carr Exp $
+ENV_FLAG := -g
+HERE = libs/mc_lib/dr
+INCLUDEDIRS	= libs/mc_lib/include
+ARCHIVE		= ../mc-$(RN_ARCH)$(ENV_FLAG).a
+SRCS		= mh_config.c mh_walk.C
 DERIVED		= mh_config.c
 
 include Makeinclude

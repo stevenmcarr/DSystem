@@ -1,4 +1,4 @@
-/* $Id: mh_walk.h,v 1.9 1993/09/06 14:54:15 carr Exp $ */
+/* $Id: mh_walk.h,v 1.10 1994/01/18 14:23:12 carr Exp $ */
 
 #ifndef mh_walk_h
 #define mh_walk_h
@@ -43,7 +43,7 @@ typedef struct walkinfotype {
   TableInfoType TableInfo;
   SymDescriptor symtab;
   arena_type    *ar;
-  LoopStatsType LoopStats;
+  LoopStatsType *LoopStats;
   char          *routine;
   char          *program;
  } walk_info_type;
