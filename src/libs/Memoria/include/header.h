@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.6 1993/06/15 14:06:54 carr Exp $ */
+/* $Id: header.h,v 1.7 1993/06/21 13:47:59 carr Exp $ */
 
 #ifndef header_h
 #define header_h
@@ -16,7 +16,7 @@
 #include <fort/fortsym.h>        /* for SymDescriptor */
 #endif
 #ifndef Arena_h
-#include <Arena.h>               /* for arena_type */
+#include <misc/Arena.h>               /* for arena_type */
 #endif
 #ifndef LoopStats_h
 #include <LoopStats.h>           /* for LoopStatsType */

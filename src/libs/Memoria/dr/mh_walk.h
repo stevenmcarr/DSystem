@@ -1,4 +1,4 @@
-/* $Id: mh_walk.h,v 1.7 1993/06/15 14:03:49 carr Exp $ */
+/* $Id: mh_walk.h,v 1.8 1993/06/21 13:47:25 carr Exp $ */
 
 #ifndef mh_walk_h
 #define mh_walk_h
@@ -12,7 +12,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef LoopStats_h

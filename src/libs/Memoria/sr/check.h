@@ -1,4 +1,4 @@
-/* $Id: check.h,v 1.4 1992/12/11 11:22:32 carr Exp $ */
+/* $Id: check.h,v 1.5 1993/06/21 13:46:47 carr Exp $ */
 
 #ifndef check_h
 #define check_h
@@ -16,7 +16,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 typedef struct checkinfotype {

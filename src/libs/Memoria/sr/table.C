@@ -1,4 +1,4 @@
-/* $Id: table.C,v 1.6 1993/04/27 11:58:42 curetonk Exp $ */
+/* $Id: table.C,v 1.7 1993/06/21 13:46:45 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -12,7 +12,7 @@
 #include <std.h>
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef scalar_h

@@ -1,4 +1,4 @@
-/* $Id: dfavail.C,v 1.4 1992/12/11 11:22:12 carr Exp $ */
+/* $Id: dfavail.C,v 1.5 1993/06/21 13:46:27 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -10,7 +10,7 @@
 #include <fort/walk.h>
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif 
 
 #ifndef dfavail_h

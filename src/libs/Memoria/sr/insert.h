@@ -1,4 +1,4 @@
-/* $Id: insert.h,v 1.4 1992/12/11 11:22:41 carr Exp $ */
+/* $Id: insert.h,v 1.5 1993/06/21 13:46:57 carr Exp $ */
 
 #ifndef insert_h
 #define insert_h
@@ -12,7 +12,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef dp_h

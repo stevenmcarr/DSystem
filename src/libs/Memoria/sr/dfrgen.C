@@ -1,11 +1,11 @@
-/* $Id: dfrgen.C,v 1.4 1992/12/11 11:22:14 carr Exp $ */
+/* $Id: dfrgen.C,v 1.5 1993/06/21 13:46:38 carr Exp $ */
 #include <general.h>
 #include <sr.h>
 #include <mh_ast.h>
 #include <fort/walk.h>
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef dfrgen_h

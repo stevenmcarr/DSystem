@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.4 1992/12/11 11:22:25 carr Exp $ */
+/* $Id: prune.C,v 1.5 1993/06/21 13:46:44 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -10,7 +10,7 @@
 #include <prune.h>
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef dt_h

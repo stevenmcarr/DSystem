@@ -1,4 +1,4 @@
-/* $Id: interchange.h,v 1.5 1993/06/15 14:04:33 carr Exp $ */
+/* $Id: interchange.h,v 1.6 1993/06/21 13:48:15 carr Exp $ */
 
 #ifndef interchange_h
 #define interchange_h
@@ -20,7 +20,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 typedef struct indexinfotype{

@@ -1,9 +1,9 @@
-/* $Id: prefetch.h,v 1.1 1993/06/15 13:57:35 carr Exp $ */
+/* $Id: prefetch.h,v 1.2 1993/06/21 13:48:32 carr Exp $ */
 
 #ifndef prefetch_h
 #define prefetch_h
 
-#include <Arena.h>
+#include <misc/Arena.h>
 #include <PrefetchList.h>
 
 typedef struct intinfotype {

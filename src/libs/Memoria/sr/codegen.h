@@ -1,4 +1,4 @@
-/* $Id: codegen.h,v 1.4 1992/12/11 11:22:33 carr Exp $ */
+/* $Id: codegen.h,v 1.5 1993/06/21 13:46:49 carr Exp $ */
 
 #ifndef codegen_h
 #define codegen_h
@@ -18,7 +18,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef list_h

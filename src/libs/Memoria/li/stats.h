@@ -1,4 +1,4 @@
-/* $Id: stats.h,v 1.5 1993/06/15 14:04:39 carr Exp $ */
+/* $Id: stats.h,v 1.6 1993/06/21 13:48:20 carr Exp $ */
 #ifndef stats_h
 #define stats_h
 
@@ -7,7 +7,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef dp_h

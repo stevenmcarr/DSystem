@@ -1,4 +1,4 @@
-/* $Id: moderate.h,v 1.4 1992/12/11 11:22:42 carr Exp $ */
+/* $Id: moderate.h,v 1.5 1993/06/21 13:47:03 carr Exp $ */
 
 #ifndef moderate_h
 #define moderate_h
@@ -26,7 +26,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef name_h

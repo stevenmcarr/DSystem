@@ -1,4 +1,4 @@
-/* $Id: do_unroll.h,v 1.5 1992/12/11 11:23:41 carr Exp $ */
+/* $Id: do_unroll.h,v 1.6 1993/06/21 13:48:54 carr Exp $ */
 
 #ifndef do_unroll_h
 #define do_unroll_h
@@ -8,7 +8,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef fortsym_h
@@ -72,6 +72,8 @@ typedef struct refinfotype {
 
 #define RDX_VAR "mh: rdx_var"
 
+EXTERN(void, set_level_vectors, (AST_INDEX old, AST_INDEX newa, PedInfo ped));
+
 EXTERN(void, mh_do_unroll_and_jam,(model_loop *loop_data,
 				   PedInfo ped,
 				   SymDescriptor symtab,
@@ -79,4 +81,17 @@ EXTERN(void, mh_do_unroll_and_jam,(model_loop *loop_data,
 				   arena_type *ar));
 EXTERN(int, mh_copy_edges,(AST_INDEX node,
 			   Generic ped));
+EXTERN(void, mh_replicate_body,(AST_INDEX     stmt_list,
+				int           val,
+				int           level,
+				char          *ivar,
+				AST_INDEX     step,
+				PedInfo       ped,
+				SymDescriptor symtab,
+				Boolean       inner_rdx,
+				int           surrounding_do,
+				AST_INDEX     surround_node,
+				char          *inner_ivar,
+				int           inner_level,
+				arena_type    *ar));
 #endif

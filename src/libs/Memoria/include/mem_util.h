@@ -1,4 +1,4 @@
-/* $Id: mem_util.h,v 1.6 1993/06/15 14:07:11 carr Exp $ */
+/* $Id: mem_util.h,v 1.7 1993/06/21 13:48:01 carr Exp $ */
 
 #ifndef mem_util_h
 #define mem_util_h
@@ -8,7 +8,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>            /* for arena_type */
+#include <misc/Arena.h>            /* for arena_type */
 #endif 
 #ifndef ast_h
 #include <fort/ast.h>         /* for AST_INDEX */

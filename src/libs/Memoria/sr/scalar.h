@@ -1,4 +1,4 @@
-/* $Id: scalar.h,v 1.4 1992/12/11 11:22:49 carr Exp $ */
+/* $Id: scalar.h,v 1.5 1993/06/21 13:47:17 carr Exp $ */
 
 #ifndef scalar_h
 #define scalar_h
@@ -20,7 +20,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef groups_h

@@ -1,14 +1,10 @@
-/* $Id: compute_uj.h,v 1.6 1992/12/17 14:51:13 carr Exp $ */
+/* $Id: compute_uj.h,v 1.7 1993/06/21 13:48:51 carr Exp $ */
 
 #ifndef compute_uj_h
 #define compute_uj_h
 
 #ifndef general_h
 #include <general.h>
-#endif
-
-#ifndef ast_h
-#include <ast.h>
 #endif
 
 #ifndef dp_h
@@ -20,7 +16,7 @@
 #endif
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef list_h
@@ -49,6 +45,12 @@ typedef struct compinfotype {
   SymDescriptor symtab;
  } comp_info_type;
 
+typedef struct CoeffTypeTag {
+  int V0[4][3][3],
+      VC[4][4][3][3],
+      VI[4][4][3][3];
+ } CoeffType;
+
 typedef struct depinfotype {
   int      reg_coeff[4][3][3],
            mem_coeff[4][3][3],
@@ -67,6 +69,8 @@ typedef struct depinfotype {
   SymDescriptor symtab;
   PedInfo  ped;
   arena_type *ar;
+  model_loop *loop_data;
+  CoeffType  PrefetchCoeff;
  } dep_info_type;
 
 typedef struct reginfotype {
@@ -80,6 +84,7 @@ typedef struct vectorinfotype {
   int       vector[MAXLOOP];
  } vector_info_type;
 
+typedef enum {S_NONE,SELF,SELF1,SELF2,GROUP} SpatialLocalityType;
 
 #define get_vec_DIS(vec,lvl)		(vec[(lvl)-1])
 #define put_vec_DIS(vec,lvl,d)		(vec[(lvl)-1] = d)

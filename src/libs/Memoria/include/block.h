@@ -1,10 +1,10 @@
-/* $Id: block.h,v 1.4 1992/12/11 11:19:42 carr Exp $ */
+/* $Id: block.h,v 1.5 1993/06/21 13:47:56 carr Exp $ */
 
 #ifndef block_h
 #define block_h
 
 #ifndef Arena_h
-#include <Arena.h>       /* for arena_type */
+#include <misc/Arena.h>       /* for arena_type */
 #endif
 #ifndef cgen_set_h
 #include <cgen_set.h>    /* for Set */

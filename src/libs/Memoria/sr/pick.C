@@ -1,4 +1,4 @@
-/* $Id: pick.C,v 1.4 1992/12/11 11:22:22 carr Exp $ */
+/* $Id: pick.C,v 1.5 1993/06/21 13:46:40 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -10,7 +10,7 @@
 #include <pick.h>
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef dt_h

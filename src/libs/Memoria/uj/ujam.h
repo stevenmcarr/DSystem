@@ -1,10 +1,10 @@
-/* $Id: ujam.h,v 1.4 1992/12/11 11:23:44 carr Exp $ */
+/* $Id: ujam.h,v 1.5 1993/06/21 13:48:56 carr Exp $ */
 
 #ifndef ujam_h
 #define ujam_h
 
 #ifndef Arena_h
-#include <Arena.h>
+#include <misc/Arena.h>
 #endif
 
 #ifndef dp_h
