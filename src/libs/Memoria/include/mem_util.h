@@ -1,4 +1,4 @@
-/* $Id: mem_util.h,v 1.14 1995/08/24 14:25:53 yguan Exp $ */
+/* $Id: mem_util.h,v 1.15 1996/02/14 11:04:41 carr Exp $ */
 
 #ifndef mem_util_h
 #define mem_util_h
@@ -73,8 +73,11 @@ typedef struct StatsStruct {
  } StatsInfoType;
 
 typedef struct cycletype {
-  int MemCycles;
-  int FlopCycles;
+  float MemCycles;
+  float FlopCycles;
+  model_loop *loop_data;
+  int loop;
+  UniformlyGeneratedSets *UGS;
   PedInfo ped;
  } CycleInfoType;
 
@@ -120,7 +123,11 @@ EXTERN(void, ut_GetSubscriptText, (AST_INDEX Node, char *Text));
 EXTERN(int,ut_change_logical_to_block_if, (AST_INDEX stmt,
 					   int       level,
 					   int       dummy));
-EXTERN(int, ut_CyclesPerIteration, (AST_INDEX Node, PedInfo   ped));
+EXTERN(int,ut_CyclesPerIteration, (AST_INDEX Node,
+				   model_loop *loop_data,
+				   int loop,
+				   UniformlyGeneratedSets *UGS,
+				   PedInfo   ped));
 
 EXTERN(int, ut_LoopSize, (AST_INDEX Node, PedInfo   ped));
 

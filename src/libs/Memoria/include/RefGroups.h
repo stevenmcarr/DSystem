@@ -7,6 +7,8 @@
 #include <IntegerList.h>
 #include <UniformlyGeneratedSets.h>
 
+class RefGroupSet;
+
 typedef struct refinfotype {
   PedInfo       ped;
   DG_Edge       *dg;
@@ -23,6 +25,7 @@ typedef struct refinfotype {
                 TemporalCost;
   char          **IVar;
   UniformlyGeneratedSets *UGS;
+  RefGroupSet   *RGS;
  } RefInfoType;
 
 class RefGroupCore {
@@ -32,7 +35,6 @@ public:
   Boolean OnlyInInnermostPosition(model_loop *loop_data, AST_INDEX node,int level);
   char*   FindInductionVar(model_loop *loop_data,AST_INDEX node,int level);
   Boolean NotInOtherPositions(AST_INDEX node,char *var);
-  void    UnsetVisitedMark(AST_INDEX node);
  };
   
 
@@ -113,12 +115,11 @@ class RefGroupSet : public IntegerList, RefGroupCore {
   UniformlyGeneratedSets *UGS;
   Boolean UseUniformlyGeneratedSets;
   
-  void PartitionNames(AST_INDEX node, RefInfoType& RefInfo);
-  void DoPartition(AST_INDEX name,RefGroupMember *RG,DG_Edge *dg,PedInfo ped,
-	   int level,int MinLevel,Boolean VisitedMark,model_loop *loop_data);
   void BuildRefGroupsWithUGS();
 
 public:
+  void DoPartition(AST_INDEX name,RefGroupMember *RG,DG_Edge *dg,PedInfo ped,
+	   int level,int MinLevel,Boolean VisitedMark,model_loop *loop_data);
   RefGroupSet(AST_INDEX loop, int NL,RefInfoType& RefInfo,
 	      Boolean UseUGS = false, int *LIS = NULL);
   ~RefGroupSet() {if (UseUniformlyGeneratedSets) delete UGS;}

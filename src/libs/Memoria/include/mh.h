@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.18 1995/08/22 14:21:03 carr Exp $ */
+/* $Id: mh.h,v 1.19 1996/02/14 11:04:45 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -77,7 +77,10 @@ struct loop_struct {
                   inner_stmts,
                   outer_stmts;
   float           rho,
+                  L_L,
 		  P_L,
+                  initial_L_L,
+                  initial_P_L,
                   ibalance,
                   fbalance;
   Boolean         stmts,
