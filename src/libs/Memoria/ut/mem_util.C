@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.25 1997/04/08 20:50:39 carr Exp $ */
+/* $Id: mem_util.C,v 1.26 1997/10/30 15:20:35 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,6 +19,7 @@
 #include <libs/frontEnd/include/walk.h>
 #include <libs/Memoria/include/mem_util.h>
 #include <libs/Memoria/include/mh_config.h>
+#include <libs/frontEnd/fortTextTree/FortUnparse1.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -539,7 +540,7 @@ static Boolean HasGroupSpatial(AST_INDEX  node,
 		//  Record for DEAD instructions.  Need to now how far behind
 		//  to make a cache line dead
                 
-		sptr->GroupDistance = MAX(sptr->GroupDistance,
+		sptr->GroupSpatialDistance = MAX(sptr->GroupSpatialDistance,
 					  gen_get_dt_DIS(Edge,Edge->level));
 
 	      return(true);
@@ -651,7 +652,7 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
 		   {
 		     // This distance is needed for DEAD instructions
 
-		     sptr->GroupDistance = MAX(sptr->GroupDistance,
+		     sptr->GroupTemporalDistance = MAX(sptr->GroupTemporalDistance,
 					       gen_get_dt_DIS(&dg[edge],dg[edge].level));
 		     return(GROUP_TEMPORAL);
 		   }
@@ -663,7 +664,7 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
 		 {
 		     // This distance is needed for DEAD instructions
 
-		   sptr->GroupDistance = MAX(sptr->GroupDistance,
+		   sptr->GroupTemporalDistance = MAX(sptr->GroupTemporalDistance,
 					     gen_get_dt_DIS(&dg[edge],dg[edge].level));
 		   if (dg[edge].level == LOOP_INDEPENDENT && dg[edge].type == dg_output)
 		     return(GROUP_TEMPORAL);
@@ -844,8 +845,9 @@ int ut_ComputeBalance(AST_INDEX     node,
 
 
 void BuildSubscriptTextFromNode(AST_INDEX Node,
-			       char     *Text,
-			       int      *Index)
+				SymDescriptor symtab,
+				char     *Text,
+				int      *Index)
 
   {
    AST_INDEX LNode;
@@ -853,29 +855,63 @@ void BuildSubscriptTextFromNode(AST_INDEX Node,
      if (is_list(Node))
        {
 	LNode = list_first(Node);
-	BuildSubscriptTextFromNode(LNode,Text,Index);
+	BuildSubscriptTextFromNode(LNode,symtab,Text,Index);
 	for (LNode = list_next(LNode);
 	     LNode != AST_NIL;
 	     LNode = list_next(LNode))
 	  {
 	   (void)strcat(Text,",");
 	   (*Index)++;
-	   BuildSubscriptTextFromNode(LNode,Text,Index);
+	   BuildSubscriptTextFromNode(LNode,symtab,Text,Index);
 	  }
        }
-     else if (is_identifier(Node) || is_constant(Node))
+     else if (is_identifier(Node) && symtab != NULL)
+       {
+	 fst_index_t TableIndex = fst_Index(symtab,gen_get_text(Node));
+
+	 if ((fst_GetFieldByIndex(symtab,TableIndex,SYMTAB_STORAGE_CLASS) &
+	      SC_CONSTANT) &&
+	     fst_GetFieldByIndex(symtab,TableIndex,SYMTAB_TYPE) == TYPE_INTEGER)
+	   {
+	     char s[10];
+	     
+	     if (fst_GetFieldByIndex(symtab,TableIndex,SYMTAB_PARAM_STATUS)
+		 != PARAM_VALUE_DEFINED)
+	       {
+		 fprintf(stderr,"Parameter constant that is not defined, %s, check!\n",
+			 gen_get_text(Node));
+		 (void)strcat(Text,gen_get_text(Node));
+		 (*Index) += strlen(gen_get_text(Node));
+	       }
+	     else
+	       {
+		 int val = fst_GetFieldByIndex(symtab,TableIndex,SYMTAB_PARAM_VALUE);
+	         char *s = new char[10];
+		 sprintf(s,"%d",val);
+		 (*Index) += strlen(s);
+		 (void)strcat(Text,s);
+	       }
+	   }
+	 else
+	   {
+	     (void)strcat(Text,gen_get_text(Node));
+	     (*Index) += strlen(gen_get_text(Node));
+	   }
+	   
+       } 
+     else if (is_constant(Node) || is_identifier(Node))
        {
 	(void)strcat(Text,gen_get_text(Node));
 	(*Index) += strlen(gen_get_text(Node));
        }
      else if (is_binary_op(Node))
        {
-	if (gen_get_parens(Node))
+	if (unp1_pred_parens(Node))
 	  {
 	   (void)strcat(Text,"(");
 	   (*Index)++;
 	  }
-	BuildSubscriptTextFromNode(gen_get_son_n(Node,1),Text,Index);
+	BuildSubscriptTextFromNode(gen_get_son_n(Node,1),symtab,Text,Index);
 	switch(NT(Node))
 	  {
 	   case GEN_BINARY_PLUS:
@@ -898,19 +934,19 @@ void BuildSubscriptTextFromNode(AST_INDEX Node,
 	     fprintf(stderr,"Prefetch: subscript not handled\n");
 	     exit(-1);
 	  }
-	BuildSubscriptTextFromNode(gen_get_son_n(Node,2),Text,Index);
-	if (gen_get_parens(Node))
+	BuildSubscriptTextFromNode(gen_get_son_n(Node,2),symtab,Text,Index);
+	if (unp1_pred_parens(Node))
 	  {
-	   (void)strcat(Text,"(");
+	   (void)strcat(Text,")");
 	   (*Index)++;
 	  }
        }
      else if (is_subscript(Node))
        {
-	BuildSubscriptTextFromNode(gen_SUBSCRIPT_get_name(Node),Text,Index);
+	BuildSubscriptTextFromNode(gen_SUBSCRIPT_get_name(Node),symtab,Text,Index);
 	(void)strcat(Text,"(");
 	(*Index)++;
-	BuildSubscriptTextFromNode(gen_SUBSCRIPT_get_rvalue_LIST(Node),Text,Index);
+	BuildSubscriptTextFromNode(gen_SUBSCRIPT_get_rvalue_LIST(Node),symtab,Text,Index);
 	(void)strcat(Text,")");
 	(*Index)++;
        }
@@ -918,13 +954,14 @@ void BuildSubscriptTextFromNode(AST_INDEX Node,
 
 
 void ut_GetSubscriptText(AST_INDEX Node,
-			 char      *Text)
+			 char      *Text,
+			 SymDescriptor symtab)
 
   {
    int Index = 0;
 
      Text[0] = '\0';
-     BuildSubscriptTextFromNode(Node,Text,&Index);
+     BuildSubscriptTextFromNode(Node,symtab,Text,&Index);
   }
 
 
@@ -990,69 +1027,4 @@ int ut_LoopSize(AST_INDEX Node,
    return(10);
   }
 
-
-void
-pt_get_constant_walk(AST_INDEX expr, AST_INDEX *constant)
-{
-  char *string;
-  AST_INDEX con1,con2;
-  AST_INDEX tcon1,tcon2;
-
-  *constant = AST_NIL;
-
-  if (expr == AST_NIL)
-	return;
-
-  switch (gen_get_node_type(expr)) {
-
-    	case GEN_IDENTIFIER:
-		break;
-	case GEN_CONSTANT:
-		*constant = tree_copy_with_type(expr);
-		break;
-	case GEN_UNARY_MINUS:
-		pt_get_constant_walk(gen_UNARY_MINUS_get_rvalue(expr),&con1);
-		if (con1 != AST_NIL)
-		  *constant = gen_UNARY_MINUS(con1);
-		break;
-     	case GEN_BINARY_PLUS:
-		pt_get_constant_walk(gen_BINARY_PLUS_get_rvalue1(expr),&con1);
-		pt_get_constant_walk(gen_BINARY_PLUS_get_rvalue2(expr),&con2);
-		*constant = pt_gen_add(con1,con2);
-		break;
-    	case GEN_BINARY_MINUS:
-		pt_get_constant_walk(gen_BINARY_MINUS_get_rvalue1(expr),&con1);
-		pt_get_constant_walk(gen_BINARY_MINUS_get_rvalue2(expr),&con2);
-		*constant = pt_gen_sub(con1,con2);
-		break;
-	case GEN_BINARY_TIMES:
-		pt_get_constant_walk(gen_BINARY_TIMES_get_rvalue1(expr),&con1);
-		pt_get_constant_walk(gen_BINARY_TIMES_get_rvalue2(expr),&con2);
-		{
-		 AST_INDEX tcon1 = tree_copy_with_type(con1);
-		 AST_INDEX tcon2 = tree_copy_with_type(con2);
-		 *constant = pt_gen_mul(tcon1,tcon2); 
-		}
-		break;
-	default:
-		break;
-  }
-}
-
-/*************************************************************
- * pt_get_constant (expr,const)
- *
- *************************************************************
- */
-void
-pt_get_constant(AST_INDEX expr, int *constant)
-  {
-   AST_INDEX node;
-
-     pt_get_constant_walk(expr,&node);
-     if (node == AST_NIL)
-       *constant = 0;
-     else
-       (void)pt_eval(node,constant);
-  }
 
