@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.7 1992/12/11 11:23:15 carr Exp $ */
+/* $Id: compute_uj.C,v 1.8 1992/12/16 12:23:28 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -628,11 +628,11 @@ static AST_INDEX find_oldest_value(UtilList *nlist,
 	      dg[edge].level == dinfo->inner_level ||
 	      dg[edge].level == LOOP_INDEPENDENT) &&
 
-	       /* try to handle scalar array refs correctly so that we can 
+	       /* handle scalar array refs correctly so that we can 
 		  find the oldest value */
+
 	     (!pt_expr_equal(tree_out(dg[edge].src),tree_out(dg[edge].sink)) ||
-	      (ut_get_stmt(dg[edge].src) != ut_get_stmt(dg[edge].sink) &&
-	       dg[edge].level == LOOP_INDEPENDENT)) &&
+	      dg[edge].level == LOOP_INDEPENDENT) &&
 
 	     get_subscript_ptr(dg[edge].src)->surrounding_do ==
 	     get_subscript_ptr(dg[edge].sink)->surrounding_do)
@@ -647,10 +647,8 @@ static AST_INDEX find_oldest_value(UtilList *nlist,
      return(UTIL_NODE_ATOM(node));
   }
 
-static void summarize_distance_vector(int *dvec,
-				      int *num_edges,
+static void summarize_partition_vector(int *dvec,
 				      AST_INDEX node,
-				      PedInfo ped,
 				      UtilList *nlist,
 				      dep_info_type *dinfo)
   { 
@@ -659,11 +657,11 @@ static void summarize_distance_vector(int *dvec,
    int refl,i,dist1;
    Boolean first = true;
 
-     dg = dg_get_edge_structure( PED_DG(ped));
-     refl = get_info(ped,node,type_levelv);
-     for (edge = dg_first_src_ref( PED_DG(ped),refl);
+     dg = dg_get_edge_structure( PED_DG(dinfo->ped));
+     refl = get_info(dinfo->ped,node,type_levelv);
+     for (edge = dg_first_src_ref( PED_DG(dinfo->ped),refl);
 	  edge != END_OF_LIST;
-	  edge = dg_next_src_ref( PED_DG(ped),edge))
+	  edge = dg_next_src_ref( PED_DG(dinfo->ped),edge))
        if (dg[edge].consistent == consistent_SIV && !dg[edge].symbolic &&
 	   dg[edge].type == dg_true || dg[edge].type == dg_input &&
 	   get_subscript_ptr(dg[edge].src)->surrounding_do ==
@@ -671,7 +669,6 @@ static void summarize_distance_vector(int *dvec,
          if (edge_creates_pressure(&dg[edge],dinfo) &&
 	     util_in_list(get_subscript_ptr(dg[edge].sink)->lnode,nlist))
 	   { 
-	    (*num_edges)++;
 	    for (i = 1; i < gen_get_dt_LVL(&dg[edge]); i++)
 	      {
 	       if ((dist1 = gen_get_dt_DIS(&dg[edge],i)) < DDATA_BASE)
@@ -700,6 +697,47 @@ static void summarize_distance_vector(int *dvec,
 	   } 
   } 
 
+
+static void summarize_node_vector(int *memory_vec,
+				  int *address_vec,
+				  AST_INDEX node,
+				  UtilList *nlist,
+				  dep_info_type *dinfo)
+  { 
+   DG_Edge *dg;
+   EDGE_INDEX edge;
+   int refl,i,dist1;
+   UtilNode *lnode;
+
+     dg = dg_get_edge_structure( PED_DG(dinfo->ped));
+     refl = get_info(dinfo->ped,node,type_levelv);
+     for (edge = dg_first_sink_ref( PED_DG(dinfo->ped),refl);
+	  edge != END_OF_LIST;
+	  edge = dg_next_sink_ref( PED_DG(dinfo->ped),edge))
+       if (dg[edge].consistent == consistent_SIV && !dg[edge].symbolic &&
+	   get_subscript_ptr(dg[edge].src)->surrounding_do ==
+	   get_subscript_ptr(dg[edge].sink)->surrounding_do)
+         if (edge_creates_pressure(&dg[edge],dinfo) &&
+	     util_in_list(get_subscript_ptr(dg[edge].sink)->lnode,nlist))
+	   { 
+	    for (i = 1; i <= gen_get_dt_LVL(&dg[edge]); i++)
+	      {
+	       if ((dist1 = gen_get_dt_DIS(&dg[edge],i)) < DDATA_BASE)
+	         if (i == dinfo->level1 || i == dinfo->level2 ||
+		     i == dinfo->inner_level)
+		   dist1 = 1;
+		 else
+		   dist1 = 0;
+	       else if (dist1 < 0)
+	         dist1 = -dist1;
+	       if (dg[edge].type != dg_anti)
+	         if (get_vec_DIS(memory_vec,i) > dist1)
+	           put_vec_DIS(memory_vec,i,dist1);
+	       if (get_vec_DIS(address_vec,i) > dist1)
+	         put_vec_DIS(address_vec,i,dist1);
+	      }
+	   } 
+  } 
 
 static void remove_nodes(AST_INDEX node,
 			 PedInfo ped,
@@ -783,14 +821,15 @@ static void get_distances(dep_info_type *dep_info,
 
 
 static void compute_registers(dep_info_type *dep_info, 
-			      int *dvect,
-			      AST_INDEX node,
-			      int num_edges) 
+			      AST_INDEX     node,
+			      UtilList      *nlist) 
 
   {
    subscript_info_type *subp;
    int refs, regs, dist1, dist2, distn; 
+   int dvect[MAXLOOP];
 
+     summarize_partition_vector(dvect,node,nlist,dep_info);
      get_machine_parms(node,&regs,&refs,dep_info); 
      subp = get_subscript_ptr(node);
      if (subp->is_scalar[0] || subp->is_scalar[1] || subp->is_scalar[2])
@@ -803,14 +842,6 @@ static void compute_registers(dep_info_type *dep_info,
 	     { 
 	      if (dep_info->x1 == 1)
 	        dep_info->x1 = 2;
-	      if (!subp->is_scalar[2] && !subp->is_scalar[1])
-		{ 
-		 dep_info->mem_coeff[2] += refs * num_edges; 
-		 if (subp->store)
-		   dep_info->mem_coeff[2] += refs; 
-		 if (index_in_outer_subscript(node,dep_info->index[1]))
-		   dep_info->addr_coeff[1] += num_edges;
-		}
 	     }
 	   else if (!subp->is_scalar[2])
 	     dep_info->scalar_coeff[1] += regs;
@@ -818,14 +849,6 @@ static void compute_registers(dep_info_type *dep_info,
 	     {
 	      if (dep_info->x2 == 1)
 	        dep_info->x2 = 2;
-	      if (!subp->is_scalar[2] && !subp->is_scalar[0])
-		{
-		 dep_info->mem_coeff[1] += refs * num_edges;
-		 if (subp->store)
-		   dep_info->mem_coeff[1] += refs; 
-		 if (index_in_outer_subscript(node,dep_info->index[0]))
-		   dep_info->addr_coeff[2] += num_edges;
-		}
 	     }
 	   else if (!subp->is_scalar[2])
 	     dep_info->scalar_coeff[2] += regs;
@@ -838,26 +861,6 @@ static void compute_registers(dep_info_type *dep_info,
 	dep_info->reg_coeff[1] -= dist2 * (distn + 1) * regs;
 	dep_info->reg_coeff[2] -= dist1 * (distn + 1) * regs;
 	dep_info->reg_coeff[3] += dist1 * dist2 * (distn + 1) * regs;
-	dep_info->mem_coeff[1] += dist2 * refs * num_edges;
-	dep_info->mem_coeff[2] += dist1 * refs * num_edges;
-	dep_info->mem_coeff[3] -= dist1 * dist2 * refs * num_edges;
-	if (index_in_outer_subscript(node,dep_info->index[0]))
-	  if (index_in_outer_subscript(node,dep_info->index[1]))
-	    {
-	     dep_info->addr_coeff[1] += dist2 * num_edges;
-	     dep_info->addr_coeff[2] += dist1 * num_edges;
-	     dep_info->addr_coeff[3] -= dist1 * dist2 * num_edges;
-	    }
-	  else
-	    {
-	     dep_info->addr_coeff[1] += num_edges;
-	     dep_info->addr_coeff[3] -= dist1 * num_edges;
-	    }
-	else if (index_in_outer_subscript(node,dep_info->index[1]))
-	  {
-	   dep_info->addr_coeff[2] += num_edges;
-	   dep_info->addr_coeff[3] -= dist2 * num_edges;
-	  }
 	if (dist1 > dep_info->x1)
 	  dep_info->x1 = dist1;
 	if (dist2 > dep_info->x2)
@@ -867,10 +870,9 @@ static void compute_registers(dep_info_type *dep_info,
 
 
 static void compute_extra_regs(dep_info_type *dinfo,
-			       int           *dvect,
 			       AST_INDEX     node,
 			       AST_INDEX     prevnode,
-			       int           num_edges)
+			       UtilList      *nlist)
 
   {
    DG_Edge *dg;
@@ -879,83 +881,182 @@ static void compute_extra_regs(dep_info_type *dinfo,
    int     dist1,sdist1,
            dist2,sdist2,
            distn,sdistn,regs,refs;
+   int                 dvect[MAXLOOP];
 
      dg = dg_get_edge_structure( PED_DG(dinfo->ped));
      vector = get_info(dinfo->ped,node,type_levelv);
      for (edge = dg_first_sink_ref( PED_DG(dinfo->ped),vector);
 	  dg[edge].src != prevnode && edge != END_OF_LIST;
 	  edge = dg_next_sink_ref( PED_DG(dinfo->ped),edge));
+     summarize_partition_vector(dvect,node,nlist,dinfo);
      get_machine_parms(node,&regs,&refs,dinfo);
-     if (edge == END_OF_LIST)
-       {
-	/* we have found an intrastatement loop independent antidependence
-	   add memory references */
-	dinfo->mem_coeff[3] += refs;
-       }
+     get_distances(dinfo,dg[edge].dt_data,&dist1,&dist2,&distn);
+     get_distances(dinfo,dvect,&sdist1,&sdist2,&sdistn);
+     if (dist1 != 0)
+       if (dist2 != 0)
+         dinfo->reg_coeff[3] += dist1 * dist2 * (sdistn + 1) * regs;
+       else
+	 {
+	  dinfo->reg_coeff[2] += dist1 * (sdistn + 1) * regs;
+	  dinfo->reg_coeff[3] -= dist1 * sdist2 * (sdistn + 1) * regs;
+	 }
      else
        {
-	get_distances(dinfo,dg[edge].dt_data,&dist1,&dist2,&distn);
-	get_distances(dinfo,dvect,&sdist1,&sdist2,&sdistn);
-	if (dist1 != 0)
-	  if (dist2 != 0)
-	    dinfo->reg_coeff[3] += dist1 * dist2 * (sdistn + 1) * regs;
-	  else
-	    {
-	     dinfo->reg_coeff[2] += dist1 * (sdistn + 1) * regs;
-	     dinfo->reg_coeff[3] -= dist1 * sdist2 * (sdistn + 1) * regs;
-	    }
-	else
-	  {
-	   dinfo->reg_coeff[1] += dist2 * (sdistn + 1) * regs;
-	   dinfo->reg_coeff[3] -= sdist1 * dist2 * (sdistn + 1) * regs;
-	  }
+	dinfo->reg_coeff[1] += dist2 * (sdistn + 1) * regs;
+	dinfo->reg_coeff[3] -= sdist1 * dist2 * (sdistn + 1) * regs;
        }
   }
 
-static void compute_mem_addr_coeffs(dep_info_type *dep_info,
-				    AST_INDEX     node)
+
+Boolean vector_all_zeros(int *dvect,
+			 int level)
 
   {
-   subscript_info_type *sptr;
-   int regs,refs;
+   int i;
 
-     if (sptr->is_scalar[2])
-       return;
-     get_machine_parms(node,&regs,&refs,dep_info); 
-     sptr = get_subscript_ptr(node);
+     for (i = 0; i < level-1; i++)
+       if (dvect[i] != 0)
+         return false;
+     return true;
+  }
+
+static void update_coeff_for_invariants(AST_INDEX node,
+					subscript_info_type *sptr,
+					dep_info_type *dep_info,
+					int       *dvect,
+					int       refs)
+  {
      if (sptr->is_scalar[1])
        if (sptr->is_scalar[0])
-         {
-	  dep_info->mem_coeff[3]++;
-	  dep_info->addr_coeff[3]++;
-	  return;
+	 {
+	  if (NOT(vector_all_zeros(dvect,dep_info->inner_level)))
+	    {
+	     dep_info->mem_coeff[3] += refs;
+	     if (index_in_outer_subscript(node,dep_info->index[2]))
+	       dep_info->addr_coeff[3]++;
+	    }
 	 }
        else
-         {
-	  dep_info->mem_coeff[1]++;
-	  if (index_in_outer_subscript(node,dep_info->index[0]))
-	    dep_info->addr_coeff[1]++;
-	  return;
+	 {
+	  if (NOT(vector_all_zeros(dvect,dep_info->inner_level)))
+	    {
+	     dep_info->mem_coeff[1] += refs;
+	     if (index_in_outer_subscript(node,dep_info->index[0]))
+  	       dep_info->addr_coeff[1]++;
+	     else
+	       dep_info->addr_coeff[3]++;
+	    }
 	 }
      else
        if (sptr->is_scalar[0])
-         {
-	  dep_info->mem_coeff[2]++;
-	  if (index_in_outer_subscript(node,dep_info->index[1]))
-	    dep_info->addr_coeff[2]++;
-	  return;
+	 {
+	  if (NOT(vector_all_zeros(dvect,dep_info->inner_level)))
+	    {
+	     dep_info->mem_coeff[2] += refs;
+	     if (index_in_outer_subscript(node,dep_info->index[1]))
+	       dep_info->addr_coeff[2]++;
+	     else
+	       dep_info->addr_coeff[3]++;
+	    }
 	 }
-     dep_info->mem_coeff[0] += refs;
-     if (NOT(missing_out_LI_anti_dep(tree_out(node)) && 
-	     NOT(get_subscript_ptr(node)->store)))
-       if (index_in_outer_subscript(node,dep_info->index[0]))
-         if (index_in_outer_subscript(node,dep_info->index[1]))
-           dep_info->addr_coeff[0]++;
-	 else
-           dep_info->addr_coeff[1]++;
+  }
+
+static void update_mem_coeff_with_vector(AST_INDEX node,
+					 dep_info_type *dep_info,
+					 int       *dvect,
+					 int       refs)
+
+  {
+   int dist1,dist2,distn;
+
+     get_distances(dep_info,dvect,&dist1,&dist2,&distn);
+     dep_info->mem_coeff[1] += dist2 * refs;
+     dep_info->mem_coeff[2] += dist1 * refs;
+     dep_info->mem_coeff[3] -= dist1 * dist2 * refs;
+  }
+
+static void update_addr_coeff_with_no_dep(AST_INDEX node,
+					  dep_info_type *dep_info)
+
+  {
+   if (index_in_outer_subscript(node,dep_info->index[0]))
+     if (index_in_outer_subscript(node,dep_info->index[1]))
+       dep_info->addr_coeff[0]++;
+     else
+       dep_info->addr_coeff[1]++;
+   else
+     if (index_in_outer_subscript(node,dep_info->index[1]))
+       dep_info->addr_coeff[2]++;
+     else
+       dep_info->addr_coeff[3]++;
+  }
+
+static void update_addr_coeff_with_vector(AST_INDEX node,
+					  dep_info_type *dep_info,
+					  int       *dvect)
+  {
+   int dist1,dist2,distn;
+
+     get_distances(dep_info,dvect,&dist1,&dist2,&distn);
+     if (index_in_outer_subscript(node,dep_info->index[0]))
+       if (index_in_outer_subscript(node,dep_info->index[1]))
+	 {
+	  dep_info->addr_coeff[1] += dist2;
+	  dep_info->addr_coeff[2] += dist1;
+	  dep_info->addr_coeff[3] -= dist1 * dist2;
+	 }
        else
-         if (index_in_outer_subscript(node,dep_info->index[1]))
-           dep_info->addr_coeff[2]++;
+         dep_info->addr_coeff[3] += dist1;
+     else if (index_in_outer_subscript(node,dep_info->index[1]))
+       dep_info->addr_coeff[3] += dist2;
+     else
+       dep_info->addr_coeff[3]++;
+  }
+
+static void compute_mem_addr_coeffs(dep_info_type *dep_info,
+				    UtilList      *nlist)
+
+  {
+   subscript_info_type *sptr;
+   int refs, regs, dist1, dist2, distn,i; 
+   int memory_vec[MAXLOOP], address_vec[MAXLOOP];
+   AST_INDEX node;
+   UtilNode  *lnode;
+
+     for (lnode = UTIL_HEAD(nlist);
+	  lnode != NULL;
+	  lnode = UTIL_NEXT(lnode))
+       {
+	node = (AST_INDEX)UTIL_NODE_ATOM(lnode);
+	get_machine_parms(node,&regs,&refs,dep_info); 
+	for (i = 1; i <= MAXLOOP; i++)
+	  {
+	   put_vec_DIS(memory_vec,i,MAXINT);
+	   put_vec_DIS(address_vec,i,MAXINT);
+	  }
+	summarize_node_vector(memory_vec,address_vec,node,nlist,dep_info);
+	if (get_vec_DIS(memory_vec,1) == MAXINT)/* if no incoming dependence */
+	  {
+	   dep_info->mem_coeff[0] += refs;
+	   if (get_vec_DIS(address_vec,1) == MAXINT) 
+                     /* if no incoming dependence */
+	     update_addr_coeff_with_no_dep(node,dep_info);
+	   else
+	     update_addr_coeff_with_vector(node,dep_info,address_vec);
+	  }
+	else
+	  {
+	   sptr = get_subscript_ptr(node);
+	   if (!sptr->is_scalar[2])
+	     if (sptr->is_scalar[0] || sptr->is_scalar[1])
+	       update_coeff_for_invariants(node,sptr,dep_info,memory_vec,refs);
+	     else
+	       {
+		update_mem_coeff_with_vector(node,dep_info,memory_vec,refs);
+		update_addr_coeff_with_vector(node,dep_info,address_vec);
+	       }
+	  }
+       }
   }
 
 static void compute_MIV_coefficients(AST_INDEX     node,
@@ -1110,9 +1211,7 @@ static void compute_coefficients(dep_info_type *dep_info)
    UtilList            *nlist;
    AST_INDEX           node,
                        prevnode;
-   int                 dvect[MAXLOOP];
    subscript_info_type *sptr;
-   int                 num_edges;
 
      for (lnode = UTIL_HEAD(dep_info->partition);
 	  lnode != NULL;
@@ -1120,24 +1219,18 @@ static void compute_coefficients(dep_info_type *dep_info)
        {
 	nlist = (UtilList *)UTIL_NODE_ATOM(lnode);
 	sptr = get_subscript_ptr((AST_INDEX)UTIL_NODE_ATOM(UTIL_HEAD(nlist)));
+	compute_mem_addr_coeffs(dep_info,nlist);
 	if (UTIL_HEAD(nlist) != UTIL_TAIL(nlist) ||
 	    sptr->is_scalar[0] || sptr->is_scalar[1] | sptr->is_scalar[2])
 	  {
-	   num_edges = 0;
 	   node = find_oldest_value(nlist,dep_info);
-	   compute_mem_addr_coeffs(dep_info,node);
-	   summarize_distance_vector(dvect,&num_edges,node,dep_info->ped,
-				     nlist,dep_info);
-	   compute_registers(dep_info,dvect,node,num_edges);
+	   compute_registers(dep_info,node,nlist);
 	   remove_nodes(node,dep_info->ped,dep_info->inner_level,nlist);
 	   prevnode = node;
 	   while (UTIL_HEAD(nlist) != UTIL_TAIL(nlist))
 	     {
-	      num_edges = 0;
 	      node = find_oldest_value(nlist,dep_info);
-	      summarize_distance_vector(dvect,&num_edges,node,dep_info->ped,
-					nlist,dep_info);
-	      compute_extra_regs(dep_info,dvect,node,prevnode,num_edges);
+	      compute_extra_regs(dep_info,node,prevnode,nlist);
 	      remove_nodes(node,dep_info->ped,dep_info->inner_level,nlist);
 	      prevnode = node;
 	     }
@@ -1148,10 +1241,7 @@ static void compute_coefficients(dep_info_type *dep_info)
 	   if (node_is_consistent_MIV(node,dep_info))
 	     compute_MIV_coefficients(node,dep_info);
 	   else
-	     {
-	      change_MIV_to_inconsistent(node,dep_info);
-	      compute_mem_addr_coeffs(dep_info,node);
-	     }
+	     change_MIV_to_inconsistent(node,dep_info);
 	  }
 	util_list_free(nlist);
        }
