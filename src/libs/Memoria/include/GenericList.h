@@ -23,12 +23,14 @@ class GenericList : public SinglyLinkedList {
 private:
   friend class GenericListIter;
 public:
+  GenericList(void) : SinglyLinkedList () {};
   GenericList* operator+=(Generic i) 
     {
      GenericListEntry *e = new GenericListEntry(i);
      SinglyLinkedList::Append(e);
      return this;
     };
+  void Append(Generic i) {SinglyLinkedList::Append(new GenericListEntry(i));};
   GenericListEntry *First()
     {return (GenericListEntry *) SinglyLinkedList::First();};
   GenericListEntry *Last()
