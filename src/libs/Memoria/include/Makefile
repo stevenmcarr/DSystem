@@ -1,7 +1,6 @@
-# $Id: Makefile,v 1.6 1994/01/18 14:24:45 carr Exp $
+# $Id: Makefile,v 1.7 1994/01/25 15:02:24 carr Exp $
 #
 #
-ENV_FLAG := -g
 
 HERE = libs/mc_lib/include
 
