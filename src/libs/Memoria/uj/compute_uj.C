@@ -1038,6 +1038,23 @@ static Boolean node_is_consistent_MIV(AST_INDEX     node,
        return(false);
   }
 
+static void change_MIV_to_inconsistent(AST_INDEX     node,
+			 	       dep_info_type *dinfo)
+  
+  {
+   DG_Edge   *dg;
+   int       vector;
+   EDGE_INDEX edge;
+
+     dg = dg_get_edge_structure(PED_DG(dinfo->ped));
+     vector = get_info(dinfo->ped,node,type_levelv);
+     for (edge = dg_first_sink_ref(PED_DG(dinfo->ped),vector);
+	  edge != END_OF_LIST;
+	  edge = dg_next_sink_ref(PED_DG(dinfo->ped),edge))
+       if (dg[edge].consistent == consistent_MIV)
+         dg[edge].consistent = inconsistent;
+  }
+
 static void compute_coefficients(dep_info_type *dep_info)
 
 /****************************************************************************/
@@ -1086,12 +1103,12 @@ static void compute_coefficients(dep_info_type *dep_info)
 	  {
 	   node = (AST_INDEX)UTIL_NODE_ATOM(UTIL_HEAD(nlist));
 	   if (node_is_consistent_MIV(node,dep_info))
-	     {
-	      get_subscript_ptr(node)->MIV = true;
-	      compute_MIV_coefficients(node,dep_info);
-	     }
+	     compute_MIV_coefficients(node,dep_info);
 	   else
-	     compute_mem_addr_coeffs(dep_info,node);
+	     {
+	      change_MIV_to_inconsistent(node,dep_info);
+	      compute_mem_addr_coeffs(dep_info,node);
+	     }
 	  }
 	util_list_free(nlist);
        }
