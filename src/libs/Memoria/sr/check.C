@@ -23,13 +23,13 @@ static int check_def(AST_INDEX node,
    
      if (is_subscript(node))
        {
-	dg = dg_get_edge_structure((Generic)check_info->ped);
+	dg = dg_get_edge_structure( PED_DG(check_info->ped));
 	name = gen_SUBSCRIPT_get_name(node);
         def = get_info(check_info->ped,name,type_levelv);
 	sptr1 = get_scalar_info_ptr(name);
-	for (edge = dg_first_sink_ref((Generic)check_info->ped,def);
+	for (edge = dg_first_sink_ref( PED_DG(check_info->ped),def);
 	     edge != END_OF_LIST;
-	     edge = dg_next_sink_ref((Generic)check_info->ped,edge))
+	     edge = dg_next_sink_ref( PED_DG(check_info->ped),edge))
 	  if (dg[edge].type == dg_output || dg[edge].type == dg_anti)
 	    if (dg[edge].consistent == inconsistent || dg[edge].symbolic)
 	      {
@@ -47,9 +47,9 @@ static int check_def(AST_INDEX node,
 			dg[edge].level == check_info->level)
 	         ut_add_number(check_info->LC_kill,sptr2->table_index);
 	      }
-	for (edge = dg_first_src_ref((Generic)check_info->ped,def);
+	for (edge = dg_first_src_ref( PED_DG(check_info->ped),def);
 	     edge != END_OF_LIST;
-	     edge = dg_next_src_ref((Generic)check_info->ped,edge))
+	     edge = dg_next_src_ref( PED_DG(check_info->ped),edge))
 	  if (dg[edge].type == dg_output || dg[edge].type == dg_true)
 	    if (dg[edge].consistent == inconsistent || dg[edge].symbolic) 
 	      {

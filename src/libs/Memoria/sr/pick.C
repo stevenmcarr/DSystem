@@ -31,11 +31,11 @@ static int update_avail(AST_INDEX       node,
 	ut_add_number(pick_info->LI_rgen,sptr->array_num);
 	if (pick_info->def)
 	  {
-	   dg = dg_get_edge_structure((Generic)pick_info->ped);
+	   dg = dg_get_edge_structure( PED_DG(pick_info->ped));
 	   vector = get_info(pick_info->ped,name,type_levelv);
-	   for (edge = dg_first_sink_ref((Generic)pick_info->ped,vector);
+	   for (edge = dg_first_sink_ref( PED_DG(pick_info->ped),vector);
 		edge != END_OF_LIST;
-		edge = dg_next_sink_ref((Generic)pick_info->ped,edge))
+		edge = dg_next_sink_ref( PED_DG(pick_info->ped),edge))
 	   if (pick_info->dg[edge].level == LOOP_INDEPENDENT)
 	     {
 	      ut_delete_number(pick_info->LI_rgen,
@@ -92,9 +92,9 @@ static int chk_store(AST_INDEX         node,
 	sptr1 = get_scalar_info_ptr(name);
 	stmt_ptr1 = get_stmt_info_ptr(ut_get_stmt(node));
 	sink_ref = get_info(pick_info->ped,name,type_levelv);
-	for (edge = dg_first_sink_ref((Generic)pick_info->ped,sink_ref);
+	for (edge = dg_first_sink_ref( PED_DG(pick_info->ped),sink_ref);
 	     edge != END_OF_LIST;
-	     edge = dg_next_sink_ref((Generic)pick_info->ped,edge))
+	     edge = dg_next_sink_ref( PED_DG(pick_info->ped),edge))
 	  {
 	   sptr2 = get_scalar_info_ptr(pick_info->dg[edge].src);
 	   if (pick_info->dg[edge].type == dg_output &&
@@ -137,7 +137,7 @@ static int get_gen(AST_INDEX         node,
 	get_scalar_info_ptr(gen_SUBSCRIPT_get_name(node))->generator = -1;
 	sink_ref = get_info(pick_info->ped,gen_SUBSCRIPT_get_name(node),
 			    type_levelv);
-	edge = dg_first_sink_ref((Generic)pick_info->ped,sink_ref);
+	edge = dg_first_sink_ref( PED_DG(pick_info->ped),sink_ref);
 
 	/*  consistent edges can provide a value only if they are not 
 	    killed.  Thus, their availability means their value reaches
@@ -148,7 +148,7 @@ static int get_gen(AST_INDEX         node,
 	  psink = get_scalar_info_ptr(pick_info->dg[edge].sink);
 	while (edge != END_OF_LIST)
 	  {
-	   next_edge = dg_next_sink_ref((Generic)pick_info->ped,edge);
+	   next_edge = dg_next_sink_ref( PED_DG(pick_info->ped),edge);
 	   if (pick_info->dg[edge].type == dg_true ||
 	       (pick_info->dg[edge].type == dg_input && 
 		pick_info->dg[edge].consistent != inconsistent && 
@@ -169,7 +169,7 @@ static int get_gen(AST_INDEX         node,
 					 psrc->array_num) ||
 		     !ut_member_number(pick_info->exit_block->LC_rgen_out_if_1,
 				       psrc->array_num) || dist != 1))
-		   dg_delete_free_edge((Generic)pick_info->ped,edge);
+		   dg_delete_free_edge( PED_DG(pick_info->ped),edge);
 		 else
 		   {
 		    if (ut_member_number(pick_info->exit_block->LC_avail_out,
@@ -184,7 +184,7 @@ static int get_gen(AST_INDEX         node,
 
 		      if (psink->gen_type == LIAV && psink->is_consistent &&
 			  psink->constant)
-		        dg_delete_free_edge((Generic)pick_info->ped,edge);
+		        dg_delete_free_edge( PED_DG(pick_info->ped),edge);
 		      else if (psink->generator == -1)
 			{
 			 psink->generator = psrc->table_index;
@@ -231,7 +231,7 @@ static int get_gen(AST_INDEX         node,
 
 		      if (psink->gen_type == LIAV && psink->is_consistent &&
 			  psink->constant)
-		        dg_delete_free_edge((Generic)pick_info->ped,edge);
+		        dg_delete_free_edge( PED_DG(pick_info->ped),edge);
 		      else if (psink->generator == -1)
 			{
 			 psink->generator = psrc->table_index;
@@ -277,14 +277,14 @@ static int get_gen(AST_INDEX         node,
 		   /* loop-independent edge */
 
 		 if (!ut_member_number(pick_info->LI_rgen,psrc->array_num))
-		   dg_delete_free_edge((Generic)pick_info->ped,edge);
+		   dg_delete_free_edge( PED_DG(pick_info->ped),edge);
 		 else if (ut_member_number(pick_info->LI_avail,
 					   psrc->table_index))
 		   if (psink->gen_type == LIAV && psink->is_consistent &&
 		       psink->constant && 
 		       (pick_info->dg[edge].consistent == inconsistent ||
 			pick_info->dg[edge].symbolic))
-		     dg_delete_free_edge((Generic)pick_info->ped,edge);
+		     dg_delete_free_edge( PED_DG(pick_info->ped),edge);
 		   else if (psink->generator == -1 ||
 			    !psink->is_consistent || 
 			    !psink->constant || 
@@ -307,7 +307,7 @@ static int get_gen(AST_INDEX         node,
 
 		   if (psink->gen_type == LIAV && psink->is_consistent &&
 		       psink->constant)
-		     dg_delete_free_edge((Generic)pick_info->ped,edge);
+		     dg_delete_free_edge( PED_DG(pick_info->ped),edge);
 		   else if (psink->generator == -1 || 
 			    ((!psink->is_consistent  || !psink->constant) &&
 			     pick_info->dg[edge].consistent != inconsistent 
@@ -464,7 +464,7 @@ void sr_pick_possible_generators(flow_graph_type   flow_graph,
    pick_info_type pick_info;
 
      pick_info.contains_cf = prelim_info->contains_cf;
-     pick_info.dg = dg_get_edge_structure((Generic)ped);
+     pick_info.dg = dg_get_edge_structure( PED_DG(ped));
      pick_info.ped = ped;
      pick_info.LI_avail = ut_create_set(prelim_info->ar,LOOP_ARENA,
 					prelim_info->array_refs);

@@ -27,77 +27,77 @@ static int remove_edges(AST_INDEX      stmt,
        if (is_subscript(gen_ASSIGNMENT_get_lvalue(stmt)))
          get_subscript_ptr(gen_SUBSCRIPT_get_name(gen_ASSIGNMENT_get_lvalue(
                            stmt)))->store = true;
-     dg = dg_get_edge_structure((Generic)loop_info->ped);
+     dg = dg_get_edge_structure( PED_DG(loop_info->ped));
      vector = get_info(loop_info->ped,stmt,type_levelv);
      for (lvl = 1;lvl < loop_info->unroll_level;lvl++)
        {
-	for (edge = dg_first_src_stmt((Generic)loop_info->ped,vector,lvl);
+	for (edge = dg_first_src_stmt( PED_DG(loop_info->ped),vector,lvl);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_src_stmt((Generic)loop_info->ped,edge);
-	   dg_delete_free_edge((Generic)loop_info->ped,edge);
+	   next_edge = dg_next_src_stmt( PED_DG(loop_info->ped),edge);
+	   dg_delete_free_edge( PED_DG(loop_info->ped),edge);
 	  }
-	for (edge = dg_first_sink_stmt((Generic)loop_info->ped,vector,lvl);
+	for (edge = dg_first_sink_stmt( PED_DG(loop_info->ped),vector,lvl);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_sink_stmt((Generic)loop_info->ped,edge);
-	   dg_delete_free_edge((Generic)loop_info->ped,edge);
+	   next_edge = dg_next_sink_stmt( PED_DG(loop_info->ped),edge);
+	   dg_delete_free_edge( PED_DG(loop_info->ped),edge);
 	  }
        }
      for (lvl = loop_info->unroll_level; lvl < level;lvl++)
        {
-	for (edge = dg_first_src_stmt((Generic)loop_info->ped,vector,lvl);
+	for (edge = dg_first_src_stmt( PED_DG(loop_info->ped),vector,lvl);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_src_stmt((Generic)loop_info->ped,edge);
+	   next_edge = dg_next_src_stmt( PED_DG(loop_info->ped),edge);
 	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
 	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge((Generic)loop_info->ped,edge);
+	     dg_delete_free_edge( PED_DG(loop_info->ped),edge);
 	   else 
 	     if ((sptr=get_stmt_info_ptr(ut_get_stmt(dg[edge].sink))) == NULL)
-	       dg_delete_free_edge((Generic)loop_info->ped,edge);
+	       dg_delete_free_edge( PED_DG(loop_info->ped),edge);
 	  }
-	for (edge = dg_first_sink_stmt((Generic)loop_info->ped,vector,lvl);
+	for (edge = dg_first_sink_stmt( PED_DG(loop_info->ped),vector,lvl);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_sink_stmt((Generic)loop_info->ped,edge);
+	   next_edge = dg_next_sink_stmt( PED_DG(loop_info->ped),edge);
 	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
 	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge((Generic)loop_info->ped,edge);
+	     dg_delete_free_edge( PED_DG(loop_info->ped),edge);
 	   else 
 	     if ((sptr = get_stmt_info_ptr(ut_get_stmt(dg[edge].src))) == NULL)
-	       dg_delete_free_edge((Generic)loop_info->ped,edge);
+	       dg_delete_free_edge( PED_DG(loop_info->ped),edge);
 	  }
        }
-     for (edge = dg_first_src_stmt((Generic)loop_info->ped,vector,
+     for (edge = dg_first_src_stmt( PED_DG(loop_info->ped),vector,
 				   LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
        {
-	next_edge = dg_next_src_stmt((Generic)loop_info->ped,edge);
+	next_edge = dg_next_src_stmt( PED_DG(loop_info->ped),edge);
 	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
 	    dg[edge].type == dg_call || dg[edge].type == dg_control)
-	  dg_delete_free_edge((Generic)loop_info->ped,edge);
+	  dg_delete_free_edge( PED_DG(loop_info->ped),edge);
 	else 
 	  if ((sptr = get_stmt_info_ptr(ut_get_stmt(dg[edge].sink))) == NULL)
-	    dg_delete_free_edge((Generic)loop_info->ped,edge);
+	    dg_delete_free_edge( PED_DG(loop_info->ped),edge);
        }
-     for (edge = dg_first_sink_stmt((Generic)loop_info->ped,vector,
+     for (edge = dg_first_sink_stmt( PED_DG(loop_info->ped),vector,
 				    LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
        {
-	next_edge = dg_next_sink_stmt((Generic)loop_info->ped,edge);
+	next_edge = dg_next_sink_stmt( PED_DG(loop_info->ped),edge);
 	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
 	    dg[edge].type == dg_call || dg[edge].type == dg_control)
-	  dg_delete_free_edge((Generic)loop_info->ped,edge);
+	  dg_delete_free_edge( PED_DG(loop_info->ped),edge);
 	else 
 	  if ((sptr = get_stmt_info_ptr(ut_get_stmt(dg[edge].src))) == NULL)
-	    dg_delete_free_edge((Generic)loop_info->ped,edge);
+	    dg_delete_free_edge( PED_DG(loop_info->ped),edge);
        }
      return(WALK_CONTINUE);
   }

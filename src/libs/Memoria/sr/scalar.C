@@ -69,27 +69,27 @@ static int count_arrays(AST_INDEX          node,
 	get_scalar_info_ptr(name)->generator = -1;
 	get_scalar_info_ptr(name)->surrounding_do=prelim_info->surrounding_do;
 	get_scalar_info_ptr(name)->array_num = prelim_info->array_refs++;
-	dg = dg_get_edge_structure((Generic)prelim_info->ped);
+	dg = dg_get_edge_structure( PED_DG(prelim_info->ped));
 	vector = get_info(prelim_info->ped,name,type_levelv);
-	for (edge = dg_first_src_ref((Generic)prelim_info->ped,vector);
+	for (edge = dg_first_src_ref( PED_DG(prelim_info->ped),vector);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_src_ref((Generic)prelim_info->ped,edge);
+	   next_edge = dg_next_src_ref( PED_DG(prelim_info->ped),edge);
 	   if ((get_scalar_info_ptr(dg[edge].sink) == NULL) ||
 	       (dg[edge].level != prelim_info->level &&
 		dg[edge].level != LOOP_INDEPENDENT))
-	     dg_delete_free_edge((Generic)prelim_info->ped,edge);
+	     dg_delete_free_edge( PED_DG(prelim_info->ped),edge);
 	  }
-	for (edge = dg_first_sink_ref((Generic)prelim_info->ped,vector);
+	for (edge = dg_first_sink_ref( PED_DG(prelim_info->ped),vector);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_sink_ref((Generic)prelim_info->ped,edge);
+	   next_edge = dg_next_sink_ref( PED_DG(prelim_info->ped),edge);
 	   if ((get_scalar_info_ptr(dg[edge].src) == NULL) ||
 	       (dg[edge].level != prelim_info->level &&
 		dg[edge].level != LOOP_INDEPENDENT))
-	     dg_delete_free_edge((Generic)prelim_info->ped,edge);
+	     dg_delete_free_edge( PED_DG(prelim_info->ped),edge);
 	  }
        }
      else
@@ -436,19 +436,19 @@ static int remove_dependences(AST_INDEX node,
        {
 	name = gen_SUBSCRIPT_get_name(node);
 	vector = get_info(ped,name,type_levelv);
-	for (edge = dg_first_src_ref((Generic)ped,vector);
+	for (edge = dg_first_src_ref( PED_DG(ped),vector);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_src_ref((Generic)ped,edge);
-	   dg_delete_free_edge((Generic)ped,edge);
+	   next_edge = dg_next_src_ref( PED_DG(ped),edge);
+	   dg_delete_free_edge( PED_DG(ped),edge);
 	  }
-	for (edge = dg_first_sink_ref((Generic)ped,vector);
+	for (edge = dg_first_sink_ref( PED_DG(ped),vector);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_src_ref((Generic)ped,edge);
-	   dg_delete_free_edge((Generic)ped,edge);
+	   next_edge = dg_next_src_ref( PED_DG(ped),edge);
+	   dg_delete_free_edge( PED_DG(ped),edge);
 	  }
        }
      return(WALK_CONTINUE);
@@ -566,7 +566,7 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      gen_info.array_table = prelim_info.array_table;
      sr_prune_graph(loop_body,level,&gen_info);
      name_info.ped = do_info->ped;
-     name_info.dg = dg_get_edge_structure((Generic)do_info->ped);
+     name_info.dg = dg_get_edge_structure( PED_DG(do_info->ped));
      name_info.glist = util_list_alloc(NULL,"generator-list");
      name_info.ar = do_info->ar;
      sr_generate_names(root,&name_info);

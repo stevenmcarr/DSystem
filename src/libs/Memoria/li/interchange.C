@@ -6,6 +6,8 @@
 #include <mem_util.h>
 #include <mark.h>
 
+#include	<dg.h>		/* dg_add_edge()		*/
+
 
 
 static int remove_edges(AST_INDEX stmt,
@@ -19,46 +21,46 @@ static int remove_edges(AST_INDEX stmt,
               next_edge;
    int        i;
 
-     dg = dg_get_edge_structure((Generic)ped);
+     dg = dg_get_edge_structure( PED_DG(ped));
      vector = get_info(ped,stmt,type_levelv);
      for (i = 1;i <= level; i++)
        {
-	for (edge = dg_first_src_stmt((Generic)ped,vector,i);
+	for (edge = dg_first_src_stmt( PED_DG(ped),vector,i);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_src_stmt((Generic)ped,edge);
+	   next_edge = dg_next_src_stmt( PED_DG(ped),edge);
 	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
 	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge((Generic)ped,edge);
+	     dg_delete_free_edge( PED_DG(ped),edge);
 	  }
-	for (edge = dg_first_sink_stmt((Generic)ped,vector,i);
+	for (edge = dg_first_sink_stmt( PED_DG(ped),vector,i);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_sink_stmt((Generic)ped,edge);
+	   next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
 	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
 	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge((Generic)ped,edge);
+	     dg_delete_free_edge( PED_DG(ped),edge);
 	  }
        }
-     for (edge = dg_first_src_stmt((Generic)ped,vector,LOOP_INDEPENDENT);
+     for (edge = dg_first_src_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
        {
-	next_edge = dg_next_src_stmt((Generic)ped,edge);
+	next_edge = dg_next_src_stmt( PED_DG(ped),edge);
 	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
 	    dg[edge].type == dg_call || dg[edge].type == dg_control)
-	  dg_delete_free_edge((Generic)ped,edge);
+	  dg_delete_free_edge( PED_DG(ped),edge);
        }
-     for (edge = dg_first_sink_stmt((Generic)ped,vector,LOOP_INDEPENDENT);
+     for (edge = dg_first_sink_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
        {
-	next_edge = dg_next_sink_stmt((Generic)ped,edge);
+	next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
 	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
 	    dg[edge].type == dg_call || dg[edge].type == dg_control)
-	   dg_delete_free_edge((Generic)ped,edge);
+	   dg_delete_free_edge( PED_DG(ped),edge);
        }
      return(WALK_CONTINUE);
   }
@@ -101,11 +103,11 @@ static RefType reference_type(AST_INDEX node,
 
      rtype = MISS;
      name = gen_SUBSCRIPT_get_name(node);
-     dg = dg_get_edge_structure((Generic)ped);
+     dg = dg_get_edge_structure( PED_DG(ped));
      vector = get_info(ped,name,type_levelv);
-     for (edge = dg_first_sink_ref((Generic)ped,vector);
+     for (edge = dg_first_sink_ref( PED_DG(ped),vector);
 	  edge != END_OF_LIST;
-	  edge = dg_next_sink_ref((Generic)ped,edge))
+	  edge = dg_next_sink_ref( PED_DG(ped),edge))
        if (dg[edge].consistent != inconsistent && !dg[edge].symbolic)
 	 if ((dg[edge].level == level && can_move_to_innermost(&dg[edge])) || 
 	    dg[edge].level == LOOP_INDEPENDENT)
@@ -370,7 +372,7 @@ static void add_edge(PedInfo      ped,
    int        source,sink,temp,
               src_stmt,sink_stmt;
 
-     new_edge = dg_alloc_edge((Generic)ped,&dg);
+     new_edge = dg_alloc_edge( PED_DG(ped),&dg);
      dg[new_edge].src_str = NULL;
      dg[new_edge].sink_str = NULL;
      dg[new_edge].type = dg[old_edge].type;
@@ -423,9 +425,9 @@ static void add_edge(PedInfo      ped,
      if (is_logical_if(tree_out(sink_stmt)) || is_guard(sink_stmt))
        sink_stmt = tree_out(sink_stmt);
      dg[new_edge].sink_vec = get_info(ped,sink_stmt,type_levelv);
-     dt_copy_info(ped,&dg[old_edge],&dg[new_edge]);
-     dt_info_str(ped,&dg[new_edge]);
-     dg_add_edge((Generic)ped,new_edge);
+     dt_copy_info( PED_DT_INFO(ped),&dg[old_edge],&dg[new_edge]);
+     dt_info_str( PED_DT_INFO(ped),&dg[new_edge]);
+     dg_add_edge( PED_DG(ped),new_edge);
   }
 
 static int update_edges(AST_INDEX node,
@@ -441,13 +443,13 @@ static int update_edges(AST_INDEX node,
        {
 	name = gen_SUBSCRIPT_get_name(node);
 	vector = get_info(info->ped,name,type_levelv);
-	dg = dg_get_edge_structure((Generic)info->ped);
+	dg = dg_get_edge_structure( PED_DG(info->ped));
 	surrounding_do = get_stmt_info_ptr(ut_get_stmt(node))->surrounding_do;
-	for (edge = dg_first_src_ref((Generic)info->ped,vector);
+	for (edge = dg_first_src_ref( PED_DG(info->ped),vector);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_src_ref((Generic)info->ped,edge);
+	   next_edge = dg_next_src_ref( PED_DG(info->ped),edge);
 	   if (dg[edge].level == info->level && 
 	       get_stmt_info_ptr(ut_get_stmt(dg[edge].sink))->surrounding_do !=
 	       surrounding_do)
@@ -460,7 +462,7 @@ static int update_edges(AST_INDEX node,
 		   gen_put_dt_DIS(&dg[edge],j,0);
 		 add_edge(info->ped,dg,edge,LOOP_INDEPENDENT);
 		}
-	      dg_delete_free_edge((Generic)info->ped,edge);
+	      dg_delete_free_edge( PED_DG(info->ped),edge);
 	     }
 	  }
        }
@@ -689,13 +691,13 @@ static int update_vectors(AST_INDEX     node,
    if (is_subscript(node))
      {
       name = gen_SUBSCRIPT_get_name(node);
-      dg = dg_get_edge_structure((Generic)upd_info->ped);
+      dg = dg_get_edge_structure( PED_DG(upd_info->ped));
       vector = get_info(upd_info->ped,name,type_levelv);
-      for (edge = dg_first_src_ref((Generic)upd_info->ped,vector);
+      for (edge = dg_first_src_ref( PED_DG(upd_info->ped),vector);
 	   edge != END_OF_LIST;
 	   edge = next_edge)
 	{
-	 next_edge = dg_next_src_ref((Generic)upd_info->ped,edge);
+	 next_edge = dg_next_src_ref( PED_DG(upd_info->ped),edge);
 	 if (dg[edge].level != LOOP_INDEPENDENT)
 	   {
 	    for (i = 0; i < upd_info->num_loops;i++)
@@ -744,7 +746,7 @@ static int update_vectors(AST_INDEX     node,
 		}
 	      else
 	        i++;
-	    dg_delete_free_edge((Generic)upd_info->ped,edge);
+	    dg_delete_free_edge( PED_DG(upd_info->ped),edge);
 	   }
 	}
      }

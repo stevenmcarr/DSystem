@@ -63,11 +63,11 @@ static int add_defs(AST_INDEX         node,
 	ut_add_number(rgen_info->block->gen,sptr->array_num);
 	if (!ut_member_number(rgen_info->LC_kill,sptr->table_index))
 	  ut_add_number(rgen_info->block->LC_gen,sptr->array_num);
-	dg = dg_get_edge_structure((Generic)rgen_info->ped);
+	dg = dg_get_edge_structure( PED_DG(rgen_info->ped));
 	vector = get_info(rgen_info->ped,name,type_levelv);
-	for (edge = dg_first_sink_ref((Generic)rgen_info->ped,vector);
+	for (edge = dg_first_sink_ref( PED_DG(rgen_info->ped),vector);
 	     edge != END_OF_LIST;
-	     edge = dg_next_sink_ref((Generic)rgen_info->ped,edge))
+	     edge = dg_next_sink_ref( PED_DG(rgen_info->ped),edge))
 	  if (dg[edge].level == LOOP_INDEPENDENT)
 	    {
 	     sptr = get_scalar_info_ptr(dg[edge].src);

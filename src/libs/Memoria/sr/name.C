@@ -26,18 +26,18 @@ static void do_partition(AST_INDEX name,
      util_append(nlist,sptr->list_index);
      sptr->visited = true;
      refl = get_info(ped,name,type_levelv);
-     for (edge = dg_first_src_ref((Generic)ped,refl);
+     for (edge = dg_first_src_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST;
-	  edge = dg_next_src_ref((Generic)ped,edge))
+	  edge = dg_next_src_ref( PED_DG(ped),edge))
        if (dg[edge].type == dg_true || dg[edge].type == dg_input)
 	 {
 	  sptr = get_scalar_info_ptr(dg[edge].sink);
 	  if(!sptr->visited)
 	    do_partition(dg[edge].sink,nlist,dg,ped);
 	 }
-     for (edge = dg_first_sink_ref((Generic)ped,refl);
+     for (edge = dg_first_sink_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST;
-	  edge = dg_next_sink_ref((Generic)ped,edge))
+	  edge = dg_next_sink_ref( PED_DG(ped),edge))
        if (dg[edge].type == dg_true || dg[edge].type == dg_input)
 	 {
 	  sptr = get_scalar_info_ptr(dg[edge].src);
@@ -103,9 +103,9 @@ static int calc_distances(AST_INDEX node,
 	sptr->gen_distance = distance;
 	sptr->visited = false;
 	refl = get_info(ped,node,type_levelv);
-	for (edge = dg_first_sink_ref((Generic)ped,refl);
+	for (edge = dg_first_sink_ref( PED_DG(ped),refl);
 	     edge != END_OF_LIST;
-	     edge = dg_next_sink_ref((Generic)ped,edge))
+	     edge = dg_next_sink_ref( PED_DG(ped),edge))
 	if (dg[edge].type == dg_true || dg[edge].type == dg_input)
 	  if (dg[edge].level == LOOP_INDEPENDENT)
 	    (void) calc_distances(dg[edge].src,distance,dg,ped);
@@ -113,9 +113,9 @@ static int calc_distances(AST_INDEX node,
 	    (void) calc_distances(dg[edge].src,distance-edist,dg,ped);
 	  else
 	    (void) calc_distances(dg[edge].src,distance-1,dg,ped);
-	for (edge = dg_first_src_ref((Generic)ped,refl);
+	for (edge = dg_first_src_ref( PED_DG(ped),refl);
 	     edge != END_OF_LIST;
-	     edge = dg_next_src_ref((Generic)ped,edge))
+	     edge = dg_next_src_ref( PED_DG(ped),edge))
 	  if (dg[edge].type == dg_true || dg[edge].type == dg_input)
 	    if (dg[edge].level == LOOP_INDEPENDENT)
 	      {
@@ -155,9 +155,9 @@ static void check_if_oldest_value(AST_INDEX node,
 
      *gen_not_found = false;
      sink_ref = get_info(ped,node,type_levelv);
-     for (edge = dg_first_sink_ref((Generic)ped,sink_ref);
+     for (edge = dg_first_sink_ref( PED_DG(ped),sink_ref);
 	  edge != END_OF_LIST && !*gen_not_found;
-	  edge = dg_next_sink_ref((Generic)ped,edge))
+	  edge = dg_next_sink_ref( PED_DG(ped),edge))
        if(dg[edge].consistent != inconsistent && !dg[edge].symbolic)
          if (dg[edge].type == dg_output && dg[edge].src != dg[edge].sink)
 	   {

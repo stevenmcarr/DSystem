@@ -28,19 +28,19 @@ static void prune_dependence_edges(AST_INDEX     node,
                     sink_stmt;
 
      scalar_sink = get_scalar_info_ptr(node);
-     dg = dg_get_edge_structure((Generic)gen_info->ped);
+     dg = dg_get_edge_structure( PED_DG(gen_info->ped));
      sink_ref= get_info(gen_info->ped,node,type_levelv);
-     for (edge = dg_first_sink_ref((Generic)gen_info->ped,sink_ref);
+     for (edge = dg_first_sink_ref( PED_DG(gen_info->ped),sink_ref);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
        {
-	next_edge = dg_next_sink_ref((Generic)gen_info->ped,edge);
+	next_edge = dg_next_sink_ref( PED_DG(gen_info->ped),edge);
 	if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 	    dg[edge].type == dg_input || dg[edge].type == dg_output)
 	  {
 	   scalar_src = get_scalar_info_ptr(dg[edge].src);
 	   if (scalar_src->surrounding_do != scalar_sink->surrounding_do)
-	     dg_delete_free_edge((Generic)gen_info->ped,edge);
+	     dg_delete_free_edge( PED_DG(gen_info->ped),edge);
 	   else 
 	     switch(dg[edge].type)
 	       {
@@ -81,7 +81,7 @@ static void prune_dependence_edges(AST_INDEX     node,
 			 dg[edge].type == dg_input && !scalar_src->prevent_slr)
 		       scalar_src->scalar = true;
 		     if (edge_dist > distance)
-		       dg_delete_free_edge((Generic)gen_info->ped,edge);
+		       dg_delete_free_edge( PED_DG(gen_info->ped),edge);
 		     else if (edge_dist == distance && 
 			      (scalar_src->generator == -1 || 
 			       dg[edge].src == dg[edge].sink))
@@ -96,7 +96,7 @@ static void prune_dependence_edges(AST_INDEX     node,
 			scalar_sink->prevent_slr = true;
 			scalar_sink->scalar = false;
 		       }
-		     dg_delete_free_edge((Generic)gen_info->ped,edge);
+		     dg_delete_free_edge( PED_DG(gen_info->ped),edge);
 		    }
 		  break;
 		case dg_output: 
@@ -113,7 +113,7 @@ static void prune_dependence_edges(AST_INDEX     node,
 		     scalar_src->prevent_rec = true;
 		    }
 		default:
-		  dg_delete_free_edge((Generic)gen_info->ped,edge);
+		  dg_delete_free_edge( PED_DG(gen_info->ped),edge);
 	       }
 	  }
        }

@@ -273,9 +273,9 @@ static void do_partition(AST_INDEX name,
      util_append(nlist,sptr->list_index);
      sptr->visited = true;
      refl = get_info(ped,name,type_levelv);
-     for (edge = dg_first_src_ref((Generic)ped,refl);
+     for (edge = dg_first_src_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST;
-	  edge = dg_next_src_ref((Generic)ped,edge))
+	  edge = dg_next_src_ref( PED_DG(ped),edge))
        if ((dg[edge].type == dg_true || dg[edge].type == dg_input) &&
 	   dg[edge].level == LOOP_INDEPENDENT)
 	 {
@@ -283,9 +283,9 @@ static void do_partition(AST_INDEX name,
 	  if(!sptr->visited)
 	    do_partition(dg[edge].sink,nlist,dg,ped);
 	 }
-     for (edge = dg_first_sink_ref((Generic)ped,refl);
+     for (edge = dg_first_sink_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST;
-	  edge = dg_next_sink_ref((Generic)ped,edge))
+	  edge = dg_next_sink_ref( PED_DG(ped),edge))
        if ((dg[edge].type == dg_true || dg[edge].type == dg_input) &&
 	   dg[edge].level == LOOP_INDEPENDENT)
 	 {
@@ -321,9 +321,9 @@ static void find_LI_generator(UtilNode *lnode,
 	  {
 	   vector = get_info(ped,astnode,type_levelv);
 	   is_generator = true;
-	   for (edge = dg_first_sink_ref((Generic)ped,vector);
+	   for (edge = dg_first_sink_ref( PED_DG(ped),vector);
 		edge != END_OF_LIST && is_generator;
-		edge = dg_next_sink_ref((Generic)ped,edge))
+		edge = dg_next_sink_ref( PED_DG(ped),edge))
 	     if (dg[edge].level == LOOP_INDEPENDENT)
 	       if (dg[edge].type == dg_true || dg[edge].type == dg_input)
 	         is_generator = false;
@@ -398,7 +398,7 @@ static void do_opt_allocation(UtilList *glist,
 	  node != NULLNODE;
 	  node = UTIL_NEXT(node))
        get_scalar_info_ptr((AST_INDEX)UTIL_NODE_ATOM(node))->visited = false;
-     dg = dg_get_edge_structure((Generic)ped);
+     dg = dg_get_edge_structure( PED_DG(ped));
      for (node = UTIL_HEAD(((name_node_type *)UTIL_NODE_ATOM(lnode))->nlist);
 	  node != NULLNODE;
 	  node = UTIL_NEXT(node))

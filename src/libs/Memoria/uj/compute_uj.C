@@ -26,12 +26,12 @@ static int determine_uj_prof(AST_INDEX      stmt,
 
      if (is_do(stmt))
        comp_info->loop_stack[level] = get_stmt_info_ptr(stmt)->loop_num;
-     dg = dg_get_edge_structure((Generic)comp_info->ped);
+     dg = dg_get_edge_structure( PED_DG(comp_info->ped));
      vector = get_info(comp_info->ped,stmt,type_levelv);
      for (lvl = comp_info->level; lvl < level-1;lvl++)
-       for (edge = dg_first_src_stmt((Generic)comp_info->ped,vector,lvl);
+       for (edge = dg_first_src_stmt( PED_DG(comp_info->ped),vector,lvl);
 	    edge != END_OF_LIST;
-	    edge = dg_next_src_stmt((Generic)comp_info->ped,edge))
+	    edge = dg_next_src_stmt( PED_DG(comp_info->ped),edge))
          if ((dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 	      dg[edge].type == dg_input || dg[edge].type == dg_output) &&
 	     fst_GetField(comp_info->symtab,gen_get_text(dg[edge].src),
@@ -222,9 +222,9 @@ static void do_partition(AST_INDEX name,
      sptr->lnode = util_node_alloc(name,NULL);
      util_append(nlist,sptr->lnode);
      refl = get_info(dinfo->ped,name,type_levelv);
-     for (edge = dg_first_src_ref((Generic)dinfo->ped,refl);
+     for (edge = dg_first_src_ref( PED_DG(dinfo->ped),refl);
 	  edge != END_OF_LIST;
-	  edge = dg_next_src_ref((Generic)dinfo->ped,edge))
+	  edge = dg_next_src_ref( PED_DG(dinfo->ped),edge))
        if ((dg[edge].type == dg_true || dg[edge].type == dg_input) &&
 	   edge_creates_pressure(&dg[edge],dinfo))
 	 {
@@ -232,9 +232,9 @@ static void do_partition(AST_INDEX name,
 	  if(!sptr->visited)
 	    do_partition(dg[edge].sink,nlist,dg,dinfo);
 	 }
-     for (edge = dg_first_sink_ref((Generic)dinfo->ped,refl);
+     for (edge = dg_first_sink_ref( PED_DG(dinfo->ped),refl);
 	  edge != END_OF_LIST;
-	  edge = dg_next_sink_ref((Generic)dinfo->ped,edge))
+	  edge = dg_next_sink_ref( PED_DG(dinfo->ped),edge))
        if ((dg[edge].type == dg_true || dg[edge].type == dg_input) &&
 	   edge_creates_pressure(&dg[edge],dinfo))
 	 {
@@ -267,7 +267,7 @@ static int partition_names(AST_INDEX      node,
 	   lnode = util_node_alloc((Generic)util_list_alloc(NULL,NULL),NULL);
 	   util_append(dinfo->partition,lnode);
 	   do_partition(name,(UtilList *)UTIL_NODE_ATOM(lnode),
-			dg_get_edge_structure((Generic)dinfo->ped),
+			dg_get_edge_structure( PED_DG(dinfo->ped)),
 			dinfo);
 	  }
        }
@@ -296,10 +296,10 @@ static void check_incoming_edges(AST_INDEX     node,
    subscript_info_type *sptr;
 
      vector = get_info(dep_info->ped,node,type_levelv);
-     dg = dg_get_edge_structure((Generic)dep_info->ped);
-     for (edge = dg_first_sink_ref((Generic)dep_info->ped,vector);
+     dg = dg_get_edge_structure( PED_DG(dep_info->ped));
+     for (edge = dg_first_sink_ref( PED_DG(dep_info->ped),vector);
 	  edge != END_OF_LIST;
-	  edge = dg_next_sink_ref((Generic)dep_info->ped,edge))
+	  edge = dg_next_sink_ref( PED_DG(dep_info->ped),edge))
        {
 	if (get_subscript_ptr(dg[edge].src)->surrounding_do !=
 	    get_subscript_ptr(dg[edge].sink)->surrounding_do)
@@ -589,7 +589,7 @@ static AST_INDEX find_oldest_value(UtilList *nlist,
    Boolean found; 
    int refl;
 
-     dg = dg_get_edge_structure((Generic)dinfo->ped);
+     dg = dg_get_edge_structure( PED_DG(dinfo->ped));
      for (node = UTIL_HEAD(nlist);
 	  node != NULL;
 	  node = UTIL_NEXT(node)) 
@@ -597,9 +597,9 @@ static AST_INDEX find_oldest_value(UtilList *nlist,
 	refl = get_info(dinfo->ped,(AST_INDEX)UTIL_NODE_ATOM(node),
 			type_levelv);
  	found = true; 
-	for (edge = dg_first_sink_ref((Generic)dinfo->ped,refl);
+	for (edge = dg_first_sink_ref( PED_DG(dinfo->ped),refl);
 	     edge != END_OF_LIST;
-	     edge = dg_next_sink_ref((Generic)dinfo->ped,edge))
+	     edge = dg_next_sink_ref( PED_DG(dinfo->ped),edge))
 	  if(dg[edge].src != dg[edge].sink &&
 	     (dg[edge].level == dinfo->level1 ||
 	      dg[edge].level == dinfo->level2 ||
@@ -637,11 +637,11 @@ static void summarize_distance_vector(int *dvec,
    int refl,i,dist1;
    Boolean first = true;
 
-     dg = dg_get_edge_structure((Generic)ped);
+     dg = dg_get_edge_structure( PED_DG(ped));
      refl = get_info(ped,node,type_levelv);
-     for (edge = dg_first_src_ref((Generic)ped,refl);
+     for (edge = dg_first_src_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST;
-	  edge = dg_next_src_ref((Generic)ped,edge))
+	  edge = dg_next_src_ref( PED_DG(ped),edge))
        if (dg[edge].consistent == consistent_SIV && !dg[edge].symbolic &&
 	   dg[edge].type == dg_true || dg[edge].type == dg_input &&
 	   get_subscript_ptr(dg[edge].src)->surrounding_do ==
@@ -690,11 +690,11 @@ static void remove_nodes(AST_INDEX node,
    int refl; 	
 
      util_pluck(get_subscript_ptr(node)->lnode);
-     dg = dg_get_edge_structure((Generic)ped);
+     dg = dg_get_edge_structure( PED_DG(ped));
      refl = get_info(ped,node,type_levelv);
-     for (edge = dg_first_src_ref((Generic)ped,refl);
+     for (edge = dg_first_src_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST;
-	  edge = dg_next_src_ref((Generic)ped,edge))
+	  edge = dg_next_src_ref( PED_DG(ped),edge))
        if (get_subscript_ptr(dg[edge].src)->surrounding_do ==
 	   get_subscript_ptr(dg[edge].sink)->surrounding_do)
          if ((dg[edge].level == LOOP_INDEPENDENT || dg[edge].level == level) &&
@@ -859,11 +859,11 @@ static void compute_extra_regs(dep_info_type *dinfo,
            dist2,sdist2,
            distn,sdistn,regs,refs;
 
-     dg = dg_get_edge_structure((Generic)dinfo->ped);
+     dg = dg_get_edge_structure( PED_DG(dinfo->ped));
      vector = get_info(dinfo->ped,node,type_levelv);
-     for (edge = dg_first_sink_ref((Generic)dinfo->ped,vector);
+     for (edge = dg_first_sink_ref( PED_DG(dinfo->ped),vector);
 	  dg[edge].src != prevnode && edge != END_OF_LIST;
-	  edge = dg_next_sink_ref((Generic)dinfo->ped,edge));
+	  edge = dg_next_sink_ref( PED_DG(dinfo->ped),edge));
      get_machine_parms(node,&regs,&refs,dinfo);
      if (edge == END_OF_LIST)
        {

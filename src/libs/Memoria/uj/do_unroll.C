@@ -183,7 +183,7 @@ static int create_ref_lists(AST_INDEX node,
 	name = gen_SUBSCRIPT_get_name(node);
 	if (get_info(ped,get_subscript_ptr(name)->original,type_levelv) >= 0)
 	  {
-	   ref = dg_alloc_ref_list((Generic)ped);
+	   ref = dg_alloc_ref_list( PED_DG(ped));
 	   create_info(ped,name);
 	   put_info(ped,name,type_levelv,ref);
 	  }
@@ -225,9 +225,9 @@ static void set_level_vectors(AST_INDEX old_list,
 			    gen_LOGICAL_IF_get_stmt_LIST(newa),ped);
 	if (get_info(ped,old,type_levelv) >= 0)
 	  {
-	   v_size = dg_length_level_vector((Generic)ped,
+	   v_size = dg_length_level_vector( PED_DG(ped),
 					   get_info(ped,old,type_levelv));
-	   vector = dg_alloc_level_vector((Generic)ped,v_size);
+	   vector = dg_alloc_level_vector( PED_DG(ped),v_size);
 	   create_info(ped,newa);
 	   put_info(ped,newa,type_levelv,vector);
 	   walk_expression(newa,create_ref_lists,NOFUNC,(Generic)ped);
@@ -249,19 +249,19 @@ static int replace_array(AST_INDEX node,
 	 {
 	  name = gen_SUBSCRIPT_get_name(node);
 	  vector = get_info(rep_info->ped,name,type_levelv);
-	  for (edge = dg_first_src_ref((Generic)rep_info->ped,vector);
+	  for (edge = dg_first_src_ref( PED_DG(rep_info->ped),vector);
 	       edge != END_OF_LIST;
 	       edge = next_edge)
 	    {
-	     next_edge = dg_next_src_ref((Generic)rep_info->ped,edge);
-	     dg_delete_free_edge((Generic)rep_info->ped,edge);
+	     next_edge = dg_next_src_ref( PED_DG(rep_info->ped),edge);
+	     dg_delete_free_edge( PED_DG(rep_info->ped),edge);
 	    }
-	  for (edge = dg_first_sink_ref((Generic)rep_info->ped,vector);
+	  for (edge = dg_first_sink_ref( PED_DG(rep_info->ped),vector);
 	       edge != END_OF_LIST;
 	       edge = next_edge)
 	    {
-	     next_edge = dg_next_sink_ref((Generic)rep_info->ped,edge);
-	     dg_delete_free_edge((Generic)rep_info->ped,edge);
+	     next_edge = dg_next_sink_ref( PED_DG(rep_info->ped),edge);
+	     dg_delete_free_edge( PED_DG(rep_info->ped),edge);
 	    }
 	  /* free((char *)get_subscript_ptr(name)); */
 	  pt_tree_replace(node,pt_gen_ident(rep_info->new_var));
@@ -362,14 +362,14 @@ static void add_edge(AST_INDEX    source,
               src_ref,
               sink_ref;
 
-     dg = dg_get_edge_structure((Generic)ped);
-     new_edge = dg_alloc_edge((Generic)ped,&dg);
+     dg = dg_get_edge_structure( PED_DG(ped));
+     new_edge = dg_alloc_edge( PED_DG(ped),&dg);
      dg[new_edge].src_str = NULL;
      dg[new_edge].sink_str = NULL;
      dg[new_edge].type = dg[old_edge].type;
      dg[new_edge].symbolic = dg[old_edge].symbolic;
      dg[new_edge].consistent = dg[old_edge].consistent;
-     dt_copy_info(ped,&dg[old_edge],&dg[new_edge]);
+     dt_copy_info( PED_DT_INFO(ped),&dg[old_edge],&dg[new_edge]);
      if (new_thresh == 0 && level == dg[old_edge].level &&
 	 level != LOOP_INDEPENDENT)
        {
@@ -411,8 +411,8 @@ static void add_edge(AST_INDEX    source,
      dg[new_edge].sink_vec = get_info(ped,sink_stmt,type_levelv);
 
      gen_put_dt_DIS(&dg[new_edge],level,new_thresh);
-     dt_info_str(ped,&dg[new_edge]);
-     dg_add_edge((Generic)ped,new_edge);
+     dt_info_str( PED_DT_INFO(ped),&dg[new_edge]);
+     dg_add_edge( PED_DG(ped),new_edge);
   }
 
 static int update_graph(AST_INDEX     node,
@@ -440,13 +440,13 @@ static int update_graph(AST_INDEX     node,
      if (is_subscript(node))
        {
 	name = gen_SUBSCRIPT_get_name(node);
-	dg = dg_get_edge_structure((Generic)upd_info->ped);
+	dg = dg_get_edge_structure( PED_DG(upd_info->ped));
 	vector = get_info(upd_info->ped,name,type_levelv);
-	for (edge = dg_first_src_ref((Generic)upd_info->ped,vector);
+	for (edge = dg_first_src_ref( PED_DG(upd_info->ped),vector);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
 	  {
-	   next_edge = dg_next_src_ref((Generic)upd_info->ped,edge);
+	   next_edge = dg_next_src_ref( PED_DG(upd_info->ped),edge);
 	   thresh = gen_get_dt_DIS(&dg[edge],upd_info->level);
 	   if ((dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 		dg[edge].type == dg_input || dg[edge].type == dg_output) &&
@@ -482,7 +482,7 @@ static int update_graph(AST_INDEX     node,
 				 ut_get_stmt(sink),edge,new_thresh,
 				 upd_info->level,upd_info->ped);
 		       }
-		     dg_delete_free_edge((Generic)upd_info->ped,edge);
+		     dg_delete_free_edge( PED_DG(upd_info->ped),edge);
 		    }
 		  else
 		    {
@@ -661,11 +661,11 @@ int mh_copy_edges(AST_INDEX node,
      if (is_subscript(node))
        {
 	name = gen_SUBSCRIPT_get_name(node);
-	dg = dg_get_edge_structure(ped);
+	dg = dg_get_edge_structure( PED_DG(((PedInfo)ped)));
 	vector = get_info((PedInfo)ped,name,type_levelv);
-	for (edge = dg_first_src_ref(ped,vector);
+	for (edge = dg_first_src_ref( PED_DG(((PedInfo)ped)),vector);
 	     edge != END_OF_LIST;
-	     edge = dg_next_src_ref(ped,edge))
+	     edge = dg_next_src_ref( PED_DG(((PedInfo)ped)),edge))
          if ((dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 	      dg[edge].type == dg_input || dg[edge].type == dg_output) &&
 	     (get_subscript_ptr(dg[edge].src)->surrounding_do == 
@@ -699,11 +699,11 @@ static int add_level_to_edges(AST_INDEX node,
      if (is_subscript(node))
        {
 	name = gen_SUBSCRIPT_get_name(node);
-	dg = dg_get_edge_structure((Generic)edge_info->ped);
+	dg = dg_get_edge_structure( PED_DG(edge_info->ped));
 	vector = get_info(edge_info->ped,name,type_levelv);
-	for (edge = dg_first_src_ref((Generic)edge_info->ped,vector);
+	for (edge = dg_first_src_ref( PED_DG(edge_info->ped),vector);
 	     edge != END_OF_LIST;
-	     edge = dg_next_src_ref((Generic)edge_info->ped,edge))
+	     edge = dg_next_src_ref( PED_DG(edge_info->ped),edge))
          if (dg[edge].level >= edge_info->level)
 	   {
 	    gen_put_dt_LVL(&dg[edge],gen_get_dt_LVL(&dg[edge])+1);

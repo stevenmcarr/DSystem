@@ -200,7 +200,7 @@ static void check_backwards_dep(model_loop *loop,
 	  }
 	else;
       else
-        dg_delete_free_edge((Generic)ped,edge);
+        dg_delete_free_edge( PED_DG(ped),edge);
   }
 
 static int crossing_loop(model_loop *loop_data,
@@ -257,11 +257,11 @@ static void check_crossing_dep(model_loop *loop_data,
 			     loop_data[loop].level);
 	      loop_data[loop].distribute = false;
 	     }
-	   dg_delete_free_edge((Generic)ped,edge);
+	   dg_delete_free_edge( PED_DG(ped),edge);
 	  }
 	else;
       else
-        dg_delete_free_edge((Generic)ped,edge);
+        dg_delete_free_edge( PED_DG(ped),edge);
   }
 
 static int build_edge_pre(AST_INDEX       stmt,
@@ -285,7 +285,7 @@ static int build_edge_pre(AST_INDEX       stmt,
    float      rho_R;
    AST_INDEX  node;
 
-   dg = dg_get_edge_structure((Generic)build_info->ped);
+   dg = dg_get_edge_structure( PED_DG(build_info->ped));
    vector = get_info(build_info->ped,stmt,type_levelv);
    for (lvl = build_info->level;
 	lvl < level;
@@ -293,11 +293,11 @@ static int build_edge_pre(AST_INDEX       stmt,
      {
       rec_num = 0;
       max_thresh = 0;
-      for (edge = dg_first_src_stmt((Generic)build_info->ped,vector,lvl);
+      for (edge = dg_first_src_stmt( PED_DG(build_info->ped),vector,lvl);
 	   edge != END_OF_LIST;
 	   edge = next_edge)
 	{
-	 next_edge = dg_next_src_stmt((Generic)build_info->ped,edge);
+	 next_edge = dg_next_src_stmt( PED_DG(build_info->ped),edge);
 	 if ((dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 	      dg[edge].type == dg_output) && 
 	     fst_GetField(build_info->symtab,gen_get_text(dg[edge].src),
@@ -347,23 +347,23 @@ static int build_edge_pre(AST_INDEX       stmt,
 	   }
 	}
      }
-   for (edge = dg_first_src_stmt((Generic)build_info->ped,vector,
+   for (edge = dg_first_src_stmt( PED_DG(build_info->ped),vector,
 				 LOOP_INDEPENDENT);
 	edge != END_OF_LIST;
 	edge = next_edge)
      {
-      next_edge = dg_next_src_stmt((Generic)build_info->ped,edge);
+      next_edge = dg_next_src_stmt( PED_DG(build_info->ped),edge);
       if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 	  dg[edge].type == dg_input || dg[edge].type == dg_output)
         check_crossing_dep(build_info->loop_data,build_info->last_stack,
 			   dg,edge,build_info->ped,build_info->symtab);
      }
-   for (edge = dg_first_sink_stmt((Generic)build_info->ped,vector,
+   for (edge = dg_first_sink_stmt( PED_DG(build_info->ped),vector,
 				  LOOP_INDEPENDENT);
 	edge != END_OF_LIST;
 	edge = next_edge)
      {
-      next_edge = dg_next_sink_stmt((Generic)build_info->ped,edge);
+      next_edge = dg_next_sink_stmt( PED_DG(build_info->ped),edge);
       if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
 	  dg[edge].type == dg_input || dg[edge].type == dg_output)
         check_crossing_dep(build_info->loop_data,build_info->last_stack,
