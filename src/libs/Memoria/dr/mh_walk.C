@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.36 1995/08/30 15:31:03 carr Exp $ */
+/* $Id: mh_walk.C,v 1.37 1995/08/31 12:45:47 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -193,7 +193,8 @@ static int pre_walk(AST_INDEX      stmt,
 	 else;  
        else
 	 list_insert_before(stmt,pt_gen_call("cache_report",AST_NIL));
-     remove_bogus_dependences(stmt,walk_info->ped);
+     if (walk_info->selection != ANNOTATE)
+       remove_bogus_dependences(stmt,walk_info->ped);
      return(WALK_CONTINUE);
   }
 
@@ -443,7 +444,7 @@ static void AnnotateCodeForCache(AST_INDEX      stmt,
 	list_insert_before(ExecutableStmt,pt_gen_call("cache_init",AST_NIL));
        }	   
      memory_AnnotateWithCacheCalls(stmt,level, walk_info->routine,
-				   walk_info->ftt);
+				   walk_info->ftt,walk_info->symtab);
   }
 
 /****************************************************************************/
