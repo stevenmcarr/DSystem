@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:30:33 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 13:51:02 carr Exp $
 
 HERE = libs/graphicInterface/cmdProcs/newEditor
 
@@ -9,11 +9,11 @@ DIRS = \
 	   fortEditorCP
 
 SRCS = \
-	   NedScrap.ansi.c \
-	   TextScrap.ansi.c \
-	   TextView.ansi.c \
-	   Utility.ansi.c \
-	   ViewFilter.ansi.c
+	   NedScrap.C \
+	   TextScrap.C \
+	   TextView.C \
+	   Utility.C \
+	   ViewFilter.C
 
 ARCHIVE = NewEditorCP-$(DSYSTEM_OS)-g.a
 

@@ -1,4 +1,4 @@
-/* $Id: PedExtern.h,v 1.2 1997/03/11 14:31:14 carr Exp $ */
+/* $Id: PedExtern.h,v 1.3 1997/06/25 13:52:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -37,10 +37,10 @@ EXTERN(Boolean, save_as_pfc, (PEditorCP pedcp, Context module_context, Context
 EXTERN(int, pedcp_Edit, (int argc, char **argv));
    
 /* defined in ped_dg.c */
-EXTERN(Generic, pedReinitialize, (PedInfo ped));
+EXTERN(void, pedReinitialize, (PedInfo ped));
 
 /* defined in ped_util_dg.c */
-EXTERN(int, ped_print_deps, (PedInfo ped));
+EXTERN(void, ped_print_deps, (PedInfo ped));
 
 /* defined in ali_d.c */
 EXTERN(void, ali_dialog_run, (InterDia *ih));
@@ -50,7 +50,7 @@ EXTERN(Boolean, align_handler, (Dialog *di, Generic ALLH, Generic item_id));
 EXTERN(void, align_dialog_run, (AllDia *allh));
 
 /* defined in dtype_d.c */
-EXTERN(Dialog*, dep_type_dialog_run, (PedInfo ped));
+EXTERN(void, dep_type_dialog_run, (PedInfo ped));
 EXTERN(Boolean, dep_type_handler, (Dialog *di, Generic ped, Generic item_id));
 
 /* defined in edge_d.c */
@@ -67,6 +67,7 @@ EXTERN(Boolean, adjust_handler, (Dialog *di, Generic ALLH, Generic item_id));
 EXTERN(void, adjust_dialog_run, (AllDia *allh));
 EXTERN(Boolean, unswitch_handler, (Dialog *di, Generic ALLH, Generic item_id));
 EXTERN(void, unswitch_dialog_run, (AllDia *allh));
+
 
 /* defined in rename_d.c */
 EXTERN(void, renaming_dialog_run, (Generic DP));
@@ -145,5 +146,32 @@ EXTERN(void, pt_fuse_all, (PedInfo ped, AST_INDEX body, Boolean carry));
 EXTERN(void, pt_adjust, (PedInfo ped, char *adjust));
 EXTERN(void, pt_reverse, (PedInfo ped));
 EXTERN(void, pt_unswitch, (PedInfo ped));
+EXTERN(int,pt_reverse_estimate,(PedInfo ped));
+EXTERN(int,pt_unswitch_test,(PedInfo ped));
+
+/* defined in trans.c */
+EXTERN(void,pedDelete,(Generic PD, PedInfo ped));
+EXTERN(void,doInterchange,(InterDia *ih, Generic handle));
+EXTERN(void,doDistribution,(DistrDia *dh, Generic handle, int type));
+EXTERN(void,doRenamingExpansion,(PedInfo ped));
+EXTERN(void,doAddStmt,(PedInfo ped, char *arg));
+EXTERN(void,doReverse,(PedInfo ped));
+EXTERN(void,doAdjust,(PedInfo ped, char *adjust));
+EXTERN(void,doAlign,(PedInfo ped, char *arg));
+EXTERN(void,doUnroll,(PedInfo ped, char *arg));
+EXTERN(void,doUnrollJam,(PedInfo ped, char *arg));
+EXTERN(void,doFusion,(PedInfo ped));
+EXTERN(void,doUnswitch,(PedInfo ped));
+EXTERN(void,makeParallel,(PedInfo ped));
+EXTERN(void,makeSequential,(PedInfo ped));
+
+EXTERN(void,doPeelIterations,(PedInfo ped, Boolean iteration, char *iter));
+EXTERN(void,doScalarExpansion,(PedInfo ped));
+EXTERN(void,doSkew,(PedInfo ped, char *skew_degree));
+EXTERN(void,doSplit,(PedInfo ped, char *step));
+EXTERN(void,doReplaceS,(PedInfo ped));
+EXTERN(void,doDeleteStmt,(PedInfo ped));
+EXTERN(void,doStmtInter,(PedInfo ped));
+EXTERN(void,doStripMine,(PedInfo ped, char *step));
 
 #endif

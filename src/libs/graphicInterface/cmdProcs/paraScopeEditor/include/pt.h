@@ -1,4 +1,4 @@
-/* $Id: pt.h,v 1.14 1997/03/11 14:31:20 carr Exp $ */
+/* $Id: pt.h,v 1.15 1997/06/25 13:52:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,6 +19,9 @@
 #ifndef strong_h
 #include <libs/moduleAnalysis/dependence/utilities/strong.h>
 #endif
+
+typedef FUNCTION_POINTER(void, ptDistribFunc,(AST_INDEX,Adj_List*,Generic));
+typedef FUNCTION_POINTER(void, ptDivideFunc,(PedInfo,Adj_List*,int,AST_INDEX,Generic));
 
 /********************************/
 /*	function declarations		*/
@@ -213,16 +216,17 @@ EXTERN(void, pt_build_do_edges, (PedInfo ped, Adj_List *adj_list, AST_INDEX node
 EXTERN(void, pt_build_scexpnd_edges, (PedInfo ped, Adj_List *adj_list, AST_INDEX
                                       node, int level, int depth, char *var));
 
-EXTERN(int, pt_build_stmt_edges2, (PedInfo ped, Adj_List *adj_list, AST_INDEX node,
+EXTERN(void, pt_build_stmt_edges2, (PedInfo ped, Adj_List *adj_list, AST_INDEX node,
                                    int level, int depth, char *var));
 
 EXTERN(int, pt_count_par_stmts, (Adj_List *adj_list));
 
-EXTERN(AST_INDEX, pt_do_user_distrib, (PedInfo ped, AST_INDEX do_node, PFV 
-                                       pt_user_divide_loop, PFV pt_user_post_distrib,
+EXTERN(AST_INDEX, pt_do_user_distrib, (PedInfo ped, AST_INDEX do_node, 
+				       ptDivideFunc pt_user_divide_loop, 
+				       ptDistribFunc pt_user_post_distrib,
                                        Generic user_struct));
 
-EXTERN(int, pt_divide_loop, (PedInfo ped, Adj_List *adj_list, int level, 
+EXTERN(void, pt_divide_loop, (PedInfo ped, Adj_List *adj_list, int level, 
                              int type));
 
 EXTERN(int, pt_look_back, (PedInfo ped, int last_node, Adj_List *adj_list,
@@ -231,7 +235,7 @@ EXTERN(int, pt_look_back, (PedInfo ped, int last_node, Adj_List *adj_list,
 EXTERN(Boolean, pt_look_front, (PedInfo ped, int stmt_index, Adj_List *adj_list,
                                 int level));
 
-EXTERN(int, pt_make_loop_array, (Adj_List *adj_list));
+EXTERN(void, pt_make_loop_array, (Adj_List *adj_list));
 
 EXTERN(AST_INDEX, pt_rebuild_tree, (PedInfo ped, Adj_List *adj_list, AST_INDEX
                                     old_do, int level));

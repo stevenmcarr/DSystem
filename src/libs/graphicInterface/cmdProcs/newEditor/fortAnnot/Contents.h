@@ -1,4 +1,4 @@
-/* $Id: Contents.h,v 1.3 1997/03/11 14:30:41 carr Exp $ */
+/* $Id: Contents.h,v 1.4 1997/06/25 13:43:04 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -34,10 +34,10 @@
 
 
 
-EXTERN (void, ContentsAnnot_Init, (void))
+EXTERN (void, ContentsAnnot_Init, (void));
 
 
-EXTERN (void, ContentsAnnot_Fini, (void))
+EXTERN (void, ContentsAnnot_Fini, (void));
 
 
 

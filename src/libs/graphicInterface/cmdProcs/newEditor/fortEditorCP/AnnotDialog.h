@@ -1,4 +1,4 @@
-/* $Id: AnnotDialog.h,v 1.5 1997/03/11 14:30:55 carr Exp $ */
+/* $Id: AnnotDialog.h,v 1.6 1997/06/25 13:47:08 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -44,7 +44,7 @@ EXTERN(void, adlg_Save,
 /*  User interaction	*/
 /************************/
 
-EXTERN(Boolean, adlg_Dialog, (AnnotDialog adlg, Generic annot));
+EXTERN(void, adlg_Dialog, (AnnotDialog adlg, Generic annot));
 
 
 

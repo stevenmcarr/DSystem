@@ -1,4 +1,4 @@
-/* $Id: ped_dialogs.h,v 1.6 1997/03/11 14:31:19 carr Exp $ */
+/* $Id: ped_dialogs.h,v 1.7 1997/06/25 13:52:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -122,6 +122,27 @@
 /* 40, and 41, 56 are reserved */
 
 extern int DEFAULT_DISTR_HEIGHT;
+
+EXTERN(void,ali_dialog_run,(InterDia *ih));
+EXTERN(void,align_dialog_run,(AllDia *allh));
+EXTERN(void,distribute_dialog_run,(DistrDia *dh));
+EXTERN(void,edge_dialog_run,(EdgeDia *eh));
+EXTERN(void,fusion_dialog_run,(AllDia *allh));
+EXTERN(void,reverse_dialog_run,(AllDia *allh));
+EXTERN(void,adjust_dialog_run,(AllDia *allh));
+EXTERN(void,unswitch_dialog_run,(AllDia *allh));
+EXTERN(void,peel_dialog_run,(StripDia *smih));
+EXTERN(void,perf_dialog_run,(PerfDia *pf));
+EXTERN(void,renaming_dialog_run,(Generic DP));
+EXTERN(void,scalar_dialog_run,(Generic DP));
+EXTERN(void,shared_dialog_run,(SharDia *sh));
+EXTERN(void,skew_dialog_run,(AllDia *allh));
+EXTERN(void,split_dialog_run,(StripDia *smih));
+EXTERN(void,replace_s_dialog_run,(AllDia *allh));
+EXTERN(void,add_stmt_dialog_run,(AllDia *allh));
+EXTERN(void,delete_stmt_dialog_run,(Generic DP));
+EXTERN(void,sinter_dialog_run,(SinterDia *sih));
+EXTERN(void,strip_dialog_run,(StripDia *smih));
 
 #endif
 

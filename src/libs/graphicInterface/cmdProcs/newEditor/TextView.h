@@ -1,4 +1,4 @@
-/* $Id: TextView.h,v 1.9 1997/03/11 14:30:35 carr Exp $ */
+/* $Id: TextView.h,v 1.10 1997/06/25 13:51:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -18,12 +18,12 @@
 #ifndef TextView_h
 #define TextView_h
 
+#include <libs/graphicInterface/support/graphics/rect.h>
+#include <libs/graphicInterface/support/graphics/point.h>
+#include <libs/graphicInterface/oldMonitor/include/mon/sm.h>
+#include <libs/graphicInterface/framework/Text.h>
 
-#ifdef sm_h
 typedef Pane * TextView;
-#else
-typedef Generic TextView;
-#endif
 
 typedef FUNCTION_POINTER(void, tv_GetDocSizeFunc,
  (Generic contents, Point *size));
@@ -102,7 +102,7 @@ EXTERN(void, tv_DefaultData, (TV_Data *data));
 EXTERN(void, tv_MultiColoredData, (TV_Data *data));
 
 EXTERN(void, tv_PaneInit, (TextView tv, Generic contents,
- TV_Methods *methods, /* ViewFilter */ Generic filter, Point scrollPos,
+ TV_Methods *methods,  Generic filter, Point scrollPos,
  int font));
 
 EXTERN(void, tv_ScrollBars, (TextView tv,

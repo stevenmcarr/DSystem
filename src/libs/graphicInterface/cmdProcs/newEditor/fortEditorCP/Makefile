@@ -1,13 +1,13 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:30:57 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/25 13:47:08 carr Exp $
 
 HERE = libs/graphicInterface/cmdProcs/newEditor/fortEditorCP
 
 SRCS = \
-	   AnnotDialog.ansi.c \
+	   AnnotDialog.C \
 	   FortEditorCP.C \
 	   FortEditorCP_opt.C \
-	   SearchDialog.ansi.c \
-	   ViewDialog.ansi.c
+	   SearchDialog.C \
+	   ViewDialog.C
 
 ARCHIVE = ../NewEditorCP-$(DSYSTEM_OS)-g.a
 

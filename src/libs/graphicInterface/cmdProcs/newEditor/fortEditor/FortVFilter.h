@@ -1,4 +1,4 @@
-/* $Id: FortVFilter.h,v 1.6 1997/03/11 14:30:52 carr Exp $ */
+/* $Id: FortVFilter.h,v 1.7 1997/06/25 13:43:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -18,6 +18,13 @@
 #ifndef FortVFilter_h
 #define FortVFilter_h
 
+#include <include/bstring.h>
+#include <libs/support/strings/rn_string.h>
+#include <string.h>
+#include <ctype.h>
+
+#include <libs/graphicInterface/cmdProcs/newEditor/TextView.h>
+#include <libs/graphicInterface/cmdProcs/newEditor/ViewFilter.h>
 
 typedef Generic FortVFilterSpec;
 typedef Generic FortVFilter;
@@ -77,6 +84,8 @@ EXTERN(void, ffs_Customize,
  (FortVFilterSpec ffs, Generic customOb, ffs_CustomFunc customProc));
 
 
+typedef FUNCTION_POINTER(void, ffs_FilterFunc, (Generic, Boolean , Generic ,
+ 						int , int *, TextString *, VF_MaxData *));
 
 
 /************************/

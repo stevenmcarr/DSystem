@@ -1,4 +1,4 @@
-/* $Id: perf.h,v 1.8 1997/03/11 14:31:20 carr Exp $ */
+/* $Id: perf.h,v 1.9 1997/06/25 13:52:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -87,7 +87,7 @@ typedef struct CData {
 
 /* communication data information (an element of the ARRAY) */
 typedef struct CInfo {
-  float        startup;     /* comm startup cost */
+  float        StartCost;     /* comm startup cost */
   float        pktization;  /* cost of msg packetization */
   CommData     *commdata;   /* ptr to the LIST of data for each of the packets */ 
 } CommInfo;
@@ -120,7 +120,7 @@ extern AST_INDEX  Program_Root;
 
 EXTERN (TrainData*, perf_init, (void));
 EXTERN (char*, get_ctype, (int ctype));
-EXTERN (int, Numprocs_initialize, (AST_INDEX root));
+EXTERN (void, Numprocs_initialize, (AST_INDEX root));
 EXTERN (void, chi_squared_fit, (char *databuf, int npoints, CommInfo *commptr));
 EXTERN (int, perf_estimate, (AST_INDEX fstmt, AST_INDEX lstmt, float *ccost_lb, 
                              float *ecost_lb, float *ccost_ub, float *ecost_ub));
@@ -142,7 +142,7 @@ EXTERN(int, check_if_int, (AST_INDEX node));
 EXTERN(int, check_if_Express, (AST_INDEX stmt));
 EXTERN(void, get_msg_info, (int commtype, AST_INDEX stmt, int *msg_size, 
                             int *data_stride));
-EXTERN(float, time_comm, (int commtype, int msg_size, int dstride, float *startup,
+EXTERN(float, time_comm, (int commtype, int msg_size, int dstride, float *StartCost,
                           float *pktization));
 EXTERN(void, correct_for_overlap, (int rc, AST_INDEX node, float *ctime));
 EXTERN(Parm*, push, (Parm *item));

@@ -1,4 +1,4 @@
-/* $Id: dp.h,v 1.23 1997/03/11 14:31:16 carr Exp $ */
+/* $Id: dp.h,v 1.24 1997/06/25 13:52:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -161,6 +161,7 @@ typedef struct PedInfoStruct
 #define	PED_CURRENT_DEPENDENCE(ped)	(ped->current_dependence)
 #define	PED_SELECTION(ped)		(ped->selection)
 #define	PED_INFO(ped)			(ped->info)
+#define	PED_SIDE_INFO(ped)		(ped->info)
 #define	PED_INFO_SIDE_ARRAY(ped)	(ped->info->info_side_array)
 #define	PED_INFO_ARRAY(ped)		(ped->info->info_array)
 #define	PED_INFO_ARRAY_FIRST_FREE(ped)	(ped->info->info_array_first_free)
