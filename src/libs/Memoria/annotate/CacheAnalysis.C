@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.30 2000/04/09 20:19:27 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.31 2000/05/03 04:57:32 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -765,6 +765,7 @@ AST_INDEX MakeSub(AST_INDEX n1, AST_INDEX n2)
 void CalcPrefetchingLoadDistance(AST_INDEX Node,
                                  SymDescriptor Symtab,
                                  char* IVar,
+                                 int LogMaxBytesPerWord,
                                  AST_INDEX& ASTDistance,
                                  int& ConstVal)
 {
@@ -788,12 +789,9 @@ void CalcPrefetchingLoadDistance(AST_INDEX Node,
     ASTDistance = AST_NIL;
     ConstVal = 1;
     
-//    printf("CalcPrefetchingDistance:\n");
-    
     ArrayNameAST = gen_SUBSCRIPT_get_name(Node);
     ArrayName = gen_get_text(ArrayNameAST);
     
-//    printf("   Array Name: %s\n", ArrayName);
     
     // New stuff (MJB)
     SubList = gen_SUBSCRIPT_get_rvalue_LIST(Node);
@@ -806,19 +804,15 @@ void CalcPrefetchingLoadDistance(AST_INDEX Node,
 
         if (Coeff != 0)
         {
-            // Last one. Either mul by 8, or gen mul by 8.
-
-//            printf("    Found the IVar: %s  Coeff: %d\n", IVar, Coeff);
             
             if (ASTValue)
             {
                 // Tack it on to the AST.
-//                printf("        Adding to AST.\n");
                 ASTDistance = MakeMul(MakeIntConstant(Coeff), ASTDistance);
             }
             else
             {
-//                printf("        Constant.\n");
+
                 ConstVal *= Coeff;
             }
             Done = true;
@@ -827,19 +821,16 @@ void CalcPrefetchingLoadDistance(AST_INDEX Node,
         else
         {
             // Find the bounds. I hope that the list and the number are the same...
-//            printf("    Getting bounds for %d:\n", Which);
-        
             GetArrayBound(Symtab, ArrayName, Which, UpperBoundType, LowerBoundType,
                           UpperBoundConst, LowerBoundConst, UpperBoundAST, 
                           LowerBoundAST);
 
-            // First AST value?
+            // First AST value? If so, convert const to AST.
             if (ASTValue == false)
             {
                 if (UpperBoundType == symbolic_expn_ast_index ||
                     LowerBoundType == symbolic_expn_ast_index)
                 {
-//                    printf("        One of the bounds is AST.\n");
                 
                     ASTDistance = MakeIntConstant(ConstVal);
                     ASTValue = true;
@@ -852,8 +843,6 @@ void CalcPrefetchingLoadDistance(AST_INDEX Node,
                 // We need to convert everything to ast.
                 if (UpperBoundType == constant)
                 {
-//                    printf("        Converting upper bound: %d\n", UpperBoundConst);
-                
                     UpperBoundAST = MakeIntConstant(UpperBoundConst);
                 }
                 else
@@ -865,8 +854,6 @@ void CalcPrefetchingLoadDistance(AST_INDEX Node,
             
                 if (LowerBoundType == constant)
                 {
-//                    printf("        Converting lower bound: %d\n", LowerBoundConst);
-                
                     LowerBoundAST = MakeIntConstant(LowerBoundConst);
                 }
                 else
@@ -885,21 +872,22 @@ void CalcPrefetchingLoadDistance(AST_INDEX Node,
             else
             {
                 ConstVal *= (UpperBoundConst - LowerBoundConst + 1);
-//                printf("        New ConstVal: %d\n", ConstVal);
             }
         }
         
         Which++;
     }
 
-    // Have to mul by (8?)
+    // Have to mul by the size of an element.
+    int SizeOfElement = 1 << LogMaxBytesPerWord;
+
     if (ASTValue == false)
     {
-        ConstVal *= 8;
+        ConstVal *= SizeOfElement;
     }
     else
     {
-        ASTDistance = MakeMul(ASTDistance, MakeIntConstant(8));
+        ASTDistance = MakeMul(ASTDistance, MakeIntConstant(SizeOfElement));
     }
     
                 
@@ -942,6 +930,7 @@ static int SetDistance(AST_INDEX Node,
             {
                 CalcPrefetchingLoadDistance(Node, PrefetchData->symtab,
                                             PrefetchData->IVar,
+                                            PrefetchData->LogMaxBytesPerWord,
                                             ASTDistance,
                                             ConstVal);
                 
