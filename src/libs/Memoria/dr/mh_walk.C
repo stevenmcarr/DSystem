@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.49 1999/06/11 21:20:20 carr Exp $ */
+/* $Id: mh_walk.C,v 1.50 2000/04/05 17:29:29 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1264,7 +1264,7 @@ void mh_walk_ast(int          selection,
 
      if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
 	 selection == LI_STATS || selection == UJ_STATS || 
-	 selection == SR_STATS)
+	 selection == SR_STATS || selection == DEP_STATS)
        {
 	sprintf(fn,"%s.STATSLOG", mod_context->ReferenceFilePathName());
 	((config_type *)PED_MH_CONFIG(ped))->logfile = fopen(fn,"w");
@@ -1534,12 +1534,20 @@ void mh_walk_ast(int          selection,
              += walk_info.LoopStats->Nests;
 	   LoopStats->NumberOfTrueDependences
 	          += walk_info.LoopStats->NumberOfTrueDependences;
+	   LoopStats->NumberOfLoopCarriedTrueDependences
+	          += walk_info.LoopStats->NumberOfLoopCarriedTrueDependences;
 	   LoopStats->NumberOfAntiDependences
 	          += walk_info.LoopStats->NumberOfAntiDependences;
+	   LoopStats->NumberOfLoopCarriedAntiDependences
+	          += walk_info.LoopStats->NumberOfLoopCarriedAntiDependences;
 	   LoopStats->NumberOfInputDependences
 	          += walk_info.LoopStats->NumberOfInputDependences;
+	   LoopStats->NumberOfLoopCarriedInputDependences
+	          += walk_info.LoopStats->NumberOfLoopCarriedInputDependences;
 	   LoopStats->NumberOfOutputDependences
 	          += walk_info.LoopStats->NumberOfOutputDependences;
+	   LoopStats->NumberOfLoopCarriedOutputDependences
+	          += walk_info.LoopStats->NumberOfLoopCarriedOutputDependences;
            DepStatsDump(((config_type *)PED_MH_CONFIG(ped))->logfile,
 			walk_info.LoopStats);
 	   break;
@@ -1808,15 +1816,23 @@ void DepStatsDump(FILE *logfile, LoopStatsType *LoopStats)
   fprintf(logfile,"Total Number of True Dependences = %d\t\tPercent = %d\n",
 	  LoopStats->NumberOfTrueDependences,
 	  (LoopStats->NumberOfTrueDependences*100)/TotalDependences);
+  fprintf(logfile,"Total Number of Loop Carried True Dependences = %d\n",
+	  LoopStats->NumberOfLoopCarriedTrueDependences);
   fprintf(logfile,"Total Number of Anti Dependences = %d\t\tPercent = %d\n",
 	  LoopStats->NumberOfAntiDependences,
 	  (LoopStats->NumberOfAntiDependences*100)/TotalDependences);
+  fprintf(logfile,"Total Number of Loop Carried AntiDependences = %d\n",
+	  LoopStats->NumberOfLoopCarriedAntiDependences);
   fprintf(logfile,"Total Number of Output Dependences = %d\t\tPercent = %d\n",
 	  LoopStats->NumberOfOutputDependences,
 	  (LoopStats->NumberOfOutputDependences*100)/TotalDependences);
+  fprintf(logfile,"Total Number of Loop Carried Output Dependences = %d\n",
+	  LoopStats->NumberOfLoopCarriedOutputDependences);
   fprintf(logfile,"Total Number of Input Dependences = %d\t\tPercent = %d\n",
 	  LoopStats->NumberOfInputDependences,
 	  (LoopStats->NumberOfInputDependences*100)/TotalDependences);
+  fprintf(logfile,"Total Number of Loop Carried Input Dependences = %d\n",
+	  LoopStats->NumberOfLoopCarriedInputDependences);
   fprintf(logfile,"\n\n");
 }
 
