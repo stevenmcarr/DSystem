@@ -3,13 +3,11 @@
 
 #include <fort/ast.h>
 #include <fort/FortTextTree.h>
-#include <ArrayTable.h>
 
 typedef struct CallInfoTypeStruct {
   AST_INDEX Stmt;
   char      *routine;
   FortTextTree ftt;
-  TableInfoType *TableInfo;
   char         CacheRoutine[15];
  }  CallInfoType;
 
