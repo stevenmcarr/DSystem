@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.12 1994/04/13 14:26:40 carr Exp $ */
+/* $Id: scalar.C,v 1.13 1994/06/13 16:12:10 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -536,10 +536,7 @@ static void perform_scalar_replacement(do_info_type  *do_info,
    FILE              *logfile;
    bal_info_type     bal_info;
 
-     if (((config_type *)PED_MH_CONFIG(do_info->ped))->logging)
-       logfile = ((config_type *)PED_MH_CONFIG(do_info->ped))->logfile;
-     else
-       logfile = NULL;
+     logfile = ((config_type *)PED_MH_CONFIG(do_info->ped))->logfile;
      prelim_info.array_refs = 0;
      prelim_info.scalar_regs = 0;
      prelim_info.def_num = 0;
@@ -563,6 +560,9 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 			(Generic)&prelim_info);
 	if (!prelim_info.jumps_ok)
 	  {
+	   
+	   /* INCREMENT BAD CONTROL FLOW HERE */
+
 	   if (logfile != NULL)
 	     fprintf(logfile,"bad control flow\n");
 	   return;
@@ -619,8 +619,6 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 			     do_info->LoopStats);
 	if (!util_list_empty(name_info.glist))
 	  {
-	   if (((config_type *)PED_MH_CONFIG(do_info->ped))->logging)
-	     return;
 	   if (redo)
 	     {
 	      
@@ -648,7 +646,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 	  }
 	util_free_nodes(name_info.glist);
        }
-     else if (((config_type *)PED_MH_CONFIG(do_info->ped))->logging)
+     else if (logfile != NULL)
+         /* INCREMENT FP COUNTER HERE */
        fprintf(logfile,"No FP Register Pressure\n");
      util_list_free(name_info.glist);
      walk_expression(root,remove_dependences,NOFUNC,(Generic)do_info->ped);
@@ -656,6 +655,9 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 		     (Generic)prelim_info.symtab);
      if (logfile != NULL)
        {
+
+	/* ACCUMULATE BALANCE HERE */
+
 	bal_info.mem = 0;
 	bal_info.flops = 0;
 	bal_info.ped = do_info->ped;

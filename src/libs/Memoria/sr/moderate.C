@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.8 1993/09/06 14:54:52 carr Exp $ */
+/* $Id: moderate.C,v 1.9 1994/06/13 16:12:08 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -595,6 +595,9 @@ static void build_cost_info(UtilList *glist,
 	     node != NULLNODE;
 	     node = UTIL_NEXT(node))
 	  {
+
+	   /* GET LIAV and LCAV info here */
+
 	   sptr = get_scalar_info_ptr(UTIL_NODE_ATOM(node));
 	   if (sptr->generator != -1)
 	     {
@@ -678,6 +681,9 @@ void sr_moderate_pressure(PedInfo  ped,
        }
      if (regs > free_regs)
        {
+
+	/* GET SPILL STATS HERE */
+
 	if (logfile != NULL)
 	  fprintf(logfile,"need to spill registers\n");
 	allocate = ut_create_set(ar,LOOP_ARENA,size);
@@ -686,6 +692,9 @@ void sr_moderate_pressure(PedInfo  ped,
 						size*sizeof(heap_type));
 	do_greedy(glist,heap,allocate,opt_allocate,size,&free_regs);
 	regs = free_regs;
+
+	/* GET REGS AFTER SPILLING HERE */
+
         do_allocation(glist,allocate,opt_allocate,&free_regs,heap,size,ped,ar);
        }
    *redo = false;

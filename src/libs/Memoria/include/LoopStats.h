@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.5 1994/05/31 15:10:01 carr Exp $ */
+/* $Id: LoopStats.h,v 1.6 1994/06/13 16:13:39 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -76,6 +76,8 @@ typedef struct loopstatstype {
           Normalized,
           AlreadyBalanced,
           InterlockCausedUnroll;
+
+	  /* ADD FIELDS FOR SR STATS HERE */
  } LoopStatsType;
 
 #endif

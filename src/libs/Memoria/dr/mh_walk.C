@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.14 1994/06/13 10:29:33 carr Exp $ */
+/* $Id: mh_walk.C,v 1.15 1994/06/13 16:13:57 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -294,6 +294,25 @@ static void ScalarReplacement(AST_INDEX      stmt,
   }
 
 
+static void ScalarStats(AST_INDEX      stmt,
+			int            level,
+			walk_info_type *walk_info)
+  {
+     /* perform scalar replacement */
+   memory_scalar_replacement(walk_info->ped,stmt,level,walk_info->symtab,
+			     walk_info->ar,walk_info->LoopStats);
+
+     /* DUMP LOOP STATS HERE */
+
+     /* re-initialize scratch field (no dangling pointers) */
+   walk_expression(stmt,set_scratch,NOFUNC,
+
+		   (Generic)NULL);
+     /* free up space used */
+   walk_info->ar->arena_deallocate(LOOP_ARENA);
+
+  }
+
 /****************************************************************************/
 /*                                                                          */
 /*   Function:   UnrollAndJam                                               */
@@ -463,13 +482,15 @@ static int post_walk(AST_INDEX      stmt,
       walk_info->LoopStats->Nests++;
       walk_info->LoopStats->Perfect = true;
       switch(walk_info->selection) {
-	case INTERSTATS:     InterchangeStats(stmt,level,walk_info);
+	case LI_STATS:       InterchangeStats(stmt,level,walk_info);
 	                     break;
 	case INTERCHANGE:    Interchange(stmt,level,walk_info,false);
 	                     break;
 	case SCALAR_REP:     ScalarReplacement(stmt,level,walk_info);
 	                     break;
-	case UNROLLSTATS:    UnrollStats(stmt,level,walk_info);
+	case SR_STATS:       ScalarStats(stmt,level,walk_info);
+	                     break;
+	case UJ_STATS:       UnrollStats(stmt,level,walk_info);
 	                     break;
 	case UNROLL_AND_JAM: (void)UnrollAndJam(stmt,level,walk_info);
 	                     break;
@@ -1125,7 +1146,8 @@ void mh_walk_ast(int          selection,
      show_message2("The Memory Optimizer is in progress");
 
      if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
-	 selection == INTERSTATS || selection == UNROLLSTATS)
+	 selection == LI_STATS || selection == UJ_STATS || 
+	 selection == SR_STATS)
        {
 	sprintf(fn,"%s.STATSLOG", ctxLocation(mod_context));
 	((config_type *)PED_MH_CONFIG(ped))->logfile = fopen(fn,"w");
@@ -1156,178 +1178,185 @@ void mh_walk_ast(int          selection,
      walk_statements(root,LEVEL1,(WK_STMT_CLBACK)get_symtab_for_decls,NOFUNC,
 		     (Generic)ft);
 
-     if (selection == UNROLLSTATS)
+     switch (selection)
        {
-	LoopStats->PredictedFinalBalance  +=
-	    walk_info.LoopStats->PredictedFinalBalance; 
-	LoopStats->PredictedInitialBalance +=
-	    walk_info.LoopStats->PredictedInitialBalance;
-	LoopStats->InitialBalanceWithInterlock +=
-	    walk_info.LoopStats->InitialBalanceWithInterlock;
-	LoopStats->ActualFinalBalance +=
-	    walk_info.LoopStats->ActualFinalBalance;
-	LoopStats->FinalBalanceWithInterlock +=
-	    walk_info.LoopStats->FinalBalanceWithInterlock;
-	LoopStats->InitialInterlock +=
-	    walk_info.LoopStats->InitialInterlock; 
-	LoopStats->FinalInterlock +=
-	    walk_info.LoopStats->FinalInterlock; 
-	LoopStats->PredictedFPRegisterPressure +=
-	    walk_info.LoopStats->PredictedFPRegisterPressure;
-	LoopStats->ActualFPRegisterPressure +=
-	    walk_info.LoopStats->ActualFPRegisterPressure;
-	LoopStats->UnrolledLoops +=
-	    walk_info.LoopStats->UnrolledLoops;
-	LoopStats->NotUnrolled +=
-	    walk_info.LoopStats->NotUnrolled;
-	LoopStats->SingleDepth +=
-	    walk_info.LoopStats->SingleDepth;
-        LoopStats->NotUnrolledBalance +=
-            walk_info.LoopStats->NotUnrolledBalance;
-	LoopStats->NotUnrolledBalanceWithInterlock +=
-	    walk_info.LoopStats->NotUnrolledBalanceWithInterlock;
-        LoopStats->NotUnrolledInterlock +=
-            walk_info.LoopStats->NotUnrolledInterlock;
-	LoopStats->NotUnrolledFPRegisterPressure +=
-	    walk_info.LoopStats->NotUnrolledFPRegisterPressure;
-	LoopStats->SingleDepthBalance +=
-	    walk_info.LoopStats->SingleDepthBalance;
-	LoopStats->SingleDepthBalanceWithInterlock +=
-	    walk_info.LoopStats->SingleDepthBalanceWithInterlock;
-	LoopStats->SingleDepthInterlock +=
-	    walk_info.LoopStats->SingleDepthInterlock;
-	LoopStats->SingleDepthFPRegisterPressure +=
-	    walk_info.LoopStats->SingleDepthFPRegisterPressure;
-	LoopStats->Distribute +=
-	    walk_info.LoopStats->Distribute;
-	LoopStats->Interchange +=
-	    walk_info.LoopStats->Interchange;
-	LoopStats->NoImprovement +=
-	    walk_info.LoopStats->NoImprovement;
-	LoopStats->Normalized +=
-	    walk_info.LoopStats->Normalized;
-	LoopStats->AlreadyBalanced +=
-	    walk_info.LoopStats->AlreadyBalanced;
-	LoopStats->InterlockCausedUnroll +=
-	    walk_info.LoopStats->InterlockCausedUnroll;
-       }
-     else if (selection == INTERSTATS)
-       {
+	case UJ_STATS:
+	  LoopStats->PredictedFinalBalance  +=
+	      walk_info.LoopStats->PredictedFinalBalance; 
+	  LoopStats->PredictedInitialBalance +=
+	      walk_info.LoopStats->PredictedInitialBalance;
+	  LoopStats->InitialBalanceWithInterlock +=
+	      walk_info.LoopStats->InitialBalanceWithInterlock;
+	  LoopStats->ActualFinalBalance +=
+	      walk_info.LoopStats->ActualFinalBalance;
+	  LoopStats->FinalBalanceWithInterlock +=
+	      walk_info.LoopStats->FinalBalanceWithInterlock;
+	  LoopStats->InitialInterlock +=
+	      walk_info.LoopStats->InitialInterlock; 
+	  LoopStats->FinalInterlock +=
+	      walk_info.LoopStats->FinalInterlock; 
+	  LoopStats->PredictedFPRegisterPressure +=
+	      walk_info.LoopStats->PredictedFPRegisterPressure;
+	  LoopStats->ActualFPRegisterPressure +=
+	      walk_info.LoopStats->ActualFPRegisterPressure;
+	  LoopStats->UnrolledLoops +=
+	      walk_info.LoopStats->UnrolledLoops;
+	  LoopStats->NotUnrolled +=
+	      walk_info.LoopStats->NotUnrolled;
+	  LoopStats->SingleDepth +=
+	      walk_info.LoopStats->SingleDepth;
+          LoopStats->NotUnrolledBalance +=
+              walk_info.LoopStats->NotUnrolledBalance;
+	  LoopStats->NotUnrolledBalanceWithInterlock +=
+	      walk_info.LoopStats->NotUnrolledBalanceWithInterlock;
+          LoopStats->NotUnrolledInterlock +=
+              walk_info.LoopStats->NotUnrolledInterlock;
+	  LoopStats->NotUnrolledFPRegisterPressure +=
+	      walk_info.LoopStats->NotUnrolledFPRegisterPressure;
+	  LoopStats->SingleDepthBalance +=
+	      walk_info.LoopStats->SingleDepthBalance;
+	  LoopStats->SingleDepthBalanceWithInterlock +=
+	      walk_info.LoopStats->SingleDepthBalanceWithInterlock;
+	  LoopStats->SingleDepthInterlock +=
+	      walk_info.LoopStats->SingleDepthInterlock;
+	  LoopStats->SingleDepthFPRegisterPressure +=
+	      walk_info.LoopStats->SingleDepthFPRegisterPressure;
+	  LoopStats->Distribute +=
+	      walk_info.LoopStats->Distribute;
+	  LoopStats->Interchange +=
+	      walk_info.LoopStats->Interchange;
+	  LoopStats->NoImprovement +=
+	      walk_info.LoopStats->NoImprovement;
+	  LoopStats->Normalized +=
+	      walk_info.LoopStats->Normalized;
+	  LoopStats->AlreadyBalanced +=
+	      walk_info.LoopStats->AlreadyBalanced;
+	  LoopStats->InterlockCausedUnroll +=
+	      walk_info.LoopStats->InterlockCausedUnroll;
+	  break;
+       case LI_STATS:
+         LoopStats->TotalLoops 
+             += walk_info.LoopStats->TotalLoops;
+         LoopStats->NotInMemoryOrder 
+             += walk_info.LoopStats->NotInMemoryOrder;
+         LoopStats->InMemoryOrder 
+             += walk_info.LoopStats->InMemoryOrder;
+         LoopStats->NearbyPermutationAttained
+             += walk_info.LoopStats->NearbyPermutationAttained;
+         LoopStats->NearbyPermutationAttained 
+             += walk_info.LoopStats->NearbyPermutationAttained;
+         LoopStats->InterchangedIntoMemoryOrder 
+             += walk_info.LoopStats->InterchangedIntoMemoryOrder;
+         LoopStats->TimeStepPreventedMemoryOrder 
+             += walk_info.LoopStats->TimeStepPreventedMemoryOrder;
+         LoopStats->ObtainedInnerLoop 
+             += walk_info.LoopStats->ObtainedInnerLoop;
+         LoopStats->InnerLoopAlreadyCorrect 
+             += walk_info.LoopStats->InnerLoopAlreadyCorrect;
+         LoopStats->WrongInnerLoop 
+             += walk_info.LoopStats->WrongInnerLoop;
+         LoopStats->DesiredInnerTimeStep 
+             += walk_info.LoopStats->DesiredInnerTimeStep;
+         LoopStats->NextInnerLoop 
+             += walk_info.LoopStats->NextInnerLoop;
+         LoopStats->UnsafeInterchange 
+             += walk_info.LoopStats->UnsafeInterchange;
+         LoopStats->DistributionUnsafe 
+             += walk_info.LoopStats->DistributionUnsafe;
+         LoopStats->NeedsScalarExpansion 
+             += walk_info.LoopStats->NeedsScalarExpansion;
+         LoopStats->TimeStepPreventedMemoryOrder
+             += walk_info.LoopStats->TimeStepPreventedMemoryOrder;
+         LoopStats->TooComplex 
+             += walk_info.LoopStats->TooComplex;
+         LoopStats->Nests 
+             += walk_info.LoopStats->Nests;
+         LoopStats->Imperfect 
+             += walk_info.LoopStats->Imperfect;
+         LoopStats->OriginalLocalityMatrix.SingleGroups.Invariant
+            += walk_info.LoopStats->OriginalLocalityMatrix.SingleGroups.Invariant;
+         LoopStats->OriginalLocalityMatrix.SingleGroups.Spatial
+             += walk_info.LoopStats->OriginalLocalityMatrix.SingleGroups.Spatial;
+         LoopStats->OriginalLocalityMatrix.SingleGroups.None
+             += walk_info.LoopStats->OriginalLocalityMatrix.SingleGroups.None;
+         LoopStats->FinalLocalityMatrix.SingleGroups.Invariant
+            += walk_info.LoopStats->FinalLocalityMatrix.SingleGroups.Invariant;
+         LoopStats->FinalLocalityMatrix.SingleGroups.Spatial
+             += walk_info.LoopStats->FinalLocalityMatrix.SingleGroups.Spatial;
+         LoopStats->FinalLocalityMatrix.SingleGroups.None
+             += walk_info.LoopStats->FinalLocalityMatrix.SingleGroups.None;
+         LoopStats->MemoryLocalityMatrix.SingleGroups.Invariant
+            += walk_info.LoopStats->MemoryLocalityMatrix.SingleGroups.Invariant;
+         LoopStats->MemoryLocalityMatrix.SingleGroups.Spatial
+             += walk_info.LoopStats->MemoryLocalityMatrix.SingleGroups.Spatial;
+         LoopStats->MemoryLocalityMatrix.SingleGroups.None
+             += walk_info.LoopStats->MemoryLocalityMatrix.SingleGroups.None;
+         LoopStats->OriginalLocalityMatrix.MultiGroups.Invariant
+            += walk_info.LoopStats->OriginalLocalityMatrix.MultiGroups.Invariant;
+         LoopStats->OriginalLocalityMatrix.MultiGroups.Spatial
+             += walk_info.LoopStats->OriginalLocalityMatrix.MultiGroups.Spatial;
+         LoopStats->OriginalLocalityMatrix.MultiGroups.None
+             += walk_info.LoopStats->OriginalLocalityMatrix.MultiGroups.None;
+         LoopStats->OriginalLocalityMatrix.MultiRefs.Invariant 
+             += walk_info.LoopStats->OriginalLocalityMatrix.MultiRefs.Invariant;
+         LoopStats->OriginalLocalityMatrix.MultiRefs.Spatial
+             += walk_info.LoopStats->OriginalLocalityMatrix.MultiRefs.Spatial;
+         LoopStats->OriginalLocalityMatrix.MultiRefs.None 
+             += walk_info.LoopStats->OriginalLocalityMatrix.MultiRefs.None;
+         LoopStats->FinalLocalityMatrix.MultiGroups.Invariant
+            += walk_info.LoopStats->FinalLocalityMatrix.MultiGroups.Invariant;
+         LoopStats->FinalLocalityMatrix.MultiGroups.Spatial
+             += walk_info.LoopStats->FinalLocalityMatrix.MultiGroups.Spatial;
+         LoopStats->FinalLocalityMatrix.MultiGroups.None
+             += walk_info.LoopStats->FinalLocalityMatrix.MultiGroups.None;
+         LoopStats->FinalLocalityMatrix.MultiRefs.Invariant 
+             += walk_info.LoopStats->FinalLocalityMatrix.MultiRefs.Invariant;
+         LoopStats->FinalLocalityMatrix.MultiRefs.Spatial
+             += walk_info.LoopStats->FinalLocalityMatrix.MultiRefs.Spatial;
+         LoopStats->FinalLocalityMatrix.MultiRefs.None 
+             += walk_info.LoopStats->FinalLocalityMatrix.MultiRefs.None;
+         LoopStats->MemoryLocalityMatrix.MultiGroups.Invariant
+            += walk_info.LoopStats->MemoryLocalityMatrix.MultiGroups.Invariant;
+         LoopStats->MemoryLocalityMatrix.MultiGroups.Spatial
+             += walk_info.LoopStats->MemoryLocalityMatrix.MultiGroups.Spatial;
+         LoopStats->MemoryLocalityMatrix.MultiGroups.None
+             += walk_info.LoopStats->MemoryLocalityMatrix.MultiGroups.None;
+         LoopStats->MemoryLocalityMatrix.MultiRefs.Invariant 
+             += walk_info.LoopStats->MemoryLocalityMatrix.MultiRefs.Invariant;
+         LoopStats->MemoryLocalityMatrix.MultiRefs.Spatial
+             += walk_info.LoopStats->MemoryLocalityMatrix.MultiRefs.Spatial;
+         LoopStats->MemoryLocalityMatrix.MultiRefs.None 
+             += walk_info.LoopStats->MemoryLocalityMatrix.MultiRefs.None;
+         LoopStats->OriginalOtherSpatialGroups 
+             += walk_info.LoopStats->OriginalOtherSpatialGroups;
+         LoopStats->FinalOtherSpatialGroups 
+             += walk_info.LoopStats->FinalOtherSpatialGroups;
+         LoopStats->MemoryOtherSpatialGroups 
+             += walk_info.LoopStats->MemoryOtherSpatialGroups;
+         for (i = 0; i < NESTING_DEPTH; i++)
+	   {
+	    LoopStats->FinalRatio[i] 
+	      += walk_info.LoopStats->FinalRatio[i];
+	    LoopStats->MemoryRatio[i] 
+	      += walk_info.LoopStats->MemoryRatio[i];
+	    LoopStats->NestingDepth[i]
+	      += walk_info.LoopStats->NestingDepth[i];
+	   }
+         LoopStats->Reversed += walk_info.LoopStats->Reversed;
 
-       LoopStats->TotalLoops 
-           += walk_info.LoopStats->TotalLoops;
-       LoopStats->NotInMemoryOrder 
-           += walk_info.LoopStats->NotInMemoryOrder;
-       LoopStats->InMemoryOrder 
-           += walk_info.LoopStats->InMemoryOrder;
-       LoopStats->NearbyPermutationAttained
-           += walk_info.LoopStats->NearbyPermutationAttained;
-       LoopStats->NearbyPermutationAttained 
-           += walk_info.LoopStats->NearbyPermutationAttained;
-       LoopStats->InterchangedIntoMemoryOrder 
-           += walk_info.LoopStats->InterchangedIntoMemoryOrder;
-       LoopStats->TimeStepPreventedMemoryOrder 
-           += walk_info.LoopStats->TimeStepPreventedMemoryOrder;
-       LoopStats->ObtainedInnerLoop 
-           += walk_info.LoopStats->ObtainedInnerLoop;
-       LoopStats->InnerLoopAlreadyCorrect 
-           += walk_info.LoopStats->InnerLoopAlreadyCorrect;
-       LoopStats->WrongInnerLoop 
-           += walk_info.LoopStats->WrongInnerLoop;
-       LoopStats->DesiredInnerTimeStep 
-           += walk_info.LoopStats->DesiredInnerTimeStep;
-       LoopStats->NextInnerLoop 
-           += walk_info.LoopStats->NextInnerLoop;
-       LoopStats->UnsafeInterchange 
-           += walk_info.LoopStats->UnsafeInterchange;
-       LoopStats->DistributionUnsafe 
-           += walk_info.LoopStats->DistributionUnsafe;
-       LoopStats->NeedsScalarExpansion 
-           += walk_info.LoopStats->NeedsScalarExpansion;
-       LoopStats->TimeStepPreventedMemoryOrder
-           += walk_info.LoopStats->TimeStepPreventedMemoryOrder;
-       LoopStats->TooComplex 
-           += walk_info.LoopStats->TooComplex;
-       LoopStats->Nests 
-           += walk_info.LoopStats->Nests;
-       LoopStats->Imperfect 
-           += walk_info.LoopStats->Imperfect;
-       LoopStats->OriginalLocalityMatrix.SingleGroups.Invariant
-          += walk_info.LoopStats->OriginalLocalityMatrix.SingleGroups.Invariant;
-       LoopStats->OriginalLocalityMatrix.SingleGroups.Spatial
-           += walk_info.LoopStats->OriginalLocalityMatrix.SingleGroups.Spatial;
-       LoopStats->OriginalLocalityMatrix.SingleGroups.None
-           += walk_info.LoopStats->OriginalLocalityMatrix.SingleGroups.None;
-       LoopStats->FinalLocalityMatrix.SingleGroups.Invariant
-          += walk_info.LoopStats->FinalLocalityMatrix.SingleGroups.Invariant;
-       LoopStats->FinalLocalityMatrix.SingleGroups.Spatial
-           += walk_info.LoopStats->FinalLocalityMatrix.SingleGroups.Spatial;
-       LoopStats->FinalLocalityMatrix.SingleGroups.None
-           += walk_info.LoopStats->FinalLocalityMatrix.SingleGroups.None;
-       LoopStats->MemoryLocalityMatrix.SingleGroups.Invariant
-          += walk_info.LoopStats->MemoryLocalityMatrix.SingleGroups.Invariant;
-       LoopStats->MemoryLocalityMatrix.SingleGroups.Spatial
-           += walk_info.LoopStats->MemoryLocalityMatrix.SingleGroups.Spatial;
-       LoopStats->MemoryLocalityMatrix.SingleGroups.None
-           += walk_info.LoopStats->MemoryLocalityMatrix.SingleGroups.None;
-       LoopStats->OriginalLocalityMatrix.MultiGroups.Invariant
-          += walk_info.LoopStats->OriginalLocalityMatrix.MultiGroups.Invariant;
-       LoopStats->OriginalLocalityMatrix.MultiGroups.Spatial
-           += walk_info.LoopStats->OriginalLocalityMatrix.MultiGroups.Spatial;
-       LoopStats->OriginalLocalityMatrix.MultiGroups.None
-           += walk_info.LoopStats->OriginalLocalityMatrix.MultiGroups.None;
-       LoopStats->OriginalLocalityMatrix.MultiRefs.Invariant 
-           += walk_info.LoopStats->OriginalLocalityMatrix.MultiRefs.Invariant;
-       LoopStats->OriginalLocalityMatrix.MultiRefs.Spatial
-           += walk_info.LoopStats->OriginalLocalityMatrix.MultiRefs.Spatial;
-       LoopStats->OriginalLocalityMatrix.MultiRefs.None 
-           += walk_info.LoopStats->OriginalLocalityMatrix.MultiRefs.None;
-       LoopStats->FinalLocalityMatrix.MultiGroups.Invariant
-          += walk_info.LoopStats->FinalLocalityMatrix.MultiGroups.Invariant;
-       LoopStats->FinalLocalityMatrix.MultiGroups.Spatial
-           += walk_info.LoopStats->FinalLocalityMatrix.MultiGroups.Spatial;
-       LoopStats->FinalLocalityMatrix.MultiGroups.None
-           += walk_info.LoopStats->FinalLocalityMatrix.MultiGroups.None;
-       LoopStats->FinalLocalityMatrix.MultiRefs.Invariant 
-           += walk_info.LoopStats->FinalLocalityMatrix.MultiRefs.Invariant;
-       LoopStats->FinalLocalityMatrix.MultiRefs.Spatial
-           += walk_info.LoopStats->FinalLocalityMatrix.MultiRefs.Spatial;
-       LoopStats->FinalLocalityMatrix.MultiRefs.None 
-           += walk_info.LoopStats->FinalLocalityMatrix.MultiRefs.None;
-       LoopStats->MemoryLocalityMatrix.MultiGroups.Invariant
-          += walk_info.LoopStats->MemoryLocalityMatrix.MultiGroups.Invariant;
-       LoopStats->MemoryLocalityMatrix.MultiGroups.Spatial
-           += walk_info.LoopStats->MemoryLocalityMatrix.MultiGroups.Spatial;
-       LoopStats->MemoryLocalityMatrix.MultiGroups.None
-           += walk_info.LoopStats->MemoryLocalityMatrix.MultiGroups.None;
-       LoopStats->MemoryLocalityMatrix.MultiRefs.Invariant 
-           += walk_info.LoopStats->MemoryLocalityMatrix.MultiRefs.Invariant;
-       LoopStats->MemoryLocalityMatrix.MultiRefs.Spatial
-           += walk_info.LoopStats->MemoryLocalityMatrix.MultiRefs.Spatial;
-       LoopStats->MemoryLocalityMatrix.MultiRefs.None 
-           += walk_info.LoopStats->MemoryLocalityMatrix.MultiRefs.None;
-       LoopStats->OriginalOtherSpatialGroups 
-           += walk_info.LoopStats->OriginalOtherSpatialGroups;
-       LoopStats->FinalOtherSpatialGroups 
-           += walk_info.LoopStats->FinalOtherSpatialGroups;
-       LoopStats->MemoryOtherSpatialGroups 
-           += walk_info.LoopStats->MemoryOtherSpatialGroups;
-       for (i = 0; i < NESTING_DEPTH; i++)
-	 {
-	  LoopStats->FinalRatio[i] 
-	    += walk_info.LoopStats->FinalRatio[i];
-	  LoopStats->MemoryRatio[i] 
-	    += walk_info.LoopStats->MemoryRatio[i];
-	  LoopStats->NestingDepth[i]
-	    += walk_info.LoopStats->NestingDepth[i];
-	 }
-       LoopStats->Reversed += walk_info.LoopStats->Reversed;
-
-	memory_stats_dump(((config_type *)PED_MH_CONFIG(ped))->logfile,
-			  walk_info.LoopStats);
+	 memory_stats_dump(((config_type *)PED_MH_CONFIG(ped))->logfile,
+			    walk_info.LoopStats);
+	 break;
+       case SR_STATS:
+	 /* ACCUMULATE PROGRAM TOTALS HERE */
+	 /* DUMP ROUTINE TOTALS HERE */
+         break;
+       default:
+         break;
       }
      if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
-	 selection == INTERSTATS)
+	 selection == LI_STATS || selection = UJ_STATS ||
+	 selection == SR_STATS)
        fclose(((config_type *)PED_MH_CONFIG(ped))->logfile);
      hide_message2();
   }

@@ -1,4 +1,4 @@
-/* $Id: block.C,v 1.4 1992/12/11 11:21:59 carr Exp $ */
+/* $Id: block.C,v 1.5 1994/06/13 16:11:58 carr Exp $ */
 /****************************************************************************/
 /*  block.c                                                                 */
 /*                                                                          */
@@ -301,6 +301,9 @@ void sr_build_flow_graph(flow_graph_type *flow_graph,
      flow_graph->exit->num_succs = 0;
      block = build_basic_blocks(flow_graph->entry,stmt_list,AST_NIL,
 				&block_num,ar);
+
+   /* # BASIC BLOCKS IS CONTAINED IN block_num */
+
      link_basic_blocks(flow_graph,symtab,ar);
      block->next = flow_graph->exit;
      make_block_edge(flow_graph->exit,flow_graph->entry,AST_NIL,ar);
