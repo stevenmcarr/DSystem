@@ -6,12 +6,15 @@
 #include <dp.h>
 #include <misc/list.h>
 #include <malloc.h>
+#include <UniformlyGeneratedSets.h>
 
 typedef struct CacheInfoStruct {
   model_loop *loop_data;
   int        loop;
   int        RefNum;
   PedInfo    ped;
+  UniformlyGeneratedSets *UGS;
+  char       **IVar;
  } CacheInfoType;
 
 typedef struct DepInfoStruct {
