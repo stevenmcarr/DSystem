@@ -1,4 +1,4 @@
-/* $Id: notify_mgr.ansi.c,v 1.9 1999/06/11 21:24:51 carr Exp $ */
+/* $Id: notify_mgr.ansi.c,v 1.10 1999/06/23 13:40:03 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -23,7 +23,7 @@
 #include <libs/support/strings/rn_string.h>
 
 typedef FUNCTION_POINTER(void,HandlerFunc,(Generic,Generic,char *, int));
-#ifdef LINUX
+#ifndef SOLARIS
 typedef FUNCTION_POINTER(void,CRHandlerFunc,(Generic,int,int *));
 #else
 typedef FUNCTION_POINTER(void,CRHandlerFunc,(Generic,int,union wait *));
@@ -132,7 +132,7 @@ notify_unregister_async_fd(short fd)
 
 /* Add a process from which to accept child signals.                    */
 void
-notify_register_process(int pid, Generic owner, CRHandlerFunc handler, Boolean urgent)
+notify_register_process(int pid, Generic owner, notify_process_callback handler, Boolean urgent)
 {
 struct  cp_reg  *current;               /* current child registration   */
     
@@ -151,7 +151,7 @@ struct  cp_reg  *current;               /* current child registration   */
     );
     current->pid                   = pid;
     current->owner                 = owner;
-    current->handler               = handler;
+    current->handler               = (CRHandlerFunc)handler;
     current->next                  = current_notify_mgr->child_list;
     current_notify_mgr->child_list = current;
     sm_desk_register_process(pid, (aMgrInst*)current_notify_mgr->manager_id, urgent);
@@ -307,7 +307,7 @@ struct  cp_reg  *cr;                    /* current child registration   */
                     break;
                 }
             }
-#ifdef LINUX
+#ifndef SOLARIS
 	    (cr->handler)(cr->owner, cr->pid, (int *) mon_event.msg);
 #else
 	    (cr->handler)(cr->owner, cr->pid, (union wait *) mon_event.msg);

@@ -1,4 +1,4 @@
-/* $Id: port.C,v 1.11 1999/06/11 21:29:55 carr Exp $ */
+/* $Id: port.C,v 1.12 1999/06/23 13:40:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -24,7 +24,6 @@
 // << operator.
 class ostream;
 
-#ifndef OSF1
 #ifdef __GNUC__
 
 ostream &operator << (ostream &os, void *ptr)
@@ -41,7 +40,6 @@ ostream &operator << (ostream &os, const void *ptr)
   return os;
 }
 
-#endif
 #endif
 
 //------------------------------gcd--------------------------------------------

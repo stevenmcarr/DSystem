@@ -1,4 +1,4 @@
-/* $Id: system.h,v 1.7 1999/06/11 21:31:28 carr Exp $ */
+/* $Id: system.h,v 1.8 1999/06/23 13:39:58 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,7 +17,7 @@
 #include <libs/support/misc/general.h>
 #endif
 
-#ifndef LINUX
+#ifdef SOLARIS
    /* forward declare to satisfy Solaris compiler gripe.  This will */
    /* need to be changed to comply with SVR4 standards.             */
 union wait;

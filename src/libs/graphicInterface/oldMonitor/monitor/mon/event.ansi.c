@@ -1,4 +1,4 @@
-/* $Id: event.ansi.c,v 1.16 1999/06/11 21:12:09 carr Exp $ */
+/* $Id: event.ansi.c,v 1.17 1999/06/23 13:40:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,6 +11,7 @@
 		/* 							*/
 		/********************************************************/
 
+#include <stdlib.h>
 #include <fcntl.h>
 #include <signal.h>
 #ifdef SOLARIS
@@ -59,10 +60,10 @@ struct	cr_node	{				/* CHILD REGISTRATION NODE (for 1-list)	*/
 	int		pid;			/* the registered process id		*/
 	Generic		owner;			/* the registered owner of the process	*/
 	Boolean		urgent;			/* input should not be held		*/
-#ifndef LINUX
+#ifdef SOLARIS
 	union	wait	status;			/* the most recient status of process	*/
 #else
-       int *status;
+       int status;
 #endif
 	struct	cr_node	*next;			/* the next entry in the list		*/
 	Boolean		ready;			/* there is a waiting child here	*/
@@ -127,7 +128,7 @@ startChildProcessEvents(void)
 static Boolean
 readyChildProcessEvent(void)
 {
-#ifndef LINUX
+#ifdef SOLARIS
 	status_wait(0, (union wait *) 0);
 #else
 	status_wait(0, (int *) 0);
@@ -222,7 +223,7 @@ register struct	cr_node	*current;		/* the list entry being deleted		*/
 
 
 /* Replaces "system" with something that knows about the other child pids.		*/
-#ifdef SOLARIS
+#ifndef LINUX
 int system(const char* s)
 #else
 int system(char* s)
@@ -230,10 +231,10 @@ int system(char* s)
 {
   register int pid;			/* the (shard) process id		*/
   register int omask;			/* old signal mask			*/
-#ifndef LINUX
+#ifdef SOLARIS
   union	wait   status;			/* the return status			*/
 #else
-  int *status;
+  int status;
 #endif
 
   pid = vfork();
@@ -250,15 +251,15 @@ int system(char* s)
   else
     {/* parent process -- wait for termination */
       omask = sigblock(sigmask(SIGINT) | sigmask(SIGQUIT));
-#ifndef LINUX
+#ifdef SOLARIS
       status_wait(pid, &status);
 #else
-      status_wait(pid, status);
+      status_wait(pid, &status);
 #endif
       sigsetmask(omask);
 #ifdef _AIX
       return (WIFEXITED(status)) ? status.w_retcode : status.w_termsig;
-#elif defined(LINUX)
+#elif defined(LINUX) || defined(OSF1)
       if (WIFEXITED(status)) 
 	return WEXITSTATUS(status); 
       else
@@ -272,7 +273,7 @@ int system(char* s)
 
 /* Replaces "wait3" with something that knows about other child pids.			*/
 void
-#ifndef LINUX
+#ifdef SOLARIS
 status_wait(int pid, union wait* status_ptr)
 #else
 status_wait(int pid, int* status_ptr)
@@ -280,10 +281,10 @@ status_wait(int pid, int* status_ptr)
 {
 register struct	cr_node	*current;		/* current entry in registration list	*/
 register int		new_pid;		/* the new ready child process id	*/
-#ifndef LINUX
+#ifdef SOLARIS
 union wait		status;			/* the return status			*/
 #else
-int*		status;			/* the return status			*/
+int		status;			/* the return status			*/
 #endif
 
 	if (pid)
@@ -299,7 +300,11 @@ int*		status;			/* the return status			*/
 						urgent_childs--;
 					else
 						boring_childs--;
+					#ifdef SOLARIS
 					*status_ptr = current->status;
+					#else
+					*status_ptr = current->status;
+					#endif
 					return;
 				}
 			}
@@ -309,7 +314,7 @@ int*		status;			/* the return status			*/
 #ifndef LINUX
 	while ((new_pid = wait3(&status, (pid) ? WUNTRACED : WUNTRACED|WNOHANG, (struct rusage *) 0)) > 0 && new_pid != pid)
 #else
-	while ((new_pid = wait3(status, (pid) ? WUNTRACED : WUNTRACED|WNOHANG, (struct rusage *) 0)) > 0 && new_pid != pid)
+	while ((new_pid = wait3(&status, (pid) ? WUNTRACED : WUNTRACED|WNOHANG, (struct rusage *) 0)) > 0 && new_pid != pid)
 #endif
 	{/* process a child that we are not interested in */
 		for (current = cr_list; current; current = current->next)
@@ -332,7 +337,11 @@ int*		status;			/* the return status			*/
 
 	if (new_pid > 0)
 	{/* return the status of the interesting process */
+		#ifdef SOLARIS
 		*status_ptr = status;
+		#else
+		*status_ptr = status;
+		#endif
 	}
 }
 
