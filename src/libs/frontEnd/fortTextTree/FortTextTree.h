@@ -1,4 +1,4 @@
-/* $Id: FortTextTree.h,v 1.15 1997/03/27 20:35:24 carr Exp $ */
+/* $Id: FortTextTree.h,v 1.16 2000/01/12 23:13:42 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -207,7 +207,7 @@ EXTERN(void, ftt_TraverseText,
 		 EnterFunc Enter,
 		 Generic   other));
 
-#ifdef OSF1
+#if defined(OSF1) || defined(LINUX_ALPHA)
 
 #include <include/rn_varargs.h>
 
