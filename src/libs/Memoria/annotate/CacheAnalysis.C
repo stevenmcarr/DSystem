@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.17 1998/06/10 15:58:54 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.18 1998/06/29 17:31:46 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -219,7 +219,8 @@ static int StoreCacheInfo(AST_INDEX     node,
        if (aiSpecialCache && 
 	   NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
 	   (DepInfoPtr(node)->Locality == SELF_SPATIAL ||
-	    (DepInfoPtr(node)->Locality == GROUP_SPATIAL &&
+	    ((DepInfoPtr(node)->Locality == GROUP_SPATIAL ||
+	      DepInfoPtr(node)->Locality == GROUP_TEMPORAL) &&
 	     CacheInfo->ReuseModel->HasSelfSpatialReuse(node))))
 	 DepInfoPtr(node)->IsGroupSpatialTrailer = 
 	   CacheInfo->ReuseModel->IsGroupSpatialTrailer(node);
