@@ -1,14 +1,14 @@
-/* $Id: MkAssert.C,v 1.1 1997/03/11 14:28:55 carr Exp $ */
+/* $Id: MkAssert.C,v 1.2 2003/02/28 22:23:45 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 // -*- C++ -*- 
 /* Error system */ 
-/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/MkAssert.C,v 1.1 1997/03/11 14:28:55 carr Exp $
+/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/MkAssert.C,v 1.2 2003/02/28 22:23:45 carr Exp $
 */
 
-static const char * RCS_ID = "$Id: MkAssert.C,v 1.1 1997/03/11 14:28:55 carr Exp $";
+static const char * RCS_ID = "$Id: MkAssert.C,v 1.2 2003/02/28 22:23:45 carr Exp $";
 
 #include <stdlib.h>
 #include <strstream.h>
@@ -37,7 +37,7 @@ void ReadErrorMsg(const char * filename, int lineno) {
 
 void InitializeErrorChannel(const char * logfilename) {
   if ((logfilename != 0) && (strlen(logfilename) >0)) {
-    logfile.open(logfilename,ios::out,filebuf::openprot);
+    //logfile.open(logfilename,ios::out,filebuf::openprot);
     if (logfile.good()) {
       externlog = true;      
       return;

@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.11 2000/04/05 17:28:01 carr Exp $ */
+/* $Id: Memoria.C,v 1.12 2003/02/28 22:19:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -14,6 +14,7 @@
 /************************************************************************/
 
 #include <fstream.h>
+#include <iostream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

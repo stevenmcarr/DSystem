@@ -1,4 +1,4 @@
-/* $Id: port.h,v 1.15 2001/10/12 19:34:07 carr Exp $ */
+/* $Id: port.h,v 1.16 2003/02/28 22:26:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,8 +31,8 @@ extern "C" void bcopy(const void *s, void *d, int len);
 extern "C" int bcmp(const void *s, const void *t, int len);
 */
 #include <include/bstring.h>
-class ostream;
-ostream &operator << (ostream &os, void *ptr);
+//class ostream;
+//ostream &operator << (ostream &os, void *ptr);
 
 #elif defined  __TURBOC__
 

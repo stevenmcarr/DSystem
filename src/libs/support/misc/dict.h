@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.9 1997/06/25 15:16:57 carr Exp $ */
+/* $Id: dict.h,v 1.10 2003/02/28 22:26:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -26,7 +26,7 @@
 #ifndef _MEMORY_
 #include <libs/support/memMgmt/libmem.h>
 #endif
-class ostream;
+#include <iostream.h>
 
 // These dictionaries define a key-value mapping.  They can be inserted to,
 // searched or deleted from.  They grow and shrink as needed.  The key is a

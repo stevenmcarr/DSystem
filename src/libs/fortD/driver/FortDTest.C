@@ -1,4 +1,4 @@
-/* $Id: FortDTest.C,v 1.4 2001/10/12 19:31:58 carr Exp $ */
+/* $Id: FortDTest.C,v 1.5 2003/02/28 22:21:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -14,7 +14,7 @@
 #include <libs/support/strings/OrderedSetOfStrings.h>
 #include <libs/fortD/codeGen/FortDInterface.h>
 #include <libs/support/database/context.h>
-
+#include <iostream.h>
 
 struct s {
 Generic Ped;

@@ -1,4 +1,4 @@
-/* $Id: fd_symtable.h,v 1.10 2001/10/12 19:31:34 carr Exp $ */
+/* $Id: fd_symtable.h,v 1.11 2003/02/28 22:22:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -35,9 +35,7 @@ enum FORM           /* type of variable */
   DECOMPTYPE = 9, UNKNOWN = 10
 };
 
-#ifdef SOLARIS
 #undef OVERFLOW
-#endif
 
 enum OVERFLOW      /* alignment overflow options */
 {

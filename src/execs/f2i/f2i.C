@@ -1,4 +1,4 @@
-/* $Id: f2i.C,v 1.6 2001/10/12 19:19:57 carr Exp $ */
+/* $Id: f2i.C,v 1.7 2003/02/28 22:20:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -48,6 +48,8 @@
 #include <libs/fileAttrMgmt/fortranModule/FortTextTreeModAttr.h>
 
 #include <libs/ipAnalysis/callGraph/CallGraph.h>
+
+#include <iostream.h>
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
