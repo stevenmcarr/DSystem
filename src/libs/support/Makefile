@@ -1,8 +1,9 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:36:24 carr Exp $
+# $Id: Makefile,v 1.2 1997/03/27 20:48:39 carr Exp $
 
 HERE = libs/support
 
 DIRS = \
+	   Lambda \
 	   annotation \
 	   arrays \
 	   database \
