@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.20 1996/09/30 14:21:52 carr Exp $ */
+/* $Id: mh.h,v 1.21 1996/10/14 14:48:52 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -42,6 +42,7 @@
 #include <UniformlyGeneratedSets.h>
 
 extern Boolean mc_extended_cache;
+extern int PartitionUnrollAmount;
 
 #define  MAX_LEVEL  20
 
@@ -75,7 +76,8 @@ struct loop_struct {
 	          val,
                   registers,
                   inner_stmts,
-                  outer_stmts;
+                  outer_stmts,
+                  CarriedDependences;
   float           rho,
                   L_L,
 		  P_L,
