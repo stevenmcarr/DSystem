@@ -1,4 +1,4 @@
-/* $Id: dt_build.C,v 1.2 1999/06/11 21:10:12 carr Exp $ */
+/* $Id: dt_build.C,v 1.3 2000/05/18 21:28:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1630,10 +1630,10 @@ dg_build_pair(Dg_ref_params *r, Dg_ref_info *ref1s,
 	else if (type == dg_input)
 	  dg_ins_edge(r->dg, r->dt, r->infoPtr, ref1, ref2, type, -1, Edge, stmt1, stmt2);
       } else if((ref1 != ref2) && (type == dg_input) ) {	
-	/* Append Intrastatement Input Edges	*/
+	/* Append Intrastatement Input Edges	*/ 
 	/* added reverse JMC 2/93 */
-	dt_rev_info(r->dt, dg_ins_edge(r->dg, r->dt, r->infoPtr, 
-				       ref2, ref1, dg_input, -1, Edge, stmt2, stmt1));
+	dg_ins_edge(r->dg, r->dt, r->infoPtr, 
+	            ref1, ref2, dg_input, -1, Edge, stmt1, stmt2);
       }
     }
     
