@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.17 1998/06/01 22:02:34 carr Exp $ */
+/* $Id: prefetch.C,v 1.18 1998/06/02 13:55:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -995,6 +995,7 @@ static AST_INDEX CreatePreLoop(model_loop    *loop_data,
 	     gen_INDUCTIVE_put_rvalue1(control,
 				       pt_gen_add(tree_copy_with_type(lwb),
 						  tree_copy_with_type(OffsetVar)));
+	     gen_INDUCTIVE_put_rvalue3(control,pt_gen_int(UnrollVal+1));
 	   }
 	 else
 	   {
