@@ -1,4 +1,4 @@
-/* $Id: ssa_private.h,v 3.10 1997/03/11 14:36:15 carr Exp $ */
+/* $Id: ssa_private.h,v 3.11 1999/03/31 21:48:06 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -153,13 +153,6 @@ typedef struct ssa_stuff_struct {
     Generic	ipHandle;
     void *	ssaNodeMap;	/* map AST_INDEX to SsaNodeId */
 } * SsaStuff;
-
-/*
- *  Induce a compilation error if ssa_stuff_struct is too big
- *  -- array dimension cannot be zero or negative.
- */
-char ssa_foo_junk[(SSA_WORK_SLOTS * sizeof(Generic)) -
-		  sizeof(struct ssa_stuff_struct) +1];
 
 #define SSA_nodes(cfg)		(((SsaStuff)cfg->ssaStuff)->ssaNodes)
 #define SSA_edges(cfg)		(((SsaStuff)cfg->ssaStuff)->ssaEdges)

@@ -1,4 +1,4 @@
-/* $Id: ssa_util.C,v 1.1 1997/06/25 15:10:55 carr Exp $ */
+/* $Id: ssa_util.C,v 1.2 1999/03/31 21:48:06 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -14,6 +14,13 @@ STATIC(void, insert_def, (CfgInstance cfg, SsaNodeId ssaId));
 STATIC(SsaDefVar*, get_ref_slot, (CfgInstance cfg, fst_index_t var));
 STATIC(CfgNodeId, next_tarj_cn, (CfgInstance cfg, CfgNodeId cn));
 
+/*
+ *  Induce a compilation error if ssa_stuff_struct is too big
+ *  -- array dimension cannot be zero or negative.
+ */
+
+char ssa_foo_junk[(SSA_WORK_SLOTS * sizeof(Generic)) -
+		  sizeof(struct ssa_stuff_struct) +1];
 /*
  *  True is node should be treated as a use.
  */
