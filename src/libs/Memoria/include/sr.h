@@ -1,4 +1,4 @@
-/* $Id: sr.h,v 1.8 1992/12/11 14:09:02 carr Exp $ */
+/* $Id: sr.h,v 1.9 1995/04/11 15:47:43 carr Exp $ */
 
 /*-------------------------------------------------------------
 
@@ -41,6 +41,7 @@ typedef struct scalarinfotype {
                     surrounding_do,
                     def,
                     num_regs,
+                    num_removed,
                     gen_distance;
   Boolean           is_generator,
                     constant,
