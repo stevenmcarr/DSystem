@@ -404,7 +404,7 @@ AST_INDEX AddressEquivalenceClassSet::GetLeader(AST_INDEX node)
   GetH(node,nodeH,&uniform);
 
   AST_INDEX Leader = GetAddressEquivalenceClass(node,nodeH)->GetLeader();
-  la_matFree(nodeH,Subscripts,NestingLevel);
+//  la_matFree(nodeH,Subscripts,NestingLevel);
   return Leader;
 }
 
@@ -419,7 +419,7 @@ AST_INDEX AddressEquivalenceClassSet::GetFirstInLoop(AST_INDEX node)
   GetH(node,nodeH,&uniform);
 
   AST_INDEX FirstReference = GetAddressEquivalenceClass(node,nodeH)->GetFirstInLoop();
-  la_matFree(nodeH,Subscripts,NestingLevel);
+//  la_matFree(nodeH,Subscripts,NestingLevel);
   return FirstReference;
 }
 
