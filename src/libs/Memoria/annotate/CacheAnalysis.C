@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.37 2001/10/12 19:21:29 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.38 2002/02/20 16:17:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -230,7 +230,9 @@ static int CreateDepInfo(AST_INDEX node,
 		 break;
 		 
 	       case FlushInstruction:
+	       case Cluster:
 		 break;
+		 
 	       }
 	   }
 	 else

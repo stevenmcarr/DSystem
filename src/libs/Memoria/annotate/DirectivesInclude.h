@@ -1,4 +1,4 @@
-/* $Id: DirectivesInclude.h,v 1.9 1999/07/22 18:08:52 carr Exp $ */
+/* $Id: DirectivesInclude.h,v 1.10 2002/02/20 16:17:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -12,7 +12,10 @@
 #include <libs/support/lists/list.h>
 #include <libs/frontEnd/fortTree/fortsym.h>
 
-typedef enum {PrefetchInstruction,FlushInstruction,Dependence} Instruction;
+typedef enum {PrefetchInstruction,
+	      FlushInstruction,
+	      Dependence,
+	      Cluster} Instruction;
 
 typedef struct DirectiveStruct {
   Instruction Instr;
@@ -24,6 +27,7 @@ typedef struct DirectiveStruct {
   AST_INDEX   AddressLeader; /* used in AddressOptimization */
   AST_INDEX   FirstInLoop; /* used in AddressOptimization */
   int         Offset; /* used in AddressOptimization */
+  int         Cluster;
  }  Directive;
 
 EXTERN(Boolean, a2i_string_parse, (char *,

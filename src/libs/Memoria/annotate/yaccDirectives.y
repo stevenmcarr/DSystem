@@ -1,4 +1,4 @@
-/* $Id: yaccDirectives.y,v 1.10 2000/02/02 14:09:33 carr Exp $ */
+/* $Id: yaccDirectives.y,v 1.11 2002/02/20 16:17:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -40,7 +40,7 @@ Boolean a2i_IsDirective;
   }
 
 %token CDIR
-%token PREFETCH FLUSH DEP
+%token PREFETCH FLUSH DEP CLUSTER
 %token <cval> NAME ICONST
 %token LPAR RPAR COMMA
 %token PLUS MINUS TIMES DIVIDE
@@ -75,6 +75,11 @@ command : PREFETCH constexpr COMMA subvar
 	      $$.Instr = Dependence;
 	      $$.Subscript = $4;
 	      $$.DirectiveNumber = atoi(gen_get_text($2));
+	    }
+        | CLUSTER constexpr
+            {
+	      $$.Instr = Cluster;
+	      $$.Cluster = atoi(gen_get_text($2));
 	    }
         ;
 
@@ -213,7 +218,10 @@ Boolean a2i_string_parse (str,Dir,symtab)
       Dir->Instr = a2i_Directive.Instr;
       Dir->Subscript = a2i_Directive.Subscript;
       Dir->DirectiveNumber = a2i_Directive.DirectiveNumber;
-      SetTypes(Dir->Subscript,symtab);
+      if (Dir->Instr != Cluster)
+        SetTypes(Dir->Subscript,symtab);
+      else
+	Dir->Cluster = a2i_Directive.Cluster;
       return true;
      }
    else
