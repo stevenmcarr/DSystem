@@ -1,4 +1,4 @@
-/* $Id: balance.C,v 1.9 1996/02/14 11:00:48 carr Exp $ */
+/* $Id: balance.C,v 1.10 1996/02/19 13:55:07 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -225,6 +225,6 @@ float mh_CacheBalance(int       mem_coeff[4][3][3],
      if (FL == 0)
        return(0.0);
      else
-       return(((PL - IM*LL)*MissCost)/FL + MemBal);
+       return((POSITIVE_PART(PL - IM*LL)*MissCost)/FL + MemBal);
   }
      

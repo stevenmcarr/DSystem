@@ -1,4 +1,4 @@
-/* $Id: balance.h,v 1.9 1996/02/14 11:01:07 carr Exp $ */
+/* $Id: balance.h,v 1.10 1996/02/19 13:55:22 carr Exp $ */
 
 #ifndef balance_h
 #define balance_h
@@ -23,4 +23,5 @@ EXTERN(float, mh_PrefetchRequirements,(float     PrefetchCoeff[4][3][3],
 				       PrefetchCoeffComponentType Comp[4][3][3],
 				       int LineSize));
 
+#define POSITIVE_PART(x) (x > 0 ? x : 0)
 #endif
