@@ -1,4 +1,4 @@
-/* $Id: fusion.C,v 1.2 1997/06/26 17:32:08 carr Exp $ */
+/* $Id: fusion.C,v 1.3 1997/06/27 17:55:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,6 +11,8 @@
 /*                                                                         */
 /***************************************************************************/
 
+#include <string.h>
+#include <include/bstring.h>
 #include <libs/support/misc/general.h>
 #include <libs/frontEnd/ast/groups.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/pt/private_pt.h>
