@@ -1,4 +1,4 @@
-/* $Id: la.C,v 1.7 1998/08/05 19:31:30 carr Exp $ */
+/* $Id: la.C,v 2.1 1998/09/03 13:23:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -27,7 +27,6 @@
 int Solve(la_matrix, la_vect, int, int, la_matrix*, int*);
 int ChangeLeader(la_vect, la_vect, int,AST_INDEX,AST_INDEX);
 int ChangeTrailer(la_vect, la_vect, int, AST_INDEX, AST_INDEX);
-int ChangeLoadLeader(la_vect, la_vect, int, AST_INDEX, AST_INDEX);
 
 extern Boolean ReuseModelDebugFlag;
 
@@ -85,16 +84,16 @@ Boolean DataReuseModel::IsGroupSpatialLeader(AST_INDEX node)
   return IsLeader;
 }
 
-Boolean DataReuseModel::IsGroupSpatialLoadLeader(AST_INDEX node)
+Boolean DataReuseModel::IsGroupSpatialTrailer(AST_INDEX node)
 
 {
   DRIter ReuseIter(*this);
-  Boolean IsLoadLeader = false;
+  Boolean IsTrailer = false;
   DataReuseModelEntry *ReuseEntry;
 
-  while ((ReuseEntry = ReuseIter()) != NULL && NOT(IsLoadLeader))
-    IsLoadLeader = ReuseEntry->IsGroupSpatialLoadLeader(node);
-  return IsLoadLeader;
+  while ((ReuseEntry = ReuseIter()) != NULL && NOT(IsTrailer))
+    IsTrailer = ReuseEntry->IsGroupSpatialTrailer(node);
+  return IsTrailer;
 }
 
 LocalityType DataReuseModel::GetNodeReuseType(AST_INDEX node)
@@ -225,16 +224,16 @@ Boolean DataReuseModelEntry::IsGroupSpatialLeader(AST_INDEX node)
   return IsLeader;
 }
 
-Boolean DataReuseModelEntry::IsGroupSpatialLoadLeader(AST_INDEX node)
+Boolean DataReuseModelEntry::IsGroupSpatialTrailer(AST_INDEX node)
 
 {
   GSSetIter GSIter(*gsset);
-  Boolean IsLoadLeader = false;
+  Boolean IsTrailer = false;
   GroupSpatialEntry *GSEntry;
 
-  while ((GSEntry = GSIter()) != NULL && NOT(IsLoadLeader))
-    IsLoadLeader = BOOL(GSEntry->LoadLeaderNode() == node);
-  return IsLoadLeader;
+  while ((GSEntry = GSIter()) != NULL && NOT(IsTrailer))
+    IsTrailer = BOOL(GSEntry->TrailerNode() == node);
+  return IsTrailer;
 }
 
 DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse) : 
@@ -265,6 +264,23 @@ DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse) :
     ugse->GetConstants( node, const_vect);
     gsset->PutintoGSEntry(node, const_vect); 
    }
+ gsset->ComputeRRS();
+ gsset->ComputeMRRS();
+ GSSTable = new LocalityTable(ugse->getSubs(),ugse->getNestl);
+ GTSTable = new LocalityTable(ugse->getSubs(),ugse->getNestl);
+ RRSTable = new LocalityTable(ugse->getSubs(),ugse->getNestl);
+ RLTable = new DifferenceTable(ugse->getSubs(),ugse->getNestl);
+}
+
+DataReuseModelEntry::~DataReuseModelEntry()
+
+{
+  delete gsset;
+  delete rrset;
+  delete mrrset;
+  delete GSSTable;
+  delete GTSTable;
+  delete RRSTable;
 }
 
 GroupSpatialSet::GroupSpatialSet(la_vect lisp,
@@ -286,6 +302,16 @@ GroupSpatialSet::GroupSpatialSet(la_vect lisp,
  la_matCopy(inH, H, Subs, Nestl);
  IsSelfTemporal = IsSelfSpatial = False;
  FindSelfReuse();
+}
+
+GroupSpatialSet::~GroupSpatialSet()
+
+{
+  GroupSpatialEntry *GSEntry;
+
+  for (GSSetIter GSI(*this);
+       GSEntry = GSI();)
+    delete GSEntry;
 }
 
 void GroupSpatialSet::FindSelfReuse()
@@ -474,6 +500,80 @@ void GroupSpatialSet::PutintoGSEntry(AST_INDEX node, la_vect c_vect)
    }
 }
 
+void GroupSpatialSet::ComputeRRS()
+
+{
+  GroupSpatialEntry *GSEntry;
+  GroupTemporalEntry *GTEntry;
+  VectListEntry *VEntry;
+  OrderedReferenceSet *ORSet;
+
+  rrset = new RegisterReuseSet(GetLIS(),GetNestl(),GetSubs(),GetH());
+  for (GSSetIter GSIter(*this);
+       GSEntry = GSIter();)
+    for (GTSetIter GTIter(*GSEntry->GetGTS());
+	 GTEntry = GTIter();)
+      {
+	ORSet = new OrderedReferenceSet(GetH(),GetSubs(),GetNestl());
+	for (VectListIter VIter(GTEntry->GetVectList());
+	     VEntry = VIter();)
+	  ORSet += new OrderedReferenceSetEntry(VEntry->GetVect(),VEntry->GetNode(),
+					      GetNestl());
+  
+	OrderedReferenceSetIterator ORSIter(*ORSet);
+	OrderedReferenceEntry *OREntry = ORSIter();
+	RegisterReuseEntry *RREntry = new RegisterReuseEntry(GetLIS(),GetNestl(),
+							     GetSubs(), GetH(),
+							     OREntry->GetNode(),
+							     OREntry->GetVect());
+
+	RREntry->AddVect(OREntry->GetNode(),OREntry->GetVect());
+	
+	rrset += RREntry;
+	
+	while ((OREntry = ORSIter()) != NULL)
+	  {
+	    if (ut_IsDefiniton(OREntry->GetNode()))
+	      {
+		RREntry = new RegisterReuseEntry(GetLIS(),GetNestl(),GetSubs(),
+						 GetH(),OREntry->GetNode(),
+						 OREntry->GetVect());
+		rrset += RREntry;
+	      }
+	    RREntry->AddVect(OREntry->GetNode(),OREntry->GetVect());
+	  }
+      }
+}
+					      
+       
+void GroupSpatialSet::ComputeMRRS()
+
+{
+  mrrset = new MergeableRegisterReuseSet(GetLIS(),GetNestl(),GetSubs(),GetH());
+  MergeableRegisterReuseEntry *MRREntry = new MergeableRegisterReuseEntry(GetLIS(),
+									  GetNestl(),
+									  GetSubs(),
+									  GetH());
+  mrrset += MRREntry;
+
+  RRSetIter RRIter(*rrset);
+  RegisterReuseEntry *RREntry = RRIter();
+  
+  MRREntry->AddVect(RREntry->LeaderNode(),RREntry->getleader());
+
+  while ((RREntry = RRIter()) != NULL)
+    {
+      if (ut_IsDefinition(RREntry->GetNode()))
+	{
+	  MRREntry = new MergeableRegisterReuseEntry(GetLIS(),GetNestl(),GetSubs(),
+						     GetH());
+	  mrrset += MRREntry;
+	}
+      MRREntry->AddVect(RREntry->LeaderNode(),RREntry->getleader());
+    }
+
+}
+
 GroupSpatialEntry* GSSetIter::operator () ()
 {
  GroupSpatialEntry *e = (GroupSpatialEntry *) SinglyLinkedListIterator::Current();
@@ -547,11 +647,8 @@ GroupSpatialEntry::GroupSpatialEntry(la_vect loc, int nestl,
  la_vecCopy(c_vect, leader_v, sub);
  leader_n = node;
  trailer_v = la_vecNew(sub);
- load_leader_v = la_vecNew(sub);
  la_vecCopy(c_vect, trailer_v, sub);
- la_vecCopy(c_vect, load_leader_v, sub);
  trailer_n = node;
- load_leader_n = node;
  gts = new GroupTemporalSet(loc, nestl, sub, h); 
  gts->PutintoGTEntry(node, c_vect);
  NodeList = new GenericList;
@@ -613,8 +710,6 @@ int GroupSpatialEntry::take(AST_INDEX n, la_vect in_c)
        leader_n = n;
     if(ChangeTrailer(trailer_v, in_c, Subs,trailer_n,n))
        trailer_n = n;
-    if(ChangeLoadLeader(load_leader_v, in_c, Subs,load_leader_n,n))
-       load_leader_n = n;
     Accept = True;
    } 
  
@@ -742,9 +837,6 @@ void GroupSpatialEntry::PrintOut()
 
  ut_GetSubscriptText( trailer_n, Text);
  cout<< "\t\tTrailer is " << Text << endl;
-
- ut_GetSubscriptText( load_leader_n, Text);
- cout<< "\t\tLoad Leader is " << Text << endl;
 
  gts->PrintOut();
 }
@@ -1384,49 +1476,6 @@ int ChangeTrailer(la_vect trailer, la_vect new_v, int size,
   if(Change)
     for( i = 0; i<size; i++)
       trailer[i] = new_v[i];
-
- return Change; 
-  
-}
-
-
-int ChangeLoadLeader(la_vect load_leader, la_vect new_v, int size,
-		     AST_INDEX load_leader_n, AST_INDEX new_node)
-{
-
- int Change = False;
- int Done = False;
- int i = size - 1 ;
- Boolean AllEqual = true;
-
- AST_INDEX LoadLeaderStmt = ut_get_stmt(load_leader_n);
-
- if (is_assignment(LoadLeaderStmt))
-   if (gen_ASSIGNMENT_get_lvalue(LoadLeaderStmt) == new_node)
-     return False;
-
- while( i >= 0 &&  !Done)
-   {
-    if(load_leader[i] > new_v[i])
-      {	
-        Done = True;
-        AllEqual = false;
-      }
-    else if ( load_leader[i] < new_v[i] )
-       {
-         Done = True;
-         Change = True;
-         AllEqual = false;
-       } 
-    -- i;
-   }
-  
-  if (AllEqual)
-    Change = NewReferenceIsLater(load_leader_n,new_node);
-  
-  if(Change)
-    for( i = 0; i<size; i++)
-      load_leader[i] = new_v[i];
 
  return Change; 
   
