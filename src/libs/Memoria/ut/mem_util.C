@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.16 1995/08/24 15:19:19 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.17 1995/09/12 10:42:21 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -455,6 +455,9 @@ static char *FindInductionVar(model_loop *loop_data,
      i = get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->surrounding_do;
      lnode = get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->surround_node;
      loop_level = loop_data[i].level;
+     if (loop_level < level)
+       /* this must be a bug in the dependence graph */
+       return NULL;
      while(loop_level != level)
        {
         lnode = get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->surround_node;
@@ -491,10 +494,12 @@ static Boolean OnlyInInnermostPosition(model_loop *loop_data,
    
      sub_list = gen_SUBSCRIPT_get_rvalue_LIST(node);
      sub = list_first(sub_list);
-     var = FindInductionVar(loop_data,node,level);
-     if (pt_find_var(sub,var) && NotInOtherPositions(sub_list,var))
+     if ((var = FindInductionVar(loop_data,node,level)) == NULL)
+       return(false);
+     else if (pt_find_var(sub,var) && NotInOtherPositions(sub_list,var))
        return(true);
-     return(false);
+     else
+       return(false);
   }
 
 
