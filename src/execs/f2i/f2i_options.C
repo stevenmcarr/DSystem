@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.2 1997/03/27 20:15:16 carr Exp $ */
+/* $Id: f2i_options.C,v 1.3 1997/04/09 20:40:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -24,6 +24,9 @@ Boolean f2i_ComputeInterproceduralInfo = false;
 
 /* these decls are to allow linking with the memory compiler for cache
 	analysis */
+
+char *mc_program = NULL;
+char *mc_module_list = NULL;
 Boolean mc_unroll_cache = false;
 Boolean mc_allow_expansion = false;
 Boolean mc_extended_cache = false;
