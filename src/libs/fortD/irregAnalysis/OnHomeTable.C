@@ -1,4 +1,4 @@
-/* $Id: OnHomeTable.C,v 1.7 1997/03/11 14:28:32 carr Exp $ */
+/* $Id: OnHomeTable.C,v 1.8 2001/09/14 18:31:04 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,6 +19,9 @@
 /**********************************************************************
  * Revision History:
  * $Log: OnHomeTable.C,v $
+ * Revision 1.8  2001/09/14 18:31:04  carr
+ * Update for RH 7.1
+ *
  * Revision 1.7  1997/03/11 14:28:32  carr
  * newly checked in as revision 1.7
  *
@@ -207,14 +210,15 @@ OnHomeTable::match_on_home_directive(AST_INDEX cmt_node,
   cmt       = str_tolower(orig_cmt);
   cmt_start = cmt;    // Save this for later delete
 
-  if (match_pattern(cmt, "execute ("))
+  const char * const_cmt = (const char *)cmt;
+  if (match_pattern(const_cmt, "execute ("))
   {
-    if ((match_pattern(cmt, loop_gen_ivar(loop_node)))
-	&& (match_pattern(cmt, ") on_home ")))
+    if ((match_pattern(const_cmt, loop_gen_ivar(loop_node)))
+	&& (match_pattern(const_cmt, ") on_home ")))
     {
       // <cmt> now contains the tail ("x(i)") of the ON_HOME directive
       // Make a copy so that we can delete <cmt_start> properly
-      home_name = ssave(cmt);
+      home_name = ssave(const_cmt);
     }
     else
     {

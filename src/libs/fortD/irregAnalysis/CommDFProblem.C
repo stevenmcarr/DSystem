@@ -1,4 +1,4 @@
-/* $Id: CommDFProblem.C,v 1.9 1997/03/27 20:32:56 carr Exp $ */
+/* $Id: CommDFProblem.C,v 1.10 2001/09/14 18:29:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,6 +11,9 @@
 /**********************************************************************
  * Revision History:
  * $Log: CommDFProblem.C,v $
+ * Revision 1.10  2001/09/14 18:29:27  carr
+ * Update for RH 7.1
+ *
  * Revision 1.9  1997/03/27 20:32:56  carr
  * Alpha
  *
@@ -669,11 +672,11 @@ GiveTakePtr
 CommDFAnnot_gt_access_apply(GtAccessFunc gt_access_v,
 			    CfgAnnotPtr  annot_v)
 {
-  Gt_index gt_access = (Gt_index) gt_access_v;
-  CommDFAnnotPtr annot     = (CommDFAnnotPtr) annot_v;
-  GiveTakePtr    gt        = annot->getGt(gt_access);
+  //Gt_index gt_access = (Gt_index) gt_access_v;
+  //CommDFAnnotPtr annot     = (CommDFAnnotPtr) annot_v;
+  //GiveTakePtr    gt        = annot->getGt(gt_access);
 
-  return gt;
+  //return gt;
 }
 
 

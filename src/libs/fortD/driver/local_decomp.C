@@ -1,4 +1,4 @@
-/* $Id: local_decomp.C,v 1.17 1997/03/27 20:32:40 carr Exp $ */
+/* $Id: local_decomp.C,v 1.18 2001/09/14 18:28:15 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,6 +30,8 @@
 #include <libs/frontEnd/fortTree/fortsym.h>
 
 #include <libs/ipAnalysis/problems/fortD/FortDNumProcsAnnot.h>
+
+#undef DISTRIBUTE
 
 //---------forward declarations---------//
 static SNODE* get_sp (FortranDHashTableEntry *array_entry, FortranDHashTableEntry *decomp_entry,  OverlapList*, AST_INDEX node, FD_Composition_HT *f_annot);

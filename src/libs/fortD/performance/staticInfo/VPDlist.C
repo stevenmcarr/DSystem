@@ -1,4 +1,4 @@
-/* $Id: VPDlist.C,v 1.1 1997/03/11 14:29:06 carr Exp $ */
+/* $Id: VPDlist.C,v 1.2 2001/09/14 18:32:53 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -69,7 +69,7 @@ void VPDfinger::Invalidate(void) {
   list = 0;
 }
 
-VPDfinger & const VPDfinger::operator = (const VPDfinger & r) {
+VPDfinger & VPDfinger::operator = (const VPDfinger & r) {
   node = r.node;
   list = r.list;
   return *this;

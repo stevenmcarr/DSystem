@@ -1,9 +1,9 @@
-/* $Id: MesgStaticSDDF.C,v 1.1 1997/03/11 14:28:55 carr Exp $ */
+/* $Id: MesgStaticSDDF.C,v 1.2 2001/09/14 18:31:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// $Id: MesgStaticSDDF.C,v 1.1 1997/03/11 14:28:55 carr Exp $ -*-c++-*-
+// $Id: MesgStaticSDDF.C,v 1.2 2001/09/14 18:31:57 carr Exp $ -*-c++-*-
 //**************************************************************************
 // Definitions of member functions and C wrappers for class MesgStaticSDDF
 //**************************************************************************
@@ -427,12 +427,12 @@ void MessageInfo::GetMessageSendParamsForReduc(Dist_Globals* dh,
 	symbBound->SetSymbolicValue(sp_get_lower(lhs_sp, dim));
 	nextMesgSend->AddArrayLB(symbBound);
     }
-    for (dim = 0; dim < lhs_sp->numdim; dim++) {	// each array dimension
+    for (int dim = 0; dim < lhs_sp->numdim; dim++) {	// each array dimension
 	symbBound = new SDDF_Symbolic_Value;
 	symbBound->SetSymbolicValue(sp_get_upper(lhs_sp, dim));
 	nextMesgSend->AddArrayUB(symbBound);
     }   
-    for (dim = 0; dim < lhs_sp->numdim; dim++) {	// each array dimension
+    for (int dim = 0; dim < lhs_sp->numdim; dim++) {	// each array dimension
 	symbBound = new SDDF_Symbolic_Value;
 	symbBound->SetSymbolicValue(1);		// step is always 1 it seems
 	nextMesgSend->AddArrayStep(symbBound);
@@ -604,7 +604,7 @@ static void PutRSDInfo(Dist_Globals* dh,
     // Get lb, ub symbolics from mesgData directly.
     // Logic copied from make_send_str()
     
-    for (i = 0; i < mesgData->numdim; i++) {
+    for (int i = 0; i < mesgData->numdim; i++) {
 	lb = new SDDF_Symbolic_Value;
 	ub = new SDDF_Symbolic_Value;
 	step = new SDDF_Symbolic_Value;

@@ -1,4 +1,4 @@
-/* $Id: IrrSymTab.C,v 1.8 1997/03/11 14:28:30 carr Exp $ */
+/* $Id: IrrSymTab.C,v 1.9 2001/09/14 18:30:15 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,6 +10,9 @@
 /**********************************************************************
  * Revision History:
  * $Log: IrrSymTab.C,v $
+ * Revision 1.9  2001/09/14 18:30:15  carr
+ * Update for RH 7.1
+ *
  * Revision 1.8  1997/03/11 14:28:30  carr
  * newly checked in as revision 1.8
  *
@@ -84,7 +87,7 @@ IrrSymTab::IrrSymTab()
     ihash[i] = NULL;
   }
 
-  for (i = 0; i < MallType_cnt; i++)
+  for (int i = 0; i < MallType_cnt; i++)
   {
     arrs_node[i] = AST_NIL;            // No arrays declared yet
   }
