@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.16 1995/04/11 15:47:15 carr Exp $ */
+/* $Id: compute_uj.C,v 1.17 1995/05/23 09:12:28 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -2701,7 +2701,7 @@ static void do_computation(model_loop    *loop_data,
 
   {
    int           i,j,k,regs;
-   float         rhoL_lp,bal;
+   float         rhoL_lp,bal,MissCost;
    dep_info_type dep_info;
    reg_info_type reg_info;
    AST_INDEX     step;
@@ -2796,8 +2796,17 @@ static void do_computation(model_loop    *loop_data,
      walk_expression(loop_data[loop].node,(WK_EXPR_CLBACK)partition_names,(WK_EXPR_CLBACK)NOFUNC,
 		     (Generic)&dep_info);
      compute_coefficients(&dep_info);
-     loop_data[loop].ibalance = mh_loop_balance(dep_info.mem_coeff,
-						dep_info.flops,1,1);
+     MissCost =
+        (float)((config_type *)PED_MH_CONFIG(dep_info.ped))->miss_cycles /
+	(float)((config_type *)PED_MH_CONFIG(dep_info.ped))->hit_cycles;
+     if (mc_unroll_cache)
+       loop_data[loop].ibalance = mh_CacheBalance(dep_info.mem_coeff,
+						  dep_info.PrefetchCoeff,
+						  dep_info.flops,1,1,
+						  MissCost);
+     else
+       loop_data[loop].ibalance = mh_loop_balance(dep_info.mem_coeff,
+						  dep_info.flops,1,1);
      rhoL_lp = loop_data[loop].rho * 
 	          ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
      if ((loop_data[loop].ibalance -
