@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.C,v 1.7 1997/10/30 15:19:31 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.C,v 1.8 1997/11/04 21:10:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -455,14 +455,14 @@ UniformlyGeneratedSetsEntry::SingleNodeHasGroupTemporalReuse(AST_INDEX node1)
 
 void UniformlyGeneratedSetsEntry::PrintOut()
 {
- cout << endl;
- cout << "UGSEntry *******" << endl;
- cout << "Nestl = " << NestingLevel << endl;
- cout << "Subs = " << Subscripts << endl;
- cout << "Name " << name << endl;
- cout << " H is "<< endl;
+ //cout << endl;
+ //cout << "UGSEntry *******" << endl;
+ //cout << "Nestl = " << NestingLevel << endl;
+ //cout << "Subs = " << Subscripts << endl;
+ //cout << "Name " << name << endl;
+ //cout << " H is "<< endl;
  PrintH();
- cout << " LIS is " << endl;
+ //cout << " LIS is " << endl;
  PrintLIS();
 } 
 

@@ -1,4 +1,4 @@
-/* $Id: Analysis.C,v 1.4 1997/06/25 15:25:14 carr Exp $ */
+/* $Id: Analysis.C,v 1.5 1997/11/04 21:10:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -221,7 +221,7 @@ void GroupSpatialSet::DoAnalysis()
 
    for ( i = 0; i < Subs ; ++ i)
 	{
-	 cout << "ComputeBoard # " << i << endl;
+	 //cout << "ComputeBoard # " << i << endl;
 	 computeboard[i].PrintOut();
          computeboard[i].GetReady();
 
@@ -255,24 +255,24 @@ void GroupTemporalSet::DoAnalysis(int *num_gap, int *block, int *&gap)
  (*block) = 1;
  (*num_gap) = 0;
 
- cout <<"Read in the 1st Dim: " ; 
+ //cout <<"Read in the 1st Dim: " ; 
  i = 0;
  for( GTSetIter gtiter(this);
        e = gtiter(); )
  {
   const_array[i] = e->getleader()[0]; 
-  cout << const_array[i] << " " ;
+  //cout << const_array[i] << " " ;
   i ++;
  } 
- cout << endl;
+ //cout << endl;
  
- if ( i != j ) cout << " Erro in GRS::DoAnalysis!" << endl; 
+ if ( i != j ) //cout << " Erro in GRS::DoAnalysis!" << endl; 
 
  qsort ( const_array, j, sizeof(int), intcompare);
- cout << " The 1st Dim are sorted as: " ;     
+ //cout << " The 1st Dim are sorted as: " ;     
  for ( i = 0; i < j; i++ )
-     cout <<" " << const_array[i];
- cout << endl;
+     //cout <<" " << const_array[i];
+ //cout << endl;
 
  last_const = const_array[0];
  for ( i = 0; i < j - 1; i ++ ) 

@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.28 1997/03/27 20:28:01 carr Exp $ */
+/* $Id: compute_uj.C,v 1.29 1997/11/04 21:10:45 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -2536,20 +2536,20 @@ static float LA_InitBalance(DataReuseModel *drmodel,
          l1 = loop_data[unroll_loops[0]].level;
 	 l2 = loop_data[unroll_loops[1]].level;
          Init_Int_Reg_Press = mh_addr_register_pressure(dep_info->addr_coeff, 1, 1); 
-	 cout << "Initial a_regs = " << Init_Int_Reg_Press<<endl;
+	 ////cout << "Initial a_regs = " << Init_Int_Reg_Press<<endl;
 	 Init_FP_Reg_Press =  mh_fp_register_pressure(dep_info->reg_coeff,
                                              dep_info->scalar_coeff, 1, 1) +
                                              dep_info->scalar_regs;
-	 cout << "Initial fp_regs = " << Init_FP_Reg_Press<<endl;
+	 //cout << "Initial fp_regs = " << Init_FP_Reg_Press<<endl;
 	 
 	 Init_Pref = drmodel->ComputePrefetch(l1, 0, l2, 0);
-         cout << "Initial Prefetch = " << Init_Pref << endl; 
+         //cout << "Initial Prefetch = " << Init_Pref << endl; 
 	 Init_MemRef = mh_memref(dep_info->mem_coeff, 1, 1);
-	 cout << "Inital # Memory References = " << Init_MemRef << endl;
+	 //cout << "Inital # Memory References = " << Init_MemRef << endl;
 
 	 Init_MemBal = mh_loop_balance(dep_info->mem_coeff, dep_info->flops, 1, 1); 
 	 FL = (float)(dep_info->flops);
-	 cout << "Initial # Flops = " << FL << endl;
+	 //cout << "Initial # Flops = " << FL << endl;
          if(FL == 0)
 	    { Init_obj = 0.0; Beta_l = 0.0; }
 	 else
@@ -2558,10 +2558,10 @@ static float LA_InitBalance(DataReuseModel *drmodel,
 		if ( Miss <0 ) Miss = 0;
 	        Beta_l = (Miss*MissCost + Init_MemRef)/FL; 
               }
-         cout <<"Initial Loop Balance = " << Beta_l << endl;
+         //cout <<"Initial Loop Balance = " << Beta_l << endl;
          Init_obj = Beta_l - Beta_m;
 	 if ( Init_obj < 0 ) Init_obj = - Init_obj;
-         cout <<"Initial Obj = " << Init_obj << endl;
+         //cout <<"Initial Obj = " << Init_obj << endl;
          return( Beta_l );
    }
 
@@ -2572,20 +2572,20 @@ static float LA_InitBalance(DataReuseModel *drmodel,
 	 l = loop_data[unroll_loops[0]].level;
 
          Init_Int_Reg_Press = mh_addr_register_pressure(dep_info->addr_coeff, 1, 1); 
-	 cout << "Initial a_regs = " << Init_Int_Reg_Press<<endl;
+	 //cout << "Initial a_regs = " << Init_Int_Reg_Press<<endl;
 	 Init_FP_Reg_Press =  mh_fp_register_pressure(dep_info->reg_coeff,
                                              dep_info->scalar_coeff, 1, 1) +
                                              dep_info->scalar_regs;
-	 cout << "Initial fp_regs = " << Init_FP_Reg_Press << endl;
+	 //cout << "Initial fp_regs = " << Init_FP_Reg_Press << endl;
 	 
 	 Init_Pref = drmodel->ComputePrefetch(l, 0);
-         cout << "Initial Prefetch = " << Init_Pref << endl; 
+         //cout << "Initial Prefetch = " << Init_Pref << endl; 
 	 Init_MemRef = mh_memref(dep_info->mem_coeff, 1, 1);
-	 cout << "Inital # Memory References = " << Init_MemRef << endl;
+	 //cout << "Inital # Memory References = " << Init_MemRef << endl;
 
 	 Init_MemBal = mh_loop_balance(dep_info->mem_coeff, dep_info->flops, 1, 1); 
 	 FL = (float)(dep_info->flops);
-	 cout << "Initial # Flops = " << FL << endl;
+	 //cout << "Initial # Flops = " << FL << endl;
          if(FL == 0.0)
 		{ Init_obj = 0; Beta_l = 0.0; }
 	 else
@@ -2594,13 +2594,13 @@ static float LA_InitBalance(DataReuseModel *drmodel,
 		if ( Miss < 0 ) Miss = 0;
 	        Beta_l = (Miss*MissCost + Init_MemRef)/FL;
 	       }
-         cout <<"Initial Loop Balance = " << Beta_l << endl;
+         //cout <<"Initial Loop Balance = " << Beta_l << endl;
          Init_obj = Beta_l - Beta_m;
 	 if ( Init_obj < 0 ) Init_obj = - Init_obj;
-         cout <<"Initial Obj = " << Init_obj << endl;
+         //cout <<"Initial Obj = " << Init_obj << endl;
 	 return( Beta_l );
    } 
-  else cout <<"count = " << count << endl;
+  //else //cout <<"count = " << count << endl;
  
 }
 
@@ -2663,13 +2663,13 @@ static void ComputeUsingLinearAlgebra(DataReuseModel *drmodel,
      /* Yiping UGS will contain the uniformly generated reference sets */
 
  
-   cout << "Do Estimating " << endl;
+   //cout << "Do Estimating " << endl;
 
    CyclesPerIteration = (float)ut_CyclesPerIteration(loop_data[loop].node, 
 						     loop_data,loop,NULL,dep_info->ped);
    OriginalLoopSize = ut_LoopSize(loop_data[loop].node, dep_info->ped);
-     // cout << "CyclesPerIteration = " << CyclesPerIteration << endl;
-     // cout << "OriginalLoopSize = " << OriginalLoopSize << endl;
+     // //cout << "CyclesPerIteration = " << CyclesPerIteration << endl;
+     // //cout << "OriginalLoopSize = " << OriginalLoopSize << endl;
    max_x = Size_Limit/OriginalLoopSize; 
 
      if( count == 2)
@@ -2679,9 +2679,9 @@ static void ComputeUsingLinearAlgebra(DataReuseModel *drmodel,
          l1 = loop_data[unroll_loops[0]].level;
 	 l2 = loop_data[unroll_loops[1]].level;
 	 
-         cout <<"Unroll Two Loops" << endl;
+         //cout <<"Unroll Two Loops" << endl;
           
-         cout << "\tUnroll loop " << l1 << " and " << l2 << endl;
+         //cout << "\tUnroll loop " << l1 << " and " << l2 << endl;
 
  	 dep_info->x1 = 1;
 	 dep_info->x2 = 1; 
@@ -2796,17 +2796,17 @@ static void ComputeUsingLinearAlgebra(DataReuseModel *drmodel,
              {
             	x1 = unroll_vector[loop_data[unroll_loops[0]].level-1]+1; 
 		x2 = unroll_vector[loop_data[unroll_loops[1]].level-1]+1;
-           	cout << "X1 = " << x1 << " X2 = " << x2 << endl;
+           	//cout << "X1 = " << x1 << " X2 = " << x2 << endl;
             	Final_Int_Reg_Press = mh_addr_register_pressure(dep_info->addr_coeff, x1, x2);
                 Final_FP_Reg_Press = mh_fp_register_pressure(dep_info->reg_coeff,
                                              dep_info->scalar_coeff,x1,x2) +
                                              dep_info->scalar_regs;
-                cout << "Final a_regs = " << Final_Int_Reg_Press << endl;
-                cout << "Final fp_regs = " << Final_FP_Reg_Press << endl;
+                //cout << "Final a_regs = " << Final_Int_Reg_Press << endl;
+                //cout << "Final fp_regs = " << Final_FP_Reg_Press << endl;
 	        PrefetchRecord = drmodel->ComputePrefetch(l1, x1-1, l2, x2-1);
-     		cout << "PrefetchRecord = " << PrefetchRecord << endl;
+     		//cout << "PrefetchRecord = " << PrefetchRecord << endl;
 		Final_MemRef = mh_memref(dep_info->mem_coeff, x1, x2);
-     		cout << "Final MemRef = " << Final_MemRef << endl;
+     		//cout << "Final MemRef = " << Final_MemRef << endl;
 		MemBal = mh_loop_balance(dep_info->mem_coeff, dep_info->flops, x1, x2);
 		FL = (float)(dep_info->flops*(x1*x2));
 		LoopCycles = CyclesPerIteration * x1 * x2;
@@ -2819,9 +2819,9 @@ static void ComputeUsingLinearAlgebra(DataReuseModel *drmodel,
 	 	   Beta_l = (Miss*MissCost + Final_MemRef)/FL;
 	 	   new_obj =  Beta_l - Beta_m; 
         	  }
-		cout <<"Final Loop Balance = " << Beta_l <<endl;
+		//cout <<"Final Loop Balance = " << Beta_l <<endl;
 		if(new_obj <0) new_obj = - new_obj;
-        	cout << "Final OBJ = " << new_obj << endl;
+        	//cout << "Final OBJ = " << new_obj << endl;
        	    }
 
 	}
@@ -2833,9 +2833,9 @@ static void ComputeUsingLinearAlgebra(DataReuseModel *drmodel,
 	 FL = (float)(dep_info->flops);
 
 	 dep_info->x1 = 1;
-         cout << "Unroll One Loop "<< endl;
-         cout << "\tUnroll loop" << l << endl;
-	 cout << "mach_a = " << mach_a << endl;
+         //cout << "Unroll One Loop "<< endl;
+         //cout << "\tUnroll loop" << l << endl;
+	 //cout << "mach_a = " << mach_a << endl;
          x = 1;
 	 do
 	   {
@@ -2897,17 +2897,17 @@ static void ComputeUsingLinearAlgebra(DataReuseModel *drmodel,
 	if(Do_Unroll)
 	 {
 	  x = unroll_vector[loop_data[unroll_loops[0]].level-1]+1;
-          cout << "X = " << x <<endl;
+          //cout << "X = " << x <<endl;
 	  Final_Int_Reg_Press = mh_addr_register_pressure(dep_info->addr_coeff,x,1);
 	  Final_FP_Reg_Press =  mh_fp_register_pressure(dep_info->reg_coeff,
                                              dep_info->scalar_coeff, x, 1) +
                                              dep_info->scalar_regs;
-     	  cout << "Final a_regs = " << Final_Int_Reg_Press << endl;
-    	  cout << "Final fp_regs = " << Final_FP_Reg_Press << endl;
+     	  //cout << "Final a_regs = " << Final_Int_Reg_Press << endl;
+    	  //cout << "Final fp_regs = " << Final_FP_Reg_Press << endl;
 	  PrefetchRecord = drmodel->ComputePrefetch(l, x-1);
-          cout << "PrefetchRecord = " << PrefetchRecord << endl;
+          //cout << "PrefetchRecord = " << PrefetchRecord << endl;
 	  Final_MemRef = mh_memref(dep_info->mem_coeff, x, 1);
-     	  cout << "Final MemRef = " << Final_MemRef << endl;
+     	  //cout << "Final MemRef = " << Final_MemRef << endl;
 	  MemBal = mh_loop_balance(dep_info->mem_coeff, dep_info->flops, x, 1);
 	  FL = (float)(dep_info->flops*x);
 	  LoopCycles = CyclesPerIteration * x;
@@ -2920,13 +2920,13 @@ static void ComputeUsingLinearAlgebra(DataReuseModel *drmodel,
 	        Beta_l = (Miss*MissCost + Final_MemRef)/FL;
 	        new_obj =  Beta_l - Beta_m; 
              }
-	  cout <<"Final Loop Balance = " << Beta_l <<endl;
+	  //cout <<"Final Loop Balance = " << Beta_l <<endl;
           if( new_obj < 0 ) new_obj = - new_obj;
-     	  cout << "Final OBJ = " << new_obj << endl;
+     	  //cout << "Final OBJ = " << new_obj << endl;
          }
      }
 
-     // cout << "Printing Data Reuse Model" << endl;
+     // //cout << "Printing Data Reuse Model" << endl;
      // drmodel->PrintOut();
   }
 
@@ -3593,7 +3593,7 @@ static void do_computation(model_loop    *loop_data,
         UtilNode *lnode;
 	int n;
 
-        cout << "====== Using Linear Algebra Model =========" << endl;
+        //cout << "====== Using Linear Algebra Model =========" << endl;
      	IVar = new char*[loop_data[loop].level];
         for (lnode = UTIL_HEAD(loop_list),n = 0;
 	     lnode != NULLNODE;
@@ -3604,14 +3604,14 @@ static void do_computation(model_loop    *loop_data,
 					                loop_data[loop].node)));
            }
 
-        cout << "Generating UGS" << endl;
+        //cout << "Generating UGS" << endl;
         UGS = new UniformlyGeneratedSets(gen_DO_get_stmt_LIST(loop_data[loop].node),
 	                             loop_data[loop].level,IVar);
       
-        cout << "Begin Creating Data Reuse Model" << endl;
+        //cout << "Begin Creating Data Reuse Model" << endl;
         drmodel = new DataReuseModel(UGS);
-        cout << "Data Reuse Model has been Created" << endl;
-        cout << "Do Analysis  " << endl; 
+        //cout << "Data Reuse Model has been Created" << endl;
+        //cout << "Do Analysis  " << endl; 
         drmodel->DoAnalysis(LineSize);
         loop_data[loop].ibalance = LA_InitBalance(drmodel, &dep_info, unroll_vector, unroll_loops,
 						    loop_data, loop, loop_list, count );

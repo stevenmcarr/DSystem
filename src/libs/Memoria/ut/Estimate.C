@@ -1,4 +1,4 @@
-/* $Id: Estimate.C,v 1.5 1997/06/25 15:25:14 carr Exp $ */
+/* $Id: Estimate.C,v 1.6 1997/11/04 21:10:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -56,8 +56,8 @@ void ComputeBoard::TakeRows( GroupSpatialEntry* e)
 
 void ComputeBoard::PrintOut()
 {
- cout <<"\tDimension is : " << dimension << endl;
- cout <<"\tStride is : " << stride << endl;
+ //cout <<"\tDimension is : " << dimension << endl;
+ //cout <<"\tStride is : " << stride << endl;
 
  rows->PrintOut();
 }
@@ -141,10 +141,10 @@ void ComputeBoard::GetReadyRestD()
          entry_info_array = tmp_array;
 	} 
 
-  // cout<<" Basic Leader Const: " ;
+  // //cout<<" Basic Leader Const: " ;
   //  for(i=0; i<Num_Rows; ++i)
-  //   cout<<" " << entry_info_array[i].leader_const;
-  // cout << endl;
+  //   //cout<<" " << entry_info_array[i].leader_const;
+  // //cout << endl;
 	 
   if(stride != 0) Process_Info_Array();
 
@@ -245,21 +245,21 @@ void ComputeBoard::BuildCoefMatrix()
 {
  int i, j;
 
- // cout << "\tCoefficient Matrix " <<  endl;
- // cout << " Row = " << matrix_row << " Column = " << matrix_col << endl;
+ // //cout << "\tCoefficient Matrix " <<  endl;
+ // //cout << " Row = " << matrix_row << " Column = " << matrix_col << endl;
 
  
  coef_mat = la_matNew(matrix_row, matrix_col);
  for( i = 0; i<matrix_row  ; ++ i)
    {
-   //  cout <<endl <<"\t\t" ;
+   //  //cout <<endl <<"\t\t" ;
     for ( j = 0; j < matrix_col; ++j)
         {
           coef_mat[i][j] = ComputeCoefficient(i+1, j);
-          // cout << coef_mat[i][j] << " "; 
+          // //cout << coef_mat[i][j] << " "; 
         }
    } 
- cout << endl;
+ //cout << endl;
  
 }
 
@@ -443,18 +443,18 @@ void CacheBlock::Analysis()
  rows->FillArray(const_array, size);
 
  
- //cout << "The 1st Dim are as: " ;
+ ////cout << "The 1st Dim are as: " ;
  //for ( i = 0; i < size; i++ )
- //    cout <<" " << const_array[i];
- //cout << endl; 
+ //    //cout <<" " << const_array[i];
+ ////cout << endl; 
 
  QSort.Create ((void **)&const_array, intcompare);
  QSort.Sort(0,size-1);
 
- //cout << "The 1st Dim are sorted as: " ;
+ ////cout << "The 1st Dim are sorted as: " ;
  //for ( i = 0; i < size; i++ )
- //    cout <<" " << const_array[i];
- //cout << endl; 
+ //    //cout <<" " << const_array[i];
+ ////cout << endl; 
 
  // Initialize
  NumGap = TotalBlock = 0;
@@ -487,12 +487,12 @@ void CacheBlock::Analysis()
             Gap[i] = def_gap[i];
    }
 
-// cout <<"NumGap = " << NumGap << endl;
-// cout << "Gaps are : " ;
+// //cout <<"NumGap = " << NumGap << endl;
+// //cout << "Gaps are : " ;
 // for ( i = 0; i<NumGap; ++i)
-//       cout << Gap[i] << " " ;
-// cout << endl;
-// cout << "Total Block = " << TotalBlock << endl; 
+//       //cout << Gap[i] << " " ;
+// //cout << endl;
+// //cout << "Total Block = " << TotalBlock << endl; 
  
 }
 
@@ -526,7 +526,7 @@ void Rows::PrintOut()
 {
  SomeRow *r;
 
- cout <<"\t # 0f Basic Rows : " << numbasicrows << endl;
+ //cout <<"\t # 0f Basic Rows : " << numbasicrows << endl;
  for( RowsIter rowsiter(this);
 	r = rowsiter();)
      r->e->PrintOut();

@@ -1,4 +1,4 @@
-/* $Id: la.C,v 1.3 1997/10/30 15:19:31 carr Exp $ */
+/* $Id: la.C,v 1.4 1997/11/04 21:10:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,7 +39,7 @@ DataReuseModel::DataReuseModel(UniformlyGeneratedSets *UGS)
     DataReuseModelEntry * e = new DataReuseModelEntry(UGSEntry);
     SinglyLinkedList::Append(e); 
    }
-  cout << "Total # of UGS is " << size << endl; 
+  //cout << "Total # of UGS is " << size << endl; 
 }
 
 DataReuseModelEntry* DRIter::operator () ()
@@ -58,7 +58,7 @@ void DataReuseModel::PrintOut()
  for ( DRIter driter(this);
         e = driter(); )
  {
-  cout << "UGS #" << i << endl;
+  //cout << "UGS #" << i << endl;
   e->PrintOut();
   ++ i;
  }
@@ -107,7 +107,7 @@ DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse)
    {
    //  char Text[80];
    //  ut_GetSubscriptText( node, Text);
-   //  cout << "Put " << Text << " " << node << endl;
+   //  //cout << "Put " << Text << " " << node << endl;
  
     ugse->GetConstants( node, const_vect);
     gsset->PutintoGSEntry(node, const_vect); 
@@ -121,9 +121,9 @@ GroupSpatialSet::GroupSpatialSet(la_vect lisp,
 {
  size = 0;
  (void)strcpy(Name, name_in);
- // cout<<"Nestl = "<< nestl << endl;
+ // //cout<<"Nestl = "<< nestl << endl;
  Nestl = nestl;
- // cout<<"Subs = " << subscript << endl;
+ // //cout<<"Subs = " << subscript << endl;
  Subs = subscript;
  LocIterSpace = la_vecNew(Nestl);
  la_vecCopy(lisp, LocIterSpace, Nestl);
@@ -151,13 +151,13 @@ void GroupSpatialSet::FindSelfReuse()
 
  if (Solve(H_S, zerovect, Subs, Nestl, &X, &numSol))
    {
-   //  	cout << "Print Solution" << endl;
+   //  	//cout << "Print Solution" << endl;
    //   	 for( i = 0; i < numSol; i++)
    //   	  {
-   //    	   cout << "Solution " << i << ": " ;
+   //    	   //cout << "Solution " << i << ": " ;
    //   	   for ( j = 0; j < Nestl; j++)
-   //   	      cout <<"\t"<< X[i][j];
-   //   	   cout << endl << endl;
+   //   	      //cout <<"\t"<< X[i][j];
+   //   	   //cout << endl << endl;
    //             }
 
    if (NullSpaceIsZero(X, numSol, Nestl))
@@ -168,18 +168,18 @@ void GroupSpatialSet::FindSelfReuse()
  else
    IsSelfSpatial = False;
 
- if(IsSelfSpatial) cout <<"\nIs Self Spatial" << endl;
+ if(IsSelfSpatial) //cout <<"\nIs Self Spatial" << endl;
  if(IsSelfSpatial)
    {
     if ( Solve(H, zerovect, Subs, Nestl, &X, &numSol))
       {
-     //    cout << "Print Solution" << endl;
+     //    //cout << "Print Solution" << endl;
      //      for( i = 0; i < numSol; i++)
      //       {
-     //        cout << "Solution " << i << ": " ;
+     //        //cout << "Solution " << i << ": " ;
      //        for ( j = 0; j < Nestl; j++)
-     //           cout <<"\t"<< X[i][j];
-     //        cout << endl << endl;
+     //           //cout <<"\t"<< X[i][j];
+     //        //cout << endl << endl;
      //       }
        if ( NullSpaceIsZero(X, numSol, Nestl))
 	  IsSelfTemporal = False;
@@ -189,7 +189,7 @@ void GroupSpatialSet::FindSelfReuse()
     else
       IsSelfTemporal = False; 
    }
- if(IsSelfTemporal) cout <<"\nIs Self Temporal" << endl;
+ //if(IsSelfTemporal) //cout <<"\nIs Self Temporal" << endl;
  
 }
 
@@ -283,20 +283,20 @@ void GroupSpatialSet::PrintGSSet()
  int i = 0;
  char Text[80];
 
- cout << "\tReference Name " << Name << endl;
- cout << "\tTotal # of GS Sets = " << size << endl;
- cout << "\tH is " << endl;
+ //cout << "\tReference Name " << Name << endl;
+ //cout << "\tTotal # of GS Sets = " << size << endl;
+ //cout << "\tH is " << endl;
  PrintH();
- cout << "\tLIS is " << endl;
+ //cout << "\tLIS is " << endl;
  PrintLIS();
- if( IsSelfTemporal ) cout << "\tHas Self Temporal!!!" << endl;
- else if ( IsSelfSpatial ) cout << "\tHas Self Spatial!!!" << endl;
+ //if( IsSelfTemporal ) //cout << "\tHas Self Temporal!!!" << endl;
+ //else if ( IsSelfSpatial ) //cout << "\tHas Self Spatial!!!" << endl;
  
  if( !IsSelfTemporal )
       for( GSSetIter gsiter(this);
     	    e = gsiter(); )
     	{
-	     cout << "\tGS Set #" << i <<  endl;
+	     //cout << "\tGS Set #" << i <<  endl;
 	     e->PrintOut();
 	     i ++;
 	}
@@ -354,13 +354,13 @@ int GroupSpatialEntry::take(AST_INDEX n, la_vect in_c)
  int Accept = False;
  int i;
  
- // cout <<endl << " Leader is " << endl;
+ // //cout <<endl << " Leader is " << endl;
 //  for ( i = 0; i<Subs; ++ i)
-  // cout <<"\t" << leader_v[i] <<endl;
+  // //cout <<"\t" << leader_v[i] <<endl;
 
-//  cout <<endl << " In_C is " << endl;
+//  //cout <<endl << " In_C is " << endl;
 //  for ( i = 0; i<Subs; ++ i)
-//   cout <<"\t" << in_c[i] <<endl;
+//   //cout <<"\t" << in_c[i] <<endl;
 
  if( NodeshasGS(leader_v, in_c))
    {
@@ -389,10 +389,10 @@ int GroupSpatialEntry::NodeshasGS(la_vect vect1, la_vect vect2)
        b[i] = vect1[i] - vect2[i];
   b[0] = 0;
 
-  // cout << endl << "b is" << endl;
+  // //cout << endl << "b is" << endl;
   // for ( i = 0; i < Subs; ++ i)
-  //     cout <<"\t" << b[i] << endl;
-  // cout << endl;
+  //     //cout <<"\t" << b[i] << endl;
+  // //cout << endl;
 
   if (Solve(H_S, b, Subs, Nestl, &X, &numSol))
     { 
@@ -449,13 +449,13 @@ int GroupSpatialEntry::IsSolutionInLIS(la_matrix X,
  double ratio;
  int i, j;
 
- // cout << "Print Solution" << endl;
+ // //cout << "Print Solution" << endl;
  // for( i = 0; i < row; i++)
  //  {
- //   cout << "Solution " << i << ": " ;
+ //   //cout << "Solution " << i << ": " ;
  //   for ( j = 0; j < column; j++)
- //      cout <<"\t"<< X[i][j];
- //   cout << endl << endl;
+ //      //cout <<"\t"<< X[i][j];
+ //   //cout << endl << endl;
  //  }
 
    for (i = 0; i < row-1 && !(Intersect); i++)
@@ -472,7 +472,7 @@ void GroupSpatialEntry::PrintOut()
  ut_GetSubscriptText( leader_n, Text);
  int i;
  
- cout<< "\t\tLeader is " << Text << endl;
+ //cout<< "\t\tLeader is " << Text << endl;
  gts->PrintOut();
 }
 
@@ -522,11 +522,11 @@ void GroupTemporalSet::PrintOut()
  int i = 0;
  char Text[80];
 
- cout << "\t\tTotal # of GT = " << size << endl;
+ //cout << "\t\tTotal # of GT = " << size << endl;
  for( GTSetIter gtiter(this);
         e = gtiter(); )
    {
-    cout << "\t\tGT Set #" << i  << endl;
+    //cout << "\t\tGT Set #" << i  << endl;
      e->PrintOut();
      i ++;
    }
@@ -655,9 +655,9 @@ void GroupTemporalEntry::PrintOut()
 {
  char Text[80];
 
- cout << "\t\t\t" << "Leader is "; 
+ //cout << "\t\t\t" << "Leader is "; 
  ut_GetSubscriptText( leader_n, Text);
- cout <<  Text << endl;
+ //cout <<  Text << endl;
 
  vectlst->PrintOut();
 
@@ -675,7 +675,7 @@ void VectListEntry::PrintOut()
  char Text[80];
  
  ut_GetSubscriptText(node, Text);
-  cout << "\t\t\t" << Text << endl;
+  //cout << "\t\t\t" << Text << endl;
 }
 
 VectList::VectList(int sub)
