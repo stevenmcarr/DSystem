@@ -1,4 +1,4 @@
-/* $Id: do_unroll.C,v 1.11 1995/04/11 15:47:20 carr Exp $ */
+/* $Id: do_unroll.C,v 1.12 1995/04/27 17:13:01 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -37,6 +37,8 @@
 #ifndef header_h
 #include <header.h>
 #endif
+
+extern Boolean RestrictedUnrolling;
 
 static void walk_loops_to_unroll(model_loop    *loop_data,
 				 int           loop,
@@ -1684,8 +1686,8 @@ static void create_pre_loop(model_loop    *loop_data,
 			(WK_EXPR_CLBACK)NOFUNC, (Generic)ped);
 	ut_update_labels(new_loop,symtab);
 	ut_update_bounds(loop_data[loop].node,new_loop,loop_data[loop].val);
-	if ((num_loops > 0 && loop_data[loop].inner_loop != -1) || 
-	    (loops_unrolled == 0))
+	if (((num_loops > 0 && loop_data[loop].inner_loop != -1) || 
+	     (loops_unrolled == 0)) && NOT(RestrictedUnrolling))
 	  unroll_and_jam_pre_loop(ped,gen_DO_get_stmt_LIST(new_loop),
 				  loop_data[loop].level+1,num_loops,symtab,
 				  ar,LoopStats);
