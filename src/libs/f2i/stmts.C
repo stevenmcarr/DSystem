@@ -1,4 +1,4 @@
-/* $Id: stmts.C,v 1.7 1999/06/11 17:42:28 carr Exp $ */
+/* $Id: stmts.C,v 1.8 1999/07/22 18:06:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -892,8 +892,7 @@ Boolean aiDirectiveIsInComment(AST_INDEX Stmt)
   {
     if (GET_DIRECTIVE_INFO(Stmt) != NULL)
       return (BOOL(GET_DIRECTIVE_INFO(Stmt)->Instr == PrefetchInstruction ||
-		   GET_DIRECTIVE_INFO(Stmt)->Instr == FlushInstruction ||
-		   GET_DIRECTIVE_INFO(Stmt)->Instr == SetSLRInstruction));
+		   GET_DIRECTIVE_INFO(Stmt)->Instr == FlushInstruction));
     else
       return false;
   }

@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.14 1999/06/11 17:42:28 carr Exp $ */
+/* $Id: ai.h,v 1.15 1999/07/22 18:06:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -169,11 +169,13 @@ typedef struct DepInfoStruct {
   int ReferenceNumber;
   UtilList *DependenceList;
   LocalityType Locality;
-  Boolean UseSpecialSelfSpatialLoad;
+  Boolean UsePrefetchingLoad;
   AST_INDEX AddressLeader;
   AST_INDEX FirstInLoop;
   int       Offset;
   int       StmtNumber;
+  int       PrefetchDistance;
+  AST_INDEX PrefetchOffsetAST;
  } DepInfoType;         /* copy in Memoria/annotate/CacheAnalysis.h */
 
 typedef struct depstruct {
@@ -293,6 +295,7 @@ EXTERN(void,generate_move,( int, int, int));
 EXTERN(void, generate_branch,(int, int, int, int, int, int, int, char*));
 EXTERN(void,generate_string,(char*, int, Generic, Generic, Generic, char*));
 EXTERN(void,generate_load,(int, int, int, int, char*));
+EXTERN(void,generate_pfload,(int, int, int, AST_INDEX, int, int, char*));
 EXTERN(void, generate_cache_op,(int, int, Directive *));
 EXTERN(void,PrintData,(int  , int  , int  , int ));
 EXTERN(void,generate_long,(int, int, Generic, Generic, Generic, 

@@ -1,4 +1,4 @@
-/* $Id: expr.C,v 1.5 1999/06/11 17:42:28 carr Exp $ */
+/* $Id: expr.C,v 1.6 1999/07/22 18:06:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -365,8 +365,12 @@ int getIdInRegister(AST_INDEX node)
 	    AReg  = getSubscriptLValue(node);
 	    DReg  = StrTempReg("!", AReg, Index_type);
 	  }
-
-	generate_load( DReg, AReg, Index_type, Index, comment);
+        if (aiSpecialCache && DepInfoPtr(node)->UsePrefetchingLoad)
+	  generate_pfload(DReg,AReg,DepInfoPtr(node)->PrefetchDistance,
+			  DepInfoPtr(node)->PrefetchOffsetAST,
+			  Index_type,Index,comment);
+	else
+	  generate_load( DReg, AReg, Index_type, Index, comment);
 	free(comment);
 	Index = DReg;
 	break;

@@ -1,4 +1,4 @@
-/* $Id: mnemonics.h,v 1.5 1999/06/11 17:42:29 carr Exp $ */
+/* $Id: mnemonics.h,v 1.6 1999/07/22 18:06:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -193,7 +193,11 @@
 
 #define FETCHor   124
 #define FLUSHor   125
-#define SETSLR   125
+
+/* prefetching loads */
+
+#define dPFLD     126    // prefetch offset in a register (use rr mode)
+#define dPFLDI    127    // prefetch offset is a compile-time constant (use or mode)
 
 /* leave numbers for additional opcodes */
 

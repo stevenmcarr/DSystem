@@ -1,4 +1,4 @@
-/* $Id: gen.C,v 1.8 1999/06/11 17:42:28 carr Exp $ */
+/* $Id: gen.C,v 1.9 1999/07/22 18:06:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -147,7 +147,6 @@ void generate(int label, int op, Generic r1, Generic r2, Generic r3, char *comme
       case C:
 	switch (op)
 	  {
-	    case SETSLR:
             case BYTES:	/* print constant as an integer */
 	      (void) fprintf(stdout, "\t%-8.8s\t%d\t\t\t", MNEM(op), r1);
 	      break;
@@ -318,6 +317,7 @@ void generate_long(int label, int op, Generic r1, Generic r2, Generic r3,
       case dCONor:
       case cCONor:
       case qCONor:
+      case dPFLDI:
 	r4 = fst_my_GetFieldByIndex(ft_SymTable, r4, SYMTAB_REG);
 	r5 = fst_my_GetFieldByIndex(ft_SymTable, r5, SYMTAB_REG);
 	(void) fprintf(stdout, "\t%-8.8s\t%s\t%d\t%d\tr%d\t=>\tr%d",
@@ -792,6 +792,24 @@ void generate_branch(int stmt_label, int cmp_op, int arg1, int arg2, int type,
 } /* generate branch */
 
 
+void generate_pfload(int sink, int addr, int PrefetchDistance,
+		     AST_INDEX OffsetAST,int type,int Index, char *Locality)
+{
+  int	alignment;
+  char	*tag;
+    
+  /* get the name of the variable */
+  tag = getTag(Index);
+
+  if (OffsetAST == AST_NIL) // Offset is a compile-time constant
+    generate_long(0, dPFLDI, (Generic) tag, PrefetchDistance, 0, addr, sink, 0,
+		  0, Locality);
+  else
+    {
+     fprintf(stderr,"Non-literal offsets for prefetching loads unsupported\n");
+     exit(-1);
+    }
+}
 
 
 /* generates sequence of DATA statements for a character string */

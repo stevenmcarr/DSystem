@@ -1,4 +1,4 @@
-/* $Id: directives.C,v 1.4 1999/06/11 17:42:27 carr Exp $ */
+/* $Id: directives.C,v 1.5 1999/07/22 18:06:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -61,14 +61,6 @@ void HandleDirective(AST_INDEX Stmt)
 	generate_cache_op(Reg,Index,GET_DIRECTIVE_INFO(Stmt));
 	break;
 
-      case SetSLRInstruction:
-	{
-	  int TempIndex = TempReg(GET_DIRECTIVE_INFO(Stmt)->SpecialLoadStride,
-				  0,SETSLR,TYPE_INTEGER);
-	  generate(0, SETSLR, GET_DIRECTIVE_INFO(Stmt)->SpecialLoadStride,
-		   TempIndex,GEN_NUMBER,"Set Spatial Load Stride");
-	  break;
-	}
      }
   }
 
