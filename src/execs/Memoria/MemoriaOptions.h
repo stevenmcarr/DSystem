@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.h,v 1.9 2001/09/14 17:17:49 carr Exp $ */
+/* $Id: MemoriaOptions.h,v 1.10 2002/05/07 15:04:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -20,14 +20,12 @@
 #define MC_RESTRICTED_FLAG   'R'
 #define MC_ALL_FLAG           'a'
 #define MC_ANNOTATE_FLAG      'c'
-#define MC_EXTENDED_CACHE_FLAG 'e'
 #define MC_INTERCHANGE_FLAG   'i'
 #define MC_NO_PRE_LOOP_FLAG   'n'
 #define MC_REPLACEMENT_CHOICE 'r'
+#define MC_REPLACE_MIV_REFS_FLAG   'v'
 #define MC_STATISTICS_CHOICE    's'
-#define MC_UJSTATS_FLAG       'j'
-#define MC_UNROLL_FLAG        'u'
-#define MC_UNROLL_CACHE_FLAG  'U'
+#define MC_UNROLL_CHOICE      'u'
 #define MC_PREFETCH_FLAG      'p'
 #define MC_PREFETCH_REC_FLAG  'q'
 #define MC_DEPENDENCE_CHOICE  'd'

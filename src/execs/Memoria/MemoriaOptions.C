@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.17 2002/02/20 16:20:58 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.18 2002/05/07 15:04:27 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -52,14 +52,14 @@ Boolean DDGDebugFlag = false;
 Boolean MinDistDebugFlag = false;
 Boolean CheckRecurrencesForPrefetching = false;
 Boolean GeneratePreLoop = true;
+Boolean ReplaceMIVReferences = false;
 
 void MemoriaOptionsUsage(char *pgm_name)
 {
-   printf("Usage: %s [-s#] [-e] [-i] [-n] [-p] [-q] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-I] [-R] [-X#] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
+   printf("Usage: %s [-s#] [-e] [-i] [-n] [-p] [-q] [-v] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-I] [-R] [-X#] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
   puts(" ");
   puts("         -c  annontate with calls to cache simulator");
   puts("         -d#  set dependence analysis level at 0 or 1 (default)");
-  puts("         -e  use extended cache analysis");
   puts("         -h  prepare code for cache analysis");
   puts("         -i  do interchange");
   puts("         -l  count # of loads and stores");
@@ -68,13 +68,13 @@ void MemoriaOptionsUsage(char *pgm_name)
   puts("         -q  check recurrences in software prefetching");
   puts("         -r#  set scalar replacement level 0 through 8");
   puts("         -s#  do statistics");
-  puts("         -u  do unroll-and-jam without cache model");
+  puts("         -u# do unroll-and-jam");
+  puts("         -v  scalar replace MIV references");
   puts("         -w#  do unroll-and-jam for partitioned register files");
   puts("         -D  assume all REALS are 64-bits (for Rocket)");
   puts("         -I  assume 64-bit integers");
   puts("         -R  let Rocket schedule prefetches");
   puts("         -S  do depencence statistics");
-  puts("         -U  do unroll-and-jam with cache model");
   puts("         -X#  set debug flags");
   puts("         -P  program composition");
   puts("         -M  Fortran module");
@@ -110,6 +110,11 @@ static void mc_set_partition_unroll_amount(void *state,char* amount)
     selection = PARTITION_UNROLL;
     PartitionUnrollAmount = atoi(amount); 
     RestrictedUnrolling = true;
+  }
+
+static void mc_set_miv_refs(void *state)
+  {
+   ReplaceMIVReferences = true;
   }
 
 static void mc_set_no_pre_loop(void *state)
@@ -215,21 +220,6 @@ void mc_opt_rocket_schedule(void *state)
   Memoria_LetRocketSchedulePrefetches = true;
 }
 
-// void mc_opt_dead(void *state)
-
-//   {
-//    switch(selection)
-//      {
-//       case NO_SELECT:
-//         selection = DEAD;
-// 	select_char = 'D';
-//         Memoria_IssueDead = true;
-// 	break;
-//       default:
-// 	MemoriaOptionsUsage("Memoria");
-//      }
-//   }
-
 static void mc_opt_statistics(void *state,Generic level)
 {
   select_char = 's';
@@ -272,29 +262,23 @@ static void mc_opt_count_ldst(void *state)
   select_char = 'l';
 }
 
-static void mc_opt_unroll(void *state)
+static void mc_opt_unroll(void *state,Generic flag)
 {
-  switch(selection) {
-  case NO_SELECT:
-    selection = UNROLL_AND_JAM;
-    select_char = 'u';
-    break;
-  case SCALAR_REP:
-    selection = UNROLL_SCALAR;
-    select_char = 'u';
-    break;
-  case INTERCHANGE:
-    selection = LI_UNROLL;
-    select_char = 'i';
-    break;
-  case STATS:
-    selection = UJ_STATS;
-    break;
-  case MEM_ALL:
-    break;
-  default:
-    MemoriaOptionsUsage("Memoria");
-  }
+  selection = UNROLL_AND_JAM;
+  select_char = 'u';
+  switch(flag) 
+    {
+     case 0:
+       break;
+     case 1:
+       mc_unroll_cache = true;
+       break;
+     case 2:
+       mc_extended_cache = true;
+       break;
+     default:
+       MemoriaOptionsUsage("Memoria");
+    }
 }
 
 static void mc_opt_debug_choice(void *state,Generic flag)
@@ -315,17 +299,6 @@ static void mc_opt_debug_choice(void *state,Generic flag)
        break;
     }
 }
-
-static void mc_opt_unroll_cache(void *state)
-{
-  mc_unroll_cache = true;
-  mc_opt_unroll(state);
-  }
-
-static void mc_opt_extended_cache(void *state)
-{
-  mc_extended_cache = true;
-  }
 
 static void mc_opt_RestrictedUnrolling(void *state)
 {
@@ -443,6 +416,12 @@ static struct choice_entry_ debug_choices[3] = {
      "debug MinDist"}
 };
 
+static struct flag_	mivrefs_f = {
+  mc_set_miv_refs,
+  "scalar replace miv references",
+  "deals with dependence anlaysis problems"
+};
+
 static struct flag_	preloop_f = {
   mc_set_no_pre_loop,
   "no pre-loop for scala replacement",
@@ -537,22 +516,26 @@ static struct flag_	annotate_f = {
   "annotate code with call to cache simulator",
 };
 
-static struct flag_	unroll_f = {
+static struct choice_entry_ unroll_choices[3] = {
+    {0,
+     "0",
+     "unroll-and-jam",
+     "balance model, no cache"},
+    {1,
+     "1",
+     "unroll-and-jam",
+     "balance model, dependence-based cache reuse"},
+    {2,
+     "2",
+     "unroll-and-jam",
+     "balance model, linear-algebra-based cache reuse"}
+};
+
+static struct choice_	unroll_c = {
   mc_opt_unroll,
   "unroll-and-jam",
   "perform automatic unroll-and-jam for loop balance",
-};
-
-static struct flag_	unroll_cache_f = {
-  mc_opt_unroll_cache,
-  "unroll-and-jam",
-  "perform automatic unroll-and-jam for loop balance with cache",
-};
-
-static struct flag_	extended_cache_f = {
-  mc_opt_extended_cache,
-  "cache analysis",
-  "Use Wolfs group-spatial formulation",
+  3,unroll_choices
 };
 
 static struct flag_	RestrictedUnrolling_f = {
@@ -628,52 +611,62 @@ static Option *InitOption(option_type t,
 int MemoriaInitOptions(int argc, char **argv)
 
 {
-  Option *mc_mod_opt = InitOption(string,MC_MOD_OPT,(Generic)"",true,(Generic)&module_s),
-    *mc_pgm_opt = InitOption(string,MC_PGM_OPT,(Generic)"",true,(Generic)&program_s), 
-    *mc_lst_opt = InitOption(string,MC_LST_OPT,(Generic)"",true,(Generic)&module_list_s),
-    *mc_cfg_opt = InitOption(string,MC_CFG_OPT,(Generic)"",true,(Generic)&config_s),
-    *mc_out_opt = InitOption(string,MC_OUT_OPT,(Generic) "",true,(Generic)&output_s),
-    *mc_partition_unroll_opt = InitOption(string,MC_PARTITION_UNROLL_OPT,(Generic) "",
-					  true,(Generic)&partition_unroll_amount_s),
+  Option *mc_mod_opt = InitOption(string,MC_MOD_OPT,(Generic)"",true,
+				  (Generic)&module_s),
+    *mc_pgm_opt = InitOption(string,MC_PGM_OPT,(Generic)"",true,
+			     (Generic)&program_s), 
+    *mc_lst_opt = InitOption(string,MC_LST_OPT,(Generic)"",true,
+			     (Generic)&module_list_s),
+    *mc_cfg_opt = InitOption(string,MC_CFG_OPT,(Generic)"",true,
+			     (Generic)&config_s),
+    *mc_out_opt = InitOption(string,MC_OUT_OPT,(Generic) "",true,
+			     (Generic)&output_s),
+    *mc_partition_unroll_opt = InitOption(string,MC_PARTITION_UNROLL_OPT,
+					  (Generic) "",
+					  true,
+					  (Generic)&partition_unroll_amount_s),
     *mc_int_flag = InitOption(flag,MC_INTERCHANGE_FLAG,(Generic)false,true, 
 			      (Generic)&interchange_f),
     *mc_pre_flag = InitOption(flag,MC_PREFETCH_FLAG,(Generic)false,true, 
 			      (Generic)&prefetch_f),
-    *mc_pre_rec_flag = InitOption(flag,MC_PREFETCH_REC_FLAG,(Generic)false,true, 
-			      (Generic)&prefetch_rec_f),
-//     *mc_dead_flag = InitOption(flag,MC_DEAD_FLAG,(Generic)false,true,(Generic)&dead_f),
-    *mc_rocket_schedule_flag = InitOption(flag,MC_ROCKET_SCHEDULE_FLAG,(Generic)false,
-					  true,(Generic)&rocket_schedule_f),
+    *mc_pre_rec_flag = InitOption(flag,MC_PREFETCH_REC_FLAG,(Generic)false,
+				  true,(Generic)&prefetch_rec_f),
+    *mc_rocket_schedule_flag = InitOption(flag,MC_ROCKET_SCHEDULE_FLAG,
+					  (Generic)false, true,
+					  (Generic)&rocket_schedule_f),
+    *mc_replace_miv_refs_flag = InitOption(flag,MC_REPLACE_MIV_REFS_FLAG,
+					   (Generic)false, true, 
+					   (Generic)&mivrefs_f),
     *mc_no_pre_loop_flag = InitOption(flag,MC_NO_PRE_LOOP_FLAG,(Generic)false,
 				      true, (Generic)&preloop_f),
     *mc_long_int_flag = InitOption(flag,MC_LONG_INT_FLAG,(Generic)false,true,
 				     (Generic)&longint_f),
-    *mc_double_real_flag = InitOption(flag,MC_DOUBLE_REAL_FLAG,(Generic)false,true,
-				     (Generic)&doublereal_f),
-    *mc_cache_anal_flag = InitOption(flag,MC_CACHE_ANAL_FLAG,(Generic)false,true,
-				     (Generic)&cache_f),
+    *mc_double_real_flag = InitOption(flag,MC_DOUBLE_REAL_FLAG,(Generic)false,
+				      true,(Generic)&doublereal_f),
+    *mc_cache_anal_flag = InitOption(flag,MC_CACHE_ANAL_FLAG,(Generic)false,
+				     true, (Generic)&cache_f),
     *mc_ldst_anal_flag = InitOption(flag,MC_LDST_ANAL_FLAG,(Generic)false,true,
 				    (Generic)&ldst_f),
-    *mc_repl_choice = InitOption(choice,MC_REPLACEMENT_CHOICE,(Generic)false,true, 
-				 (Generic)&replacement_c),
+    *mc_repl_choice = InitOption(choice,MC_REPLACEMENT_CHOICE,(Generic)false,
+				 true, (Generic)&replacement_c),
     *mc_debug_choice = InitOption(choice,MC_DEBUG_CHOICE,(Generic)false,true, 
 				 (Generic)&debug_c),
-    *mc_dep_choice = InitOption(choice,MC_DEPENDENCE_CHOICE,(Generic)false,true, 
-				(Generic)&dependence_c),
-    *mc_stats_choice = InitOption(choice,MC_STATISTICS_CHOICE,(Generic)false,true,
-				  (Generic)&statistics_c),
+    *mc_dep_choice = InitOption(choice,MC_DEPENDENCE_CHOICE,(Generic)false,
+				true, (Generic)&dependence_c),
+    *mc_stats_choice = InitOption(choice,MC_STATISTICS_CHOICE,(Generic)false,
+				  true, (Generic)&statistics_c),
     *mc_annotate_flag = InitOption(flag,MC_ANNOTATE_FLAG,(Generic)false,true,
 				   (Generic)&annotate_f),
-    *mc_unroll_flag = InitOption(flag,MC_UNROLL_FLAG,(Generic)false,true,
-				 (Generic)&unroll_f),
-    *mc_unroll_cache_flag = InitOption(flag,MC_UNROLL_CACHE_FLAG,(Generic)false,true,
-				       (Generic)&unroll_cache_f),
-    *mc_extended_cache_flag = InitOption(flag,MC_EXTENDED_CACHE_FLAG,(Generic)false,true,
-					 (Generic)&extended_cache_f),
-    *RestrictedUnrolling_flag = InitOption(flag,MC_RESTRICTED_FLAG,(Generic)false,true,
+    *mc_unroll_choice = InitOption(choice,MC_UNROLL_CHOICE,(Generic)false,true,
+				   (Generic)&unroll_c),
+    *RestrictedUnrolling_flag = InitOption(flag,MC_RESTRICTED_FLAG,
+					   (Generic)false,true,
 					   (Generic)&RestrictedUnrolling_f),
-    *mc_dep_stats_flag = InitOption(flag,MC_DEPENDENCE_STATS_FLAG,(Generic)false,true,
+    *mc_dep_stats_flag = InitOption(flag,MC_DEPENDENCE_STATS_FLAG,
+				    (Generic)false,true,
 				    (Generic)&dependence_stats_f);
+
+
   MemoriaOptions.Add(mc_mod_opt);
   MemoriaOptions.Add(mc_pgm_opt);
   MemoriaOptions.Add(mc_lst_opt);
@@ -686,6 +679,7 @@ int MemoriaInitOptions(int argc, char **argv)
 //   MemoriaOptions.Add(mc_dead_flag);
   MemoriaOptions.Add(mc_rocket_schedule_flag);
   MemoriaOptions.Add(mc_repl_choice);
+  MemoriaOptions.Add(mc_replace_miv_refs_flag);
   MemoriaOptions.Add(mc_no_pre_loop_flag);
   MemoriaOptions.Add(mc_long_int_flag);
   MemoriaOptions.Add(mc_double_real_flag);
@@ -696,9 +690,7 @@ int MemoriaInitOptions(int argc, char **argv)
   MemoriaOptions.Add(mc_stats_choice);
   MemoriaOptions.Add(mc_dep_stats_flag);
   MemoriaOptions.Add(mc_annotate_flag);
-  MemoriaOptions.Add(mc_unroll_flag);
-  MemoriaOptions.Add(mc_unroll_cache_flag);
-  MemoriaOptions.Add(mc_extended_cache_flag);
+  MemoriaOptions.Add(mc_unroll_choice);
   MemoriaOptions.Add(RestrictedUnrolling_flag);
 
   if (opt_parse_argv(&MemoriaOptions,0,argc,argv)) {
