@@ -1,4 +1,4 @@
-/* $Id: dt_build.C,v 1.3 2000/05/18 21:28:32 carr Exp $ */
+/* $Id: dt_build.C,v 1.4 2001/09/14 17:12:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -865,6 +865,8 @@ dg_invoc_modref(SymDescriptor d, int callsite_id,
     dg_ip_query_add_ref(d, r, name, sym, callsite_id, callee_intrinsic,
 			param_pos);  /* add info	*/
   }
+  else if (is_operator(expr))
+    walk_expression(expr,(WK_EXPR_CLBACK)dg_expr_uses, NULL, (Generic)r);
 }
 
 /*-----------------------------------------------------------------------
