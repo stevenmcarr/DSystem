@@ -1,4 +1,4 @@
-/* $Id: la.C,v 2.4 2000/05/16 03:14:18 mjbedy Exp $ */
+/* $Id: la.C,v 2.5 2001/09/14 17:03:04 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,6 +21,7 @@
 #include <libs/support/Lambda/Lambda.h>
 #include <libs/Memoria/include/mem_util.h>
 #include <libs/Memoria/include/GenericList.h>
+#include <libs/Memoria/uj/compute_uj.h>
 
 #define sign(x) (((x)>0) ? 1: -1)
 
