@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.27 2000/01/12 23:00:41 mjbedy Exp $ */
+/* $Id: CacheAnalysis.C,v 1.28 2000/02/08 19:56:21 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -183,6 +183,14 @@ static void CreateDepInfoSubscript(AST_INDEX Id,
       CreateDepInfoPtr(node);
       DepInfoPtr(node)->DependenceList = util_list_alloc((int)NULL,NULL);
       DepInfoPtr(node)->ReferenceNumber = RefCount++;
+      DepInfoPtr(node)->UsePrefetchingLoad = false;
+      DepInfoPtr(node)->Locality = UNDEFINED;
+      DepInfoPtr(node)->AddressLeader = AST_NIL;
+      DepInfoPtr(node)->FirstInLoop = AST_NIL;
+      DepInfoPtr(node)->Offset = -1;
+      DepInfoPtr(node)->StmtNumber = -1;
+      DepInfoPtr(node)->PrefetchDistance = -1;
+      DepInfoPtr(node)->PrefetchOffsetAST = AST_NIL;
     }
 }
 
