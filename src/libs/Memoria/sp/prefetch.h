@@ -1,4 +1,4 @@
-/* $Id: prefetch.h,v 1.3 1995/03/13 15:11:50 carr Exp $ */
+/* $Id: prefetch.h,v 1.4 1995/06/29 12:35:55 carr Exp $ */
 
 #ifndef prefetch_h
 #define prefetch_h
@@ -17,11 +17,5 @@ typedef struct intinfotype {
   PrefetchList  *WordPrefetches;
   UniformlyGeneratedSets *UGS;
  } locality_info_type;
-
-typedef struct cycletype {
-  int MemCycles;
-  int FlopCycles;
-  PedInfo ped;
- } CycleInfoType;
 
 #endif
