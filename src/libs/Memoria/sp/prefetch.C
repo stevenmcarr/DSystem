@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.22 2000/01/27 20:45:13 carr Exp $ */
+/* $Id: prefetch.C,v 1.23 2000/01/27 21:00:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -944,21 +944,18 @@ static AST_INDEX CreatePreLoop(model_loop    *loop_data,
 
      if (pt_eval(lwb,&lwb_v))
        need_pre_loop = true;
-     else
-       {
-	upb = gen_INDUCTIVE_get_rvalue2(control);
+     upb = gen_INDUCTIVE_get_rvalue2(control);
 
 	// if upper bound symbolic we need a pre loop
 
-	if (pt_eval(upb,&upb_v))
-	  need_pre_loop = true;
-	else if (mod((upb_v - lwb_v + 1)/step_v, UnrollVal + 1)
+     if (pt_eval(upb,&upb_v))
+       need_pre_loop = true;
+     else if (mod((upb_v - lwb_v + 1)/step_v, UnrollVal + 1)
 	           != 0)
 
-	    // if loop not executed a multiple of unroll value then need pre loop
-
-	    need_pre_loop = true;
-       }
+       // if loop not executed a multiple of unroll value then need pre loop
+       
+       need_pre_loop = true;
      if (need_pre_loop)
        {
 
