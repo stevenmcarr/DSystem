@@ -1,4 +1,4 @@
-/* $Id: stmts.C,v 1.8 1999/07/22 18:06:38 carr Exp $ */
+/* $Id: stmts.C,v 1.9 2000/03/21 15:10:20 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -232,7 +232,8 @@ void aiStmtList(AST_INDEX StmtList)
 		break;
 
 	case GEN_COMMENT:
-		HandleDirective(Stmt);
+		if (aiParseComments)
+		  HandleDirective(Stmt);
 		break;
 
 	case GEN_COMPUTED_GOTO:
