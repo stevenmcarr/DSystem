@@ -1,4 +1,5 @@
-/* $Id: dfavail.C,v 1.2 1992/10/03 15:49:08 rn Exp $ */
+/* $Id: dfavail.C,v 1.3 1992/12/07 10:19:16 carr Exp $ */
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -48,6 +49,8 @@ static void allocate_sets(block_type *block,
      block->PP_in = ut_create_set(ar,LOOP_ARENA,size);
      block->PP_out = ut_create_set(ar,LOOP_ARENA,size);
      block->Insert = ut_create_set(ar,LOOP_ARENA,size);
+     block->Transp = ut_create_set(ar,LOOP_ARENA,size);
+     block->Antloc = ut_create_set(ar,LOOP_ARENA,size);
      for (edge = block->pred;
 	  edge != NULL;
 	  edge = edge->next_pred)
@@ -178,6 +181,8 @@ static void init_sets(flow_graph_type  flow_graph,
      avail_info.LC_kill = check_info.LC_kill;
      avail_info.ped = check_info.ped;
      calc_gen_set(&avail_info);
+     ut_copy12(flow_graph.entry->Transp,flow_graph.entry->kill);
+     ut_complement(flow_graph.entry->Transp);
      ut_copy12(flow_graph.entry->LI_avail_out,flow_graph.entry->gen);
      ut_copy12(flow_graph.entry->LI_pavail_out,flow_graph.entry->gen);
      ut_copy12(flow_graph.entry->LC_avail_out_if_1,flow_graph.entry->gen);
@@ -193,6 +198,8 @@ static void init_sets(flow_graph_type  flow_graph,
 	  {
 	   avail_info.block = block;
 	   calc_gen_set(&avail_info);
+	   ut_copy12(block->Transp,flow_graph.entry->kill);
+	   ut_complement(block->Transp);
 	  }
 	ut_complement(block->LI_avail_out);
 	ut_complement(block->LC_avail_out);

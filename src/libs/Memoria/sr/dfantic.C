@@ -1,4 +1,5 @@
-/* $Id: dfantic.C,v 1.3 1992/10/03 15:48:58 rn Exp $ */
+/* $Id: dfantic.C,v 1.4 1992/12/07 10:19:06 carr Exp $ */
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -213,6 +214,7 @@ void sr_perform_antic_analysis(flow_graph_type  flow_graph,
        {
         sr_calc_local_antic(block,size,ped);
 	ut_copy12(block->LI_antic_in,block->gen);
+	ut_copy12(block->Antloc,block->gen);
        }
      calc_antic(flow_graph.exit,flow_graph.entry,flow_graph.entry->mark,size,
 		ar);
