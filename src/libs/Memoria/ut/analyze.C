@@ -1,4 +1,4 @@
-/* $Id: analyze.C,v 1.10 1994/04/13 14:27:36 carr Exp $ */
+/* $Id: analyze.C,v 1.11 1994/05/31 15:04:09 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -79,6 +79,7 @@ static int build_pre(AST_INDEX       stmt,
 	build_info->loop_data[loop_num].level = level;
 	build_info->loop_data[loop_num].transform = true;
 	build_info->loop_data[loop_num].reduction = false;
+	build_info->loop_data[loop_num].reversed = false;
 	build_info->loop_data[loop_num].interchange = true;
 	build_info->loop_data[loop_num].distribute = true;
 	build_info->loop_data[loop_num].expand = false;
