@@ -1,9 +1,10 @@
-/* $Id: gen.C,v 1.11 2000/04/09 20:21:33 carr Exp $ */
+/* $Id: gen.C,v 1.12 2000/05/08 14:23:55 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 
+#include <iostream.h>
 #include <libs/support/misc/general.h>
 #include <ctype.h>
 #include <include/frontEnd/astnode.h>
@@ -814,9 +815,15 @@ void generate_pfload(int sink, int addr, int PrefetchDistance,
   tag = getTag(Index);
 
   if (OffsetAST == AST_NIL) // Offset is a compile-time constant
-    if (type == TYPE_DOUBLE_PRECISION)
-      generate_long(0, dPFLDI, (Generic) tag, PrefetchDistance, 0, addr, sink, 0,
-		    0, Locality);
+    if (type == TYPE_DOUBLE_PRECISION || TYPE_REAL)
+      {
+	generate_long(0, dPFLDI, (Generic) tag, PrefetchDistance, 0, addr,
+		      sink, 0, 0, Locality);
+	if (type == TYPE_REAL && !aiDoubleReals)
+	  cerr << "Single precision real prefetching loads are not handled"
+	       << endl << "Use the -D option" << endl << endl;
+      }
+	  
     else
       generate_long(0, iPFLDI, (Generic) tag, PrefetchDistance, 0, addr, sink, 0,
 		    0, Locality);
@@ -825,9 +832,14 @@ void generate_pfload(int sink, int addr, int PrefetchDistance,
         // Change to generate the offset iloc. MJB
         aiPrePass(OffsetAST);
         reg = getExprInReg(OffsetAST);
-	if (type == TYPE_DOUBLE_PRECISION)
-	  generate_long(0, dPFLD, (Generic) tag, 8, reg, addr, sink, 0,
-			0, Locality);        
+	if (type == TYPE_DOUBLE_PRECISION || TYPE_REAL)
+	  {
+	    generate_long(0, dPFLD, (Generic) tag, 8, reg, addr, sink, 0,
+			  0, Locality);        
+	    if (type == TYPE_REAL && !aiDoubleReals)
+	      cerr << "Single precision real prefetching loads are not handled"
+		   << endl << "Use the -D option" << endl << endl;
+	  }
 	else
 	  generate_long(0, iPFLD, (Generic) tag, 4, reg, addr, sink, 0,
 			0, Locality);        
