@@ -1,4 +1,4 @@
-/* $Id: Checker.C,v 1.5 1997/03/27 20:15:38 carr Exp $ */
+/* $Id: Checker.C,v 1.6 1997/04/08 16:09:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -279,6 +279,7 @@ static void CheckFile(DB_FP *stderr_fp, FortranModule* module)
   FILE*gptr;
   Boolean has_errors;
   CfgInfo    cfgModule;
+  DT_info    *DT;
 
   if (global_dep_opt)
   {
@@ -291,6 +292,7 @@ static void CheckFile(DB_FP *stderr_fp, FortranModule* module)
             &EL,
             &LI,
             &SI,
+	    &DT,
             &cfgModule,
             false);
 
