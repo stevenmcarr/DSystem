@@ -4,12 +4,13 @@
 #include <pt_util.h>
 #include <Lambda/Lambda.h>
 
-Boolean UniformlyGeneratedSetsEntry::SameUniformlyGeneratedSet(la_matrix nodeH)
+Boolean UniformlyGeneratedSetsEntry::SameUniformlyGeneratedSet(AST_INDEX node,
+							       la_matrix nodeH)
 
   {
    int i,j;
 
-     if (NOT(Uniform)) 
+     if (NOT(Uniform) || strcmp(name,gen_get_text(gen_SUBSCRIPT_get_name(node)))) 
        return (false);
      for (i = 0; i < Subscripts; i++)
        for (j = 0; j < NestingLevel; j++)
@@ -442,7 +443,8 @@ void UniformlyGeneratedSets::Append(la_matrix nodeH, AST_INDEX node,
   {
    UniformlyGeneratedSetsEntry *e;
    
-     e = new UniformlyGeneratedSetsEntry(nodeH,NestingLevel,NumSubs,
+     e = new UniformlyGeneratedSetsEntry(gen_get_text(gen_SUBSCRIPT_get_name(node)),
+					 nodeH,NestingLevel,NumSubs,
 					 LocalizedIterationSpace,
 					 uniform);
      (*e) += node;
@@ -517,7 +519,7 @@ void UniformlyGeneratedSets::AddNode(AST_INDEX node)
 	   nodeH[i][j] = 0;
        }
      GetH(node,nodeH,&uniform);
-     if (uniform && (UGSEntry = GetUniformlyGeneratedSet(nodeH)) != NULL)
+     if (uniform && (UGSEntry = GetUniformlyGeneratedSet(node,nodeH)) != NULL)
        (*UGSEntry) += node;
      else
        Append(nodeH,node,Subscripts,uniform);
@@ -537,14 +539,15 @@ UniformlyGeneratedSets::GetUniformlyGeneratedSet(AST_INDEX node)
   }
 
 UniformlyGeneratedSetsEntry *
-UniformlyGeneratedSets::GetUniformlyGeneratedSet(la_matrix nodeH)
+UniformlyGeneratedSets::GetUniformlyGeneratedSet(AST_INDEX node,
+						 la_matrix nodeH)
 
   {
    UniformlyGeneratedSetsEntry *UGSEntry;
    UGSIterator UGSIter(*this);
 
      while(UGSEntry = (UniformlyGeneratedSetsEntry* )UGSIter())
-       if (UGSEntry->SameUniformlyGeneratedSet(nodeH))
+       if (UGSEntry->SameUniformlyGeneratedSet(node,nodeH))
 	 return(UGSEntry);
      return(NULL);
   }
