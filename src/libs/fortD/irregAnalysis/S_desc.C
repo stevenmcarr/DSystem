@@ -1,4 +1,4 @@
-/* $Id: S_desc.C,v 1.16 1997/03/11 14:28:34 carr Exp $ */
+/* $Id: S_desc.C,v 1.17 1997/06/24 17:38:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,7 +10,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: S_desc.C,v $
- * Revision 1.16  1997/03/11 14:28:34  carr
+ * Revision 1.17  1997/06/24 17:38:57  carr
+ * Support 64-bit Pointers
+ *
+ * Revision 1.16  1997/03/11  14:28:34  carr
  * newly checked in as revision 1.16
  *
 Revision 1.16  94/03/21  14:00:43  patton
@@ -47,7 +50,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 
 extern const char *valType[];          // values.C
 
-EXTERN(AST_INDEX, assert_is_subscript, (AST_INDEX node))
+EXTERN(AST_INDEX, assert_is_subscript, (AST_INDEX node));
 EXTERN(AST_INDEX, find_outmost_loop,   (AST_INDEX node));
 EXTERN(AST_INDEX, mergeStmts,          (AST_INDEX node1,
 					AST_INDEX node2));

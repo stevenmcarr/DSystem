@@ -1,4 +1,4 @@
-/* $Id: ErrorsCompAttr.C,v 1.1 1997/03/11 14:27:49 carr Exp $ */
+/* $Id: ErrorsCompAttr.C,v 1.2 1997/06/24 17:36:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -24,7 +24,7 @@
 // declarations 
 //*******************************************************************
 
-REGISTER_COMPOSITION_ATTRIBUTE(ErrorsCompAttr);
+REGISTER_COMPOSITION_ATTRIBUTE(ErrorsCompAttr)
 
 
 

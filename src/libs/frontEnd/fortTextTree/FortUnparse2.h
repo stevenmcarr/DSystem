@@ -1,4 +1,4 @@
-/* $Id: FortUnparse2.h,v 1.6 1997/03/11 14:29:38 carr Exp $ */
+/* $Id: FortUnparse2.h,v 1.7 1997/06/24 17:51:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -37,6 +37,8 @@ EXTERN(void,		unp2_Fini, (void));
 /*  Unparsing		*/
 /************************/
 
+typedef FUNCTION_POINTER (void, cacheProcFunc, (Generic,AST_INDEX,int,int,int));
+
 EXTERN(void,		unp2_Unparse, (FortTextTree ftt, FortTreeNode node,
                                        int indent, Flex **lines));
 EXTERN(void,		unp2_TextToNode, (FortTextTree ftt, int firstLine,
@@ -44,7 +46,7 @@ EXTERN(void,		unp2_TextToNode, (FortTextTree ftt, int firstLine,
 EXTERN(void,		unp2_NodeToText, (FortTextTree ftt, FortTreeNode node,
                                           int *firstLine, int *lastLine, 
                                           int *indent, Generic cacheOb, 
-                                          PFV cacheProc));
+                                          cacheProcFunc cacheProc));
 
 
 

@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:30:03 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/24 17:54:06 carr Exp $
 
 HERE = libs/frontEnd/textTree
 
 SRCS = \
-	   TextTree.ansi.c \
-	   LineArray.ansi.c
+	   TextTree.C \
+	   LineArray.C
 
 ARCHIVE	= ../FrontEnd-$(DSYSTEM_OS)-g.a
 

@@ -1,4 +1,4 @@
-/* $Id: fortsym.h,v 1.22 1997/03/11 14:29:55 carr Exp $ */
+/* $Id: fortsym.h,v 1.23 1997/06/24 17:53:08 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -70,6 +70,7 @@ typedef struct _ArrayBound {
 
 
 
+EXTERN(void,fst_Init,(void));
 EXTERN(void, fst_DumpModuleTables, (TableDescriptor td));
 EXTERN(unsigned int, fst_NumEntryPoints, (TableDescriptor td));
 EXTERN(Boolean, SymDescriptorHashTableAddEntryPoint, 
@@ -98,8 +99,7 @@ EXTERN(void, fst_PutField,
         (SymDescriptor d, char *name, char* field, Generic value));
 
 EXTERN(void, fst_InitField, 
-	(SymDescriptor d, char *field, Generic init_value, 
-	void (*cleanup_fn)(Generic)));
+	(SymDescriptor d, char *field, Generic init_value, SymCleanupFunc cleanup_fn));
 EXTERN(void, fst_KillField, (SymDescriptor d, char *field));
 
 /* --- symbol table iteration functions --- */

@@ -152,28 +152,35 @@ typedef struct
 /*  Unparsing		*/
 /************************/
 
+typedef FUNCTION_POINTER (void,OutputFunc,(Generic,char));
+typedef FUNCTION_POINTER (void,OutputTextFunc,(Generic));
+typedef FUNCTION_POINTER (void,OutputSonFunc,(Generic,char));
+typedef FUNCTION_POINTER (void,TabFunc,(Generic));
+typedef FUNCTION_POINTER (Boolean,EvalFunc,(Generic,char *,int));
+typedef FUNCTION_POINTER (void,MissingFunc,(Generic,char *,int,int));
+
 
 typedef struct
   {
-    PFV output;
-    PFV outputText;
-    PFV outputSon;
-    PFV tab;
-    PFB eval;
-    PFV missing;
+    OutputFunc output;
+    OutputTextFunc outputText;
+    OutputSonFunc outputSon;
+    TabFunc tab;
+    EvalFunc eval;
+    MissingFunc missing;
   }  ftt_FormatCustomProcs;
 
 
-extern void			ftt_format(/* fmt, ob, custom */);
+EXTERN(void,ftt_format,(char *fmt, Generic ob, ftt_FormatCustomProcs *custom ));
+
+EXTERN(void,ftt_toggleBold,(void));
+EXTERN(void,ftt_toggleItalic,(void));
+EXTERN(void,ftt_toggleReverse,(void));
+EXTERN(void,ftt_toggleHalf,(void));
+EXTERN(void,ftt_toggleUnderline,(void));
+
+EXTERN(TextString,ftt_expansionName,(int type));
+EXTERN(TextString,ftt_makeExpansionName,(char* name, Boolean ph_default));
 
 extern unsigned char		ftt_style;
-extern void			ftt_toggleBold(void);
-extern void			ftt_toggleItalic(void);
-extern void			ftt_toggleReverse(void);
-extern void			ftt_toggleHalf(void);
-extern void			ftt_toggleUnderline(void);
-
-extern TextString		ftt_expansionName(int type);
-extern TextString		ftt_makeExpansionName(char* name, Boolean ph_default);
-
 #endif

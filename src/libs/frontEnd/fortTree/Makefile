@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:29:50 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/24 17:53:08 carr Exp $
 
 HERE = libs/frontEnd/fortTree
 
 SRCS = \
-	   ConstExprEval.ansi.c \
-	   TypeChecker.ansi.c \
-	   fortsym.ansi.c \
+	   ConstExprEval.C \
+	   TypeChecker.C \
+	   fortsym.C \
 	   FortDProblem.C \
 	   FortTree.C \
 	   FortTreeNeedProv.C \

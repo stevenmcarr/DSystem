@@ -1,4 +1,4 @@
-/* $Id: gram2.y,v 1.9 1997/03/11 14:29:45 carr Exp $ */
+/* $Id: gram2.y,v 1.10 1997/06/24 17:47:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -61,6 +61,7 @@
 STATIC(FortTreeNode, misplaced,(fx_StatToken st, char *what, char *prev));
 STATIC(fx_EndingStat, missing,(char *what));
 STATIC(void, setLineTags1, (FortTreeNode node, fx_StatToken st));
+STATIC(void, setLineTags2, (FortTreeNode node, fx_StatToken st, fx_EndingStat endval));
 
 %}
 
@@ -1347,10 +1348,10 @@ where_end_stat:
 
 
 static
-FortTreeNode misplaced(st, what, prev)
-  fx_StatToken st;
-  char *what;
-  char *prev;
+FortTreeNode misplaced(fx_StatToken st, char *what, char *prev)
+  //fx_StatToken st;
+  //char *what;
+  //char *prev;
 {
   char complaint[100];
   FortTreeNode commtext, err;
@@ -1369,8 +1370,8 @@ FortTreeNode misplaced(st, what, prev)
 /*ARGSUSED*/
 
 static
-fx_EndingStat missing(what)
-  char *what;
+fx_EndingStat missing(char *what)
+  //char *what;
 {
   fx_EndingStat endval;
 
@@ -1386,9 +1387,9 @@ fx_EndingStat missing(what)
 
 
 static void
-setLineTags1(node, st)
-  FortTreeNode node;
-  fx_StatToken st;
+setLineTags1(FortTreeNode node, fx_StatToken st)
+  // FortTreeNode node;
+  // fx_StatToken st;
 {
   ft_SetConceal(ftt_fortTree, node, 0, st.conceal);
   tt_setTagNode(ftt_textTree, node, st.tt_tag);
@@ -1397,11 +1398,11 @@ setLineTags1(node, st)
 
 
 
-static
-setLineTags2(node, st, endval)
-  FortTreeNode node;
-  fx_StatToken st;
-  fx_EndingStat endval;
+static void
+setLineTags2(FortTreeNode node, fx_StatToken st, fx_EndingStat endval)
+  // FortTreeNode node;
+  // fx_StatToken st;
+  // fx_EndingStat endval;
 {
   ft_SetConceal(ftt_fortTree, node, 1, st.conceal);
   tt_setTagNode(ftt_textTree, node, st.tt_tag );

@@ -1,4 +1,4 @@
-/* $Id: CommFilterDef.h,v 1.2 1997/03/11 14:30:13 carr Exp $ */
+/* $Id: CommFilterDef.h,v 1.3 1997/06/24 17:54:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -86,7 +86,7 @@ public:			/* pretend this is 'protected' ! */
 
 
 
-EXTERN (void, CommFilterDef_AddStandardDefs, (FilterDefSet * defs))
+EXTERN (void, CommFilterDef_AddStandardDefs, (FilterDefSet * defs));
 
 
 

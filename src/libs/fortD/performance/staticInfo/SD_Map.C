@@ -1,10 +1,10 @@
-/* $Id: SD_Map.C,v 1.3 1997/03/27 20:34:10 carr Exp $ */
+/* $Id: SD_Map.C,v 1.4 1997/06/24 17:40:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 // -*- C++ -*-
-static const char * RCS_ID = "$Id: SD_Map.C,v 1.3 1997/03/27 20:34:10 carr Exp $";
+static const char * RCS_ID = "$Id: SD_Map.C,v 1.4 1997/06/24 17:40:32 carr Exp $";
 #define MKASSERT
 #define ASSERT_FILE_VERSION RCS_ID
 
@@ -129,7 +129,7 @@ SDDF_SideArray::SDDF_SideArray(char* moduleFileName,
 
   // For the curious, in order: beg line, end line,
   // 				text string of node, sddf info record.
-  static int initial[SD_SIZE_MAP_SIDEARRAY] = {-1,-1, 0, 0}; 
+  static Generic initial[SD_SIZE_MAP_SIDEARRAY] = {-1,-1, 0, 0}; 
   md = ft_AttachSideArray(myFt, SD_SIZE_MAP_SIDEARRAY, initial);
   
   // Do work of mapping

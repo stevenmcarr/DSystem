@@ -1,4 +1,4 @@
-/* $Id: analyse.C,v 1.19 1997/03/11 14:28:37 carr Exp $ */
+/* $Id: analyse.C,v 1.20 1997/06/24 17:38:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -11,7 +11,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: analyse.C,v $
- * Revision 1.19  1997/03/11 14:28:37  carr
+ * Revision 1.20  1997/06/24 17:38:57  carr
+ * Support 64-bit Pointers
+ *
+ * Revision 1.19  1997/03/11  14:28:37  carr
  * newly checked in as revision 1.19
  *
 Revision 1.19  94/03/21  14:28:59  patton
@@ -190,8 +193,8 @@ EXTERN(const char *,    root2name_str,     (AST_INDEX node));
 EXTERN(AST_INDEX, find_stmt_list,  (AST_INDEX node));
 EXTERN(AST_INDEX, find_last_stmt,  (AST_INDEX node));
 EXTERN(AST_INDEX, get_stmt_list,              (AST_INDEX node));
-EXTERN(AST_INDEX, assert_is_subscript,        (AST_INDEX node))
-EXTERN(AST_INDEX, assert_father_is_subscript, (AST_INDEX node))
+EXTERN(AST_INDEX, assert_is_subscript,        (AST_INDEX node));
+EXTERN(AST_INDEX, assert_father_is_subscript, (AST_INDEX node));
 EXTERN(char *,    str_tolower,                (const char *str));
 EXTERN(const char *,    ftt_ast2str,     (FortTextTree ftt, AST_INDEX node));
 EXTERN(AST_INDEX, find_next_loop,  (AST_INDEX start_node));

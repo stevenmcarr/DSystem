@@ -1,4 +1,4 @@
-/* $Id: Slice2.C,v 1.7 1997/03/11 14:28:35 carr Exp $ */
+/* $Id: Slice2.C,v 1.8 1997/06/24 17:38:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,7 +10,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: Slice2.C,v $
- * Revision 1.7  1997/03/11 14:28:35  carr
+ * Revision 1.8  1997/06/24 17:38:57  carr
+ * Support 64-bit Pointers
+ *
+ * Revision 1.7  1997/03/11  14:28:35  carr
  * newly checked in as revision 1.7
  *
 Revision 1.7  94/03/21  13:55:43  patton
@@ -60,7 +63,7 @@ EXTERN(void,      add_count_to_nest, (AST_INDEX loop_node,
 				      const char *aux_name,
 				      AST_INDEX inc_node =
 				      pt_gen_int(1)));
-EXTERN(AST_INDEX, assert_father_is_subscript, (AST_INDEX node))
+EXTERN(AST_INDEX, assert_father_is_subscript, (AST_INDEX node));
 EXTERN(void,      cat_loop_triplet,  (AST_INDEX loop_node,
 				      ostrstream &buf));
 EXTERN(AST_INDEX, copy_loop_nest,    (CfgInstance cfg,

@@ -1,4 +1,4 @@
-/* $Id: TextTree.h,v 1.13 1997/03/11 14:30:05 carr Exp $ */
+/* $Id: TextTree.h,v 1.14 1997/06/24 17:54:06 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -44,7 +44,7 @@ typedef Generic TextTreeView;
 
 typedef Generic TT_Tree;
 typedef Generic TT_TreeNode;
-typedef Generic TT_LineTag;
+typedef SmallGeneric TT_LineTag;
 
 
 #include <libs/support/arrays/FlexibleArray.h>
@@ -53,14 +53,14 @@ typedef Generic TT_LineTag;
 #define nil             0    /* null pointer */
 #endif
 
-typedef struct{int x[20];} TT_MaxToken;
+typedef struct{Generic x[20];} TT_MaxToken;
 
 typedef struct
   {
     TT_TreeNode lineNode;
-    int         bracket;
-    int		indent;
-    int         conceal;
+    Generic         bracket;
+    Generic		indent;
+    Generic         conceal;
     TT_LineTag	tt_tag;
 
     TextString	text;

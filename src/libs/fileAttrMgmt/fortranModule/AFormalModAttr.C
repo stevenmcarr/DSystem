@@ -1,4 +1,4 @@
-/* $Id: AFormalModAttr.C,v 1.2 1997/03/27 20:31:44 carr Exp $ */
+/* $Id: AFormalModAttr.C,v 1.3 1997/06/24 17:38:03 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -96,7 +96,7 @@ ProcLocalInfo *AFormalModAttr::NewProcEntry()
 // class ProcAFormalInfo interface operations
 //***********************************************************************
 
-CLASS_NAME_IMPL(ProcAFormalInfo);
+CLASS_NAME_IMPL(ProcAFormalInfo)
 
 ProcAFormalInfo::ProcAFormalInfo(const char *_name) : ProcLocalInfo(_name)
 {

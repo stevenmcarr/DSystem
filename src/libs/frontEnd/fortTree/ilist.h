@@ -1,4 +1,4 @@
-/* $Id: ilist.h,v 1.6 1997/03/11 14:29:56 carr Exp $ */
+/* $Id: ilist.h,v 1.7 1997/06/24 17:53:08 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,4 +31,4 @@ public:
   };
 };
 
-#endif ilist_h
+#endif

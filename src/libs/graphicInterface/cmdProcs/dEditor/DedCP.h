@@ -1,4 +1,4 @@
-/* $Id: DedCP.h,v 1.2 1997/03/11 14:30:08 carr Exp $ */
+/* $Id: DedCP.h,v 1.3 1997/06/24 17:56:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,6 +21,7 @@
 
 #include <libs/graphicInterface/framework/framework.h>
 #include <libs/graphicInterface/framework/EditorCP.h>
+#include <libs/graphicInterface/cmdProcs/dEditor/DedEditor.h>
 
 
 
@@ -30,7 +31,7 @@
 /************************************************************************/
 
 
-EXTERN (int, dedcp_Edit, (int argc, char **argv))
+EXTERN (int, dedcp_Edit, (int argc, char **argv));
 
 
 
@@ -52,7 +53,14 @@ EXTERN (int, dedcp_Edit, (int argc, char **argv))
 
 
 
-struct DedCP_Repr_struct;
+/* DedCP object */
+
+typedef struct DedCP_Repr_struct
+  {
+    DedEditor *	editor;
+
+  } DedCP_Repr;
+
 
 
 
@@ -61,7 +69,7 @@ class DedCP: public EditorCP
 {
 public:
 
-  DedCP_Repr_struct * DedCP_repr;
+  DedCP_Repr *DedCP_repr;
 
 /* class initialization */
   static void			InitClass(void);

@@ -1,4 +1,4 @@
-/* $Id: astutil.C,v 1.1 1997/03/11 14:29:23 carr Exp $ */
+/* $Id: astutil.C,v 1.2 1997/06/24 17:41:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1685,7 +1685,7 @@ static void ast_import2_back_end(DB_FP *buff_fp, Header *header, Asttab *newtab)
   }
 
   
-  offset = (int) temp;
+  offset = (Generic) temp;
 
   for (i = 0; i < newtab->strtab->stats.high_water_mark; i++)
     {

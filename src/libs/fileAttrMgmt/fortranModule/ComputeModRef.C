@@ -1,4 +1,4 @@
-/* $Id: ComputeModRef.C,v 1.2 1997/03/27 20:31:44 carr Exp $ */
+/* $Id: ComputeModRef.C,v 1.3 1997/06/24 17:38:03 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -113,13 +113,13 @@ entry_name_symdesc_name_To_leader_offset_size_vtype(char *entry_name,
   // (it is an error to reference a parameter of entry e1 in an 
   // invocation of entry e2)
   if (oc & (OC_IS_FORMAL_PAR | OC_IS_ENTRY_ARG)) {
-    int param_position;
+    Generic param_position;
     int entry_index = fst_QueryIndex(d, entry_name);
     assert(fst_index_is_valid(entry_index));
     cNameValueTable ht = 
       (cNameValueTable) fst_GetFieldByIndex(d, entry_index, SYMTAB_FORMALS_HT);
     if (ht && NameValueTableQueryPair(ht, (Generic) name, &param_position)) {
-      *offset = param_position;
+      *offset = (int)param_position;
       type |= VTYPE_FORMAL_PARAMETER;
     }
     else return false;

@@ -1,12 +1,12 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:30:29 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/24 17:56:30 carr Exp $
 
 HERE = libs/graphicInterface/cmdProcs/help
 
 SRCS = \
-	   file_read.ansi.c \
-	   help.ansi.c \
-	   hybrid_disp.ansi.c \
-	   tree.ansi.c
+	   file_read.C \
+	   help.C \
+	   hybrid_disp.C \
+	   tree.C
 
 ARCHIVE	= HelpCP-$(DSYSTEM_OS)-g.a
 

@@ -1,4 +1,4 @@
-/* $Id: FortTree.h,v 1.8 1997/03/11 14:29:48 carr Exp $ */
+/* $Id: FortTree.h,v 1.9 1997/06/24 17:53:08 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,6 +21,7 @@
 #ifndef FortTree_h
 #define FortTree_h
 
+#include <libs/support/misc/general.h>
 
 #include <libs/frontEnd/ast/strutil.h>
 #include <libs/frontEnd/ast/astutil.h>
@@ -42,7 +43,12 @@ typedef struct NeedProvSet *NeedProvSetPtr;
 
 
 typedef struct FortTree_internal_structure *FortTree;
-typedef unsigned int	FortTreeNode;		/* really AST_INDEX */
+#ifdef LONG_POINTER
+typedef unsigned long FortTreeNode;		/* really AST_INDEX */
+#else
+typedef unsigned int FortTreeNode;		/* really AST_INDEX */
+#endif 
+
 typedef Generic		FortTreeSideArray;
 extern	char		*ft_SourceAttribute;
 

@@ -1,4 +1,4 @@
-/* $Id: ComputeProcSummary.C,v 1.2 1997/03/27 20:31:44 carr Exp $ */
+/* $Id: ComputeProcSummary.C,v 1.3 1997/06/24 17:38:03 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -134,7 +134,7 @@ static CallSite *InvocationToCallSite(FortTree ft, SymDescriptor d,
   int oc = fst_GetFieldByIndex(d, callee_index, SYMTAB_OBJECT_CLASS);
   if (oc & (OC_IS_FORMAL_PAR | OC_IS_ENTRY_ARG)) {
     // callee is a parameter of some entry
-    int param_position;
+    Generic param_position;
     if (!(entry_ht && NameValueTableQueryPair(entry_ht, (Generic) callee_name, 
 					 &param_position))) 
       // callee is not a parameter of this entry, so abort
@@ -179,7 +179,7 @@ static CallSite *InvocationToCallSite(FortTree ft, SymDescriptor d,
       
       if (oc & (OC_IS_FORMAL_PAR | OC_IS_ENTRY_ARG)) {
 	// ****** formal parameter ******
-	int param_position;
+	Generic param_position;
 	if (!(entry_ht && NameValueTableQueryPair(entry_ht, (Generic) pname, 
 					     &param_position))) {
 	  // illegal actual, the actual is a formal for an 

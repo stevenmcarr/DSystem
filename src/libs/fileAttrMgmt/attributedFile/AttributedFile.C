@@ -1,4 +1,4 @@
-/* $Id: AttributedFile.C,v 1.2 1997/03/27 20:31:09 carr Exp $ */
+/* $Id: AttributedFile.C,v 1.3 1997/06/24 17:37:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -292,7 +292,7 @@ int AttributedFile::SaveAttribute(Attribute *attr)
     char *ctlFileName = nssave(2, CTL_PREFIX, attr->name);
     File *ctlFile = attributedFileRepr->reposContext.CreateFile(ctlFileName);
     
-    assert(ctlFile);
+    assert(ctlFile != NULL);
     
     //------------------------------------------------------------------
     // record software version id in control file
@@ -334,7 +334,7 @@ int AttributedFile::SaveAttribute(Attribute *attr)
     char *attrFileName = nssave(2, ATTR_PREFIX, attr->name);
     File *attrFile = attributedFileRepr->reposContext.CreateFile(attrFileName);
     
-    assert(attrFile);
+    assert(attrFile != NULL);
     
     int code;
     if (code = attr->Write(attrFile)) {
@@ -503,7 +503,7 @@ void AttributedFile::NoteChange(Object *, int kind, void *)
 File *AttributedFile::GetExternalAttributeFile(const char *attrName, 
 					       int checkTimeStamps)
 {
-  assert(attributedFileRepr); 
+  assert(attributedFileRepr != NULL); 
   
   File *attrFile = 0;
   char *ctlFileName = nssave(2, CTL_PREFIX, attrName);
@@ -569,7 +569,7 @@ File *AttributedFile::CreateExternalAttributeFile(const char *attrName)
   char *ctlFileName = nssave(2, CTL_PREFIX, attrName);
   File *ctlFile = attributedFileRepr->reposContext.CreateFile(ctlFileName);
   
-  assert(ctlFile);
+  assert(ctlFile != NULL);
   
   //------------------------------------------------------------------
   // record the timestamp of the current AttributedFile and all its

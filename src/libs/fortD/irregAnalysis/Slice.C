@@ -1,4 +1,4 @@
-/* $Id: Slice.C,v 1.14 1997/03/11 14:28:34 carr Exp $ */
+/* $Id: Slice.C,v 1.15 1997/06/24 17:38:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,7 +10,10 @@
 /**********************************************************************
  * Revision History:
  * $Log: Slice.C,v $
- * Revision 1.14  1997/03/11 14:28:34  carr
+ * Revision 1.15  1997/06/24 17:38:57  carr
+ * Support 64-bit Pointers
+ *
+ * Revision 1.14  1997/03/11  14:28:34  carr
  * newly checked in as revision 1.14
  *
 Revision 1.14  94/03/21  13:53:38  patton
@@ -65,7 +68,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 
 /*------------------- GLOBAL DECLARATIONS -------------------*/
 
-EXTERN(AST_INDEX, assert_father_is_subscript, (AST_INDEX node))
+EXTERN(AST_INDEX, assert_father_is_subscript, (AST_INDEX node));
 EXTERN(AST_INDEX, begin_ast_stmt,       (AST_INDEX node));
 EXTERN(void,      cat_CoVarPairs,       (CfgInstance  cfg,
 					 FortTextTree ftt,

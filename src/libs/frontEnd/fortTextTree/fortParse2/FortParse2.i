@@ -1,4 +1,4 @@
-/* $Id: FortParse2.i,v 1.4 1997/03/11 14:29:44 carr Exp $ */
+/* $Id: FortParse2.i,v 1.5 1997/06/24 17:47:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -45,6 +45,10 @@ extern FortTreeNode fp2_root;
 /************************/
 
 
-extern	void	lx2_Init();
-extern	void	lx2_Fini();
-extern	void	lx2_SetScan();
+EXTERN(void,lx2_Init,(void));
+EXTERN(void,lx2_Fini,(void));
+EXTERN(void,lx2_SetScan,(int goal, Flex *lines, int start, int count));
+
+EXTERN(int,yy2lex,(void));
+EXTERN(int,yy2parse,(void));
+EXTERN(void,yy2error,(char*));

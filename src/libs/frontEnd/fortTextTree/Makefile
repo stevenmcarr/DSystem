@@ -1,13 +1,13 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:29:38 carr Exp $
+# $Id: Makefile,v 1.2 1997/06/24 17:51:10 carr Exp $
 
 HERE = libs/frontEnd/fortTextTree
 
 DIRS = fortParse1 fortParse2
 
 SRCS = \
-	   FortTextTree.ansi.c \
-	   FortUnparse1.ansi.c \
-	   FortUnparse2.ansi.c \
+	   FortTextTree.C \
+	   FortUnparse1.C \
+	   FortUnparse2.C \
 	   MapInfo.C \
 	   MapInfo_c.C
 

@@ -1,4 +1,4 @@
-/* $Id: groups.h,v 1.10 1997/03/11 14:29:31 carr Exp $ */
+/* $Id: groups.h,v 1.11 1997/06/24 17:41:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -35,9 +35,9 @@ EXTERN(AST_INDEX, first_smp_executable_stmt, (AST_INDEX stmt_list));
 EXTERN(AST_INDEX, first_smp_executable_stmt_in_loop, (AST_INDEX stmt_list));
 EXTERN(Boolean, is_f77_statement, (AST_INDEX n));          
 EXTERN(Boolean, is_f77_operator, (AST_INDEX n));   
-EXTERN(AST_INDEX, first_executable_stmt, (Boolean (*pre_cond)(), Boolean
-                                          (*spec_cond)(), Boolean
-                                          (*post_cond)(), AST_INDEX stmt_list));            
+EXTERN(AST_INDEX, first_executable_stmt, (Boolean (*pre_cond)(AST_INDEX), Boolean
+                                          (*spec_cond)(AST_INDEX), Boolean
+                                          (*post_cond)(AST_INDEX), AST_INDEX stmt_list));            
 
 #define is_smp_subprogram_stmt(n)	is_f77_subprogram_stmt(n)
 #define is_smp_operator(n)		is_f77_operator(n)

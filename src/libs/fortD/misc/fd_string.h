@@ -1,4 +1,4 @@
-/* $Id: fd_string.h,v 1.3 1997/03/11 14:28:48 carr Exp $ */
+/* $Id: fd_string.h,v 1.4 1997/06/24 17:40:05 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -26,4 +26,4 @@ class FD_String
    void Print();
 };
 
-#endif _fd_string_
+#endif 

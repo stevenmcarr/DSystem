@@ -1,4 +1,4 @@
-/* $Id: NeedProvCompAttr.C,v 1.2 1997/03/27 20:31:26 carr Exp $ */
+/* $Id: NeedProvCompAttr.C,v 1.3 1997/06/24 17:36:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -34,7 +34,7 @@
 // declarations 
 //*******************************************************************
 
-REGISTER_COMPOSITION_ATTRIBUTE(NeedProvCompAttr);
+REGISTER_COMPOSITION_ATTRIBUTE(NeedProvCompAttr)
 
 
 typedef FUNCTION_POINTER(void, NPModFn, (Composition *comp, 

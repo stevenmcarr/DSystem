@@ -1,4 +1,4 @@
-/* $Id: gram1.y,v 1.10 1997/03/11 14:29:42 carr Exp $ */
+/* $Id: gram1.y,v 1.11 1997/06/24 17:45:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -18,9 +18,11 @@
 
 #define gram1_h			/* will already have yacc-generated decls */
 
+#include <string.h>
 #include <libs/support/misc/general.h>
 
 #include <libs/support/strings/rn_string.h>
+#include <libs/support/memMgmt/mem.h>
 
 #include <libs/frontEnd/fortTextTree/FortTextTree.i>
 
@@ -658,7 +660,7 @@ common_name:
 
         $$ = gen_IDENTIFIER();
 	gen_put_text($$, name, STR_COMMON_NAME);
-	free_mem((Generic) name);
+	free_mem((void *) name);
 	treeStackPush($$);
       }
   | SNAME_PH						/* PLACEHOLDER */
@@ -3799,15 +3801,15 @@ void yyerror(char *s)
 static
 FortTreeNode coerceToLabel(FortTreeNode node)
 {
-  FortTreeNode new;
+  FortTreeNode New;
 
   if( is_constant(node)  &&
               str_get_type(gen_get_symbol(node)) == STR_CONSTANT_INTEGER )
     { /* this integer constant should be a label--coerce it */
-        new = gen_LABEL_REF();
-        gen_put_text(new, gen_get_text(node), STR_LABEL_REF);
+        New = gen_LABEL_REF();
+        gen_put_text(New, gen_get_text(node), STR_LABEL_REF);
         tree_free(node);
-        return new;
+        return New;
     }
   else
     return node;

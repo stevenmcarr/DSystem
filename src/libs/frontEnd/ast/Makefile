@@ -1,20 +1,20 @@
-# $Id: Makefile,v 1.3 1997/03/27 21:05:56 carr Exp $
+# $Id: Makefile,v 1.4 1997/06/24 17:41:50 carr Exp $
 
 HERE = libs/frontEnd/ast
 
 SRCS = \
-	   aphelper.ansi.c \
-	   astlist.ansi.c \
-	   asttree.ansi.c \
-	   builtins.ansi.c \
-	   cd_branch.ansi.c \
-	   forttypes.c \
-	   ftxform.ansi.c \
-	   gensupport.ansi.c \
-	   groups.ansi.c \
-	   seminterface.ansi.c \
-	   strutil.ansi.c \
-	   treeutil.ansi.c \
+	   aphelper.C \
+	   astlist.C \
+	   asttree.C \
+	   builtins.C \
+	   cd_branch.C \
+	   forttypes.C \
+	   ftxform.C \
+	   gensupport.C \
+	   groups.C \
+	   seminterface.C \
+	   strutil.C \
+	   treeutil.C \
 	   AstIterators.C \
 	   NeedProvSet.C \
 	   astutil.C \

@@ -1,4 +1,4 @@
-/* $Id: DistFilterDef.h,v 1.2 1997/03/11 14:30:17 carr Exp $ */
+/* $Id: DistFilterDef.h,v 1.3 1997/06/24 17:55:40 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -86,7 +86,7 @@ public:			/* pretend this is 'protected' ! */
 
 
 
-EXTERN (void, DistFilterDef_AddStandardDefs, (FilterDefSet * defs))
+EXTERN (void, DistFilterDef_AddStandardDefs, (FilterDefSet * defs));
 
 
 

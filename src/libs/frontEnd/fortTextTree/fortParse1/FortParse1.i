@@ -1,4 +1,4 @@
-/* $Id: FortParse1.i,v 1.5 1997/03/11 14:29:41 carr Exp $ */
+/* $Id: FortParse1.i,v 1.6 1997/06/24 17:45:59 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,6 +30,7 @@ extern fx_StatToken	fp1_token;
 extern char *		fp1_error;
 EXTERN(void,		parse1, (FortTextTree ftt, TextString text));
 EXTERN(void,		yy1error, (char *s));
+EXTERN(int,		yy1parse, (void));
 
 
 

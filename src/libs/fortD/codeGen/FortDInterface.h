@@ -1,4 +1,4 @@
-/* $Id: FortDInterface.h,v 1.9 1997/03/27 20:32:26 carr Exp $ */
+/* $Id: FortDInterface.h,v 1.10 1997/06/24 17:38:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -383,5 +383,5 @@ class FortDInterface      // one member per Fortran D program
 };
 
 
-#endif _FortDInterface_
+#endif 
 

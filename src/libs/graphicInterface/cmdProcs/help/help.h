@@ -1,4 +1,4 @@
-/* $Id: help.h,v 1.5 1997/03/11 14:30:30 carr Exp $ */
+/* $Id: help.h,v 1.6 1997/06/24 17:56:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,6 +19,8 @@ typedef struct	list	{			/* GENERAL SINGULARLY-LINKED LIST	*/
 struct	list		*next;			/* the next item on the list		*/
 			} LIST;
 
+
+struct  node;
 
 	/* TEXT LIST entry */
 

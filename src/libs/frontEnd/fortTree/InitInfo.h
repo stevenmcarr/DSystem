@@ -1,4 +1,4 @@
-/* $Id: InitInfo.h,v 1.19 1997/03/11 14:29:49 carr Exp $ */
+/* $Id: InitInfo.h,v 1.20 1997/06/24 17:53:08 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -164,8 +164,8 @@ class LInfo {
     SymDescriptor proc_sym_table;
     AST_INDEX node;
     ModRefNameTreeNode *I;
-    struct AlignDistributeType *AD;
 #if 0
+    struct AlignDistributeType *AD;
     ModuleIPinfoList *m;
 #endif
     IPinfoTree *ipt;

@@ -1,4 +1,4 @@
-/* $Id: DedCP.C,v 1.2 1997/03/11 14:30:07 carr Exp $ */
+/* $Id: DedCP.C,v 1.3 1997/06/24 17:56:07 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -46,14 +46,6 @@
 
 
 
-
-/* DedCP object */
-
-typedef struct DedCP_Repr_struct
-  {
-    DedEditor *	editor;
-
-  } DedCP_Repr;
 
 
 #define R(ob)		(ob->DedCP_repr)
