@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.1 1997/03/27 20:14:26 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.2 1997/04/09 19:49:15 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -43,7 +43,6 @@ void MemoriaOptionsUsage(char *pgm_name)
   puts("         -c  annontate with calls to cache simulator");
   puts("         -d#  set dependence analysis level at 0 or 1 (default)");
   puts("         -e  use extended cache analysis");
-  puts("         -f  do loop fusion");
   puts("         -h  prepare code for cache analysis");
   puts("         -i  do interchange");
   puts("         -l  count # of loads and stores");
@@ -61,24 +60,6 @@ void MemoriaOptionsUsage(char *pgm_name)
   puts("         -O  output file for transformed code");
   fflush(stdout);
   exit(-1);
-}
-
-static void mc_opt_fusion(void *state)
-{
-  switch(selection) {
-  case NO_SELECT:
-    selection = FUSION;
-    select_char = 'f';
-    break;
-  case INTERCHANGE:
-    selection = LI_FUSION;
-    select_char = 'f';
-    break;
-  case MEM_ALL:
-    break;
-  default:
-    MemoriaOptionsUsage("Memoria");
-  }
 }
 
 static void mc_set_dependence_level(void *state,Generic level)
@@ -153,10 +134,6 @@ static void mc_opt_interchange(void *state)
     selection = LI_STATS;
     mc_allow_expansion = true;
     break;
-  case FUSION:
-    selection = LI_FUSION;
-    select_char = 'f';
-    break;
   default:
     MemoriaOptionsUsage("Memoria");
   }
@@ -207,7 +184,6 @@ static void mc_opt_statistics(void *state)
     selection = LI_STATS;
     mc_allow_expansion = true;
     break;
-  case LI_FUSION:
   case MEM_ALL:
     break;
   default:
@@ -299,12 +275,6 @@ void mc_opt_output(void *state,char *str)
    mc_output = str;
   }
 
-
-static struct flag_	fusion_f = {
-  mc_opt_fusion,
-  "loop fusion",	
-  "perform loop fusion",
-};
 
 static struct flag_	prefetch_f = {
   mc_opt_prefetch,
@@ -504,9 +474,6 @@ Option mc_out_opt =
 
 Option mc_partition_unroll_opt = { string, MC_PARTITION_UNROLL_OPT,  (Generic) "", true, 
 			(Generic)&partition_unroll_amount_s};
-Option mc_fusion_flag = 
-{ flag,   MC_FUSION_FLAG, (Generic)false, true, (Generic)&fusion_f };
-
 Option mc_int_flag = { flag,   MC_INTERCHANGE_FLAG,  (Generic)false, true, 
 			 (Generic)&interchange_f };
 
@@ -553,7 +520,6 @@ int MemoriaInitOptions(int argc, char **argv)
   MemoriaOptions.Add(&mc_cfg_opt);
   MemoriaOptions.Add(&mc_out_opt);
   MemoriaOptions.Add(&mc_partition_unroll_opt);
-  MemoriaOptions.Add(&mc_fusion_flag);
   MemoriaOptions.Add(&mc_int_flag);
   MemoriaOptions.Add(&mc_pre_flag);
   MemoriaOptions.Add(&mc_dead_flag);

@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.2 1997/04/08 13:41:20 carr Exp $ */
+/* $Id: Memoria.C,v 1.3 1997/04/09 19:49:15 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -178,9 +178,6 @@ void CompileFile(FortranModule *module)
 	    break;
 	  case ANNOTATE:
 	    Filename += ".cache.f";
-	    break;
-	  case FUSION:
-	    Filename += ".fuse.f";
 	    break;
 	  case LDST:
 	    Filename += ".ldst.f";

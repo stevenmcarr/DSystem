@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.h,v 1.2 1997/04/08 13:41:20 carr Exp $ */
+/* $Id: MemoriaOptions.h,v 1.3 1997/04/09 19:49:15 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,7 +21,6 @@
 #define MC_ALL_FLAG           'a'
 #define MC_ANNOTATE_FLAG      'c'
 #define MC_EXTENDED_CACHE_FLAG 'e'
-#define MC_FUSION_FLAG        'f'
 #define MC_INTERCHANGE_FLAG   'i'
 #define MC_REPLACEMENT_CHOICE 'r'
 #define MC_STATISTICS_FLAG    's'
