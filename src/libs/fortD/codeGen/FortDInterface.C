@@ -1,4 +1,4 @@
-/* $Id: FortDInterface.C,v 1.10 1999/03/31 21:50:43 carr Exp $ */
+/* $Id: FortDInterface.C,v 1.11 2001/09/14 18:22:05 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1353,7 +1353,7 @@ FortDAstSet::~FortDAstSet()
 //-----------------------------------------------------
 // returns size of set
 
-FortDAstSet::Size()
+int FortDAstSet::Size()
 {
   return repr->last;
 }
@@ -1582,7 +1582,7 @@ FortDMesgSet::~FortDMesgSet()
 //-----------------------------------------------------
 // return size of FortDMesgSet
 
-FortDMesgSet::Size()
+int FortDMesgSet::Size()
 {
   return repr->last;
 }
