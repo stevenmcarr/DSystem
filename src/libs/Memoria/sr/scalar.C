@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.28 1995/12/27 16:13:40 carr Exp $ */
+/* $Id: scalar.C,v 1.29 1996/01/15 10:23:02 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -104,7 +104,7 @@ Boolean IsSubscriptUniform(AST_INDEX node,
    Boolean Uniform = true;
 
      sublist = gen_SUBSCRIPT_get_rvalue_LIST(node);
-     for (sub = list_head(sublist);
+     for (sub = list_first(sublist);
 	  sub != AST_NIL && Uniform;
 	  sub = list_next(sub))
        for (AstIter AIter(sub,false);(Inode = AIter()) != AST_NIL && Uniform;)
