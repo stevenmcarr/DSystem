@@ -84,7 +84,6 @@ static int GetDependenceStats(AST_INDEX node,DependenceInfoType *DependenceInfo)
    int        vector;
    EDGE_INDEX edge;
    AST_INDEX  name;
-   int        InnerLevel;
 
      if (is_subscript(node))
        {
@@ -99,18 +98,26 @@ static int GetDependenceStats(AST_INDEX node,DependenceInfoType *DependenceInfo)
 	      {
 	       case dg_true:
 		 DependenceInfo->LoopStats->NumberOfTrueDependences++;
+		 if (dg[edge].level != LOOP_INDEPENDENT)
+		   DependenceInfo->LoopStats->NumberOfLoopCarriedTrueDependences++;
 		 break;
 
 	       case dg_anti:
 		 DependenceInfo->LoopStats->NumberOfAntiDependences++;
+		 if (dg[edge].level != LOOP_INDEPENDENT)
+		   DependenceInfo->LoopStats->NumberOfLoopCarriedAntiDependences++;
 		 break;
 
 	       case dg_output:
 		 DependenceInfo->LoopStats->NumberOfOutputDependences++;
+		 if (dg[edge].level != LOOP_INDEPENDENT)
+		   DependenceInfo->LoopStats->NumberOfLoopCarriedOutputDependences++;
 		 break;
 
 	       case dg_input:
 		 DependenceInfo->LoopStats->NumberOfInputDependences++;
+		 if (dg[edge].level != LOOP_INDEPENDENT)
+		   DependenceInfo->LoopStats->NumberOfLoopCarriedInputDependences++;
 		 break;
 
 	       default:

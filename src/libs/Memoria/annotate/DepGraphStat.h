@@ -8,6 +8,7 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #include <libs/support/lists/list.h>
 #include <malloc.h>
+#include <libs/Memoria/include/LoopStats.h>
 
 typedef struct DependenceInfoStruct {
   model_loop *loop_data;
