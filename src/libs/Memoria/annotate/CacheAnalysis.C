@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.33 2000/05/16 03:13:19 mjbedy Exp $ */
+/* $Id: CacheAnalysis.C,v 1.34 2000/05/16 18:49:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -913,7 +913,8 @@ static int SetDistance(AST_INDEX Node,
         if (DepInfoPtr(Node)->UsePrefetchingLoad)
         {
              
-            if (DepInfoPtr(Node)->Locality == SELF_SPATIAL)
+	    assert(DepInfoPtr(Node)->Locality != UNDEFINED);
+            if (DepInfoPtr(Node)->Locality != NONE)
             {                 
 
 	      //
@@ -933,7 +934,7 @@ static int SetDistance(AST_INDEX Node,
 
 	      DepInfoPtr(Node)->PrefetchOffsetAST = AST_NIL;
             }
-            else if (DepInfoPtr(Node)->Locality == NONE)
+            else
             {
 
 
