@@ -1,4 +1,4 @@
-/* $Id: LoopIconDecoration.C,v 1.2 1997/03/11 14:32:47 carr Exp $ */
+/* $Id: LoopIconDecoration.C,v 1.3 2001/09/17 00:41:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -348,7 +348,7 @@ void LoopIconDecoration::GetMarginText(int c_linenum,
   /* compute appropriate icon */
     if( this->isLoopHeader(c_linenum, node, bracket) )
       icon = R(this)->curLoop.node != AST_NIL  &&  R(this)->curLoop.bbox.ul.y == c_linenum
-                  ? CURLOOP_ICON : LOOP_ICON;
+                  ? (char *)CURLOOP_ICON : (char *)LOOP_ICON;
     else
       icon = NO_ICON;
 

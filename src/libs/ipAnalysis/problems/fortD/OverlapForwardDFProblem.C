@@ -1,4 +1,4 @@
-/* $Id: OverlapForwardDFProblem.C,v 1.4 1997/03/27 20:41:14 carr Exp $ */
+/* $Id: OverlapForwardDFProblem.C,v 1.5 2001/09/17 00:53:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -126,7 +126,8 @@ void FD_Overlap_Annot::UnionF(CallGraphNode *, CallGraphEdge *CallGraphEdge1, FD
      // If it exists, then perform a union, else create a new entry
 
       found = false;
-      for(overlap_ent* callee = this->overlap_info->first_entry();
+      overlap_ent *callee;
+      for(callee = this->overlap_info->first_entry();
        callee != 0 && !found; callee = this->overlap_info->next_entry())
         {
           //----------------------------------------------------- 

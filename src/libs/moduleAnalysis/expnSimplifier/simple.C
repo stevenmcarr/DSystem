@@ -1,4 +1,4 @@
-/* $Id: simple.C,v 1.1 1997/06/25 15:10:31 carr Exp $ */
+/* $Id: simple.C,v 1.2 2001/09/17 00:55:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -41,6 +41,7 @@
 /******************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <string.h>
 #include <libs/support/misc/general.h>

@@ -1,4 +1,4 @@
-/* $Id: FortParse1.C,v 1.1 1997/06/24 17:45:59 carr Exp $ */
+/* $Id: FortParse1.C,v 1.2 2001/09/17 00:26:15 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -127,8 +127,8 @@ Boolean fp1_Parse(FortTextTree ftt, TextString text, fx_StatToken *st)
     if( fp1_error != nil  ||  fp1_token.token == SERROR_STAT )
       { /* build the complaint node */
           commtext = gen_TEXT();
-          gen_put_text(commtext, (fp1_error)  ?  fp1_error  :  "syntax error",
-						STR_COMMENT_TEXT);
+	  char *errorText =  (fp1_error)  ?  (char *)fp1_error  :  (char*)"syntax error";
+          gen_put_text(commtext,errorText,STR_COMMENT_TEXT);
 
         /* build the text node (saved input string) */
           s = (char *) get_mem(text.num_tc * 2 + 1, "makeErrorNode()");

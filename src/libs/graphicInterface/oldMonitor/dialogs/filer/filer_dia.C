@@ -1,4 +1,4 @@
-/* $Id: filer_dia.C,v 1.1 1997/06/25 14:44:32 carr Exp $ */
+/* $Id: filer_dia.C,v 1.2 2001/09/17 00:42:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -56,7 +56,7 @@ filename component.  This is the RE for a filename component:
     ([^\\./]|\\.[^\\./]|\\.\\.[^/])[^/]*
 It appears twice in the RE for CLEAN_FILE_NAME.
 */
-typedef FUNCTION_POINTER(int,ScanDirSelectFunc,(struct dirent *));
+typedef FUNCTION_POINTER(int,ScanDirSelectFunc,(const struct dirent *));
 typedef FUNCTION_POINTER(Boolean,OkayerFunc,(Generic,char*));
 
 #define DIR_START	1
@@ -115,7 +115,7 @@ static short     file_dialog_font;
 STATIC(Boolean,  file_dialog_handler,(Dialog *di, aFileDia *pd, Generic item));
 STATIC(Boolean,  file_select_dialog_handler,(Dialog *di, aFileDia *pd, Generic item));
 STATIC(void,     unscandir, (struct dirent **namelist, Generic num_entries));
-STATIC(int,  no_dot_or_dot_dot, (struct dirent *ent));
+STATIC(int,  no_dot_or_dot_dot, (const struct dirent *ent));
 
 static void move_to_active(Dialog *di, aFileDia *pd, char *s)
 {
@@ -519,7 +519,7 @@ file_split_name(aFileDia *pd, char *filename, char **ncd, char **nfile)
 
 
 static int
-no_dot_or_dot_dot(struct dirent *ent)
+no_dot_or_dot_dot(const struct dirent *ent)
 {
     int l;
 

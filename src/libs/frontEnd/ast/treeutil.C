@@ -1,4 +1,4 @@
-/* $Id: treeutil.C,v 1.1 1997/06/24 17:41:50 carr Exp $ */
+/* $Id: treeutil.C,v 1.2 2001/09/17 00:24:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <strings.h>
+#include <string.h>
 
 #include <sys/types.h>
 

@@ -1,4 +1,4 @@
-/* $Id: FortEditorCP.C,v 1.2 1997/03/11 14:30:55 carr Exp $ */
+/* $Id: FortEditorCP.C,v 1.3 2001/09/17 00:31:19 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1098,7 +1098,7 @@ void titleWindow(FortEditorCP edcp)
 
   /* set the title  */
     verb  = "Editing";
-    dirty = (R(edcp)->changed   ?  "* "  :  "  ");
+    dirty = (R(edcp)->changed   ?  (char *)"* "  : (char *) "  ");
   
     cp_window_set_title((Window*)R(edcp)->window, "%s%s %s",
 			dirty,verb,(R(edcp)->context)->ReferenceFilePathName());

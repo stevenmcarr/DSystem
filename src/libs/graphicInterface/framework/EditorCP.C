@@ -1,4 +1,4 @@
-/* $Id: EditorCP.C,v 1.8 1997/03/11 14:32:39 carr Exp $ */
+/* $Id: EditorCP.C,v 1.9 2001/09/17 00:41:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -315,7 +315,7 @@ char * EditorCP::GetWindowTitle(void)
   static char title[200];	/* static so can return a pointer to it */
 
   /* calculate the contents-is-dirty string */
-    dirty = (R(this)->dirty  ?  "*"  : " ");
+    dirty = (R(this)->dirty  ? (char *) "*"  : (char *)" ");
     context = R(this)->mod_context->ReferenceFilePathName();
 
   /* allow for subclass's preference  */

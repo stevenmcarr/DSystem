@@ -1,4 +1,4 @@
-/* $Id: PEditorCP.C,v 1.44 1997/04/08 16:02:33 carr Exp $ */
+/* $Id: PEditorCP.C,v 1.45 2001/09/17 00:34:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -2679,7 +2679,7 @@ titleWindow(PEditorCP pedcp)
 
   /* set the title  */
     verb  = "Editing";
-    dirty = (R(pedcp)->changed   ?  "* "  :  "  ");
+    dirty = (R(pedcp)->changed   ?  (char *)"* "  :  (char *)"  ");
   
     cp_window_set_title((Window*)R(pedcp)->window, "%s%s %s",
 			dirty,verb,

@@ -1,4 +1,4 @@
-/* $Id: gensupport.C,v 1.1 1997/06/24 17:41:50 carr Exp $ */
+/* $Id: gensupport.C,v 1.2 2001/09/17 00:22:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -41,7 +41,7 @@ AST_INDEX gen_node (NODE_TYPE type, ...)
     n = nodedef[type].number_of_sons;
     for (i = 0; i < n; i++) newsons[i] = (AST_INDEX)va_arg(arg_list, Generic);
     }
-  va_end (ap);
+  va_end (arg_list);
 
   newnode = ast_alloc (type);
   for (i = 0; i < n; i++)

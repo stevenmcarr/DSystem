@@ -1,4 +1,4 @@
-/* $Id: map.C,v 1.5 1997/03/11 14:29:31 carr Exp $ */
+/* $Id: map.C,v 1.6 2001/09/17 00:23:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,7 +39,7 @@ mapExpr(AST_INDEX id_node,  ReferenceAccessType,
 int mapStmt ( FortTreeNode stmt, int /* nesting_level */ , va_list arg_list )
 {
   
-  Boolean	 fullmap = va_arg(arg_list, Boolean);
+  Boolean	 fullmap = BOOL(va_arg(arg_list, int));
   FortTextTree	     ftt = va_arg(arg_list, FortTextTree);
   FortTreeSideArray   md = va_arg(arg_list, FortTreeSideArray);
   int l1, l2, c1, c2;

@@ -1,4 +1,4 @@
-/* $Id: EditorView.C,v 1.1 1997/06/25 13:43:34 carr Exp $ */
+/* $Id: EditorView.C,v 1.2 2001/09/17 00:29:46 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -301,7 +301,9 @@ void ev_GetConceal(EditorView ev, int line, Boolean *conceal)
 
 void ev_SetConceal(EditorView ev, int line1, int line2, Boolean conceal)
 {
-  char * what = (conceal ? "concealing" : "revealing");
+  char * what;
+  
+  what = (conceal ? (char *)"concealing" : (char *)"revealing");
 
   notImplemented(what);
 }

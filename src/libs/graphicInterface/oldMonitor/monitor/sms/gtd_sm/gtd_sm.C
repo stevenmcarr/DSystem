@@ -1,4 +1,4 @@
-/* $Id: gtd_sm.C,v 1.1 1997/06/25 15:00:56 carr Exp $ */
+/* $Id: gtd_sm.C,v 1.2 2001/09/17 00:44:29 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1892,7 +1892,7 @@ map_fmt (TREE_INDEX p, char c)
 
 /* we have just unparsed going towards the top of the screen? did we get there? if not,
    then we should swap lines and reset td_startline */
-screen_shuffle(int first, int last)
+int screen_shuffle(int first, int last)
 {
    int i,j;
 

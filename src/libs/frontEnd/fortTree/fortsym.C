@@ -1,4 +1,4 @@
-/* $Id: fortsym.C,v 1.1 1997/06/24 17:53:08 carr Exp $ */
+/* $Id: fortsym.C,v 1.2 2001/09/17 00:27:57 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -220,7 +220,7 @@ fst_ForAllV(SymDescriptor d, fst_ForAllCallbackV func, ...)
 
 	SymForAll(d->Table, (SymIteratorFunc)fst_ForAll_func, (Generic)&w);
     }
-  va_end(args);
+  va_end(argList);
 
   return;
 }

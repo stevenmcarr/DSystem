@@ -1,4 +1,4 @@
-/* $Id: OverlapAnnot.C,v 1.4 1997/03/27 20:41:14 carr Exp $ */
+/* $Id: OverlapAnnot.C,v 1.5 2001/09/17 00:53:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -245,7 +245,8 @@ void FD_Overlap_Annot::Union(CallGraphNode *, CallGraphEdge *edge1, FD_Overlap_A
      // If it exists, then perform a union, else create a new entry
 
       found = false;
-      for(overlap_ent* caller = this->overlap_info->first_entry();
+      overlap_ent *caller;
+      for(caller = this->overlap_info->first_entry();
        caller != 0 && !found; caller = this->overlap_info->next_entry())
         {
           //----------------------------------------------------- 

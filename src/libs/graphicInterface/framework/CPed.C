@@ -1,4 +1,4 @@
-/* $Id: CPed.C,v 1.3 1997/03/11 14:32:30 carr Exp $ */
+/* $Id: CPed.C,v 1.4 2001/09/17 00:39:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -653,7 +653,7 @@ void CPed::GetDependenceTexts(int k,
   src    = src_buff;
   sink   = sink_buff;
   vector = vector_buff;
-  level  = (strcmp(level_buff, "independent") == 0 ? "-" : level_buff);
+  level  = (strcmp(level_buff, "independent") == 0 ? (char*)"-" : (char*)level_buff);
   block  = block_buff;
   stmt   = stmt_buff;
 }
@@ -761,9 +761,9 @@ void CPed::GetVariableTexts(int k,
   defBefore = sourceLineNumString(this, entry->def_before, buffer[1]);
   useAfter  = sourceLineNumString(this, entry->use_after,  buffer[2]);
 
-  kind      = (R(this)->varTable[k].kind == pedVarShared ? "shared" : "private");
+  kind      = (R(this)->varTable[k].kind == pedVarShared ? (char*)"shared" : (char*)"private");
 
-  user      = (entry->user ? "*" : "");
+  user      = (entry->user ? (char*)"*" : (char*)"");
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: loop.C,v 1.1 1997/06/25 13:52:57 carr Exp $ */
+/* $Id: loop.C,v 1.2 2001/09/17 00:35:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -404,7 +404,7 @@ void pt_unswitch(PedInfo ped)
 }
 
 
-pt_unswitch_test(PedInfo ped)
+int pt_unswitch_test(PedInfo ped)
 {
 	AST_INDEX node;
 

@@ -1,4 +1,4 @@
-/* $Id: CallGraphDFProblem.C,v 1.3 1999/03/31 21:55:39 carr Exp $ */
+/* $Id: CallGraphDFProblem.C,v 1.4 2001/09/17 00:51:55 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -193,7 +193,7 @@ void CallGraphDFProblem::Solve(CallGraph *cg)
   DirectedGraphIterativeDFP::Solve(cg, ((direction  == Forward) ? 
 					DirectedEdgeOut : DirectedEdgeIn), 0);
 
-  delete [nodeCount] nodeSets;
+  delete nodeSets;
 }
 
 //===========================================================================

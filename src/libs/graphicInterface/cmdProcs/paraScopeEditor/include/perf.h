@@ -1,4 +1,4 @@
-/* $Id: perf.h,v 1.9 1997/06/25 13:52:01 carr Exp $ */
+/* $Id: perf.h,v 1.10 2001/09/17 00:32:45 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -150,7 +150,7 @@ EXTERN(Parm*, pop, (Parm **item));
 
 /* symbol table initialization. Not needed once Seema's stuff
    is integrated. Switch to the symtab routines in that code --Vas */
-extern symtab_initialize();
+// extern symtab_initialize();
 
 
 #endif
