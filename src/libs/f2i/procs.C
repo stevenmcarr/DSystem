@@ -1,4 +1,4 @@
-/* $Id: procs.C,v 1.3 1998/02/12 15:46:59 carr Exp $ */
+/* $Id: procs.C,v 1.4 2001/09/14 18:18:35 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -280,7 +280,7 @@ void aiProcedures(AST_INDEX root, FortTree ft)
 } /* aiProcedures */
 
 
-static first_time = TRUE;
+static int first_time = TRUE;
 
 
 

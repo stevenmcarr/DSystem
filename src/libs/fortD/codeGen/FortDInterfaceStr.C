@@ -1,4 +1,4 @@
-/* $Id: FortDInterfaceStr.C,v 1.8 1999/06/11 20:38:48 carr Exp $ */
+/* $Id: FortDInterfaceStr.C,v 1.9 2001/09/14 18:22:46 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1566,7 +1566,7 @@ FD_String* FortDMesg::SendRProcRange()
 // the id returned may be used to obtain the AST_INDEX of the 
 // decomposition directive using the function ft_NumberToNode
 //--------------------------------------------------------------------
-FortDRef::DecompId()
+int FortDRef::DecompId()
 {
  return(sp_get_decomp_id(repr->symEntry));
 }

@@ -1,4 +1,4 @@
-/* $Id: bstring.h,v 1.6 1999/06/11 15:03:42 carr Exp $ */
+/* $Id: bstring.h,v 1.7 2001/09/14 18:17:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,7 +39,9 @@ EXTERN(int,atoi,(const char *str));
 #define bcmp(src1_addr, src2_addr, nbytes) \
 	memcmp((void*)(src1_addr), (const void*)(src2_addr), (nbytes))
 
-EXTERN(int,atoi,(const char *str));
+#ifndef LINUX
+EXTERN(int,atoi,(const char *str)); 
+#endif
 
 #endif /* BSD */
 

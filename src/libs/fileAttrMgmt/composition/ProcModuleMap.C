@@ -1,4 +1,4 @@
-/* $Id: ProcModuleMap.C,v 1.1 1997/03/11 14:27:51 carr Exp $ */
+/* $Id: ProcModuleMap.C,v 1.2 2001/09/14 18:20:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -47,13 +47,13 @@ ProcModuleMapEntry::~ProcModuleMapEntry()
 //-------------------------------------------------------
 
 
-ProcModuleMapEntry::NamedObjectWriteUpCall(FormattedFile *file) 
+int ProcModuleMapEntry::NamedObjectWriteUpCall(FormattedFile *file) 
 {
   return WriteString(moduleName, file) || ProcInterface::Write(file);
 }
 
 
-ProcModuleMapEntry::NamedObjectReadUpCall(FormattedFile *file) 
+int ProcModuleMapEntry::NamedObjectReadUpCall(FormattedFile *file) 
 {
   return ReadString((char **) &moduleName, file) || ProcInterface::Read(file);
 }
