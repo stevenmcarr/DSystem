@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.2 1997/04/08 19:54:53 carr Exp $
+# $Id: Makefile,v 1.3 1997/04/08 20:09:52 carr Exp $
 
 HERE = libs/graphicInterface/cmdProcs/paraScopeEditor/pt
 
@@ -7,6 +7,7 @@ SRCS = \
 	   distrib.ansi.c  \
 	   divide.ansi.c \
 	   events.ansi.c \
+	   fusion.ansi.c \
 	   loop.ansi.c \
 	   peel.ansi.c \
 	   pt_util.ansi.c \

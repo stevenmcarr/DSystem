@@ -1,8 +1,8 @@
-# $Id: Makefile,v 1.13 1997/04/08 18:58:25 carr Exp $
+# $Id: Makefile,v 1.14 1997/04/08 20:10:40 carr Exp $
 HERE = libs/Memoria/li
 INCLUDEDIRS	= libs/Memoria/include
 ARCHIVE		= ../Memoria-$(RN_ARCH)$(ENV_FLAG).a
-SRCS		= interchange.C stats.C MemoryOrder.C fusion.ansi.c  Reversal.C \
-		  FDgraph.ansi.C
+SRCS		= interchange.C stats.C MemoryOrder.C Reversal.C \
+		  FDgraph.ansi.c
 
 include Makeinclude
