@@ -1,4 +1,4 @@
-/* $Id: balance.h,v 1.7 1995/06/07 16:04:47 carr Exp $ */
+/* $Id: balance.h,v 1.8 1995/08/24 14:13:19 yguan Exp $ */
 
 #ifndef balance_h
 #define balance_h
@@ -11,6 +11,7 @@ EXTERN(int, mh_fp_register_pressure,(int reg_coeff[4][3][3],int *scalar_coeff,
 EXTERN(int, mh_addr_register_pressure,(int addr_coeff[4][3][3],int x1,int x2));
 EXTERN(float, mh_loop_balance,(int mem_coeff[4][3][3],int flops,int x1,
 			       int x2));
+EXTERN(int, mh_memref, (int   mem_coeff[4][3][3], int x1, int x2));
 EXTERN(float,mh_CacheBalance,(int mem_coeff[4][3][3],float PrefetchCoeff[4][3][3],
 			      int flops,int x1, int x2,float MissCost,
 			      PrefetchCoeffComponentType Comp[4][3][3],
