@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.h,v 1.12 1997/11/10 21:20:42 carr Exp $ */
+/* $Id: CacheAnalysis.h,v 1.13 1998/07/07 19:28:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,6 +13,7 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #include <libs/support/lists/list.h>
 #include <libs/Memoria/include/la.h>
+#include <libs/Memoria/annotate/AddressEquivalenceClassSet.h>
 #include <malloc.h>
 
 typedef struct CacheInfoStruct {
@@ -25,6 +26,7 @@ typedef struct CacheInfoStruct {
   char       **IVar;
   Boolean    HasSelfSpatial;
   DataReuseModel *ReuseModel;
+  AddressEquivalenceClassSet *AECS;
  } CacheInfoType;
 
 typedef struct DepInfoStruct {
@@ -32,6 +34,8 @@ typedef struct DepInfoStruct {
   UtilList *DependenceList;
   LocalityType Locality;
   Boolean IsGroupSpatialTrailer;
+  AST_INDEX AddressLeader;
+  int       Offset;
  } DepInfoType;         /* copy in a2i_lib/ai.h */
 
 typedef struct depstruct {
