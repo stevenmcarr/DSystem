@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.4 1997/10/30 15:31:26 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.5 1997/10/30 19:15:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -26,6 +26,7 @@ char *mc_config = NULL;
 char *mc_module_list = NULL;
 char *mc_output = NULL;
 int aiCache = -1;
+int aiSpecialCache = 0;
 int blue_color = 0;
 
 Options MemoriaOptions("Memoria Options");
@@ -71,8 +72,9 @@ static void mc_opt_dependence_stats(void *state)
     selection = DEP_STATS;
     break;
   default:
-    mc_options_usage("mc");
+    MemoriaOptionsUsage("mc");
   }
+}
 
 static void mc_set_dependence_level(void *state,Generic level)
 
