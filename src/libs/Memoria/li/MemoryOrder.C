@@ -1,4 +1,4 @@
-/* $Id: MemoryOrder.C,v 1.7 1997/03/27 20:25:24 carr Exp $ */
+/* $Id: MemoryOrder.C,v 1.8 1998/09/29 20:44:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -664,7 +664,7 @@ static void CheckInterchange(model_loop    *loop_data,
 
 	      /* compute RefGroups */
 	RefGroups = new RefGroupSet(loop_data[loop].node,loop_data[loop].level,
-				    RefInfo,mc_extended_cache);
+				    RefInfo);
 
 
 	util_append(loop_data[loop1].GroupList,
