@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.4 1994/07/20 11:32:30 carr Exp $ */
+/* $Id: prefetch.C,v 1.5 1995/03/13 15:11:03 carr Exp $ */
 
 #include <mh.h>
 #include <fort/gi.h>
@@ -17,6 +17,8 @@
 #include <strings.h>
 
 #include	<dg.h>
+
+#include <UniformlyGeneratedSets.h>
 
 
 static int remove_edges(AST_INDEX stmt,
@@ -92,7 +94,8 @@ static int CheckLocality(AST_INDEX          node,
 	sptr = get_subscript_ptr(name);
 	sptr->Locality = ut_GetReferenceType(node,locality_info->loop_data,
 					     locality_info->loop,
-					     locality_info->ped);
+					     locality_info->ped,
+					     locality_info->UGS);
 	return(WALK_SKIP_CHILDREN);
        }
      return(WALK_CONTINUE);
@@ -135,7 +138,8 @@ static void CheckRefsForPrefetch(model_loop    *loop_data,
 				 PrefetchList  *SPLinePrefetches,
 				 PrefetchList  *DPLinePrefetches,
 				 PrefetchList  *WordPrefetches,
-				 PedInfo       ped)
+				 PedInfo       ped,
+				 char          **IVar)
 
   {
    locality_info_type locality_info;
@@ -146,11 +150,18 @@ static void CheckRefsForPrefetch(model_loop    *loop_data,
      locality_info.SPLinePrefetches = SPLinePrefetches;
      locality_info.DPLinePrefetches = DPLinePrefetches;
      locality_info.WordPrefetches = WordPrefetches;
+     if (mc_extended_cache)
+       locality_info.UGS = new UniformlyGeneratedSets(loop_data[loop].node,
+						      loop_data[loop].level,
+						      IVar);
+     else
+       locality_info.UGS = NULL;
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		     (WK_EXPR_CLBACK)CheckLocality,NOFUNC,(Generic)&locality_info);
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		     (WK_EXPR_CLBACK)BuildPrefetchList,NOFUNC,
 		     (Generic)&locality_info);
+     delete locality_info.UGS;
   }
    
 
@@ -740,7 +751,8 @@ static void walk_loops(model_loop    *loop_data,
 		       int           loop,
 		       PedInfo       ped,
 		       SymDescriptor symtab,
-		       arena_type    *ar)
+		       arena_type    *ar,
+		       char          **IVar)
 		       
   {
    int next;
@@ -748,10 +760,13 @@ static void walk_loops(model_loop    *loop_data,
    PrefetchList DPLinePrefetches;
    PrefetchList WordPrefetches;
 
+     IVar[loop_data[loop].level-1] = gen_get_text(gen_DO_get_control(
+                                     gen_INDUCTIVE_get_name(loop_data[loop].node)));
+
      if (loop_data[loop].inner_loop == -1)
        {
 	CheckRefsForPrefetch(loop_data,loop,&SPLinePrefetches,&DPLinePrefetches,
-			     &WordPrefetches,ped);
+			     &WordPrefetches,ped,IVar);
 	if (!((config_type *)PED_MH_CONFIG(ped))->aggressive)
 	  ModeratePrefetchRequirements(loop_data,loop,&SPLinePrefetches,
 				       &DPLinePrefetches,&WordPrefetches,ped);
@@ -766,7 +781,7 @@ static void walk_loops(model_loop    *loop_data,
 	for (next = loop_data[loop].inner_loop;
 	     next != -1;
 	     next = loop_data[next].next_loop)
-	  walk_loops(loop_data,next,ped,symtab,ar);
+	  walk_loops(loop_data,next,ped,symtab,ar,IVar);
        }
   }
 
@@ -781,6 +796,7 @@ void memory_software_prefetch(PedInfo       ped,
    pre_info_type pre_info;
    model_loop    *loop_data;
    UtilList      *loop_list;
+   char          **IVar;
 
      pre_info.stmt_num = 0;
      pre_info.loop_num = 0;
@@ -798,5 +814,7 @@ void memory_software_prefetch(PedInfo       ped,
 					 pre_info.loop_num*sizeof(model_loop));
      ut_analyze_loop(root,loop_data,level,ped,symtab);
      ut_check_shape(loop_data,0);
-     walk_loops(loop_data,0,ped,symtab,ar);
+     IVar = new char*[pre_info.loop_num];
+     walk_loops(loop_data,0,ped,symtab,ar,IVar);
+     delete IVar;
   }

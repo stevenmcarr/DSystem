@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.14 1994/07/11 13:34:25 carr Exp $ */
+/* $Id: mh.h,v 1.15 1995/03/13 15:07:57 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -39,6 +39,9 @@
 #ifndef mem_util_h
 #include <mem_util.h>
 #endif
+#include <UniformlyGeneratedSets.h>
+
+extern Boolean mc_extended_cache;
 
 #define  MAX_LEVEL  20
 
@@ -105,6 +108,7 @@ struct loop_struct {
                   Distribute,
                   Interchange;
   Boolean         InterlockCausedUnroll;
+  UniformlyGeneratedSets *UGS;
  };
 
 

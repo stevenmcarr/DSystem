@@ -1,4 +1,4 @@
-/* $Id: mem_util.h,v 1.9 1994/04/13 14:25:37 carr Exp $ */
+/* $Id: mem_util.h,v 1.10 1995/03/13 15:07:51 carr Exp $ */
 
 #ifndef mem_util_h
 #define mem_util_h
@@ -35,6 +35,8 @@
 #include <dp.h>
 #endif
 
+#include <UniformlyGeneratedSets.h>
+
 typedef struct loop_struct model_loop;
 typedef enum {UNDEFINED,NONE,SELF_TEMPORAL,GROUP_TEMPORAL,SELF_SPATIAL,
 	      GROUP_SPATIAL,SELF_TEMPORAL_CACHE,GROUP_TEMPORAL_CACHE} LocalityType;
@@ -67,6 +69,7 @@ typedef struct StatsStruct {
   Boolean UseCache;
   model_loop *loop_data;
   int         loop;
+  UniformlyGeneratedSets *UGS;
  } StatsInfoType;
 
 #define Head(l) (l.head)
@@ -104,7 +107,8 @@ EXTERN(int, ut_ComputeBalance,(AST_INDEX     node,
 EXTERN(LocalityType, ut_GetReferenceType, (AST_INDEX  node,
 					   model_loop *loop_data,
 					   int        loop,
-					   PedInfo    ped));
+					   PedInfo    ped,
+					   UniformlyGeneratedSets *UGS));
 EXTERN(void, ut_GetSubscriptText, (AST_INDEX Node, char *Text));
 
 EXTERN(int,ut_change_logical_to_block_if, (AST_INDEX stmt,

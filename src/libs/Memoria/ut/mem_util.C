@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.9 1994/07/20 11:33:29 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.10 1995/03/13 15:13:55 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -23,6 +23,8 @@
 #endif
 
 #include <pt_util.h>
+
+#include <UniformlyGeneratedSets.h>
 
 AST_INDEX ut_GetSubprogramStmtList(AST_INDEX stmt)
 
@@ -370,7 +372,6 @@ int ut_check_div(AST_INDEX node,
        }
    return(WALK_CONTINUE);
   }
-				     
 
 
 /****************************************************************************/
@@ -516,8 +517,11 @@ static Boolean OnlyInInnermostPosition(model_loop *loop_data,
 static Boolean HasGroupSpatial(AST_INDEX  node,
 			       DG_Edge    *Edge,
 			       model_loop *loop_data,
-			       int        words)
+			       int        words,
+			       UniformlyGeneratedSets *UGS)
   {
+   if (UGS != NULL)
+     return(UGS->NodeHasGroupSpatialReuse(node));
    if (Edge->src != Edge->sink)
      if (CanMoveToInnermost(Edge))
        if (OnlyInInnermostPosition(loop_data,node,Edge->level))
@@ -591,7 +595,8 @@ static Boolean HasSelfSpatial(AST_INDEX  node,
 LocalityType ut_GetReferenceType(AST_INDEX  node,
 				 model_loop *loop_data,
 				 int        loop,
-				 PedInfo    ped)
+				 PedInfo    ped,
+				 UniformlyGeneratedSets *UGS)
 
   {
    AST_INDEX name;
@@ -636,7 +641,7 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
 	         GroupTemporalCache = true;
 	   else;
 
-	 else if (HasGroupSpatial(node,&dg[edge],loop_data,words))
+	 else if (HasGroupSpatial(node,&dg[edge],loop_data,words,UGS))
 	   GroupSpatial = true;
      if (GroupTemporalCache)
        return(GROUP_TEMPORAL_CACHE);
@@ -676,7 +681,8 @@ static float MemoryCycles(AST_INDEX node,
      LoadPenalty = ((config_type *)PED_MH_CONFIG(Stats->ped))->hit_cycles;
      MissPenalty = ((config_type *)PED_MH_CONFIG(Stats->ped))->miss_cycles;
      LineSize = ((config_type *)PED_MH_CONFIG(Stats->ped))->line;
-     switch(ut_GetReferenceType(node,Stats->loop_data,Stats->loop,Stats->ped))
+     switch(ut_GetReferenceType(node,Stats->loop_data,Stats->loop,Stats->ped,
+				Stats->UGS))
        {
 	case SELF_TEMPORAL:
 	case GROUP_TEMPORAL:

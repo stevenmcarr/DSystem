@@ -1,4 +1,4 @@
-/* $Id: pt_util.ansi.c,v 1.2 1994/07/20 11:33:31 carr Exp $ */
+/* $Id: pt_util.ansi.c,v 1.3 1995/03/13 15:14:50 carr Exp $ */
 /*-----------------------------------------------------------------------
 
 	pt_util.c		Utility routines for pt
@@ -868,7 +868,7 @@ pt_find_var_node (AST_INDEX expr, char *var)
  * Returns: char pointer or NULL.
  *************************************************************
  */
-static char *
+char *
 pt_find_a_var (AST_INDEX expr)
 {
 	char *temp;
@@ -1148,7 +1148,67 @@ pt_get_coeff (AST_INDEX expr, char *var, Boolean *lin, int *coeff)
   tree_free(fac);
   tree_free(con);
 }
+void
+pt_get_constant_walk(AST_INDEX expr, AST_INDEX *constant)
+{
+  char *string;
+  AST_INDEX con1,con2;
+  AST_INDEX tcon1,tcon2;
 
+  *constant = AST_NIL;
+
+  if (expr == AST_NIL)
+	return;
+
+  switch (gen_get_node_type(expr)) {
+
+    	case GEN_IDENTIFIER:
+		break;
+	case GEN_CONSTANT:
+		*constant = tree_copy_with_type(expr);
+		break;
+	case GEN_UNARY_MINUS:
+		pt_get_constant_walk(gen_UNARY_MINUS_get_rvalue(expr),&con1);
+		if (con1 != AST_NIL)
+		  *constant = gen_UNARY_MINUS(con1);
+		break;
+     	case GEN_BINARY_PLUS:
+		pt_get_constant_walk(gen_BINARY_PLUS_get_rvalue1(expr),&con1);
+		pt_get_constant_walk(gen_BINARY_PLUS_get_rvalue2(expr),&con2);
+		*constant = pt_gen_add(con1,con2);
+		break;
+    	case GEN_BINARY_MINUS:
+		pt_get_constant_walk(gen_BINARY_MINUS_get_rvalue1(expr),&con1);
+		pt_get_constant_walk(gen_BINARY_MINUS_get_rvalue2(expr),&con2);
+		*constant = pt_gen_sub(con1,con2);
+		break;
+	case GEN_BINARY_TIMES:
+		pt_get_constant_walk(gen_BINARY_TIMES_get_rvalue1(expr),&con1);
+		pt_get_constant_walk(gen_BINARY_TIMES_get_rvalue2(expr),&con2);
+		{
+		 AST_INDEX tcon1 = tree_copy_with_type(con1);
+		 AST_INDEX tcon2 = tree_copy_with_type(con2);
+		 *constant = pt_gen_mul(tcon1,tcon2); 
+		}
+		break;
+	default:
+		break;
+  }
+}
+
+/*************************************************************
+ * pt_get_constant (expr,const)
+ *
+ *************************************************************
+ */
+void
+pt_get_constant(AST_INDEX expr, int *constant)
+  {
+   AST_INDEX node;
+
+     pt_get_constant_walk(expr,&node);
+     (void)pt_eval(node,constant);
+  }
 
 /*************************************************************
  * pt_equal_stmt_list (slist1,slist2)
