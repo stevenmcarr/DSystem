@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.4 1997/04/09 20:20:12 carr Exp $ */
+/* $Id: Memoria.C,v 1.5 1997/04/10 19:41:08 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -119,13 +119,8 @@ void CompileFile(FortranModule *module)
      intialize the PedInfo structure */
   
   if (selection != ANNOTATE)
-    {
-      dg_all((Context)module,CONTEXT_NULL,CONTEXT_NULL,ftt,ft,&DG,&EL,&LI,&SI,&DT,
-	     &cfgModule,true);   
-
-      PED_DT_INFO(ped) = dt_init(root, PED_INFO(ped), PED_CFG(ped));
-
-    }
+    dg_all((Context)module,CONTEXT_NULL,CONTEXT_NULL,ftt,ft,&DG,&EL,&LI,&SI,&DT,
+	   &cfgModule,true);   
 
   PED_DG(ped)         = DG;
   PED_FTT(ped)        = ftt;
@@ -150,10 +145,10 @@ void CompileFile(FortranModule *module)
       else
 	{
 #ifdef OSF1
-	  String Filename(mc_output);
+	  String Filename(module->ReferenceFilePathName());
 	  Filename = Filename(0,Filename.index(".f"));
 #else
-	  RWCString Filename(mc_output);
+	  RWCString Filename(module->ReferenceFilePathName());
 	  Filename.remove(Filename.index(".f"));
 #endif
 	  switch(selection) {
@@ -251,7 +246,7 @@ int MemoriaMain(int argc, char **argv)
       for(CompModulesIterator modules(comp);
 	  module = (FortranModule *)modules.Current(); 
 	  ++modules) 
-	if (module->Open(module->ReferenceFilePathName()) != 0)
+	if (module->Open(module->ReferenceFilePathName()) == 0)
 	  CompileFile(module);
 	else
 	  errorMsgHandler.HandleMsg("Module %s not found.\n",
@@ -272,7 +267,7 @@ int MemoriaMain(int argc, char **argv)
     while (ModuleList >> mc_module)
       {
 	module = new FortranModule;
-	if (module->Open(mc_module) != 0)
+	if (module->Open(mc_module) == 0)
 	  CompileFile(module);
 	else
 	  errorMsgHandler.HandleMsg("Module %s not found.\n", mc_module);
@@ -299,7 +294,7 @@ int MemoriaMain(int argc, char **argv)
   else
     {
       module = new FortranModule;
-      if (module->Open(mc_module) != 0)
+      if (module->Open(mc_module) == 0)
 	CompileFile(module);
       else
 	errorMsgHandler.HandleMsg("Module %s not found.\n", mc_module);
