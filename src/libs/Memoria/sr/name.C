@@ -1,4 +1,4 @@
-/* $Id: name.C,v 1.11 1995/04/11 15:45:55 carr Exp $ */
+/* $Id: name.C,v 1.12 1995/04/28 09:36:06 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -234,7 +234,8 @@ void sr_find_generator(UtilNode *lnode,
      recurrence_ok = true;
      name_node = (name_node_type *)UTIL_NODE_ATOM(lnode);
      name_node->opt_will_allocate = false;
-     LengthOne = (UTIL_HEAD(name_node->nlist) == UTIL_TAIL(name_node->nlist));
+     LengthOne = (Boolean) (UTIL_HEAD(name_node->nlist) == 
+			    UTIL_TAIL(name_node->nlist));
      for (node = UTIL_HEAD(name_node->nlist);
 	  node != NULLNODE;
 	  node = UTIL_NEXT(node))
