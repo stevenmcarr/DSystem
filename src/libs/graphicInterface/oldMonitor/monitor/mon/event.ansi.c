@@ -1,4 +1,4 @@
-/* $Id: event.ansi.c,v 1.18 2000/01/11 21:45:33 carr Exp $ */
+/* $Id: event.ansi.c,v 1.19 2001/09/17 13:46:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -14,9 +14,6 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <signal.h>
-#ifdef SOLARIS
-#include <vfork.h>
-#endif
 #include <stdio.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -25,6 +22,16 @@
 #include <unistd.h>
 #ifdef LINUX
 #include <sys/select.h>
+#endif
+
+#ifdef LINUX 
+/* taken from sys/time.h so __USE_BSD does not need to be set */
+# define timerisset(tvp)        ((tvp)->tv_sec || (tvp)->tv_usec)
+# define timerclear(tvp)        ((tvp)->tv_sec = (tvp)->tv_usec = 0)
+# define timercmp(a, b, CMP)                                                  \
+  (((a)->tv_sec == (b)->tv_sec) ?                                             \
+     ((a)->tv_usec CMP (b)->tv_usec) :                                        \
+        ((a)->tv_sec CMP (b)->tv_sec))
 #endif
 
 #include <libs/support/misc/general.h>
@@ -227,11 +234,7 @@ register struct	cr_node	*current;		/* the list entry being deleted		*/
 
 
 /* Replaces "system" with something that knows about the other child pids.		*/
-#ifdef LINUX
 int system(const char* s)
-#else
-int system(char* s)
-#endif
 {
   register int pid;			/* the (shard) process id		*/
   register int omask;			/* old signal mask			*/

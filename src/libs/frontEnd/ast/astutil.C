@@ -1,4 +1,4 @@
-/* $Id: astutil.C,v 1.2 1997/06/24 17:41:50 carr Exp $ */
+/* $Id: astutil.C,v 1.3 2001/09/17 13:45:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,7 +19,12 @@
 #include <unistd.h>
 
 #include <sys/types.h>
+
+#ifdef LINUX
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif
 
 #include <libs/support/misc/general.h>
 #include <include/bstring.h>
@@ -1421,6 +1426,7 @@ static Header init_header(Generic type, Generic flags, Generic str_size,
                           Generic str_used, Generic str_bytes, AST_INDEX tree)
 {
   Header    header;
+  struct timeval ts;
 
   header.type = type;
   header.flags = flags;

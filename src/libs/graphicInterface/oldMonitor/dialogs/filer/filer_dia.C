@@ -1,4 +1,4 @@
-/* $Id: filer_dia.C,v 1.2 2001/09/17 00:42:49 carr Exp $ */
+/* $Id: filer_dia.C,v 1.3 2001/09/17 13:45:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,7 +19,13 @@
 #include <sys/file.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+
+#ifdef LINUX
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/wait.h>
 
