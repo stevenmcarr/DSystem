@@ -4,6 +4,7 @@
 #include <general.h>
 #include <mh.h>
 #include <dp.h>
+#include <dg.h>
 #include <misc/list.h>
 #include <malloc.h>
 #include <UniformlyGeneratedSets.h>
@@ -22,6 +23,12 @@ typedef struct DepInfoStruct {
   UtilList *DependenceList;
   LocalityType Locality;
  } DepInfoType;         /* copy in a2i_lib/ai.h */
+
+typedef struct depstruct {
+  int ReferenceNumber;
+  char DType;
+  int Distance;
+ } DepStruct; /* copy in a2i_lib/ai.h */
 
 #define DepInfoPtr(n) \
    ((DepInfoType *)ast_get_scratch(n))

@@ -93,21 +93,48 @@ static int BuildDependenceList(AST_INDEX node,CacheInfoType *CacheInfo)
    int        vector;
    EDGE_INDEX edge;
    AST_INDEX  name;
+   DepStruct  *Dep;
+   int        InnerLevel;
 
      if (is_subscript(node))
        {
-	DepInfoPtr(node)->DependenceList = util_list_alloc(NULL,NULL);
-	dg = dg_get_edge_structure( PED_DG(CacheInfo->ped));
 	name = gen_SUBSCRIPT_get_name(node);
+	DepInfoPtr(node)->DependenceList = util_list_alloc(NULL,NULL);
+	if (CacheInfo->loop_data[get_subscript_ptr(name)->surrounding_do].inner_loop 
+	    != -1)
+	  return(WALK_CONTINUE);
+	InnerLevel = CacheInfo->loop_data[get_subscript_ptr(name)->surrounding_do].level;
+	dg = dg_get_edge_structure( PED_DG(CacheInfo->ped));
 	vector = get_info(CacheInfo->ped,name,type_levelv);
 	for (edge = dg_first_src_ref(PED_DG(CacheInfo->ped),vector);
 	     edge != END_OF_LIST;
 	     edge = dg_next_src_ref(PED_DG(CacheInfo->ped),edge))
-	  if (dg[edge].type == dg_true || dg[edge].type == dg_anti ||
-	      dg[edge].type == dg_output)
-	    util_append(DepInfoPtr(node)->DependenceList,
-			util_node_alloc(DepInfoPtr(tree_out(dg[edge].sink))->
-				                   ReferenceNumber,NULL));
+	  {
+	   if ((dg[edge].type == dg_true || dg[edge].type == dg_anti ||
+		dg[edge].type == dg_output) && 
+	       (dg[edge].level == LOOP_INDEPENDENT || 
+		dg[edge].level == InnerLevel))
+	     {
+	      Dep = new DepStruct;
+	      Dep->ReferenceNumber =DepInfoPtr(tree_out(dg[edge].sink))->ReferenceNumber;
+	      if (dg[edge].type == dg_true) 
+	        Dep->DType = 't';
+	      else if (dg[edge].type == dg_anti) 
+	        Dep->DType = 'a';
+	      else
+	        Dep->DType = 'o';
+	      if (dg[edge].level == LOOP_INDEPENDENT)
+	        Dep->Distance = 0;
+	      else
+		{
+		 Dep->Distance = gen_get_dt_DIS(&dg[edge],dg[edge].level);
+		 if (Dep->Distance < DDATA_BASE)
+		   Dep->Distance = 1;
+		}
+	      util_append(DepInfoPtr(node)->DependenceList,
+			  util_node_alloc((int)Dep,NULL));
+	     }
+	  }
        }
      return(WALK_CONTINUE);
   }
