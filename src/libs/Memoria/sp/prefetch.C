@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.27 2000/05/16 15:36:47 carr Exp $ */
+/* $Id: prefetch.C,v 1.28 2000/05/18 05:26:06 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -403,7 +403,7 @@ static int CountCycles(AST_INDEX     Node,
   }
 
 //
-//  Function: CyclesPerIteration
+//  Function: CyclesPerUnrolledIteration
 //
 //  Input: Node -  AST index of an innermost loop
 //         ped - dependence graph and configuration info
@@ -414,10 +414,11 @@ static int CountCycles(AST_INDEX     Node,
 //               node requires in machine cycles
 //
 
-static int CyclesPerIteration( PedInfo   ped,
-			      AST_INDEX Node,
-			      int       Level,
-			      char      **IVar)
+static int CyclesPerUnrolledIteration( PedInfo   ped,
+                                       AST_INDEX Node,
+                                       int       Level,
+                                       char      **IVar,
+                                       int       UnrollVal)
 
   {
     SPCycleInfoType CycleInfo; // Cycle information
@@ -433,14 +434,15 @@ static int CyclesPerIteration( PedInfo   ped,
      walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountCycles,NOFUNC,
 		     (Generic)&CycleInfo);
 
+     // MJB: Changed to calc for the unrolled value - we need to do this
+     // to account correctly for the address arithmetic.
+     CycleInfo.FlopCycles *= UnrollVal;
+     CycleInfo.MemCycles  *= UnrollVal;
+
     CycleInfo.FlopCycles = 
       ceil_ab(CycleInfo.FlopCycles,
 	      ((config_type *)PED_MH_CONFIG(ped))->FPUnits);
 	      
-    CycleInfo.MemCycles = 
-      ceil_ab(CycleInfo.MemCycles,
-	      ((config_type *)PED_MH_CONFIG(ped))->IntegerUnits);
-
 
     // add in addres arithmetic instructions if there 
     // is no auto increment mode
@@ -454,6 +456,75 @@ static int CyclesPerIteration( PedInfo   ped,
 	 
 	 delete AECS;
        }
+
+    CycleInfo.MemCycles = 
+      ceil_ab(CycleInfo.MemCycles,
+	      ((config_type *)PED_MH_CONFIG(ped))->IntegerUnits);
+
+
+     // conservatively assume that memory and flops are parallel.  This gives a
+     // lower bound on cycle time 
+
+     if (CycleInfo.MemCycles >= CycleInfo.FlopCycles)
+       return(CycleInfo.MemCycles);
+     else
+       return(CycleInfo.FlopCycles);
+  }
+
+//
+//  Function: CyclesPerIteration
+//
+//  Input: Node -  AST index of an innermost loop
+//         ped - dependence graph and configuration info
+//
+//  Output: The number of floating-point and memory cycles in a loop
+//
+//  Description: walk the statements in the AST and compute how much each
+//               node requires in machine cycles
+//
+
+static int CyclesPerIteration( PedInfo   ped,
+                                       AST_INDEX Node,
+                                       int       Level,
+                                       char      **IVar)
+
+  {
+    SPCycleInfoType CycleInfo; // Cycle information
+  
+    // Initilization 
+
+     CycleInfo.MemCycles = 0;
+     CycleInfo.FlopCycles = 0;
+     CycleInfo.ped = ped;
+
+     // walk statements and compute cycles
+
+     walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountCycles,NOFUNC,
+		     (Generic)&CycleInfo);
+
+
+    CycleInfo.FlopCycles = 
+      ceil_ab(CycleInfo.FlopCycles,
+	      ((config_type *)PED_MH_CONFIG(ped))->FPUnits);
+	      
+
+    // add in addres arithmetic instructions if there 
+    // is no auto increment mode
+
+     if (!((config_type *)PED_MH_CONFIG(ped))->AutoIncrement)
+       {
+	 AddressEquivalenceClassSet *AECS =
+	   new AddressEquivalenceClassSet(Node,Level,IVar);
+	 
+	 CycleInfo.MemCycles += (AECS->GetSize()+1); 
+	 
+	 delete AECS;
+       }
+
+    CycleInfo.MemCycles = 
+      ceil_ab(CycleInfo.MemCycles,
+	      ((config_type *)PED_MH_CONFIG(ped))->IntegerUnits);
+
 
      // conservatively assume that memory and flops are parallel.  This gives a
      // lower bound on cycle time 
@@ -1369,13 +1440,20 @@ static void SchedulePrefetches(model_loop *loop_data,
       }
     else
       {
+
 	// determine how long for loop to finish
+          
+        // MJB: We now calculate things in a different order to deal with the 
+        // problem of address arith. 
 
-	Cycles = CyclesPerIteration(ped,loop_data[loop].node,
-				    loop_data[loop].level,IVar);
+        UnrollVal = ((config_type *)PED_MH_CONFIG(ped))->line >> LogMaxWordsPerLine;
 
-	// determine number of iterations ahead we must prefetch to cover latency of
-	// prefetch with loop cycles
+	Cycles = CyclesPerUnrolledIteration(ped,loop_data[loop].node,
+				            loop_data[loop].level,IVar,
+                                            UnrollVal);
+
+	// determine number of (unrolled) iterations ahead we must prefetch
+        // to cover latency of prefetch with loop cycles
 
 	if (!Cycles) Cycles = 1;
 
@@ -1384,18 +1462,12 @@ static void SchedulePrefetches(model_loop *loop_data,
 
 	// determine how far in advance word prefetches must be issued
 
-	WordPrefetchDistance = (NOT(WordPrefetches->NullList())) ? IterationDist : 0;
+	WordPrefetchDistance = (NOT(WordPrefetches->NullList())) ? 
+            (IterationDist * UnrollVal) : 0;
      
-	// determine how far in advance line prefetches must be issued
-	// The line size is in bytes and we are prefetching 8-byte words (dp).
-	// Add in enough elements to prefetch the next cache line to remove
-	// alignment problems
-
-	int ElementsPerLine =
-	  ((config_type *)PED_MH_CONFIG(ped))->line >> LogMaxWordsPerLine;
-
-	LinePrefetchDistance = (NOT(LinePrefetches->NullList())) ?
-	  (PipelineIterations(ElementsPerLine,IterationDist) + ElementsPerLine) : 0;
+        // This matches what PFLDD does - The number of unrolled iterations + 1
+        // times the unroll value.
+        LinePrefetchDistance = (IterationDist + 1) * UnrollVal; 
 	
 	MaxDistance = MAX(LinePrefetchDistance,WordPrefetchDistance);
 	
