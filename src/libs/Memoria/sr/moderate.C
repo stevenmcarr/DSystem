@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.13 1994/11/21 14:55:55 qwu Exp $ */
+/* $Id: moderate.C,v 1.14 1994/11/30 15:43:36 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -217,6 +217,7 @@ static void deallocate(name_node_type *nptr)
 	sptr = get_scalar_info_ptr((AST_INDEX)UTIL_NODE_ATOM(node));
 	sptr->is_generator = false;
 	sptr->generator = -1;
+	sptr->gen_type = BOGUS;
 	util_free_node(node);
        }
      util_list_free(nptr->nlist);
@@ -347,7 +348,10 @@ static void find_LI_generator(UtilNode *lnode,
 	       if (dg[edge].type == dg_true || dg[edge].type == dg_input)
 	         is_generator = false;
 	   if (!is_generator)
-	     sptr->is_generator = false;
+	     {
+	       sptr->is_generator = false;
+	       sptr->gen_type = LIAV;
+	     }
 	   else
 	     {
 	      sptr->num_regs = 1;
@@ -575,13 +579,15 @@ static void complete_temp_names(UtilList *glist,
   }
 
 static void build_cost_info(UtilList *glist,
-			    int      *NumPartitions,
-			    int      *NumReferences,
-			    int      *NumLIAV,
-			    int      *NumLCAV,
-			    int      *NumLIPAV,
-			    int      *NumLCPAV,
-			    int      *regs,
+			    int&     NumPartitions,
+			    int&     NumReferences,
+			    int&     NumLIAV,
+			    int&     NumLCAV,
+			    int&     NumLIPAV,
+			    int&     NumLCPAV,
+			    int&     NumInv,
+			    int&     NumLC1,
+			    int&     regs,
 			    PedInfo  ped)
 
   {
@@ -596,6 +602,7 @@ static void build_cost_info(UtilList *glist,
        {
 	benefit = 0;
 	name_node = (name_node_type *)UTIL_NODE_ATOM(lnode);
+	gptr = get_scalar_info_ptr(name_node->gen);
 	for (node = UTIL_HEAD(name_node->nlist);
 	     node != NULLNODE;
 	     node = UTIL_NEXT(node))
@@ -609,16 +616,28 @@ static void build_cost_info(UtilList *glist,
 	   /* calculate LIAV, LCAV .. */
 	   switch (sptr->gen_type)
 	     {
-              case LIAV:  (*NumLIAV)++;
+              case LIAV:  NumLIAV++;
 	                  break;
-	      case LCAV:  (*NumLCAV)++;
+	      case LCAV:  NumLCAV++;
+		          if (gptr->scalar)
+			    NumInv++;
+			  if (sptr->gen_distance == 1)
+			    NumLC1++;
 			  break;
-	      case LIPAV: (*NumLIPAV)++;
+	      case LIPAV: NumLIPAV++;
 			  break;
-	      case LCPAV: (*NumLCPAV)++;
+	      case LCPAV: NumLCPAV++;
+		          if (gptr->scalar)
+			    NumInv++;
 			  break;
 	      default:
-		      break;
+		          if (sptr->is_generator && sptr->scalar)
+			    {
+			      NumLCAV++;
+			      NumInv++;
+			      NumLC1++;
+			    }
+			  break;
 	     }
 	   /* QUNYAN 0003*/
 	  
@@ -628,19 +647,19 @@ static void build_cost_info(UtilList *glist,
 	        benefit += 2;
 	      else
 	        benefit++;
-	      (*NumReferences)++ ;
+	      NumReferences++ ;
 	     }
 	   else if (sptr->no_store)
 	     {
-	      benefit += 2;
-	      (*NumReferences)++ ;
+	       NumLIAV++;
+	       benefit += 2;
+	       NumReferences++ ;
 	     }
 	  }
 	if (name_node->opt_will_allocate)
 	  name_node->benefit = benefit * 100;
 	else
 	  name_node->benefit = benefit;
-	gptr = get_scalar_info_ptr(name_node->gen);
 	if (gptr->recurrence || gptr->scalar)
 	  gptr->num_regs = 1;
 	if (gen_get_converted_type(name_node->gen) == TYPE_REAL)
@@ -668,8 +687,8 @@ static void build_cost_info(UtilList *glist,
 	     name_node->cost = 0;
 	     name_node->ratio = 1000.0;
 	    }
-	(*regs) += name_node->cost;
-	(*NumPartitions)++;
+	regs += name_node->cost;
+	NumPartitions++;
        }
   }
 
@@ -697,6 +716,8 @@ void sr_moderate_pressure(PedInfo  ped,
 	    NumLCAV = 0,
 	    NumLIPAV = 0,
 	    NumLCPAV = 0 ,
+            NumInv = 0,
+            NumLC1 = 0,
 	    /* QUNYAN 0001 */
             regs = 0,
             loads;
@@ -704,8 +725,8 @@ void sr_moderate_pressure(PedInfo  ped,
             opt_allocate;
    heap_type *heap;
 
-     build_cost_info(glist,&NumPartitions,&NumReferences,&NumLIAV,
-	             &NumLCAV,&NumLIPAV,&NumLCPAV,&regs,ped);
+     build_cost_info(glist,NumPartitions,NumReferences,NumLIAV,
+	             NumLCAV,NumLIPAV,NumLCPAV,NumInv,NumLC1,regs,ped);
      if (regs > free_regs)
        {
 
@@ -732,10 +753,12 @@ void sr_moderate_pressure(PedInfo  ped,
 	NumLCAV = 0;
 	NumLIPAV = 0; 
 	NumLCPAV = 0;
+	NumInv = 0;
+	NumLC1 = 0;
 	/* QUNYAN 0002*/
         regs = 0;
-        build_cost_info(glist,&NumPartitions,&NumReferences,&NumLIAV,
-		    &NumLCAV,&NumLIPAV,&NumLCPAV,&regs,ped);
+        build_cost_info(glist,NumPartitions,NumReferences,NumLIAV,
+			NumLCAV,NumLIPAV,NumLCPAV,NumInv,NumLC1,regs,ped);
        }
 
      if (logfile != NULL)
@@ -766,6 +789,8 @@ void sr_moderate_pressure(PedInfo  ped,
    LoopStats->NumLCAV += NumLCAV;
    LoopStats->NumLIPAV += NumLIPAV;
    LoopStats->NumLCPAV += NumLCPAV;
+   LoopStats->NumInv += NumInv;
+   LoopStats->NumLC1 += NumLC1;
    /* QUNYAN 0004*/
    complete_temp_names(glist,redo,array_table);
   }

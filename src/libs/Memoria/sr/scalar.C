@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.20 1994/07/22 14:57:32 yguan Exp $ */
+/* $Id: scalar.C,v 1.21 1994/11/30 15:44:28 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -78,6 +78,40 @@
 int dummy = 0; /* this decl keeps Rn from dying in get_mem (why?) */
 
 
+Boolean IsIndexUniform(AST_INDEX node, 
+		       AST_INDEX expr,
+		       SymDescriptor symtab)
+  {
+   Boolean linear;
+   int coeff,index;
+
+     if (is_identifier(node))
+       {
+	pt_get_coeff(expr,gen_get_text(node),&linear,&coeff);
+	return (linear);
+       }
+     return(true);
+  }
+   
+
+Boolean IsSubscriptUniform(AST_INDEX node,
+			   SymDescriptor symtab)
+			  
+
+  {
+   AST_INDEX sublist,sub,Inode;
+   Boolean Uniform = true;
+
+     sublist = gen_SUBSCRIPT_get_rvalue_LIST(node);
+     for (sub = list_head(sublist);
+	  sub != AST_NIL && Uniform;
+	  sub = list_next(sub))
+       for (AstIter AIter(sub,false);(Inode = AIter()) != AST_NIL && Uniform;)
+	 Uniform = BOOL(Uniform && IsIndexUniform(Inode,sub,symtab));
+     return(Uniform);
+  }
+       
+
 static int count_arrays(AST_INDEX          node,
 			prelim_info_type   *prelim_info)
 
@@ -122,6 +156,10 @@ static int count_arrays(AST_INDEX          node,
 		dg[edge].level != LOOP_INDEPENDENT))
 	     dg_delete_free_edge( PED_DG(prelim_info->ped),edge);
 	  }
+	if (IsSubscriptUniform(node,prelim_info->symtab))
+	  prelim_info->UniformRefs++;
+	else
+	  prelim_info->NonUniformRefs++;
        }
      else
        if (is_identifier(node) && !is_subscript(tree_out(node)) && 
@@ -611,6 +649,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      fst_InitField(do_info->symtab,REFS,0,0);
      fst_InitField(do_info->symtab,NEW_LBL_INDEX,SYM_INVALID_INDEX,0);
      prelim_info.symtab = do_info->symtab;
+     prelim_info.UniformRefs = 0;
+     prelim_info.NonUniformRefs = 0;
      walk_statements(root,level,(WK_STMT_CLBACK)get_prelim_info,NOFUNC,
 		     (Generic)&prelim_info);
      if (prelim_info.contains_goto_or_label)
@@ -647,8 +687,12 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      if (prelim_info.array_refs == 0)
        return;
 
-       /* increment the number of loops repaced */ 
+       /* increment the number of loops replaced */ 
      ++ do_info->LoopStats->NumLoopReplaced;
+     if (prelim_info.NonUniformRefs > 0)
+       do_info->LoopStats->NonUniformLoopsReplaced++;
+     do_info->LoopStats->UniformRefs += prelim_info.UniformRefs;
+     do_info->LoopStats->NonUniformRefs += prelim_info.NonUniformRefs;
 
      check_info.size = prelim_info.array_refs;
      check_info.LC_kill = ut_create_set(do_info->ar,LOOP_ARENA,
@@ -728,6 +772,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
            /* INCREMENT FP COUNTER HERE */
          fprintf(logfile,"No FP Register Pressure\n");
          ++ do_info->LoopStats->NumZeroFPLoop;
+	 if (prelim_info.NonUniformRefs > 0)
+	   do_info->LoopStats->NonUniformLoopsZeroFP++;
        }
 
      util_list_free(name_info.glist);
