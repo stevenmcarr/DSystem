@@ -1,4 +1,4 @@
-# $Id: Makeinclude.components,v 1.3 1997/04/09 19:58:04 carr Exp $
+# $Id: Makeinclude.components,v 1.4 1997/04/09 20:01:20 carr Exp $
 ###########################################################################
 #
 # File:
@@ -68,7 +68,7 @@ endif
 #-----------------------------------------------------------------
 FRONT_END = libs/frontEnd/FrontEnd-$(OKIND).a
 
-FRONT_END_PTREE = libs/frontEnd/prettyPrint/FrontEnd-$(OKIND).a
+FRONT_END_PTREE = libs/frontEnd/prettyPrinter/FrontEnd-$(OKIND).a
 
 #-----------------------------------------------------------------
 # Interprocedual Analysis archives
