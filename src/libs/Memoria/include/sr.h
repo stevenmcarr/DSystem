@@ -1,3 +1,4 @@
+/* $Id: sr.h,v 1.4 1992/10/03 15:51:05 rn Exp $ */
 /*-------------------------------------------------------------
 
 	scalar.h
@@ -11,30 +12,30 @@
 #include <database.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <kb.h>
-#include <point.h>
-#include <rect.h>
-#include <rect_list.h>
-#include <gfx.h>
-#include <font.h>
-#include <rn_string.h>
-#include <mem.h>
+#include <util/kb.h>
+#include <util/point.h>
+#include <util/rect.h>
+#include <util/rect_list.h>
+#include <mon/gfx.h>
+#include <mon/font.h>
+#include <util/rn_string.h>
+#include <util/mem.h>
 #include <std.h>
-#include <ast.h>
-#include <strutil.h>
-#include <astutil.h>
-#include <astlist.h>
-#include <astcons.h>
-#include <astnode.h>
-#include <aphelper.h>
-#include <astsel.h>
-#include <asttree.h>
-#include <astrec.h>
-#include <FortTree.h>
-#include <TextTree.h>
-#include <FortTextTree.h>
-#include <fortsym.h>
-#include <groups.h>
+#include <fort/ast.h>
+#include <fort/strutil.h>
+#include <fort/astutil.h>
+#include <fort/astlist.h>
+#include <fort/astcons.h>
+#include <fort/astnode.h>
+#include <fort/aphelper.h>
+#include <fort/astsel.h>
+#include <fort/asttree.h>
+#include <fort/astrec.h>
+#include <fort/FortTree.h>
+#include <fort/TextTree.h>
+#include <fort/FortTextTree.h>
+#include <fort/fortsym.h>
+#include <fort/groups.h>
 #include <cd.h>
 #include <dp.h>
 #include <cfg.h>
@@ -42,8 +43,8 @@
 #include <el.h>
 #include <dt.h>
 #include <dep/rsd.h>
-#include <list.h>
-#include <walk.h>
+#include <util/list.h>
+#include <fort/walk.h>
 #include <mh_config.h>
 #include <pt_util.h>
 #include <global.h>
@@ -116,5 +117,5 @@ typedef struct {
 #define LOG_SCALAR 2
 #define LOG_ALL    3
 
-EXTERN_FUNCTION(void message,(char *str));
+EXTERN(void, message,(char *str));
 #endif

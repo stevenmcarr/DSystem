@@ -1,10 +1,11 @@
+/* $Id: dfantic.C,v 1.3 1992/10/03 15:48:58 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "dfantic.h"
+#include <dfantic.h>
 
 static int mark_def(AST_INDEX    node,
 		    Set          kill)

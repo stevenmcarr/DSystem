@@ -1,13 +1,14 @@
+/* $Id: moderate.C,v 1.4 1992/10/03 15:48:50 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "name.h"
-#include "moderate.h"
-#include "table.h"
-#include <gi.h>
+#include <name.h>
+#include <moderate.h>
+#include <table.h>
+#include <fort/gi.h>
 #include <malloc.h>
 
 /*

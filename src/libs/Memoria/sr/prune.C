@@ -1,11 +1,12 @@
+/* $Id: prune.C,v 1.3 1992/10/03 15:49:03 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "scalar.h"
-#include "prune.h"
+#include <scalar.h>
+#include <prune.h>
 
 static void prune_dependence_edges(AST_INDEX     node,
 				   int           distance,

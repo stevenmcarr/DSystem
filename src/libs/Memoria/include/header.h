@@ -1,25 +1,26 @@
+/* $Id: header.h,v 1.2 1992/10/03 15:50:58 rn Exp $ */
 #ifndef header_h
 #define header_h
 
 #include <general.h>
 #include <database.h>
 #include <ped.h>
-#include <ast.h>
-#include <strutil.h>
-#include <astutil.h>
-#include <astlist.h>
-#include <astcons.h>
-#include <astnode.h>
-#include <aphelper.h>
-#include <astsel.h>
-#include <asttree.h>
-#include <astrec.h>
+#include <fort/ast.h>
+#include <fort/strutil.h>
+#include <fort/astutil.h>
+#include <fort/astlist.h>
+#include <fort/astcons.h>
+#include <fort/astnode.h>
+#include <fort/aphelper.h>
+#include <fort/astsel.h>
+#include <fort/asttree.h>
+#include <fort/astrec.h>
 /* #include "/rn/usr/johnmc/src/ned_cp/FortTree.h" */
-#include <FortTree.h>
-#include <TextTree.h>
-#include <FortTextTree.h>
-#include <fortsym.h>
-#include <groups.h>
+#include <fort/FortTree.h>
+#include <fort/TextTree.h>
+#include <fort/FortTextTree.h>
+#include <fort/fortsym.h>
+#include <fort/groups.h>
 #include <cd.h>
 #include <dg.h>
 #include <el.h>
@@ -27,16 +28,16 @@
 #include <dt.h>
 #include <Arena.h>
 
-EXTERN_FUNCTION(void memory_loop_interchange,(PedInfo ped,AST_INDEX root,
+EXTERN(void, memory_loop_interchange,(PedInfo ped,AST_INDEX root,
 					      int level,SymDescriptor symtab,
 					      arena_type *ar));
 
-EXTERN_FUNCTION(AST_INDEX memory_unroll_and_jam,(PedInfo ped,AST_INDEX root,
+EXTERN(AST_INDEX, memory_unroll_and_jam,(PedInfo ped,AST_INDEX root,
 					     int level,int num_loops,
 					     SymDescriptor symtab,
 					     arena_type *ar));
 
-EXTERN_FUNCTION(void memory_scalar_replacement,(PedInfo ped,AST_INDEX root,
+EXTERN(void, memory_scalar_replacement,(PedInfo ped,AST_INDEX root,
 						SymDescriptor symtab,
 						arena_type *ar));
 

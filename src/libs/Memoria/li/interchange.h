@@ -1,3 +1,4 @@
+/* $Id: interchange.h,v 1.2 1992/10/03 15:50:20 rn Exp $ */
 #ifndef interchange_h
 #define interchange_h
 

@@ -1,3 +1,4 @@
+/* $Id: set.C,v 1.3 1992/10/03 15:50:42 rn Exp $ */
 /*
  *  An implementation of sets as bit-vectors
  *	(part of the Rn Module Compiler code generator)

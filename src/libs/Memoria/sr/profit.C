@@ -1,7 +1,8 @@
+/* $Id: profit.C,v 1.2 1992/10/03 15:49:26 rn Exp $ */
 #include <sr.h>
 #include <Arena.h>
-#include "table.h"
-#include "profit.h"
+#include <table.h>
+#include <profit.h>
 
 static int chk_pav(AST_INDEX      node,
 		   prof_info_type *prof_info)

@@ -1,3 +1,4 @@
+/* $Id: global.h,v 1.3 1992/10/03 15:50:47 rn Exp $ */
 /*
  *	global.h
  *
@@ -21,6 +22,6 @@ typedef char Bool;
 #define fa 0
 
 
-#include <set.h>
+#include <cgen_set.h>
 
 #endif

@@ -1,3 +1,4 @@
+/* $Id: label.C,v 1.2 1992/10/03 15:50:35 rn Exp $ */
 #include <sr.h>
 #include <malloc.h>
 #include <label.h>

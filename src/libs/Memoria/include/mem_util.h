@@ -1,7 +1,8 @@
+/* $Id: mem_util.h,v 1.3 1992/10/03 15:51:00 rn Exp $ */
 #ifndef mem_util_h
 #define mem_util_h
 
-#include "Arena.h"
+#include <Arena.h>
 
 typedef struct list_struct *listp;
 
@@ -34,26 +35,26 @@ typedef struct {
 #define Null(l) (l.tail == l.ptail)
 
 
-EXTERN_FUNCTION(AST_INDEX ut_get_stmt,(AST_INDEX node));
-EXTERN_FUNCTION(AST_INDEX ut_tree_copy_with_type,(AST_INDEX node,int index,
+EXTERN(AST_INDEX, ut_get_stmt,(AST_INDEX node));
+EXTERN(AST_INDEX, ut_tree_copy_with_type,(AST_INDEX node,int index,
 					arena_type *ar));
-EXTERN_FUNCTION(void ut_new_tail,(listnode *list,EDGE_INDEX edge,
+EXTERN(void, ut_new_tail,(listnode *list,EDGE_INDEX edge,
 				  arena_type *ar));
-EXTERN_FUNCTION(void ut_empty_new,(listnode *list));
-EXTERN_FUNCTION(listp ut_get_start,(listnode list));
-EXTERN_FUNCTION(listp ut_remove,(listp p,listnode *list));
-EXTERN_FUNCTION(void ut_free_list,(listnode list));
+EXTERN(void, ut_empty_new,(listnode *list));
+EXTERN(listp, ut_get_start,(listnode list));
+EXTERN(listp, ut_remove,(listp p,listnode *list));
+EXTERN(void, ut_free_list,(listnode list));
 
-EXTERN_FUNCTION(int floor_ab,(int a, int b));
-EXTERN_FUNCTION(int mod,(int a,int b));
-EXTERN_FUNCTION(int gcd,(int a,int b));
-EXTERN_FUNCTION(int lcm,(int a,int b));
-EXTERN_FUNCTION(AST_INDEX ut_gen_ident,(SymDescriptor symtab,
+EXTERN(int, floor_ab,(int a, int b));
+EXTERN(int, mod,(int a,int b));
+EXTERN(int, gcd,(int a,int b));
+EXTERN(int, lcm,(int a,int b));
+EXTERN(AST_INDEX, ut_gen_ident,(SymDescriptor symtab,
 					char *name,int asttype));
-EXTERN_FUNCTION(int ut_check_div,(AST_INDEX node,Generic contains_div));
+EXTERN(int, ut_check_div,(AST_INDEX node,Generic contains_div));
 
-EXTERN_FUNCTION(void ut_update_bounds,(AST_INDEX loop,AST_INDEX copy,
+EXTERN(void, ut_update_bounds,(AST_INDEX loop,AST_INDEX copy,
 				       int val));
-EXTERN_FUNCTION(int ut_init_copies,(AST_INDEX node,
+EXTERN(int, ut_init_copies,(AST_INDEX node,
 				    Generic copy_info));
 #endif

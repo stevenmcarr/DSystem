@@ -1,7 +1,8 @@
+/* $Id: dfrgen.C,v 1.3 1992/10/03 15:48:42 rn Exp $ */
 #include <sr.h>
 #include <Arena.h>
-#include "dfrgen.h"
-#include "check.h"
+#include <dfrgen.h>
+#include <check.h>
 
 static int add_gens(AST_INDEX      node,
 		    rgen_info_type *rgen_info)

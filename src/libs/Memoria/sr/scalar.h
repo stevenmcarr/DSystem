@@ -1,3 +1,4 @@
+/* $Id: scalar.h,v 1.2 1992/10/03 15:49:32 rn Exp $ */
 #ifndef scalar_h
 #define scalar_h
 

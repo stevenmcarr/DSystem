@@ -1,11 +1,12 @@
+/* $Id: dfavail.C,v 1.2 1992/10/03 15:49:08 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "dfavail.h"
-#include "check.h"
+#include <dfavail.h>
+#include <check.h>
 
 static void allocate_sets(block_type *block,
 			  int        size,

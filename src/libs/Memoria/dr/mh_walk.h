@@ -1,7 +1,8 @@
+/* $Id: mh_walk.h,v 1.3 1992/10/03 15:48:36 rn Exp $ */
 #ifndef mh_walk_h
 #define mh_walk_h
 
-#include <fortsym.h>
+#include <fort/fortsym.h>
 #include <Arena.h>
 
 typedef struct {
@@ -23,7 +24,7 @@ typedef struct {
 
 #define REFD   "mh: refd"
 
-EXTERN_FUNCTION(void mh_walk_ast,(int selection,PedInfo ped,AST_INDEX root,
+EXTERN(void, mh_walk_ast,(int selection,PedInfo ped,AST_INDEX root,
 				  FortTree ft,arena_type *ar));
 
 #endif

@@ -1,11 +1,12 @@
+/* $Id: insert.C,v 1.2 1992/10/03 15:49:18 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "insert.h"
-#include "dfantic.h"
+#include <insert.h>
+#include <dfantic.h>
 
 static void hoist_inserts(block_type *entry,
 			  int        size,

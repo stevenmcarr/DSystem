@@ -1,3 +1,4 @@
+/* $Id: analyze.h,v 1.2 1992/10/03 15:50:49 rn Exp $ */
 #ifndef analyze_h
 #define analyze_h
 
@@ -13,7 +14,7 @@ typedef struct {
   SymDescriptor symtab;
  } build_info_type;
 
-EXTERN_FUNCTION(void ut_analyze_loop,(AST_INDEX root,model_loop *loop_data,
+EXTERN(void, ut_analyze_loop,(AST_INDEX root,model_loop *loop_data,
 				      int level,PedInfo ped,
 				      SymDescriptor symtab));
 

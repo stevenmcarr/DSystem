@@ -1,10 +1,11 @@
+/* $Id: gavail.C,v 1.2 1992/10/03 15:49:14 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "gavail.h"
+#include <gavail.h>
 
 static int update_LI_avail(AST_INDEX         node,
 			   gavail_info_type  *gavail_info)

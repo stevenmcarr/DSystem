@@ -1,3 +1,4 @@
+/* $Id: mh.h,v 1.4 1992/10/03 15:50:55 rn Exp $ */
 #ifndef mh_h
 #define mh_h 
 
@@ -11,37 +12,37 @@
 #include <database.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <kb.h>
-#include <point.h>
-#include <rect.h>
-#include <rect_list.h>
-#include <gfx.h>
-#include <font.h>
-#include <rn_string.h>
+#include <util/kb.h>
+#include <util/point.h>
+#include <util/rect.h>
+#include <util/rect_list.h>
+#include <mon/gfx.h>
+#include <mon/font.h>
+#include <util/rn_string.h>
 #include <std.h>
-#include <mem.h>
-#include <ast.h>
-#include <strutil.h>
-#include <astutil.h>
-#include <astlist.h>
-#include <astcons.h>
-#include <astnode.h>
-#include <aphelper.h>
-#include <astsel.h>
-#include <asttree.h>
-#include <astrec.h>
-#include <FortTree.h>
-#include <TextTree.h>
-#include <FortTextTree.h>
-#include <fortsym.h>
-#include <groups.h>
+#include <util/mem.h>
+#include <fort/ast.h>
+#include <fort/strutil.h>
+#include <fort/astutil.h>
+#include <fort/astlist.h>
+#include <fort/astcons.h>
+#include <fort/astnode.h>
+#include <fort/aphelper.h>
+#include <fort/astsel.h>
+#include <fort/asttree.h>
+#include <fort/astrec.h>
+#include <fort/FortTree.h>
+#include <fort/TextTree.h>
+#include <fort/FortTextTree.h>
+#include <fort/fortsym.h>
+#include <fort/groups.h>
 #include <cd.h>
 #include <dg.h>
 #include <el.h>
 #include <dp.h>
 #include <dt.h>
 #include <dep/rsd.h>
-#include <walk.h>
+#include <fort/walk.h>
 #include <mh_config.h>
 #include <pt_util.h>
 #include <malloc.h>
@@ -170,5 +171,5 @@ typedef struct {
 #define LOOP_ARENA 0
 #define ARENAS     1
 
-EXTERN_FUNCTION(void message,(char *msg));
+EXTERN(void, message,(char *msg));
 #endif

@@ -1,3 +1,4 @@
+/* $Id: bound.C,v 1.3 1992/10/03 15:50:24 rn Exp $ */
 #include <mh.h>
 #include <bound.h>
 

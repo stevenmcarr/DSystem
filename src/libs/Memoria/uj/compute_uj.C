@@ -1,3 +1,4 @@
+/* $Id: compute_uj.C,v 1.6 1992/10/03 15:50:16 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -6,7 +7,7 @@
 #include <mem_util.h>
 #include <compute_uj.h>
 #include <balance.h>
-#include <gi.h>
+#include <fort/gi.h>
 
 static int determine_uj_prof(AST_INDEX      stmt,
 			     int            level,

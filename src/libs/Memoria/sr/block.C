@@ -1,3 +1,4 @@
+/* $Id: block.C,v 1.3 1992/10/03 15:48:44 rn Exp $ */
 /****************************************************************************/
 /*  block.c                                                                 */
 /*                                                                          */
@@ -7,7 +8,7 @@
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "codegen.h"
+#include <codegen.h>
 #include <label.h>
 
 static block_type *build_basic_blocks(block_type *block,

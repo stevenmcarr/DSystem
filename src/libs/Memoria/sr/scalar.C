@@ -1,3 +1,4 @@
+/* $Id: scalar.C,v 1.5 1992/10/03 15:48:46 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -18,7 +19,7 @@
 #include <profit.h>
 #include <prune.h>
 #include <table.h>
-#include <gi.h>
+#include <fort/gi.h>
 #include <malloc.h>
 
 int dummy = 0; /* this decl keeps Rn from dying in get_mem (why?) */

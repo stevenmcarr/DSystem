@@ -1,3 +1,4 @@
+/* $Id: block.h,v 1.2 1992/10/03 15:50:50 rn Exp $ */
 #ifndef block_h
 #define block_h
 
@@ -66,13 +67,13 @@ typedef struct {
               *exit;
  } flow_graph_type;
 
-EXTERN_FUNCTION(void sr_build_flow_graph,(flow_graph_type *flow_graph,
+EXTERN(void, sr_build_flow_graph,(flow_graph_type *flow_graph,
 					  AST_INDEX stmt_list,
 					  SymDescriptor symtab,
 					  arena_type *ar));
-EXTERN_FUNCTION(block_type *sr_insert_block_on_edge,(arena_type *ar,
+EXTERN(block_type *, sr_insert_block_on_edge,(arena_type *ar,
 						     edge_type *edge,
 						     SymDescriptor symtab));
-EXTERN_FUNCTION(void sr_free_flow_graph,(flow_graph_type flow_graph));
-EXTERN_FUNCTION(void debug_print_graph,(flow_graph_type flow_graph));
+EXTERN(void, sr_free_flow_graph,(flow_graph_type flow_graph));
+EXTERN(void, debug_print_graph,(flow_graph_type flow_graph));
 #endif

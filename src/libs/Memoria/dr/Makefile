@@ -1,3 +1,4 @@
+# $Id: Makefile,v 1.7 1992/10/03 15:48:29 rn Exp $
 HERE		= ped_cp/memory/dr
 INCLUDEDIRS	= ped_cp/memory/include ped_cp/ped_include
 ARCHIVE		= ../ped-$(RN_ARCH)$(ENV_FLAG).a

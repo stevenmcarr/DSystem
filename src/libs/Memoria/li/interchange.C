@@ -1,5 +1,6 @@
+/* $Id: interchange.C,v 1.6 1992/10/03 15:50:22 rn Exp $ */
 #include <mh.h>
-#include <gi.h>
+#include <fort/gi.h>
 #include <interchange.h>
 #include <analyze.h>
 #include <shape.h>

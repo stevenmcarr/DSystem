@@ -1,16 +1,17 @@
+/* $Id: ujam.C,v 1.4 1992/10/03 15:50:11 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <mh.h>
-#include "ujam.h"
+#include <ujam.h>
 #include <mark.h>
 #include <mem_util.h>
 #include <analyze.h>
 #include <shape.h>
-#include "compute_uj.h"
-#include "do_unroll.h"
-#include "do_dist.h"
+#include <compute_uj.h>
+#include <do_unroll.h>
+#include <do_dist.h>
 
 static int remove_edges(AST_INDEX      stmt,
 			int            level,

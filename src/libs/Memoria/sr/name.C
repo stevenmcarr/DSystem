@@ -1,10 +1,11 @@
+/* $Id: name.C,v 1.4 1992/10/03 15:48:53 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "name.h"
+#include <name.h>
 
 static void do_partition(AST_INDEX name,
 			 UtilList  *nlist,

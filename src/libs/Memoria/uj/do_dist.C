@@ -1,5 +1,6 @@
+/* $Id: do_dist.C,v 1.3 1992/10/03 15:49:51 rn Exp $ */
 #include <mh.h>
-#include "do_dist.h"
+#include <do_dist.h>
 
 static Boolean need_distribution(int *vec1,
 				 int *vec2,

@@ -1,3 +1,4 @@
+/* $Id: mh_walk.C,v 1.4 1992/10/03 15:48:25 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -6,7 +7,7 @@
 #include <Arena.h>
 #include <memory_menu.h>
 #include <mh_walk.h>
-#include <gi.h>
+#include <fort/gi.h>
 #include <header.h>
 
 
@@ -81,6 +82,7 @@ static int post_walk(AST_INDEX      stmt,
       logval = ((config_type *)PED_MH_CONFIG(walk_info->ped))->logging;
       logfile = ((config_type *)PED_MH_CONFIG(walk_info->ped))->logfile;
       switch(walk_info->selection) {
+#ifdef WAITING_FOR_STEVE
 	case INTERSTATS:     memory_interchange_stats(walk_info->ped,stmt,
 						     LEVEL1,
 						     &perfect,
@@ -93,6 +95,7 @@ static int post_walk(AST_INDEX      stmt,
 			     if (NOT(perfect))
 			       walk_info->imperfect++;
 	                     break;
+#endif
 	case INTERCHANGE:    memory_loop_interchange(walk_info->ped,stmt,
 						     LEVEL1,walk_info->symtab,
 						     walk_info->ar);

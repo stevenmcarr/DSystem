@@ -1,3 +1,4 @@
+/* $Id: cgen_set.h,v 1.3 1992/10/03 15:51:29 rn Exp $ */
 /*
  *  Revision 4
  * 
@@ -5,8 +6,12 @@
  *  set abstraction.
  */
 
-#ifndef set_h
-#define set_h
+#ifndef cgen_set_h
+#define cgen_set_h
+
+#ifndef general_h
+#include <general.h> 
+#endif
 
 #include <Arena.h> 
 
@@ -20,13 +25,13 @@ typedef struct {
 } SetBase, *Set;
 
 
-EXTERN_FUNCTION(Set ut_create_set,(arena_type *ar,int n,int size));
-EXTERN_FUNCTION(Bool ut_set_is_empty,(Set s));
-EXTERN_FUNCTION(void ut_union121,(Set s1,Set s2));
-EXTERN_FUNCTION(void ut_intersect121,(Set s1,Set s2));
-EXTERN_FUNCTION(void ut_difference121,(Set s1,Set s2));
-EXTERN_FUNCTION(void ut_complement,(Set s));
-EXTERN_FUNCTION(void ut_set1u2i3,(Set s1, Set s2, Set s3));
+EXTERN(Set, ut_create_set,(arena_type *ar,int n,int size));
+EXTERN(Bool, ut_set_is_empty,(Set s));
+EXTERN(void, ut_union121,(Set s1,Set s2));
+EXTERN(void, ut_intersect121,(Set s1,Set s2));
+EXTERN(void, ut_difference121,(Set s1,Set s2));
+EXTERN(void, ut_complement,(Set s));
+EXTERN(void, ut_set1u2i3,(Set s1, Set s2, Set s3));
 
 
 #ifdef INLINE
@@ -51,12 +56,12 @@ EXTERN_FUNCTION(void ut_set1u2i3,(Set s1, Set s2, Set s3));
 
 #else
 
-EXTERN_FUNCTION(void ut_add_number,(Set s, int n));
-EXTERN_FUNCTION(void ut_delete_number,(Set s, int n));
-EXTERN_FUNCTION(Bool ut_member_number,(Set s, int n));
-EXTERN_FUNCTION(void ut_clear_set,(Set s));
-EXTERN_FUNCTION(void ut_copy12,(Set s1, Set s2));
-EXTERN_FUNCTION(Bool ut_sets_differ,(Set s1, Set s2));
+EXTERN(void, ut_add_number,(Set s, int n));
+EXTERN(void, ut_delete_number,(Set s, int n));
+EXTERN(Bool, ut_member_number,(Set s, int n));
+EXTERN(void, ut_clear_set,(Set s));
+EXTERN(void, ut_copy12,(Set s1, Set s2));
+EXTERN(Bool, ut_sets_differ,(Set s1, Set s2));
 
 #endif
 
@@ -69,4 +74,4 @@ EXTERN_FUNCTION(Bool ut_sets_differ,(Set s1, Set s2));
 	    for (i=(x<<LOGBITS); y; (y=((y>>1) & 0x7FFFFFFF)) && i++) \
 		if (y & 1)
 
-#endif set_h
+#endif /* cgen_set_h */

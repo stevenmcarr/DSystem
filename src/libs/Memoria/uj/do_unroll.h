@@ -1,3 +1,4 @@
+/* $Id: do_unroll.h,v 1.3 1992/10/03 15:50:00 rn Exp $ */
 #ifndef do_unroll_h
 #define do_unroll_h
 
@@ -48,11 +49,11 @@ typedef struct {
 
 #define RDX_VAR "mh: rdx_var"
 
-EXTERN_FUNCTION(void mh_do_unroll_and_jam,(model_loop *loop_data,
+EXTERN(void, mh_do_unroll_and_jam,(model_loop *loop_data,
 					   PedInfo ped,
 					   SymDescriptor symtab,
 					   int num_loops,
 					   arena_type *ar));
-EXTERN_FUNCTION(int mh_copy_edges,(AST_INDEX node,
+EXTERN(int, mh_copy_edges,(AST_INDEX node,
 				   Generic ped));
 #endif

@@ -1,10 +1,11 @@
+/* $Id: check.C,v 1.4 1992/10/03 15:48:40 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "check.h"
+#include <check.h>
 
 static int check_def(AST_INDEX node,
 		     check_info_type *check_info)

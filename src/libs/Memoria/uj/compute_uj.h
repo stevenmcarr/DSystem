@@ -1,3 +1,4 @@
+/* $Id: compute_uj.h,v 1.3 1992/10/03 15:49:49 rn Exp $ */
 #ifndef compute_uj_h
 #define compute_uj_h
 
@@ -58,8 +59,8 @@ typedef struct {
 
 #define FIRST  "mh: first"
 
-EXTERN_FUNCTION(int mh_increase_unroll,(int max,int denom,float rhoL_lp));
-EXTERN_FUNCTION(void mh_compute_unroll_amounts,(model_loop *loop_data,
+EXTERN(int, mh_increase_unroll,(int max,int denom,float rhoL_lp));
+EXTERN(void, mh_compute_unroll_amounts,(model_loop *loop_data,
 					       int size,int num_loops,
 					       PedInfo ped,
 					       SymDescriptor symtab,

@@ -1,3 +1,4 @@
+/* $Id: name.h,v 1.2 1992/10/03 15:49:24 rn Exp $ */
 #ifndef name_h
 #define name_h
 
@@ -17,9 +18,9 @@ typedef struct {
   arena_type *ar;
  } name_info_type;
 
-EXTERN_FUNCTION(void sr_find_generator,(UtilNode *lnode,DG_Edge *dg,
+EXTERN(void, sr_find_generator,(UtilNode *lnode,DG_Edge *dg,
 					 PedInfo ped));
-EXTERN_FUNCTION(void sr_generate_names,(AST_INDEX root,
+EXTERN(void, sr_generate_names,(AST_INDEX root,
 					name_info_type *name_info));
 
 #endif

@@ -1,12 +1,13 @@
+/* $Id: codegen.C,v 1.4 1992/10/03 15:48:37 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <sr.h>
 #include <Arena.h>
-#include "scalar.h"
-#include "name.h"
-#include "codegen.h"
+#include <scalar.h>
+#include <name.h>
+#include <codegen.h>
 #include <label.h>
 #include <bound.h>
 	

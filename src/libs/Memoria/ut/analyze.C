@@ -1,10 +1,11 @@
+/* $Id: analyze.C,v 1.5 1992/10/03 15:50:25 rn Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #include <mh.h>
 #include <analyze.h>
-#include <gi.h>
+#include <fort/gi.h>
 #include <mem_util.h>
 
 static int build_pre(AST_INDEX       stmt,

@@ -1,5 +1,6 @@
+/* $Id: log.C,v 1.2 1992/10/03 15:50:08 rn Exp $ */
 #include <mh.h>
-#include "log.h"
+#include <log.h>
 
 static void print_log_info(model_loop *loop_data,
 			   int        loop,
