@@ -1,4 +1,4 @@
-/* $Id: codegen.C,v 1.8 1994/07/20 11:32:46 carr Exp $ */
+/* $Id: codegen.C,v 1.9 1995/11/01 15:09:53 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -586,6 +586,16 @@ static int create_pre_loop(AST_INDEX  root,
 	ut_update_bounds(root,new_loop,val);
 	ut_update_labels(new_loop,code_info->symtab);
 	(void) list_insert_before(root,new_loop);
+       }
+     else
+       {
+	step = gen_INDUCTIVE_get_rvalue3(control);
+	if (step == AST_NIL)
+	  step = pt_gen_int(1);
+	gen_INDUCTIVE_put_rvalue3(control,
+			          pt_simplify_expr(pt_gen_mul(tree_copy_with_type(step),
+							      pt_gen_int(val+1))));
+	tree_free(step);
        }
      return(val);
   }
