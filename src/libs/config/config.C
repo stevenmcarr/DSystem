@@ -433,8 +433,8 @@ int filterStandardArgs(int argc, char **argv)
 static 
 char* GetEnvVarName(char* str)
 {
-  char *environ_str = (char*)malloc(strlen(str)*sizeof(char));
-  char *orig_str = (char*)malloc(strlen(str)*sizeof(char));;
+  char *environ_str = (char*)malloc((strlen(str) + 1) *sizeof(char));
+  char *orig_str = (char*)malloc((strlen(str) + 1)*sizeof(char));;
 
   (void)strcpy(orig_str,str);
 
