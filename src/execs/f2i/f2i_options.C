@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.16 2001/09/17 13:47:16 carr Exp $ */
+/* $Id: f2i_options.C,v 1.17 2002/02/20 16:19:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -74,6 +74,8 @@ Boolean GeneratePreLoop = true;
  int aiDoubleReals; /* use double-precision reals*/
  int aiAlignDoubles; /* set by various machine preferences    */
 
+ int aiGenClusters;
+
   /* globally accessed variables */
  int  aiStmtCount;
 
@@ -92,6 +94,8 @@ Boolean GeneratePreLoop = true;
  int  aiStackSize;
  int  aiExpressionStackSpace;
  int  aiNextReg;
+
+ int  aiCurrentCluster;
 
  char         *proc_name;
  char *proc_text;
@@ -134,6 +138,7 @@ void f2i_options_usage(char *pgm_name)
   cerr << "\t-t  dump ast" << endl;
   cerr << "\t-v  report on virtual register usage" << endl;
   cerr << "\t-X#  set debug flags" << endl;
+  cerr << "\t-Z  annote ILOC with cluster information" << endl;
 
   exit(-1);
 }
@@ -185,6 +190,12 @@ static void f2i_opt_NoAlias(void *state)
 
 static void f2i_opt_ParseComments(void *state)
 {
+ aiParseComments++;
+}
+
+static void f2i_opt_GenClusters(void *state)
+{
+ aiGenClusters++;
  aiParseComments++;
 }
 
@@ -375,6 +386,12 @@ static struct flag_	ParseComments_f = {
   " ",
 };
 
+static struct flag_	GenClusters_f = {
+  f2i_opt_GenClusters,
+  "GenClusters flag",	
+  " ",
+};
+
 static struct flag_	SymDump_f = {
   f2i_opt_SymDump,
   "SymDump flag",	
@@ -489,6 +506,8 @@ Option f2i_pgm_opt = {string, F2I_PGM_OPT,(Generic) "", true,(Generic)&program_s
 			   (Generic)&NoAlias_f},
        f2i_ParseComments_flag = {flag, F2I_PARSECOMMENTS_FLAG, (Generic)false,
 				 true,(Generic)&ParseComments_f},
+       f2i_GenClusters_flag = {flag, F2I_GENCLUSTERS_FLAG, (Generic)false,
+				 true,(Generic)&GenClusters_f},
        f2i_SymDump_flag = {flag, F2I_SYMDUMP_FLAG, (Generic)false, true, 
 			   (Generic)&SymDump_f},
        f2i_TreeCheck_flag = {flag, F2I_TREECHECK_FLAG, (Generic)false, true,
@@ -518,6 +537,7 @@ int f2i_init_options(int argc, char **argv)
   aiConstants 		= 0;
   aiOptimizeAddressCode	= 0;
   aiCache 		= 0;
+  aiGenClusters         = 0;
   aiSpecialCache	= 0;
   aiLongIntegers	= 0;
   aiDoubleReals    	= 0;
@@ -554,6 +574,7 @@ int f2i_init_options(int argc, char **argv)
   f2iOptions.Add(&f2i_MessageId_flag);
   f2iOptions.Add(&f2i_NoAlias_flag);
   f2iOptions.Add(&f2i_ParseComments_flag);
+  f2iOptions.Add(&f2i_GenClusters_flag);
   f2iOptions.Add(&f2i_SymDump_flag);
   f2iOptions.Add(&f2i_TreeCheck_flag);
   f2iOptions.Add(&f2i_TreeDump_flag);
