@@ -1,4 +1,4 @@
-/* $Id: log.C,v 1.9 1995/04/11 15:47:22 carr Exp $ */
+/* $Id: log.C,v 1.10 1995/06/07 16:04:45 carr Exp $ */
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -67,6 +67,8 @@ static void print_predicted_info(model_loop *loop_data,
      LoopStats->PredictedInitialBalance += loop_data[loop].ibalance;
      fprintf(logfile,"Final Loop Balance   = %.4f\n",loop_data[loop].fbalance);
      LoopStats->PredictedFinalBalance += loop_data[loop].fbalance;
+     fprintf(logfile,"Final Prefetch Requirements = %.4f\n",loop_data[loop].P_L);
+     LoopStats->PredictedP_L += loop_data[loop].P_L;
      fprintf(logfile,"FP Register Pressure = %d\n",
 	     loop_data[loop].registers);
      LoopStats->PredictedFPRegisterPressure += loop_data[loop].registers;

@@ -1,4 +1,4 @@
-/* $Id: balance.C,v 1.6 1994/07/11 13:43:21 carr Exp $ */
+/* $Id: balance.C,v 1.7 1995/06/07 16:04:27 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -148,27 +148,55 @@ float mh_loop_balance(int   mem_coeff[4][3][3],
        return(ML/FL);
   }
 
+float mh_PrefetchRequirements(float     PrefetchCoeff[4][3][3],
+			      int       flops,
+			      int       x1,
+			      int       x2,
+			      PrefetchCoeffComponentType Comp[4][3][3],
+			      int       LineSize)
+  {
+   int cindex1,cindex2;
+
+     cindex1 = get_coeff_index(x1);
+     cindex2 = get_coeff_index(x2);
+
+     return(
+	    (float)(ceil_ab(x1*x2,LineSize) *
+		    Comp[0][cindex1][cindex2].ceil_fraction) +
+	    (float)(x1*x2*(Comp[0][cindex1][cindex2].unit + 
+			   (float)Comp[0][cindex1][cindex2].fraction/(float)LineSize)) +
+	    (float)(ceil_ab(x1,LineSize) *
+		    Comp[1][cindex1][cindex2].ceil_fraction) +
+	    (float)(x1*(Comp[1][cindex1][cindex2].unit + 
+			(float)Comp[1][cindex1][cindex2].fraction/(float)LineSize)) +
+	    (float)(ceil_ab(x2,LineSize) *
+		    Comp[2][cindex1][cindex2].ceil_fraction) +
+	    (float)(x2*(Comp[2][cindex1][cindex2].unit + 
+			(float)Comp[2][cindex1][cindex2].fraction/(float)LineSize)) +
+	    (float)(Comp[3][cindex1][cindex2].ceil_fraction + 
+		    Comp[3][cindex1][cindex2].unit + 
+		    (float)Comp[3][cindex1][cindex2].fraction/(float)LineSize));
+
+//     return(PrefetchCoeff[0][cindex1][cindex2] * x1 * x2 +
+//	    PrefetchCoeff[1][cindex1][cindex2] * x1 +
+//	    PrefetchCoeff[2][cindex1][cindex2] * x2 +
+//	    PrefetchCoeff[3][cindex1][cindex2]);
+  }
     
 float mh_CacheBalance(int       mem_coeff[4][3][3],
 		      float     PrefetchCoeff[4][3][3],
 		      int       flops,
 		      int       x1,
 		      int       x2,
-		      float       MissCost)
+		      float       MissCost,
+		      PrefetchCoeffComponentType Comp[4][3][3],
+		      int       LineSize)
 
   {
    float PL,FL,MemBal;
-   int cindex1,cindex2;
 
      MemBal = mh_loop_balance(mem_coeff,flops,x1,x2);
-     cindex1 = get_coeff_index(x1);
-     cindex2 = get_coeff_index(x2);
-
-     PL = PrefetchCoeff[0][cindex1][cindex2] * x1 * x2 +
-          PrefetchCoeff[1][cindex1][cindex2] * x1 +
-	  PrefetchCoeff[2][cindex1][cindex2] * x2 +
-	  PrefetchCoeff[3][cindex1][cindex2];
-
+     PL = mh_PrefetchRequirements(PrefetchCoeff,flops,x1,x2,Comp,LineSize);
      FL = (float)(flops * x1 * x2);
      if (FL == 0)
        return(0.0);

@@ -1,4 +1,4 @@
-/* $Id: compute_uj.h,v 1.9 1995/05/23 09:10:11 qwu Exp $ */
+/* $Id: compute_uj.h,v 1.10 1995/06/07 16:04:48 carr Exp $ */
 
 #ifndef compute_uj_h
 #define compute_uj_h
@@ -45,6 +45,12 @@ typedef struct compinfotype {
   SymDescriptor symtab;
  } comp_info_type;
 
+typedef struct prefectcomponent {
+  int    unit,
+         ceil_fraction,
+         fraction;
+ } PrefetchCoeffComponentType;
+
 typedef struct depinfotype {
   int      reg_coeff[4][3][3],
            mem_coeff[4][3][3],
@@ -65,6 +71,7 @@ typedef struct depinfotype {
   arena_type *ar;
   model_loop *loop_data;
   float    PrefetchCoeff[4][3][3];
+  PrefetchCoeffComponentType PrefetchComponent[4][3][3];
  } dep_info_type;
 
 typedef struct reginfotype {
@@ -79,6 +86,7 @@ typedef struct vectorinfotype {
  } vector_info_type;
 
 typedef enum {S_NONE,SELF,SELF1,SELF2,GROUP} SpatialLocalityType;
+typedef enum {UNIT,CEIL_FRACTION,FRACTION} ComponentType;
 
 #define get_vec_DIS(vec,lvl)		(vec[(lvl)-1])
 #define put_vec_DIS(vec,lvl,d)		(vec[(lvl)-1] = d)
