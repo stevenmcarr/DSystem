@@ -1,4 +1,4 @@
-/* $Id: dfrgen.C,v 1.5 1993/06/21 13:46:38 carr Exp $ */
+/* $Id: dfrgen.C,v 1.6 1993/09/06 14:54:37 carr Exp $ */
 #include <general.h>
 #include <sr.h>
 #include <mh_ast.h>
@@ -70,7 +70,7 @@ static int add_defs(AST_INDEX         node,
 /****************************************************************************/
 
   {
-   scalar_info_type *sptr;
+   scalar_info_type *sptr1,*sptr2;
    AST_INDEX        name;
    DG_Edge          *dg;
    int              vector;
@@ -79,21 +79,24 @@ static int add_defs(AST_INDEX         node,
      if (is_subscript(node))
        {
 	name = gen_SUBSCRIPT_get_name(node);
-	sptr = get_scalar_info_ptr(name);
-	ut_add_number(rgen_info->block->gen,sptr->array_num);
-	if (!ut_member_number(rgen_info->LC_kill,sptr->table_index))
-	  ut_add_number(rgen_info->block->LC_gen,sptr->array_num);
+	sptr1 = get_scalar_info_ptr(name);
+	ut_add_number(rgen_info->block->gen,sptr1->array_num);
+	if (!ut_member_number(rgen_info->LC_kill,sptr1->table_index))
+	  ut_add_number(rgen_info->block->LC_gen,sptr1->array_num);
 	dg = dg_get_edge_structure( PED_DG(rgen_info->ped));
 	vector = get_info(rgen_info->ped,name,type_levelv);
 	for (edge = dg_first_sink_ref( PED_DG(rgen_info->ped),vector);
 	     edge != END_OF_LIST;
 	     edge = dg_next_sink_ref( PED_DG(rgen_info->ped),edge))
-	  if (dg[edge].level == LOOP_INDEPENDENT)
-	    {
-	     sptr = get_scalar_info_ptr(dg[edge].src);
-	     ut_delete_number(rgen_info->block->gen,sptr->array_num);
-	     ut_add_number(rgen_info->block->kill,sptr->array_num);
-	    }
+	  {
+	   sptr2 = get_scalar_info_ptr(dg[edge].src);
+	   if (dg[edge].level == LOOP_INDEPENDENT &&
+	       sptr1->surrounding_do == sptr2->surrounding_do)
+	     {
+	      ut_delete_number(rgen_info->block->gen,sptr2->array_num);
+	      ut_add_number(rgen_info->block->kill,sptr2->array_num);
+	     }
+	  }
        }
    return(WALK_CONTINUE);
   }

@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.9 1993/07/20 15:27:19 carr Exp $ */
+/* $Id: mh_walk.C,v 1.10 1993/09/06 14:53:54 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -12,6 +12,7 @@
 #include <mh.h>
 #include <mh_ast.h>
 #include <fort/walk.h>
+#include <pt_util.h>
 
 #ifndef memory_menu_h
 #include <memory_menu.h>
@@ -1110,7 +1111,7 @@ void mh_walk_ast(int          selection,
      show_message2("The Memory Optimizer is in progress");
 
      if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
-	 selection == INTERSTATS)
+	 selection == INTERSTATS || selection == UNROLLSTATS)
        {
 	sprintf(fn,"%s.STATSLOG", ctxLocation(mod_context));
 	((config_type *)PED_MH_CONFIG(ped))->logfile = fopen(fn,"w");
@@ -1421,7 +1422,7 @@ void ApplyMemoryCompiler(int         selection,
    
    if (!PED_MH_CONFIG(ped))
      {
-      PED_MH_CONFIG(ped) = (int) get_mem(sizeof(config_type), "memory_stats");
+      PED_MH_CONFIG(ped) = (int) new config_type;
       mh_get_config((config_type *)PED_MH_CONFIG(ped),config_file);
      }
    

@@ -1,7 +1,9 @@
-/* $Id: mh_walk.h,v 1.8 1993/06/21 13:47:25 carr Exp $ */
+/* $Id: mh_walk.h,v 1.9 1993/09/06 14:54:15 carr Exp $ */
 
 #ifndef mh_walk_h
 #define mh_walk_h
+
+#include <dp.h>
 
 #ifndef context_h
 #include <context.h>
@@ -17,10 +19,6 @@
 
 #ifndef LoopStats_h
 #include <LoopStats.h>
-#endif
-
-#ifndef ped_h
-#include <ped.h>
 #endif
 
 #ifndef FortTree_h

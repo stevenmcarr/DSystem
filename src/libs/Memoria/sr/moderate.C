@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.7 1993/07/20 16:32:18 carr Exp $ */
+/* $Id: moderate.C,v 1.8 1993/09/06 14:54:52 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -613,37 +613,31 @@ static void build_cost_info(UtilList *glist,
 	gptr = get_scalar_info_ptr(name_node->gen);
 	if (gptr->recurrence || gptr->scalar)
 	  gptr->num_regs = 1;
-	if (!gptr->no_store)
-	  if (gen_get_converted_type(name_node->gen) == TYPE_REAL)
-	    {
-	     name_node->cost = gptr->num_regs;
-	     name_node->ratio =(((float) name_node->benefit) /
-				((float) name_node->cost) * 100.0);
-	    }
-	  else if (gen_get_converted_type(name_node->gen) == 
-		   TYPE_DOUBLE_PRECISION)
-	    {
-	     name_node->cost = (gptr->num_regs * 
-	                 ((config_type *)PED_MH_CONFIG(ped))->double_regs);
-	     name_node->ratio =(((float) name_node->benefit) /
-				((float) name_node->cost) * 100.0);
-	    }
-	  else if (gen_get_converted_type(name_node->gen) == TYPE_COMPLEX)
-	    {
-	     name_node->cost = (gptr->num_regs << 1);
-	     name_node->ratio =(((float) name_node->benefit) /
-				((float) name_node->cost) * 100.0);
-	    }
-	  else
+	if (gen_get_converted_type(name_node->gen) == TYPE_REAL)
+	  {
+	   name_node->cost = gptr->num_regs;
+	   name_node->ratio =(((float) name_node->benefit) /
+			      ((float) name_node->cost) * 100.0);
+	  }
+	else if (gen_get_converted_type(name_node->gen) == 
+		 TYPE_DOUBLE_PRECISION)
+	  {
+	   name_node->cost = (gptr->num_regs * 
+			      ((config_type *)PED_MH_CONFIG(ped))->double_regs);
+	   name_node->ratio =(((float) name_node->benefit) /
+			      ((float) name_node->cost) * 100.0);
+	  }
+	else if (gen_get_converted_type(name_node->gen) == TYPE_COMPLEX)
+	  {
+	   name_node->cost = (gptr->num_regs << 1);
+	   name_node->ratio =(((float) name_node->benefit) /
+			      ((float) name_node->cost) * 100.0);
+	  }
+	else
 	    {
 	     name_node->cost = 0;
 	     name_node->ratio = 1000.0;
 	    }
-	else
-	  {
-	   name_node->cost = 0;
-	   name_node->ratio = 1000.0;
-	  }
 	(*regs) += name_node->cost;
 	(*size)++;
        }

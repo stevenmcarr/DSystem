@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.9 1993/07/20 16:32:40 carr Exp $ */
+/* $Id: scalar.C,v 1.10 1993/09/06 14:55:25 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -673,10 +673,7 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 	util_free_nodes(name_info.glist);
        }
      else if (((config_type *)PED_MH_CONFIG(do_info->ped))->logging)
-       {
-	fprintf(logfile,"No FP Register Pressure\n");
-	return;
-       }
+       fprintf(logfile,"No FP Register Pressure\n");
      util_list_free(name_info.glist);
      walk_expression(root,remove_dependences,NOFUNC,(Generic)do_info->ped);
      walk_statements(root,level,NOFUNC,cleanup_gotos,

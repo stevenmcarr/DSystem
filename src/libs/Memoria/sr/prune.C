@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.5 1993/06/21 13:46:44 carr Exp $ */
+/* $Id: prune.C,v 1.6 1993/09/06 14:55:42 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -102,10 +102,10 @@ static void prune_dependence_edges(AST_INDEX     node,
 		       scalar_src->scalar = true;
 		     if (edge_dist > distance)
 		       dg_delete_free_edge( PED_DG(gen_info->ped),edge);
-		     else if (edge_dist == distance && 
+		   /*  else if (edge_dist == distance && 
 			      (scalar_src->generator == -1 || 
 			       dg[edge].src == dg[edge].sink))
-		       scalar_src->is_generator = true;
+		       scalar_src->is_generator = true; */
 		    }
 		  else
 		    {

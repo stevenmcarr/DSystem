@@ -1,4 +1,4 @@
-/* $Id: log.C,v 1.4 1993/07/20 16:34:52 carr Exp $ */
+/* $Id: log.C,v 1.5 1993/09/06 14:56:05 carr Exp $ */
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -291,14 +291,21 @@ static void walk_loops(model_loop *loop_data,
 		       LoopStatsType *LoopStats)
 
   {
-   int next;
+   int i;
    
      if (loop_data[loop].inner_loop != -1)
        {
-	if (unroll_vector[loop_data[loop].level-1] > 0)
-	  UnrolledLoops[UnrollCount++] = loop;
-	walk_loops(loop_data,loop_data[loop].inner_loop,unroll_vector,
-		   UnrolledLoops,UnrollCount,logfile,ped,symtab,ar,LoopStats);
+	i = loop_data[loop].inner_loop;
+	while(i != -1)
+	  {
+	   if (unroll_vector[loop_data[loop].level-1] > 0)
+	     UnrolledLoops[UnrollCount++] = loop;
+	   walk_loops(loop_data,i,unroll_vector,UnrolledLoops,UnrollCount,logfile,ped,
+		      symtab,ar,LoopStats);
+	   i = loop_data[i].next_loop;
+	   if (i != -1)
+	      unroll_vector = loop_data[i].unroll_vector;
+	  }
        }
      else
        {
@@ -327,13 +334,8 @@ static void walk_loops(model_loop *loop_data,
 				 UnrolledLoops,unroll_vector,LoopStats,symtab,ar);
 	  }
        }
-   for (next = loop_data[loop].next_loop;
-	next != -1;
-	next = loop_data[next].next_loop)
-       walk_loops(loop_data,next,loop_data[next].unroll_vector,UnrolledLoops,
-		  UnrollCount,logfile,ped,symtab,ar,LoopStats);
   }
-
+  
 void mh_log_data(model_loop *loop_data,
 		 FILE       *logfile,
 		 PedInfo    ped,

@@ -1,8 +1,9 @@
-/* $Id: name.C,v 1.5 1992/12/11 11:22:21 carr Exp $ */
+/* $Id: name.C,v 1.6 1993/09/06 14:54:59 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#define DEBUG 1
 #include <general.h>
 #include <sr.h>
 #include <mh_ast.h>
@@ -14,6 +15,33 @@
 #endif
 
 #include <mem_util.h>
+
+#ifdef DEBUG
+
+static void PrintPartitions(UtilList *glist)
+
+  {
+   UtilNode *gnode,*nnode;
+   int i;
+   char Text[80];
+
+     for (gnode = UTIL_HEAD(glist), i = 1;
+	  gnode != NULLNODE;
+	  gnode = UTIL_NEXT(gnode), i++)
+       {
+	printf("Partition %d:",i);
+	for (nnode = UTIL_HEAD(((name_node_type *)UTIL_NODE_ATOM(gnode))->nlist);
+	     nnode != NULLNODE;
+	     nnode = UTIL_NEXT(nnode))
+	  {
+	   ut_GetSubscriptText(tree_out(UTIL_NODE_ATOM(nnode)),Text);
+	   printf(" %s",Text);
+	  }
+	printf("\n");
+       }
+  }
+
+#endif
 
 static void do_partition(AST_INDEX name,
 			 UtilList  *nlist,
