@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.15 2000/06/15 16:01:47 mjbedy Exp $ */
+/* $Id: MemoriaOptions.C,v 1.16 2001/09/14 17:17:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -20,6 +20,7 @@ int  selection = NO_SELECT;
 int  ReplaceLevel = 8;
 int  DependenceLevel = 1;
 int  PartitionUnrollAmount = 0;
+int  StatsLevel = 0;
 char select_char;
 char *mc_program = NULL;
 char *mc_module = NULL;
@@ -46,11 +47,14 @@ Boolean inputs_needed = false;
 Boolean RestrictedUnrolling = false;
 
 Boolean ReuseModelDebugFlag = false;
+Boolean DDGDebugFlag = false;
+Boolean MinDistDebugFlag = false;
 Boolean CheckRecurrencesForPrefetching = false;
+Boolean GeneratePreLoop = true;
 
 void MemoriaOptionsUsage(char *pgm_name)
 {
-   printf("Usage: %s [-s] [-e] [-i] [-p] [-q] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-I] [-R] [-X#] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
+   printf("Usage: %s [-s#] [-e] [-i] [-n] [-p] [-q] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-I] [-R] [-X#] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
   puts(" ");
   puts("         -c  annontate with calls to cache simulator");
   puts("         -d#  set dependence analysis level at 0 or 1 (default)");
@@ -58,10 +62,11 @@ void MemoriaOptionsUsage(char *pgm_name)
   puts("         -h  prepare code for cache analysis");
   puts("         -i  do interchange");
   puts("         -l  count # of loads and stores");
+  puts("         -n  do not generate preloops in scalar replacement");
   puts("         -p  do software prefetching");
   puts("         -q  check recurrences in software prefetching");
   puts("         -r#  set scalar replacement level 0 through 8");
-  puts("         -s  do statistics");
+  puts("         -s#  do statistics");
   puts("         -u  do unroll-and-jam without cache model");
   puts("         -w#  do unroll-and-jam for partitioned register files");
   puts("         -D  assume all REALS are 64-bits (for Rocket)");
@@ -105,6 +110,12 @@ static void mc_set_partition_unroll_amount(void *state,char* amount)
     PartitionUnrollAmount = atoi(amount); 
     RestrictedUnrolling = true;
   }
+
+static void mc_set_no_pre_loop(void *state)
+  {
+   GeneratePreLoop = false;
+  }
+
 
 static void mc_set_long_integers(void *state)
   {
@@ -218,9 +229,10 @@ void mc_opt_rocket_schedule(void *state)
 //      }
 //   }
 
-static void mc_opt_statistics(void *state)
+static void mc_opt_statistics(void *state,Generic level)
 {
   select_char = 's';
+  StatsLevel = level;
   switch(selection) {
   case NO_SELECT:
     selection = STATS;
@@ -290,6 +302,12 @@ static void mc_opt_debug_choice(void *state,Generic flag)
     {
      case 0:
        ReuseModelDebugFlag = true;
+       break;
+     case 1:
+       DDGDebugFlag = true;
+       break;
+     case 2:
+       MinDistDebugFlag = true;
        break;
      default:
        cerr << "Invalid debug flag" << flag << endl;
@@ -409,11 +427,25 @@ static struct choice_entry_ replacement_choices[9] = {
      "perform full scalar replacement"}
  };
 
-static struct choice_entry_ debug_choices[1] = {
+static struct choice_entry_ debug_choices[3] = {
     {0,
      "0",
      "debug flags",
-     "debug data reuse model"}
+     "debug data reuse model"},
+    {1,
+     "1",
+     "debug flags",
+     "debug DDG"},
+    {2,
+     "2",
+     "debug flags",
+     "debug MinDist"}
+};
+
+static struct flag_	preloop_f = {
+  mc_set_no_pre_loop,
+  "no pre-loop for scala replacement",
+  "for data collecting purposes"
 };
 
 static struct flag_	longint_f = {
@@ -451,7 +483,7 @@ static struct choice_	debug_c = {
   mc_opt_debug_choice,
   "debug flags",
   "turn on debug flag for data reuse model",
-  0,debug_choices
+  2,debug_choices
 };
 
 static struct choice_entry_ dependence_choices[2] = {
@@ -466,6 +498,17 @@ static struct choice_entry_ dependence_choices[2] = {
  };
 
 
+static struct choice_entry_ statistics_choices[2] = {
+    {0,
+     "0",
+     "statistics",
+     "default"},
+    {1,
+     "1",
+     "statistics",
+     "add register pressure prediction for scalar replacement"}
+};
+
 static struct choice_	dependence_c = {
   mc_set_dependence_level,
   "dependence",
@@ -474,10 +517,11 @@ static struct choice_	dependence_c = {
 };
 
 
-static struct flag_	statistics_f = {
+static struct choice_	statistics_c = {
   mc_opt_statistics,
   "interchange statistics",
   "report locality and loop permutation statistics",
+  1,statistics_choices
 };
 
 static struct flag_	dependence_stats_f = {
@@ -599,6 +643,8 @@ int MemoriaInitOptions(int argc, char **argv)
 //     *mc_dead_flag = InitOption(flag,MC_DEAD_FLAG,(Generic)false,true,(Generic)&dead_f),
     *mc_rocket_schedule_flag = InitOption(flag,MC_ROCKET_SCHEDULE_FLAG,(Generic)false,
 					  true,(Generic)&rocket_schedule_f),
+    *mc_no_pre_loop_flag = InitOption(flag,MC_NO_PRE_LOOP_FLAG,(Generic)false,
+				      true, (Generic)&preloop_f),
     *mc_long_int_flag = InitOption(flag,MC_LONG_INT_FLAG,(Generic)false,true,
 				     (Generic)&longint_f),
     *mc_double_real_flag = InitOption(flag,MC_DOUBLE_REAL_FLAG,(Generic)false,true,
@@ -613,8 +659,8 @@ int MemoriaInitOptions(int argc, char **argv)
 				 (Generic)&debug_c),
     *mc_dep_choice = InitOption(choice,MC_DEPENDENCE_CHOICE,(Generic)false,true, 
 				(Generic)&dependence_c),
-    *mc_stats_flag = InitOption(flag,MC_STATISTICS_FLAG,(Generic)false,true,
-				(Generic)&statistics_f),
+    *mc_stats_choice = InitOption(choice,MC_STATISTICS_CHOICE,(Generic)false,true,
+				  (Generic)&statistics_c),
     *mc_annotate_flag = InitOption(flag,MC_ANNOTATE_FLAG,(Generic)false,true,
 				   (Generic)&annotate_f),
     *mc_unroll_flag = InitOption(flag,MC_UNROLL_FLAG,(Generic)false,true,
@@ -639,13 +685,14 @@ int MemoriaInitOptions(int argc, char **argv)
 //   MemoriaOptions.Add(mc_dead_flag);
   MemoriaOptions.Add(mc_rocket_schedule_flag);
   MemoriaOptions.Add(mc_repl_choice);
+  MemoriaOptions.Add(mc_no_pre_loop_flag);
   MemoriaOptions.Add(mc_long_int_flag);
   MemoriaOptions.Add(mc_double_real_flag);
   MemoriaOptions.Add(mc_cache_anal_flag);
   MemoriaOptions.Add(mc_ldst_anal_flag);
   MemoriaOptions.Add(mc_dep_choice);
   MemoriaOptions.Add(mc_debug_choice);
-  MemoriaOptions.Add(mc_stats_flag);
+  MemoriaOptions.Add(mc_stats_choice);
   MemoriaOptions.Add(mc_dep_stats_flag);
   MemoriaOptions.Add(mc_annotate_flag);
   MemoriaOptions.Add(mc_unroll_flag);
