@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.22 1994/07/25 13:57:31 yguan Exp $ */
+/* $Id: mh_walk.C,v 1.23 1994/07/27 18:55:37 yguan Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -1426,6 +1426,8 @@ void mh_walk_ast(int          selection,
 		+= walk_info.LoopStats->NumLoopSpilled;
 	   LoopStats->FPRegisterPressure
 	          += walk_info.LoopStats->FPRegisterPressure;
+           LoopStats->SRRegisterPressure
+		  += walk_info.LoopStats->SRRegisterPressure;
 	   LoopStats->NumRefRep
 	          += walk_info.LoopStats->NumRefRep;
            LoopStats->NumLoopReplaced
@@ -1621,15 +1623,22 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 
        LoopRepw_pressure = total_loop_replaced - LoopStats->NumZeroFPLoop;
 
-   fprintf(logfile, "Average FPregister Pressure/Loop Replaced w/ pressur
+   fprintf(logfile, "Average FP register Pressure/Loop Replaced w/ pressur
                        = %.4f\n\n",
                      (float)LoopStats->FPRegisterPressure/(float)LoopRepw_pressure);
+
+   fprintf(logfile, "Average SR register Pressure/Loop Replaced w/ pressur
+                       = %.4f\n\n",
+                     (float)LoopStats->SRRegisterPressure/(float)LoopRepw_pressure);
 
    if(total_loop_replaced > 0)
      {
       /*printf("total basic block = %d\n", LoopStats->NumBasicBlock); */
-      fprintf(logfile, "Average FPregister Pressure/Loop Replaced = %.4f\n\n",
+      fprintf(logfile, "Average FP register Pressure/Loop Replaced = %.4f\n\n",
    		     (float)LoopStats->FPRegisterPressure/(float)total_loop_replaced);
+
+      fprintf(logfile, "Average SR register Pressure/Loop Replaced = %.4f\n\n",
+		     (float)LoopStats->SRRegisterPressure/(float)total_loop_replaced);
 
       fprintf(logfile, "Average Number of Reference Replaced/Loop Replaced = %.4f\n\n",
    		     (float)LoopStats->NumRefRep/(float)total_loop_replaced);
