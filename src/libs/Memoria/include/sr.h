@@ -1,4 +1,4 @@
-/* $Id: sr.h,v 1.9 1995/04/11 15:47:43 carr Exp $ */
+/* $Id: sr.h,v 1.10 1995/08/21 15:14:04 carr Exp $ */
 
 /*-------------------------------------------------------------
 
@@ -98,4 +98,6 @@ typedef struct stmtinfotype {
 #define LOG_ALL    3
 
 EXTERN(void, message,(char *str));
+
+extern int ReplaceLevel;
 #endif
