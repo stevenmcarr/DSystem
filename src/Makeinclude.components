@@ -1,4 +1,4 @@
-# $Id: Makeinclude.components,v 1.1 1997/03/11 14:27:21 carr Exp $
+# $Id: Makeinclude.components,v 1.2 1997/04/09 17:18:51 carr Exp $
 ###########################################################################
 #
 # File:
@@ -146,6 +146,13 @@ GI_PED   = libs/graphicInterface/cmdProcs/paraScopeEditor/dp/ped-$(OKIND).a \
 #           libs/ped_cp/memory/ped-$(OKIND).a \
 
 #-----------------------------------------------------------------
+# Memoria and f2i
+#-----------------------------------------------------------------
+
+MEMORIA = libs/Memoria/Memoria-$(OKIND).a
+F2I = libs/f2i/F2i-$(OKIND).a
+
+#-----------------------------------------------------------------
 # The libraries in link order for graphic user interface apps
 #-----------------------------------------------------------------
 LIBS = \
@@ -178,6 +185,8 @@ LIBS = \
 # The libraries in link order for command line interface apps
 #-----------------------------------------------------------------
 NLIBS = \
+	   $(F2I) \
+	   $(MEMORIA) \
 	   $(FORT_D) \
 	   $(FORT_D_PERF) \
 	   $(GI_PED) \
