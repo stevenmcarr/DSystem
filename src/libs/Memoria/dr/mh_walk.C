@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.35 1995/08/21 15:09:41 carr Exp $ */
+/* $Id: mh_walk.C,v 1.36 1995/08/30 15:31:03 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -458,29 +458,33 @@ static void AnnotateCodeForCache(AST_INDEX      stmt,
 
 
 static void AnnotateCodeForLDSTCount(AST_INDEX      stmt,
-				 int            level,
-				 walk_info_type *walk_info)
+				     int            level,
+				     walk_info_type *walk_info)
   {
-   AST_INDEX node1,node2,ExecutableStmt;
-   char TextConstant[80];
+   AST_INDEX List,ExecutableStmt,TypeStmt,CommonStmt;
 
-     if (walk_info->LoopStats->Nests == 1 && mc_program == NULL &&
-	 mc_module_list == NULL)
+     List = pt_gen_ident("NumLoads");
+     List = list_create(List);
+     List = list_insert_last(List,pt_gen_ident("NumStores"));
+     ExecutableStmt = first_f77_executable_stmt(ut_GetSubprogramStmtList(stmt));
+     TypeStmt = gen_TYPE_STATEMENT(AST_NIL,gen_TYPE_LEN(gen_REAL(),
+							pt_gen_int(SIZE_PER_DB_PREC)),
+				   tree_copy(List));
+     ft_SetComma(TypeStmt,false);
+     list_insert_before(ExecutableStmt,TypeStmt);
+     CommonStmt = gen_COMMON(AST_NIL,list_create(gen_COMMON_ELT(
+					           pt_gen_ident("/LdStCount/"),List)));
+     list_insert_before(ExecutableStmt,CommonStmt);
+     if (walk_info->MainProgram)
        {
-
-	  /* initialize the simulator before the first loop nest */
-
-	ExecutableStmt = first_f77_executable_stmt(ut_GetSubprogramStmtList(stmt));
-	list_insert_before(ExecutableStmt,pt_gen_call("cache_init",AST_NIL));
+	list_insert_before(ExecutableStmt,gen_ASSIGNMENT(AST_NIL,
+							 pt_gen_ident("NumLoads"),
+							 pt_gen_int(0)));
+	list_insert_before(ExecutableStmt,gen_ASSIGNMENT(AST_NIL,
+							 pt_gen_ident("NumStores"),
+							 pt_gen_int(0)));
        }
-     else if ((mc_program != NULL || mc_module_list != NULL) &&
-	      walk_info->MainProgram)
-       {
-	ExecutableStmt = first_f77_executable_stmt(gen_PROGRAM_get_stmt_LIST(stmt));
-	list_insert_before(ExecutableStmt,pt_gen_call("cache_init",AST_NIL));
-       }	   
-     memory_AnnotateWithCacheCalls(stmt,level, walk_info->routine,
-				   walk_info->ftt);
+     memory_AnnotateWithLDSTCount(stmt,level,walk_info->MainProgram);
   }
 
 
@@ -578,18 +582,18 @@ static int post_walk(AST_INDEX      stmt,
 	case ANNOTATE:       if (mc_program == NULL && mc_module_list == NULL)
 	                       AnnotateCodeForCache(stmt,level,walk_info);
 	                     break;
-	case LDST:           AnnotateCodeForLDSTCount(stmt,level,walk_info);
-	                     break;
 	case CACHE_ANALYSIS: PerformCacheAnalysis(stmt,level,walk_info);
 			     break;
 	case FUSION:         break;
        }
       return(WALK_FROM_OLD_NEXT);
      } 
-   else if ((is_program(stmt) || is_function(stmt) || is_subroutine(stmt)) && 
-	    (mc_program != NULL || mc_module_list != NULL) && 
-	    walk_info->selection == ANNOTATE)
-     AnnotateCodeForCache(stmt,level,walk_info);
+   else if (is_program(stmt) || is_function(stmt) || is_subroutine(stmt))
+     if (walk_info->selection == LDST)
+       AnnotateCodeForLDSTCount(stmt,level,walk_info);
+     else if ((mc_program != NULL || mc_module_list != NULL) && 
+	      walk_info->selection == ANNOTATE)
+       AnnotateCodeForCache(stmt,level,walk_info);
    return(WALK_CONTINUE);
   }
 
