@@ -13,7 +13,7 @@
 #include <std.h>
 #include <mem_util.h>
 
-#include <Arena.h>
+#include <misc/Arena.h>
 
 EXTERN(void, message,(char *str));
 
