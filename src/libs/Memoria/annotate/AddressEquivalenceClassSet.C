@@ -396,13 +396,16 @@ AddressEquivalenceClass* AddressEquivSetIterator::operator() ()
 AST_INDEX AddressEquivalenceClassSet::GetLeader(AST_INDEX node)
 
 {
-  Boolean uniform;
+  Boolean uniform = true;
 
   int Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(node));
   la_matrix nodeH = la_matNew(Subscripts,NestingLevel);
+
   GetH(node,nodeH,&uniform);
-  return (GetAddressEquivalenceClass(node,nodeH)->GetLeader());
+
+  AST_INDEX Leader = GetAddressEquivalenceClass(node,nodeH)->GetLeader();
   la_matFree(nodeH,Subscripts,NestingLevel);
+  return Leader;
 }
 
 AST_INDEX AddressEquivalenceClassSet::GetFirstInLoop(AST_INDEX node)
