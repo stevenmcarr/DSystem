@@ -1,4 +1,4 @@
-/* $Id: VectorSet.C,v 1.3 1997/03/11 14:37:20 carr Exp $ */
+/* $Id: VectorSet.C,v 1.4 2001/09/17 01:33:21 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -18,7 +18,7 @@
 
 #include <libs/support/sets/VectorSet.h>
 
-static const MAXUINT32 = (uint)-1L;
+static const uint MAXUINT32 = (uint)-1L;
 
 // BitsInByte is a lookup table which tells the number of bits that
 // are in the looked-up number.  It is very useful in VectorSet_Size.
@@ -183,7 +183,8 @@ int VectorSet::compare (const VectorSet &s) const
   register uint cnt = min(size,s.size);
 
   // Get bits for both sets
-  for( uint i=0; i<cnt; i++ ) { // For data in BOTH sets
+  uint i;
+  for(i=0; i<cnt; i++ ) { // For data in BOTH sets
     register uint32 A = *u1++;  // Data from one guy
     register uint32 B = *u2++;  // Data from other guy
     AnotB |= (A & ~B);          // Compute bits in A not B
@@ -276,11 +277,13 @@ int VectorSet::operator[](uint elem) const
 // Get any element from the set.
 uint VectorSet::getelem(void) const
 {
-  for( uint i=0; i<size; i++ )
+  uint i;
+  int j;
+  for( i=0; i<size; i++ )
     if( data[i] )
       break;
   uint word = data[i];
-  for( int j= -1; word; j++, word>>=1 );
+  for( j= -1; word; j++, word>>=1 );
   return (i<<5)+j;
 }
 

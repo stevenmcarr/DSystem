@@ -1,4 +1,4 @@
-/* $Id: ScanDir.C,v 1.6 1997/03/11 14:36:38 carr Exp $ */
+/* $Id: ScanDir.C,v 1.7 2001/09/17 01:27:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -87,7 +87,7 @@ scandir(char* dir,
       if (temp[count] == (struct dirent*)NULL) 
       {
         closedir(fp);
-        for (i = 0; i < count; i++) delete temp[i];
+        for (int i = 0; i < count; i++) delete temp[i];
         delete temp;
         return FAIL;
       }

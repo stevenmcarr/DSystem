@@ -1,4 +1,4 @@
-/* $Id: mem.C,v 1.2 1997/06/27 17:46:19 carr Exp $ */
+/* $Id: mem.C,v 1.3 2001/09/17 01:29:21 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,7 +21,7 @@
 
 #include <libs/support/memMgmt/mem.h>
 
-extern  end;                                    /* the end of uninitialized data   */
+extern int end;                                    /* the end of uninitialized data   */
 
 #define	SBRK_INCR   0x00010000                  /* amount to extend the break      */
 #define	ZAP_CHAR    (0x0F)			/* the character to zap with       */

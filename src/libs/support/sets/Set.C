@@ -1,4 +1,4 @@
-/* $Id: Set.C,v 1.7 1997/04/07 13:52:48 carr Exp $ */
+/* $Id: Set.C,v 1.8 2001/09/17 01:33:21 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,11 +30,7 @@ extern "C" long unsigned int strtoul(const char *s, char **end, int base);
 //-------------------------Virtual Functions-----------------------------------
 // These functions MUST be implemented by the inheriting class.
 Set &Set::operator =  (const Set &)       { abort(); return *this; }
-#ifdef OSF1
-Set &Set::clone       (void)        const { abort(); }
-#else
-Set &Set::clone       (void)        const { abort(); return *this; }
-#endif
+Set &Set::clone       (void)        const { abort();  }
 Set &Set::operator <<= (uint)             { abort(); return *this; }
 Set &Set::operator >>= (uint)             { abort(); return *this; }
 int  Set::operator []  (uint)       const { abort(); return 0; }

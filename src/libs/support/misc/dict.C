@@ -1,4 +1,4 @@
-/* $Id: dict.C,v 1.10 1997/06/26 17:32:26 carr Exp $ */
+/* $Id: dict.C,v 1.11 2001/09/17 01:30:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -160,7 +160,7 @@ Dict &Dict::operator =( Dict &d )
   *(CmpKey*)(&cmp) = d.cmp;
   bin = (const void ***)calloc(size,sizeof(void **));
   assert(bin != NULL);			 // OOM check
-  for( i=0; i<size; i++ ) {
+  for(int i=0; i<size; i++ ) {
     const void **ptr = d.bin[i]; // Get list of key-value pairs
     if( ptr ) { 		 // Anything in old dictionary?
       int32 bcnt = *(int32 *)ptr;// Get count of key/value pairs
