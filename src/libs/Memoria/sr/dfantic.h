@@ -1,4 +1,5 @@
-/* $Id: dfantic.h,v 1.2 1992/10/03 15:49:06 rn Exp $ */
+/* $Id: dfantic.h,v 1.3 1992/12/07 10:20:27 carr Exp $ */
+
 #ifndef dfantic_h
 #define  dfantic_h
 

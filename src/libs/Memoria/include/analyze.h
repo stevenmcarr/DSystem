@@ -1,8 +1,9 @@
-/* $Id: analyze.h,v 1.2 1992/10/03 15:50:49 rn Exp $ */
+/* $Id: analyze.h,v 1.3 1992/12/07 10:17:02 carr Exp $ */
+
 #ifndef analyze_h
 #define analyze_h
 
-typedef struct {
+typedef struct buildinfotype {
   int        parent,
              last_loop,
              last_stack[MAX_LEVEL],

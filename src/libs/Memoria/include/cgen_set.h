@@ -1,4 +1,5 @@
-/* $Id: cgen_set.h,v 1.3 1992/10/03 15:51:29 rn Exp $ */
+/* $Id: cgen_set.h,v 1.4 1992/12/07 10:17:20 carr Exp $ */
+
 /*
  *  Revision 4
  * 
@@ -14,12 +15,13 @@
 #endif
 
 #include <Arena.h> 
+#include <global.h>
 
 #define NBITS	32
 #define LOGBITS	 5
 #define BYTES	 4
 
-typedef struct {
+typedef struct set {
     int words;		/* the number of words allocated	*/
     int word[1];	/* the actual storage			*/
 } SetBase, *Set;

@@ -1,8 +1,9 @@
-/* $Id: scalar.h,v 1.2 1992/10/03 15:49:32 rn Exp $ */
+/* $Id: scalar.h,v 1.3 1992/12/07 10:20:44 carr Exp $ */
+
 #ifndef scalar_h
 #define scalar_h
 
-typedef struct {
+typedef struct arraytabletype {
   AST_INDEX   node;
   int         def,
               regs;
@@ -10,7 +11,7 @@ typedef struct {
   Boolean     partial;
  } array_table_type;
 
-typedef struct {
+typedef struct preliminfotype {
   int              array_refs,
                    scalar_regs,
                    surrounding_do,
@@ -26,7 +27,7 @@ typedef struct {
   arena_type       *ar;
 }  prelim_info_type;
 
-typedef struct {
+typedef struct doinfotype {
   int      inner_do,
            do_num;
   PedInfo  ped;
@@ -35,12 +36,12 @@ typedef struct {
   arena_type *ar;
  } do_info_type;
 
-typedef struct {
+typedef struct reginfotype {
   config_type *config;
   int         expr_regs;
  } reg_info_type;
 
-typedef struct {
+typedef struct balinfotype {
   int        mem,
              flops;
   PedInfo    ped;

@@ -1,8 +1,9 @@
-/* $Id: name.h,v 1.2 1992/10/03 15:49:24 rn Exp $ */
+/* $Id: name.h,v 1.3 1992/12/07 10:20:38 carr Exp $ */
+
 #ifndef name_h
 #define name_h
 
-typedef struct {
+typedef struct namenodetype {
   UtilList  *nlist;
   AST_INDEX gen;
   Boolean   opt_will_allocate;
@@ -11,7 +12,7 @@ typedef struct {
   float     ratio;
  }  name_node_type;
 
-typedef struct {
+typedef struct nameinfotype {
   PedInfo  ped;
   DG_Edge  *dg;
   UtilList *glist;

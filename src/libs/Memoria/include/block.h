@@ -1,4 +1,5 @@
-/* $Id: block.h,v 1.2 1992/10/03 15:50:50 rn Exp $ */
+/* $Id: block.h,v 1.3 1992/12/07 10:17:15 carr Exp $ */
+
 #ifndef block_h
 #define block_h
 
@@ -59,7 +60,9 @@ struct block_struct {
                       LC_antic_out,
                       PP_in,
                       PP_out,
-                      Insert;
+                      Insert,
+                      Transp,
+                      Antloc;
 }; 
 
 typedef struct {

@@ -1,4 +1,5 @@
-/* $Id: do_dist.h,v 1.2 1992/10/03 15:49:53 rn Exp $ */
+/* $Id: do_dist.h,v 1.3 1992/12/07 10:23:05 carr Exp $ */
+
 #ifndef do_dist_h
 #define do_dist_h
 

@@ -1,10 +1,11 @@
-/* $Id: profit.h,v 1.2 1992/10/03 15:49:29 rn Exp $ */
+/* $Id: profit.h,v 1.3 1992/12/07 10:20:41 carr Exp $ */
+
 #ifndef profit_h
 #define profit_h
 
 #include <scalar.h>
 
-typedef struct {
+typedef struct profinfotype {
   Set              pavset;
   float            prob;
   array_table_type *array_table;

@@ -1,4 +1,5 @@
-/* $Id: bound.h,v 1.2 1992/10/03 15:50:52 rn Exp $ */
+/* $Id: bound.h,v 1.3 1992/12/07 10:17:18 carr Exp $ */
+
 #ifndef bound_h
 #define bound_h
 

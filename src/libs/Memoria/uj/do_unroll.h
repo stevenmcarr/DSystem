@@ -1,10 +1,11 @@
-/* $Id: do_unroll.h,v 1.3 1992/10/03 15:50:00 rn Exp $ */
+/* $Id: do_unroll.h,v 1.4 1992/12/07 10:23:06 carr Exp $ */
+
 #ifndef do_unroll_h
 #define do_unroll_h
 
 #include <Arena.h>
 
-typedef struct {
+typedef struct dupdinfotype {
   SymDescriptor symtab;
   int       level,
             inner_level,
@@ -13,33 +14,33 @@ typedef struct {
   char      *ivar;
  } dupd_info_type;
 
-typedef struct {
+typedef struct lableinfotype {
   SymDescriptor symtab;
   char          *fieldn;
  } label_info_type;
 
-typedef struct {
+typedef struct edgeinfotype {
   PedInfo ped;
   int     level;
  } edge_info_type;
 
-typedef struct {
+typedef struct rdxstmtstype {
   AST_INDEX prev,
             post;
  } rdx_stmts_type;
 
-typedef struct {
+typedef struct flopinfotype {
   PedInfo ped;
   int     flops;
  } flop_info_type;
 
-typedef struct {
+typedef struct repinfotype {
   PedInfo ped;
   char    new_var[30];
   AST_INDEX array;
  } rep_info_type;
 
-typedef struct {
+typedef struct refinfotype {
   SymDescriptor symtab;
   int           level,
                 surrounding_do,

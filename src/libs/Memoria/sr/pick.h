@@ -1,8 +1,9 @@
-/* $Id: pick.h,v 1.2 1992/10/03 15:49:36 rn Exp $ */
+/* $Id: pick.h,v 1.3 1992/12/07 10:20:39 carr Exp $ */
+
 #ifndef pick_h
 #define pick_h
 
-typedef struct {
+typedef struct pickinfotype {
   block_type *block,
              *exit_block;
   Set        LI_avail,

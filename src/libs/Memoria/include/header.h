@@ -1,4 +1,5 @@
-/* $Id: header.h,v 1.3 1992/11/20 13:51:11 joel Exp $ */
+/* $Id: header.h,v 1.4 1992/12/07 10:17:24 carr Exp $ */
+
 #ifndef header_h
 #define header_h
 
@@ -27,6 +28,13 @@
 #include <dp.h>
 #include <dt.h>
 #include <Arena.h>
+#include <LoopStats.h>
+
+EXTERN(void, memory_interchange_stats,(PedInfo ped,AST_INDEX root,
+					       int level,
+				               LoopStatsType *LoopStats,
+					       SymDescriptor symtab,
+					       arena_type *ar));
 
 EXTERN(void, memory_loop_interchange,(PedInfo ped,AST_INDEX root,
 					      int level,SymDescriptor symtab,

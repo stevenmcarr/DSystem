@@ -1,4 +1,5 @@
-/* $Id: shape.h,v 1.2 1992/10/03 15:51:20 rn Exp $ */
+/* $Id: shape.h,v 1.3 1992/12/07 10:17:34 carr Exp $ */
+
 #ifndef shape_h
 #define shape_h
 

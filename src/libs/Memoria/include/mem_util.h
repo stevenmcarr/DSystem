@@ -1,4 +1,5 @@
-/* $Id: mem_util.h,v 1.3 1992/10/03 15:51:00 rn Exp $ */
+/* $Id: mem_util.h,v 1.4 1992/12/07 10:17:29 carr Exp $ */
+
 #ifndef mem_util_h
 #define mem_util_h
 
@@ -12,13 +13,13 @@ struct list_struct {
              next;
  };
 
-typedef struct {
+typedef struct list_node {
   listp head,
         tail,
         ptail;
  } listnode;
 
-typedef struct {
+typedef struct copyinfotype {
   int        val;
   arena_type *ar;
   SymDescriptor symtab;

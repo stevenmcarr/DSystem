@@ -1,4 +1,5 @@
-/* $Id: mh.h,v 1.5 1992/11/20 13:51:16 joel Exp $ */
+/* $Id: mh.h,v 1.6 1992/12/07 10:17:31 carr Exp $ */
+
 #ifndef mh_h
 #define mh_h 
 
@@ -48,6 +49,8 @@
 #include <malloc.h>
 #include <Arena.h>
 #include <header.h>
+#include <cgen_set.h>
+#include <FloatList.h>
 
 #define  MAX_LEVEL  20
 
@@ -56,7 +59,7 @@ typedef enum {COMPLEX,RECT,TRI_UL,TRI_LL,TRI_UR,TRI_LR,TRAP,RHOM,MULT}
 
 typedef enum {FN_MIN,FN_MAX,FN_BOTH} trap_fn_type;
 
-typedef struct {
+typedef struct heaptype {
   int index,
       stride;
  } heap_type;
@@ -89,6 +92,7 @@ struct loop_struct {
                   interchange,
                   transform,
                   distribute,
+                  expand,
                   unroll,
                   reduction;
   loop_shape_type type;
@@ -96,9 +100,19 @@ struct loop_struct {
   UtilList        *split_list;
   heap_type       *heap;
   int             *unroll_vector;
+  int             MemoryOrder[MAX_LEVEL],
+                  FinalOrder[MAX_LEVEL],
+                  OutermostLvl;
+  FloatList       InvariantCostList,
+                  SpatialCostList,
+                  OtherSpatialCostList,
+                  TemporalCostList,
+                  NoneCostList;
+  UtilList        *GroupList;
+  Set             PreventLvl[MAX_LEVEL];
  };
 
-typedef struct {
+typedef struct subscriptinfotype {
   int       surrounding_do;
   AST_INDEX surround_node;
   Boolean   is_scalar[3],
@@ -113,7 +127,7 @@ typedef struct {
   Boolean   store;
  } subscript_info_type;
 
-typedef struct {
+typedef struct stmtinfotype {
   int  stmt_num;
   int  loop_num;
   int  surrounding_do;
@@ -122,7 +136,7 @@ typedef struct {
   Boolean pre_loop;
  } stmt_info_type;
 
-typedef struct {
+typedef struct preinfotype {
   int     stmt_num,
           loop_num,
           surrounding_do;
@@ -171,5 +185,4 @@ typedef struct {
 #define LOOP_ARENA 0
 #define ARENAS     1
 
-EXTERN(void, message,(char *msg));
 #endif

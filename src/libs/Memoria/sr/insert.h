@@ -1,8 +1,9 @@
-/* $Id: insert.h,v 1.2 1992/10/03 15:49:19 rn Exp $ */
+/* $Id: insert.h,v 1.3 1992/12/07 10:20:34 carr Exp $ */
+
 #ifndef insert_h
 #define insert_h
 
-typedef struct {
+typedef struct setinfo{
   Set  LI_Insert,
        LC_Insert;
  } Set_info;

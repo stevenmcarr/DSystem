@@ -1,4 +1,5 @@
-/* $Id: label.h,v 1.2 1992/10/03 15:51:01 rn Exp $ */
+/* $Id: label.h,v 1.3 1992/12/07 10:17:25 carr Exp $ */
+
 #ifndef label_h
 #define label_h
 

@@ -1,11 +1,12 @@
-/* $Id: dfavail.h,v 1.2 1992/10/03 15:49:11 rn Exp $ */
+/* $Id: dfavail.h,v 1.3 1992/12/07 10:20:29 carr Exp $ */
+
 #ifndef dfavail_h
 #define dfavail_h
 
 #include <block.h>
 #include <check.h>
 
-typedef struct {
+typedef struct availinfotype {
   block_type *block;
   Set        LC_kill;
   PedInfo    ped;

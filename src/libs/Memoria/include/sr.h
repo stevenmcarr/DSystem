@@ -1,4 +1,5 @@
-/* $Id: sr.h,v 1.5 1992/11/20 13:51:19 joel Exp $ */
+/* $Id: sr.h,v 1.6 1992/12/07 10:17:36 carr Exp $ */
+
 /*-------------------------------------------------------------
 
 	scalar.h
@@ -54,7 +55,7 @@
 
 typedef enum {BOGUS,LIAV,LIPAV,LCAV,LCPAV} GenTypes;
 
-typedef struct {
+typedef struct scalarinfotype {
   Set               kill_set;
   int               generator,
                     array_num,
@@ -76,7 +77,7 @@ typedef struct {
   UtilNode          *list_index;
 }  scalar_info_type;
 
-typedef struct {
+typedef struct stmtinfotype {
   int           stmt_num;
   block_type    *block;
   Boolean       generated;

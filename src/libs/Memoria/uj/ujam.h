@@ -1,10 +1,11 @@
-/* $Id: ujam.h,v 1.2 1992/10/03 15:50:14 rn Exp $ */
+/* $Id: ujam.h,v 1.3 1992/12/07 10:23:09 carr Exp $ */
+
 #ifndef ujam_h
 #define ujam_h
 
 #include <Arena.h>
 
-typedef struct {
+typedef struct loopinfotype {
   int     unroll_level,
           num_loops,
           num_do;

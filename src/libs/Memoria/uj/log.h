@@ -1,4 +1,5 @@
-/* $Id: log.h,v 1.2 1992/10/03 15:50:10 rn Exp $ */
+/* $Id: log.h,v 1.3 1992/12/07 10:23:08 carr Exp $ */
+
 #ifndef log_h
 #define log_h
 

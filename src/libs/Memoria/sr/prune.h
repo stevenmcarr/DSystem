@@ -1,8 +1,9 @@
-/* $Id: prune.h,v 1.2 1992/10/03 15:49:31 rn Exp $ */
+/* $Id: prune.h,v 1.3 1992/12/07 10:20:42 carr Exp $ */
+
 #ifndef prune_h
 #define prune_h
 
-typedef struct {
+typedef struct geninfotype {
   block_type       *entry;
   int              level;
   PedInfo          ped;

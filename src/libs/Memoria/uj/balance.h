@@ -1,4 +1,5 @@
-/* $Id: balance.h,v 1.2 1992/10/03 15:49:47 rn Exp $ */
+/* $Id: balance.h,v 1.3 1992/12/07 10:22:49 carr Exp $ */
+
 #ifndef balance_h
 #define balance_h
 

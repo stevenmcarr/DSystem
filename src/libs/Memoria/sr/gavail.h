@@ -1,8 +1,9 @@
-/* $Id: gavail.h,v 1.2 1992/10/03 15:49:16 rn Exp $ */
+/* $Id: gavail.h,v 1.3 1992/12/07 10:20:32 carr Exp $ */
+
 #ifndef gavail_h
 #define gavail_h
 
-typedef struct {
+typedef struct gavailinfotype {
   block_type *block,
              *exit_block;
   Set        LI_avail,

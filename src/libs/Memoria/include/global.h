@@ -1,4 +1,5 @@
-/* $Id: global.h,v 1.3 1992/10/03 15:50:47 rn Exp $ */
+/* $Id: global.h,v 1.4 1992/12/07 10:17:22 carr Exp $ */
+
 /*
  *	global.h
  *

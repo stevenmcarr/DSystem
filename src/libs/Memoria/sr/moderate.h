@@ -1,4 +1,5 @@
-/* $Id: moderate.h,v 1.2 1992/10/03 15:49:21 rn Exp $ */
+/* $Id: moderate.h,v 1.3 1992/12/07 10:20:36 carr Exp $ */
+
 #ifndef moderate_h
 #define moderate_h
 
@@ -6,17 +7,17 @@
 
 #define GREEDY   0
 
-typedef struct {
+typedef struct regelement {
   int   value;
   Set   in_pack;
  } reg_element;
 
-typedef struct {
+typedef struct gennodetype {
   int cost,
       ratio;
  } gen_node_type;
 
-typedef struct {
+typedef struct heaptype {
   int index;
   name_node_type *name;
   UtilNode       *lnode;

@@ -1,29 +1,30 @@
-/* $Id: interchange.h,v 1.2 1992/10/03 15:50:20 rn Exp $ */
+/* $Id: interchange.h,v 1.3 1992/12/07 10:15:10 carr Exp $ */
+
 #ifndef interchange_h
 #define interchange_h
 
 #include <Arena.h>
 
-typedef struct {
+typedef struct indexinfotype{
   int           index;
   SymDescriptor symtab;
  } index_info_type;
 
-typedef struct {
+typedef struct intinfotype {
   SymDescriptor symtab;
   PedInfo       ped;
   model_loop    *loop_data;
   UtilList      *loop_list;
  } int_info_type;
 
-typedef struct {
+typedef struct updinfotype {
   PedInfo    ped;
   heap_type  *heap;
   model_loop *loop_data;
   int        num_loops;
  } upd_info_type;
 
-typedef struct {
+typedef struct levelinfotype {
   int level;
   PedInfo ped;
  } level_info_type;

@@ -1,11 +1,11 @@
-/* $Id: stats.h,v 1.2 1992/10/03 15:15:58 rn Exp $ */
+/* $Id: stats.h,v 1.3 1992/12/07 10:15:36 carr Exp $ */
 #ifndef stats_h
 #define stats_h
 
 #include <Arena.h>
 #include <global.h>
 
-typedef struct {
+typedef struct refinfotype {
   PedInfo       ped;
   DG_Edge       *dg;
   arena_type    *ar;
@@ -13,9 +13,15 @@ typedef struct {
   UtilList      *GroupList;
   int           level;
   model_loop    *loop_data;
+  Boolean       VisitedMark;
+  float         InvariantCost,
+                SpatialCost,
+                OtherSpatialCost,
+                NoneCost,
+                TemporalCost;
  } RefInfoType;
 
-typedef struct {
+typedef struct refgrouptype {
   int          number;
   Boolean      Invariant,
                Spatial,
@@ -24,7 +30,7 @@ typedef struct {
   UtilList     *RefList;
  }RefGroupType;
 
-typedef struct {
+typedef struct edgeinfotype {
   PedInfo      ped;
   UtilList     *EdgeList;
  }EdgeInfoType;

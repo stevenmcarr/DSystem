@@ -1,13 +1,14 @@
-/* $Id: compute_uj.h,v 1.3 1992/10/03 15:49:49 rn Exp $ */
+/* $Id: compute_uj.h,v 1.4 1992/12/07 10:23:03 carr Exp $ */
+
 #ifndef compute_uj_h
 #define compute_uj_h
 
-typedef struct {
+typedef struct exprinfotype {
   Boolean found;
   AST_INDEX node;
  } expr_info_type;
 
-typedef struct {
+typedef struct compinfotype {
   int     loop_stack[MAX_LEVEL];
   int     **count;
   int     num_loops;
@@ -16,7 +17,7 @@ typedef struct {
   SymDescriptor symtab;
  } comp_info_type;
 
-typedef struct {
+typedef struct depinfotype {
   int      reg_coeff[4],
            mem_coeff[4],
            addr_coeff[4],
@@ -36,13 +37,13 @@ typedef struct {
   arena_type *ar;
  } dep_info_type;
 
-typedef struct {
+typedef struct reginfotype {
   config_type *config;
   int         expr_regs;
   SymDescriptor symtab;
  } reg_info_type;
 
-typedef struct {
+typedef struct vectorinfotype {
   AST_INDEX src;
   int       vector[MAXLOOP];
  } vector_info_type;

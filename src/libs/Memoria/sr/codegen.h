@@ -1,10 +1,11 @@
-/* $Id: codegen.h,v 1.2 1992/10/03 15:49:05 rn Exp $ */
+/* $Id: codegen.h,v 1.3 1992/12/07 10:20:25 carr Exp $ */
+
 #ifndef codegen_h
 #define codegen_h
 
 #include <scalar.h>
 
-typedef struct {
+typedef struct codeinfotype {
   int         iteration,
               copy;
   AST_INDEX   stmt,
