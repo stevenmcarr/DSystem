@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.16 1998/06/08 15:26:06 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.17 1998/06/10 15:58:54 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -210,14 +210,17 @@ static int StoreCacheInfo(AST_INDEX     node,
 
        //
        // Identify the load that should bring in two cache lines
-       // to eliminate misses for a group of references in a cache line
-       // This should only happen after the prefetching algorithm is run
-       // so that original self-spatial loads are copied so that we can
-       // schedule the trailer node as a miss and the others as hits.
+       // to eliminate misses associated with self-spatial loads
+       // The load should have self-spatial reuse or group-spatial
+       // with the self-spatial property and be a trailer in 
+       // group-spatial set.
        //
 
-       if (aiSpecialCache && DepInfoPtr(node)->Locality == GROUP_SPATIAL &&
-	   CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
+       if (aiSpecialCache && 
+	   NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
+	   (DepInfoPtr(node)->Locality == SELF_SPATIAL ||
+	    (DepInfoPtr(node)->Locality == GROUP_SPATIAL &&
+	     CacheInfo->ReuseModel->HasSelfSpatialReuse(node))))
 	 DepInfoPtr(node)->IsGroupSpatialTrailer = 
 	   CacheInfo->ReuseModel->IsGroupSpatialTrailer(node);
       }
@@ -397,6 +400,7 @@ void GroupSpatialEntry::AddSpatialDependences(AST_INDEX TrailerNode)
   GenericListEntry *GLEntry;
   AST_INDEX Node;
   DepStruct *Dep;
+  int TrailerStmtNum = get_stmt_info_ptr(ut_get_stmt(TrailerNode))->stmt_num;
 
     while ((GLEntry = GLIter()) != NULL)
       {
@@ -406,7 +410,10 @@ void GroupSpatialEntry::AddSpatialDependences(AST_INDEX TrailerNode)
 	    Dep = new DepStruct;
 	    Dep->ReferenceNumber = DepInfoPtr(Node)->ReferenceNumber;
 	    Dep->DType = 'c';
-	    Dep->Distance = 0;
+            if (TrailerStmtNum <= get_stmt_info_ptr(ut_get_stmt(Node))->stmt_num)
+	      Dep->Distance = 0;
+	    else
+	      Dep->Distance = 1;
 	    util_append(DepInfoPtr(TrailerNode)->DependenceList,
 			util_node_alloc((Generic)Dep,NULL));
 	  }
