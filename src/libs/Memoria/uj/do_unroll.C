@@ -1,4 +1,4 @@
-/* $Id: do_unroll.C,v 1.12 1995/04/27 17:13:01 carr Exp $ */
+/* $Id: do_unroll.C,v 1.13 1995/05/23 09:09:48 qwu Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -1806,7 +1806,8 @@ static void unroll_reduction(model_loop      *loop_data,
                ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
      if (rhoL_lp > (float)flop_info.flops)
        loop_data[loop].val = mh_increase_unroll(loop_data[loop].max,
-						flop_info.flops,rhoL_lp) - 1;
+						flop_info.flops,rhoL_lp,
+						machine_info) - 1;
      else
        if (loop_data[loop].val > loop_data[loop].max)
          loop_data[loop].val = loop_data[loop].max;

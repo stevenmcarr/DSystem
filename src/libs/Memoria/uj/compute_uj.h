@@ -1,4 +1,4 @@
-/* $Id: compute_uj.h,v 1.8 1994/07/11 13:43:37 carr Exp $ */
+/* $Id: compute_uj.h,v 1.9 1995/05/23 09:10:11 qwu Exp $ */
 
 #ifndef compute_uj_h
 #define compute_uj_h
@@ -91,10 +91,13 @@ typedef enum {S_NONE,SELF,SELF1,SELF2,GROUP} SpatialLocalityType;
 
 #define FIRST  "mh: first"
 
-EXTERN(int, mh_increase_unroll,(int max,int denom,float rhoL_lp));
+EXTERN(int, mh_increase_unroll,(int max,int denom,float rhoL_lp,dep_info_type *dep_info));
 EXTERN(void, mh_compute_unroll_amounts,(model_loop *loop_data,
 					int size,int num_loops,
 					PedInfo ped,
 					SymDescriptor symtab,
 					arena_type    *ar));
+
+extern dep_info_type *machine_info;
+
 #endif
