@@ -1,15 +1,18 @@
 #include <assert.h>
+#include <iostream.h>
 #include <general.h>
 #include <UniformlyGeneratedSets.h>
 #include <pt_util.h>
+#include <mem_util.h>
 #include <Lambda/Lambda.h>
 
-Boolean UniformlyGeneratedSetsEntry::SameUniformlyGeneratedSet(la_matrix nodeH)
+Boolean UniformlyGeneratedSetsEntry::SameUniformlyGeneratedSet(AST_INDEX node,
+							       la_matrix nodeH)
 
   {
    int i,j;
 
-     if (NOT(Uniform)) 
+     if (NOT(Uniform) || strcmp(name,gen_get_text(gen_SUBSCRIPT_get_name(node)))) 
        return (false);
      for (i = 0; i < Subscripts; i++)
        for (j = 0; j < NestingLevel; j++)
@@ -358,6 +361,10 @@ UniformlyGeneratedSetsEntry::SingleNodeHasSelfTemporalReuse()
    int i,j,numSol;
    la_matrix X;
    Boolean HasSelfTemporal = false;
+   la_vect zero;
+
+   zero = la_vecNew(NestingLevel);
+   la_vecClear(zero, NestingLevel);
 
      if (NOT(Uniform)) 
        return (false);   
@@ -365,7 +372,7 @@ UniformlyGeneratedSetsEntry::SingleNodeHasSelfTemporalReuse()
        if (NullSpaceIsZero(X,numSol,NestingLevel))
 	 HasSelfTemporal = false; 
        else
-	 HasSelfTemporal = IsSolutionInLIS(X,ZeroSpace,numSol,NestingLevel,
+	 HasSelfTemporal = IsSolutionInLIS(X,zero,numSol,NestingLevel,
 					   false);
      else
        HasSelfTemporal = false;
@@ -381,6 +388,10 @@ UniformlyGeneratedSetsEntry::SingleNodeHasSelfSpatialReuse()
    la_matrix H_S,X;
    la_vect b;
    Boolean HasSelfSpatial = false;
+   la_vect zero;
+
+   zero = la_vecNew(NestingLevel);
+   la_vecClear(zero, NestingLevel);
 
      if (NOT(Uniform)) 
        return (false);
@@ -393,7 +404,7 @@ UniformlyGeneratedSetsEntry::SingleNodeHasSelfSpatialReuse()
        if (NullSpaceIsZero(X,numSol,NestingLevel))
 	 HasSelfSpatial = false; 
        else
-	 HasSelfSpatial = IsSolutionInLIS(X,ZeroSpace,numSol,NestingLevel,
+	 HasSelfSpatial = IsSolutionInLIS(X,zero,numSol,NestingLevel,
 					  false);
      else
        HasSelfSpatial = false;
@@ -436,15 +447,39 @@ UniformlyGeneratedSetsEntry::SingleNodeHasGroupTemporalReuse(AST_INDEX node1)
      return (HasGroupTemporal);
   }
 
+void UniformlyGeneratedSetsEntry::PrintOut()
+{
+ cout << endl;
+ cout << "UGSEntry *******" << endl;
+ cout << "Nestl = " << NestingLevel << endl;
+ cout << "Subs = " << Subscripts << endl;
+ cout << "Name " << name << endl;
+ cout << " H is "<< endl;
+ PrintH();
+ cout << " LIS is " << endl;
+ PrintLIS();
+} 
+
+AST_INDEX UGSEntryIterator::operator() ()
+{
+IntegerListEntry *e;
+
+     e = IntegerListIter::operator()();
+     if( e != NULL )
+         return (AST_INDEX)( e->GetValue());
+     else return NULL;
+}
+
 void UniformlyGeneratedSets::Append(la_matrix nodeH, AST_INDEX node,
 				    int NumSubs, Boolean uniform)
 
   {
    UniformlyGeneratedSetsEntry *e;
    
-     e = new UniformlyGeneratedSetsEntry(nodeH,NestingLevel,NumSubs,
+     e = new UniformlyGeneratedSetsEntry(gen_get_text(gen_SUBSCRIPT_get_name(node)),
+					 nodeH,NestingLevel,NumSubs,
 					 LocalizedIterationSpace,
-					 uniform);
+         				 uniform);
      (*e) += node;
      (*this) += (int)e;
   }
@@ -517,8 +552,12 @@ void UniformlyGeneratedSets::AddNode(AST_INDEX node)
 	   nodeH[i][j] = 0;
        }
      GetH(node,nodeH,&uniform);
-     if (uniform && (UGSEntry = GetUniformlyGeneratedSet(nodeH)) != NULL)
+     if (uniform && (UGSEntry = GetUniformlyGeneratedSet(node,nodeH)) != NULL)
+      {
+       char Text[80];
+       ut_GetSubscriptText(list_first(gen_INVOCATION_get_actual_arg_LIST(node)), Text);
        (*UGSEntry) += node;
+      }
      else
        Append(nodeH,node,Subscripts,uniform);
   }
@@ -537,15 +576,18 @@ UniformlyGeneratedSets::GetUniformlyGeneratedSet(AST_INDEX node)
   }
 
 UniformlyGeneratedSetsEntry *
-UniformlyGeneratedSets::GetUniformlyGeneratedSet(la_matrix nodeH)
+UniformlyGeneratedSets::GetUniformlyGeneratedSet(AST_INDEX node,
+						 la_matrix nodeH)
 
   {
    UniformlyGeneratedSetsEntry *UGSEntry;
    UGSIterator UGSIter(*this);
-
+    
      while(UGSEntry = (UniformlyGeneratedSetsEntry* )UGSIter())
-       if (UGSEntry->SameUniformlyGeneratedSet(nodeH))
+      {
+       if (UGSEntry->SameUniformlyGeneratedSet(node,nodeH))
 	 return(UGSEntry);
+      }
      return(NULL);
   }
 
@@ -598,3 +640,48 @@ Boolean UniformlyGeneratedSets::NodeHasSelfTemporalReuse(AST_INDEX node)
        return(E->SingleNodeHasSelfTemporalReuse());
   }
 
+UniformlyGeneratedSetsEntry* UGSIterator::operator() ()
+{
+     IntegerListEntry *e;
+
+     e = IntegerListIter::operator()();
+     if ( e != NULL )
+       return (UniformlyGeneratedSetsEntry*)(e->GetValue());
+     else return NULL;
+}
+
+static int CheckNode(AST_INDEX Node,
+	             UniformlyGeneratedSets *UGS)
+
+{
+ if (is_subscript(Node))
+   UGS->AddNode(Node);
+ return(WALK_CONTINUE);
+}
+
+UniformlyGeneratedSets::UniformlyGeneratedSets(AST_INDEX loop,int NL,char **IV,la_vect LIS)
+
+  { 
+   int i;
+   AST_INDEX node;
+   
+     NestingLevel = NL;
+     IndexVars = new char*[NestingLevel];
+     for (i = 0; i < NestingLevel; i++)
+       IndexVars[i] = new char[80];
+     for (i = 0; i < NestingLevel; i++)
+       (void)strcpy(IndexVars[i],IV[i]);
+     LocalizedIterationSpace = la_vecNew(NestingLevel);
+     if (LIS == NULL)
+       {
+	la_vecClear(LocalizedIterationSpace, NestingLevel-1);
+	LocalizedIterationSpace[NestingLevel-1] = 1;
+       }
+     else
+       la_vecCopy(LIS,LocalizedIterationSpace,NestingLevel);
+     walk_expression(loop,(WK_EXPR_CLBACK)CheckNode,(WK_EXPR_CLBACK)NOFUNC,
+		     (Generic)this);
+     //for (AstIter AIter(loop,false,true); (node = AIter()) != AST_NIL;)
+       //if (is_subscript(node))
+         //AddNode(node);
+  };
