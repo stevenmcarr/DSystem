@@ -1,4 +1,4 @@
-/* $Id: RefGroups.C,v 1.5 1997/10/30 15:19:31 carr Exp $ */
+/* $Id: RefGroups.C,v 1.6 1998/09/29 20:43:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -9,6 +9,7 @@
 #include <libs/Memoria/include/RefGroups.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #include <libs/frontEnd/include/gi.h>
+#include <libs/Memoria/include/la.h>
 
 
 /****************************************************************/
@@ -303,7 +304,7 @@ void RefGroupMember::CheckGroupSpatial(AST_INDEX  node,
 
      if (UGS != NULL)
        if (HasGroupSpatial() && NOT(HasGroupTemporal()) && 
-	   NOT(HasSelfTemporal()))
+	   NOT(HasSelfTemporal()) && NOT(HasSelfSpatial()))
 	  
 	  /* make sure cost not counted elsewhere */
 	  
@@ -363,20 +364,22 @@ void RefGroupMember::CheckSelfSpatial(AST_INDEX node,
    int coeff;
    Boolean lin;
 
+     sub_list = gen_SUBSCRIPT_get_rvalue_LIST(tree_out(node));
+     sub = list_first(sub_list);
+     if (pt_find_var(sub,var))
+       {
+	 pt_get_coeff(sub,var,&lin,&coeff);	
+	 if (coeff < 0)
+	   coeff = -coeff;
+       }
      if (UGS != NULL)
        if (HasSelfSpatial())
 	  SpatialCost += (1.0/((float)(words)/(float)coeff));
        else;
      else
        {
-	sub_list = gen_SUBSCRIPT_get_rvalue_LIST(tree_out(node));
-	sub = list_first(sub_list);
-	if (pt_find_var(sub,var) && NotInOtherPositions(sub_list,var))
+	if (NotInOtherPositions(sub_list,var))
 	  {
-	   pt_get_coeff(sub,var,&lin,&coeff);	
-	   if (coeff < 0)
-	     coeff = -coeff;
-	
 	   /* make sure step size less than line size */
 
 	   if (coeff < words && lin)
@@ -444,48 +447,37 @@ void RefGroupMember::CheckSelfTemporal(AST_INDEX  node,
 void RefGroupSet::BuildRefGroupsWithUGS()
 
   {
-   UniformlyGeneratedSetsEntry *UGSEntry;
-   RefGroupMember *RefGroup;
-   GenericList UGSTemp;
-   AST_INDEX node,newnode;
-   Boolean DoCompare = false;
-   UGSIterator UGSIter(*UGS);
-   UGSEntryIterator *UGSEntryIter1, *UGSEntryIter2;
+    DataReuseModelEntry *RMEntry;
 
-     while(UGSEntry = (UniformlyGeneratedSetsEntry *)UGSIter())
-       {
-	 UGSEntryIter1 = new UGSEntryIterator(*UGSEntry);
-	 while(node = (AST_INDEX)(*UGSEntryIter1)())
-	   if (NOT(UGSTemp.QueryEntry(node)))
-	     {
-	       UGSTemp += node;
-	       RefGroup = new RefGroupMember;
-	       (*RefGroup) += gen_SUBSCRIPT_get_name(node);
-	       if (UGSEntry->SingleNodeHasSelfTemporalReuse())
-		 RefGroup->SetSelfTemporal();
-	       else if (UGSEntry->SingleNodeHasSelfSpatialReuse())
-		 RefGroup->SetSelfSpatial();
-	       UGSEntryIter2 = new UGSEntryIterator(*UGSEntry);
-	       while(newnode = (AST_INDEX)(*UGSEntryIter2)())
-		 if (node == newnode)
-		   DoCompare = true;
-		 else if (DoCompare && NOT(UGSTemp.QueryEntry(newnode)))
-		   if (UGSEntry->NodesHaveGroupTemporalReuse(node,newnode))
-		     {
-		       (*RefGroup) += gen_SUBSCRIPT_get_name(newnode);
-		       UGSTemp += newnode;
-		       RefGroup->SetGroupTemporal();
-		     }
-		   else if (UGSEntry->NodesHaveGroupSpatialReuse(node,newnode))
-		     {
-		       (*RefGroup) += gen_SUBSCRIPT_get_name(newnode);
-		       UGSTemp += newnode;
-		       RefGroup->SetGroupSpatial();
-		     }
-	       DoCompare = false;
-	       (*this) += (Generic)RefGroup;
-	     }
-       }
+
+      DataReuseModel *ReuseModel = new DataReuseModel(UGS);
+
+      for (DRIter RMIter(*ReuseModel);
+	   RMEntry = RMIter();)
+	{
+	  GroupSpatialEntry *GSEntry;
+
+	  for (GSSetIter GSIter(*(RMEntry->GetGSSet()));
+	       GSEntry = GSIter();)
+	    {
+	      GenericListEntry *GLEntry;
+	      
+	      RefGroupMember *RefGroup = new RefGroupMember;
+	      for (GenericListIter GLIter(*GSEntry->GetNodeList());
+		   GLEntry = GLIter();)
+		(*RefGroup) += 
+		  gen_SUBSCRIPT_get_name((AST_INDEX)GLEntry->GetValue());
+	      if (GSEntry->GetNodeList()->Count() > 1)
+		RefGroup->SetGroupSpatial();
+	      if (GSEntry->SizeofGTSet() > 1)
+		RefGroup->SetGroupTemporal();
+	      if (RMEntry->GetGSSet()->HasSelfSpatial())
+		RefGroup->SetSelfSpatial();
+	      if (RMEntry->GetGSSet()->HasSelfTemporal())
+		RefGroup->SetSelfTemporal();
+	      (*this) += (Generic)RefGroup;
+	    }
+	}
   }
 
 /****************************************************************/
@@ -632,7 +624,7 @@ static int PartitionNames(AST_INDEX   node,
 
 
 RefGroupSet::RefGroupSet(AST_INDEX loop, int NL,RefInfoType& RefInfo,
-			 Boolean UseUGS,int *LIS)
+			 Boolean UseUGS)
   { 
    int i;
    AST_INDEX sub_list,
@@ -643,9 +635,10 @@ RefGroupSet::RefGroupSet(AST_INDEX loop, int NL,RefInfoType& RefInfo,
    char      *var;
    RefGroupMember *RefGroup;
    RefGroupSetIter *RefIter;
+   int       *LIS;
 
      UseUniformlyGeneratedSets = UseUGS;
-     if (UseUGS && LIS == NULL)
+     if (UseUGS)
        {
 	LIS = new int[NL];
 	for (i = 0; i < NL; i++)

@@ -1,4 +1,4 @@
-/* $Id: RefGroups.h,v 1.5 1997/10/30 15:11:09 carr Exp $ */
+/* $Id: RefGroups.h,v 1.6 1998/09/29 20:43:32 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -12,6 +12,7 @@
 #include <libs/frontEnd/ast/AstIter.h>
 #include <libs/Memoria/include/GenericList.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
+#include <libs/Memoria/include/la.h>
 
 class RefGroupSet;
 
@@ -127,7 +128,7 @@ public:
   void DoPartition(AST_INDEX name,RefGroupMember *RG,DG_Edge *dg,PedInfo ped,
 	   int level,int MinLevel,Boolean VisitedMark,model_loop *loop_data);
   RefGroupSet(AST_INDEX loop, int NL,RefInfoType& RefInfo,
-	      Boolean UseUGS = false, int *LIS = NULL);
+	      Boolean UseUGS = true);
   ~RefGroupSet() {if (UseUniformlyGeneratedSets) delete UGS;}
 
 };
