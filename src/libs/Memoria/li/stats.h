@@ -1,4 +1,4 @@
-/* $Id: stats.h,v 1.6 1993/06/21 13:48:20 carr Exp $ */
+/* $Id: stats.h,v 1.7 1994/07/11 13:40:21 carr Exp $ */
 #ifndef stats_h
 #define stats_h
 
@@ -26,7 +26,9 @@
 #include <mh.h>
 #endif
 
-#define STATSDEBUG 1
+#include <LoopStats.h>
+
+/* #define STATSDEBUG  */
 
 typedef struct refinfotype {
   PedInfo       ped;
@@ -61,7 +63,5 @@ typedef struct edgeinfotype {
 #define INDEX  "mh: index"
 #define PRE_VAL  1
 #define POST_VAL 2
-
-typedef enum {MISS, IHIT, AHIT,REGISTER} RefType;
 
 #endif

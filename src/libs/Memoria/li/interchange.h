@@ -1,4 +1,4 @@
-/* $Id: interchange.h,v 1.6 1993/06/21 13:48:15 carr Exp $ */
+/* $Id: interchange.h,v 1.7 1994/07/11 13:40:12 carr Exp $ */
 
 #ifndef interchange_h
 #define interchange_h
@@ -50,7 +50,5 @@ typedef struct levelinfotype {
 #define INDEX  "mh: index"
 #define PRE_VAL  1
 #define POST_VAL 2
-
-typedef enum {MISS, IHIT, AHIT,REGISTER} RefType;
 
 #endif
