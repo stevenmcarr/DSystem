@@ -1,4 +1,4 @@
-/* $Id: aphelper.C,v 1.1 1997/06/24 17:41:50 carr Exp $ */
+/* $Id: aphelper.C,v 1.2 2001/09/17 00:14:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -403,7 +403,7 @@ gen_type_get_text (Generic type)
     }
 }
 
-int_type (char *type_str)
+int int_type (char *type_str)
 {
     if (strcmp (type_str, "LABEL") == 0)
 	return TYPE_LABEL;

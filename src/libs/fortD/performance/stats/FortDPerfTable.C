@@ -1,9 +1,9 @@
-/* $Id: FortDPerfTable.C,v 1.1 1997/03/11 14:29:10 carr Exp $ */
+/* $Id: FortDPerfTable.C,v 1.2 2001/09/17 00:12:21 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// $Id: FortDPerfTable.C,v 1.1 1997/03/11 14:29:10 carr Exp $
+// $Id: FortDPerfTable.C,v 1.2 2001/09/17 00:12:21 carr Exp $
 //**************************************************************************
 // Implementation of class FortDPerfTable:
 //**************************************************************************
@@ -182,7 +182,8 @@ void FortDPerfTable::AddPerfInfoEntry(PerfMetrics* perfEntry, int staticID)
     if (staticID >= perfInfoTableSize) {	// Must grow table
 	int newPerfInfoTableSize = staticID + TABLE_INIT_SIZE;
 	PerfMetrics** tmpPerfInfoTable =new PerfMetrics*[newPerfInfoTableSize];
-	for (int i = 0; i < perfInfoTableSize; i++)
+	int i;
+	for (i = 0; i < perfInfoTableSize; i++)
 	    tmpPerfInfoTable[i] = perfInfoTable[i];
 	for ( ; i < newPerfInfoTableSize; i++)
 	    tmpPerfInfoTable[i] = (PerfMetrics*) NULL;

@@ -1,9 +1,9 @@
-/* $Id: Metrics.C,v 1.1 1997/03/11 14:29:12 carr Exp $ */
+/* $Id: Metrics.C,v 1.2 2001/09/17 00:13:28 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// $Id: Metrics.C,v 1.1 1997/03/11 14:29:12 carr Exp $ -*-c++-*-
+// $Id: Metrics.C,v 1.2 2001/09/17 00:13:28 carr Exp $ -*-c++-*-
 //**************************************************************************
 // Definitions for class PerfMetrics and associated data structures
 //**************************************************************************
@@ -88,7 +88,7 @@ SetOfNamedFractions::operator= (SetOfNamedFractions& setNF)
 	    GrowArrays(setNF.curSize);
 	}
 	
-	for (i = 0; i < setNF.NumValues(); i++) { // Copy over all old values
+	for (int i = 0; i < setNF.NumValues(); i++) { // Copy over all old values
 	    fractions[i] = setNF.fractions[i];
 	    if (setNF.labels[i] != (char*) NULL) {
 		labels[i] = new char[1 + strlen(setNF.labels[i])];
