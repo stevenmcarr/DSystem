@@ -1,4 +1,4 @@
-/* $Id: expr.C,v 1.6 1999/07/22 18:06:38 carr Exp $ */
+/* $Id: expr.C,v 1.7 2000/01/12 23:05:37 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -300,6 +300,9 @@ int getIdInRegister(AST_INDEX node)
   int Index, Index_type, AReg, DReg, node_type, Offset = 0;
   char *comment;
 
+  if (aiDebug > 1)
+      (void) fprintf(stdout, "getIdInRegister( %d ).\n", node);
+  
   node_type = gen_get_node_type(node);
   switch(node_type)
   {
@@ -576,6 +579,10 @@ int binaryOp( AST_INDEX node )
   AST_INDEX	rhs;
   int		result_type;
   int		op;
+
+  if (aiDebug > 1)
+      (void) fprintf(stdout, "binaryOp( %d ).\n", node);
+  
 
   node_type = gen_get_node_type(node);
 

@@ -1,4 +1,4 @@
-/* $Id: gen.C,v 1.9 1999/07/22 18:06:38 carr Exp $ */
+/* $Id: gen.C,v 1.10 2000/01/12 23:05:38 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -324,6 +324,16 @@ void generate_long(int label, int op, Generic r1, Generic r2, Generic r3,
 		MNEM(op), (char *) r1, r2, r3, r4, r5);
 	break;
 	
+    // Added for dPFLD  MJB
+        case dPFLD:
+
+	r3 = fst_my_GetFieldByIndex(ft_SymTable, r3, SYMTAB_REG);
+	r4 = fst_my_GetFieldByIndex(ft_SymTable, r4, SYMTAB_REG);
+	r5 = fst_my_GetFieldByIndex(ft_SymTable, r5, SYMTAB_REG);
+	(void) fprintf(stdout, "\t%-8.8s\t%s\t%d\tr%d\tr%d\t=>\tr%d",
+		MNEM(op), (char *) r1, r2, r3, r4, r5);
+    break;
+
       case bSTor:
       case iSTor:
       case fSTor:
@@ -795,7 +805,7 @@ void generate_branch(int stmt_label, int cmp_op, int arg1, int arg2, int type,
 void generate_pfload(int sink, int addr, int PrefetchDistance,
 		     AST_INDEX OffsetAST,int type,int Index, char *Locality)
 {
-  int	alignment;
+  int	alignment, reg;
   char	*tag;
     
   /* get the name of the variable */
@@ -806,8 +816,12 @@ void generate_pfload(int sink, int addr, int PrefetchDistance,
 		  0, Locality);
   else
     {
-     fprintf(stderr,"Non-literal offsets for prefetching loads unsupported\n");
-     exit(-1);
+        // Change to generate the offset iloc. MJB
+        aiPrePass(OffsetAST);
+        reg = getExprInReg(OffsetAST);
+    generate_long(0, dPFLD, (Generic) tag, 8, reg, addr, sink, 0,
+		  0, Locality);        
+
     }
 }
 
