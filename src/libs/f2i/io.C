@@ -1,4 +1,4 @@
-/* $Id: io.C,v 1.2 1998/02/20 18:23:50 carr Exp $ */
+/* $Id: io.C,v 1.3 1998/02/21 17:28:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -372,7 +372,7 @@ static void GenerateHeader(AST_INDEX stmt, int cntr)
      this part is REALLY ugly!!! */
 
   if (aiRocket)
-    (void) sprintf(name, "IO$_%s%03d", proc_text, cntr);
+    (void) sprintf(name, "IO_%s%03d", proc_text, cntr);
   else
     (void) sprintf(name, "%s%03d", proc_text, cntr);
   (void) fprintf(fd, "\tsubroutine %s(", name);
