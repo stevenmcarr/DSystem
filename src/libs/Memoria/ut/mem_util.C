@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.17 1995/09/12 10:42:21 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.18 1996/02/14 11:02:49 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -23,6 +23,8 @@
 #endif
 
 #include <pt_util.h>
+
+EXTERN(double, ceil, (double x));
 
 #include <UniformlyGeneratedSets.h>
 
@@ -674,7 +676,11 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
 
 
 static float MemoryCycles(AST_INDEX node,
-			  StatsInfoType *Stats)
+			  model_loop *loop_data,
+			  int loop,
+			  PedInfo ped,
+			  UniformlyGeneratedSets *UGS,
+			  Boolean UseCache)
 
   {
    LocalityType RefT;
@@ -683,11 +689,10 @@ static float MemoryCycles(AST_INDEX node,
    Boolean lin;
    int     coeff;
 
-     LoadPenalty = ((config_type *)PED_MH_CONFIG(Stats->ped))->hit_cycles;
-     MissPenalty = ((config_type *)PED_MH_CONFIG(Stats->ped))->miss_cycles;
-     LineSize = ((config_type *)PED_MH_CONFIG(Stats->ped))->line;
-     switch(ut_GetReferenceType(node,Stats->loop_data,Stats->loop,Stats->ped,
-				Stats->UGS))
+     LoadPenalty = ((config_type *)PED_MH_CONFIG(ped))->hit_cycles;
+     MissPenalty = ((config_type *)PED_MH_CONFIG(ped))->miss_cycles;
+     LineSize = ((config_type *)PED_MH_CONFIG(ped))->line;
+     switch(ut_GetReferenceType(node,loop_data,loop,ped,UGS))
        {
 	case SELF_TEMPORAL:
 	case GROUP_TEMPORAL:
@@ -696,17 +701,17 @@ static float MemoryCycles(AST_INDEX node,
 	case SELF_TEMPORAL_CACHE:
 	case GROUP_TEMPORAL_CACHE:
 	case GROUP_SPATIAL:
-	  if (Stats->UseCache)
+	  if (UseCache)
 	    return(LoadPenalty);
 	  else
 	    return(1.0);
 
 	case SELF_SPATIAL:
-          if (Stats->UseCache)
+          if (UseCache)
 	    { 
 	     pt_get_coeff(list_first(gen_SUBSCRIPT_get_rvalue_LIST(node)),
 		  gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
-		               Stats->loop_data[Stats->loop].node))),&lin,&coeff);
+		               loop_data[loop].node))),&lin,&coeff);
 	     if (gen_get_converted_type(node) == TYPE_REAL)
 	       return(LoadPenalty + MissPenalty/(float)floor_ab(LineSize >> 3,coeff));
 	     else 
@@ -717,14 +722,14 @@ static float MemoryCycles(AST_INDEX node,
 	  else
 	    return(1.0);
 	case NONE:
-          if (Stats->UseCache)
+          if (UseCache)
 	    {
 	     if (gen_get_converted_type(node) == TYPE_REAL)
 	       return(LoadPenalty + MissPenalty);
 	     else 
                if (gen_get_converted_type(node) == TYPE_DOUBLE_PRECISION || 
 		   gen_get_converted_type(node) == TYPE_COMPLEX)
-                 return(((config_type *)PED_MH_CONFIG(Stats->ped))
+                 return(((config_type *)PED_MH_CONFIG(ped))
 			->double_fetches * (LoadPenalty + MissPenalty));
 	    }
 	  else
@@ -806,7 +811,8 @@ int ut_ComputeBalance(AST_INDEX     node,
    EDGE_INDEX edge;
 
      if (is_subscript(node))
-       Stats->mops += MemoryCycles(node,Stats);
+       Stats->mops += MemoryCycles(node,Stats->loop_data,Stats->loop,Stats->ped,
+				   Stats->UGS,Stats->UseCache);
      else if (is_binary_op(node) || is_unary_minus(node))
        Stats->flops += OperationCycles(node,Stats->ped); 
      return(WALK_CONTINUE);
@@ -898,53 +904,6 @@ void ut_GetSubscriptText(AST_INDEX Node,
   }
 
 
-static int LoadCycles(AST_INDEX Node,
-		      PedInfo   ped)
-
-  {
-   int LoadPenalty;
-
-    LoadPenalty = ((config_type *)PED_MH_CONFIG(ped))->hit_cycles;
-    if (gen_get_converted_type(Node) == TYPE_REAL)
-      return(LoadPenalty);
-    else if (gen_get_converted_type(Node) == TYPE_DOUBLE_PRECISION ||
-            gen_get_converted_type(Node) == TYPE_COMPLEX)
-      return(((config_type *)PED_MH_CONFIG(ped))->double_fetches*LoadPenalty);
-    else	
-      return(0);
-  }
-
-
-static int ComputeOperationCycles(AST_INDEX Node,
-				  PedInfo   ped)
-
-  {
-   int ops;
-     
-     if (!is_binary_times(Node) || 
-	 (!is_binary_plus(tree_out(Node)) && 
-	  !is_binary_minus(tree_out(Node))) ||
-	 !((config_type *)PED_MH_CONFIG(ped))->mult_accum)
-       if (gen_get_converted_type(Node) == TYPE_DOUBLE_PRECISION ||
-	   gen_get_converted_type(Node) == TYPE_COMPLEX ||
-	   gen_get_converted_type(Node) == TYPE_REAL)
-	 {
-	  if (gen_get_converted_type(Node) == TYPE_COMPLEX)
-	    ops = 2;
-	  else
-	    ops = 1;
-	  if (is_binary_times(Node))
-	    return(((config_type *)PED_MH_CONFIG(ped))->mul_cycles * ops);
-	  else if (is_binary_plus(Node) || is_binary_minus(Node))
-	    return(((config_type *)PED_MH_CONFIG(ped))->add_cycles * ops);
-	  else if (is_binary_divide(Node))
-	    return(((config_type *)PED_MH_CONFIG(ped))->div_cycles * ops);
-	  else
-	    return(ops); 
-	 }
-     return(0);
-  }
-
 
 static int CountCycles(AST_INDEX     Node,
 		       CycleInfoType *CycleInfo)
@@ -953,19 +912,18 @@ static int CountCycles(AST_INDEX     Node,
    subscript_info_type *sptr;
 
      if (is_subscript(Node))
-       {
-	sptr = get_subscript_ptr(gen_SUBSCRIPT_get_name(Node));
-	if (sptr->Locality == NONE || sptr->Locality == SELF_SPATIAL ||
-	    sptr->Locality == GROUP_SPATIAL)
-	  CycleInfo->MemCycles += LoadCycles(Node,CycleInfo->ped);
-       }
+       CycleInfo->MemCycles += MemoryCycles(Node,CycleInfo->loop_data,CycleInfo->loop,
+					    CycleInfo->ped,CycleInfo->UGS,true);
      else if (is_binary_op(Node))
-	CycleInfo->FlopCycles += ComputeOperationCycles(Node,CycleInfo->ped);
+	CycleInfo->FlopCycles += OperationCycles(Node,CycleInfo->ped);
      return(WALK_CONTINUE);
   }
 
 
 int ut_CyclesPerIteration(AST_INDEX Node,
+			  model_loop *loop_data,
+			  int loop,
+			  UniformlyGeneratedSets *UGS,
 			  PedInfo   ped)
 
   {
@@ -974,12 +932,13 @@ int ut_CyclesPerIteration(AST_INDEX Node,
      CycleInfo.MemCycles = 0;
      CycleInfo.FlopCycles = 0;
      CycleInfo.ped = ped;
+     CycleInfo.loop_data = loop_data;
+     CycleInfo.loop = loop;
+     CycleInfo.UGS = UGS;
      walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountCycles,NOFUNC,
 		     (Generic)&CycleInfo);
-     if (CycleInfo.MemCycles >= CycleInfo.FlopCycles)
-       return(CycleInfo.MemCycles);
-     else
-       return(CycleInfo.FlopCycles);
+     return ((int)ceil((double)(CycleInfo.MemCycles >= CycleInfo.FlopCycles ? 
+				CycleInfo.MemCycles : CycleInfo.FlopCycles)));
   }
 
 static int CountSize(AST_INDEX     Node,
@@ -1004,21 +963,7 @@ int ut_LoopSize(AST_INDEX Node,
                           PedInfo   ped)
 
   {
-   CycleInfoType CycleInfo;
-  
-     CycleInfo.MemCycles = 0;
-     CycleInfo.FlopCycles = 0;
-     CycleInfo.ped = ped;
-     walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountSize,NOFUNC,
-                     (Generic)&CycleInfo);
-     /********
-     if (CycleInfo.MemCycles >= CycleInfo.FlopCycles)
-       return(CycleInfo.MemCycles);
-     else
-       return(CycleInfo.FlopCycles);
-     *******/
-      return(CycleInfo.FlopCycles + CycleInfo.MemCycles); 
-
+   return(10);
   }
 
 

@@ -17,13 +17,18 @@
 /*                                                              */
 /****************************************************************/
 
-void RefGroupCore::UnsetVisitedMark(AST_INDEX node)
+static int UnsetVisitedMark(AST_INDEX node,
+			    Generic dummy)
 
   {
    AST_INDEX name;
 
-     name = gen_SUBSCRIPT_get_name(node);
-     get_subscript_ptr(name)->visited = false;
+     if (is_subscript(node))
+       {
+	name = gen_SUBSCRIPT_get_name(node);
+	get_subscript_ptr(name)->visited = false;
+       }
+     return(WALK_CONTINUE);
   }
 
 
@@ -592,8 +597,8 @@ void RefGroupSet::DoPartition(AST_INDEX name,
 /*                                                              */
 /****************************************************************/
 
-void RefGroupSet::PartitionNames(AST_INDEX   node,
-				 RefInfoType& RefInfo)
+static int PartitionNames(AST_INDEX   node,
+			   RefInfoType *RefInfo)
 
 
   {
@@ -606,15 +611,16 @@ void RefGroupSet::PartitionNames(AST_INDEX   node,
        {
 	name = gen_SUBSCRIPT_get_name(node);
 	sptr = get_subscript_ptr(name);
-	if (sptr->visited != RefInfo.VisitedMark)
+	if (sptr->visited != RefInfo->VisitedMark)
 	  {
 	   RG = new RefGroupMember;
-	   (*this) += (int)RG;
-	   DoPartition(name,RG,RefInfo.dg,RefInfo.ped,
-		       RefInfo.level,RefInfo.loop_data[0].level,
-		       RefInfo.VisitedMark,RefInfo.loop_data);
+	   (*RefInfo->RGS) += (int)RG;
+	   RefInfo->RGS->DoPartition(name,RG,RefInfo->dg,RefInfo->ped,
+		       RefInfo->level,RefInfo->loop_data[0].level,
+		       RefInfo->VisitedMark,RefInfo->loop_data);
 	  }
        }
+     return(WALK_CONTINUE);
   }
 
 
@@ -646,13 +652,12 @@ RefGroupSet::RefGroupSet(AST_INDEX loop, int NL,RefInfoType& RefInfo,
        }
      else
        {
-	for (AstIter AIter1(loop,false); (node = AIter1()) != AST_NIL;)
-	  if (is_subscript(node))
-	    UnsetVisitedMark(node);
+	walk_expression(loop,(WK_EXPR_CLBACK)UnsetVisitedMark,NOFUNC,
+			(Generic)NULL);
 	RefInfo.VisitedMark = true;
-	for (AstIter AIter2(loop,false); (node = AIter2()) != AST_NIL;)
-	  if (is_subscript(node))
-	    PartitionNames(node,RefInfo);
+	RefInfo.RGS = this;
+	walk_expression(loop,(WK_EXPR_CLBACK)PartitionNames,NOFUNC,
+			(Generic)&RefInfo);
 	UGS = NULL;
        }
      RefIter = new RefGroupSetIter(*this);

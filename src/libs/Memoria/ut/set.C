@@ -1,4 +1,4 @@
-/* $Id: set.C,v 1.6 1994/07/20 11:33:30 carr Exp $ */
+/* $Id: set.C,v 1.7 1996/02/14 11:02:55 carr Exp $ */
 /*
  *  An implementation of sets as bit-vectors
  *	(part of the Rn Module Compiler code generator)
@@ -248,7 +248,7 @@ if (n > s->words*32) fprintf(stderr, "MemberNumber: large argument");
 
 
 void ut_clear_set(Set s)
-    {	bzero((char *)&s->word[0], s->words*BYTES);
+    {	memset((char *)&s->word[0], 0, s->words*BYTES);
     }
 
 
@@ -258,14 +258,14 @@ void ut_clear_set(Set s)
 /*                                                                          */
 /*    Input:        s1,s2 - bit vector sets                                 */
 /*                                                                          */
-/*    Description:  Copy s1 into s2.                                        */
+/*    Description:  Copy s2 into s1.                                        */
 /*                                                                          */
 /****************************************************************************/
 
 
 void ut_copy12(Set s1, 
 	       Set s2)
-    {	bcopy((const char *)&s2->word[0], (char *)&s1->word[0], s1->words*BYTES);
+    {	memcpy((const char *)&s1->word[0], (char *)&s2->word[0], s1->words*BYTES);
     }
 
 
@@ -282,7 +282,7 @@ void ut_copy12(Set s1,
 
 Bool ut_sets_differ(Set s1, 
 		    Set s2)
-    {	return bcmp((const char *)&s1->word[0], (const char *)&s2->word[0], s1->words*BYTES) ? tr : fa;
+    {	return memcmp((const char *)&s1->word[0], (const char *)&s2->word[0], s1->words*BYTES) ? tr : fa;
     }
 
 #endif

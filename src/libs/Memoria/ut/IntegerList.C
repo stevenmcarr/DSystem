@@ -4,11 +4,11 @@
 
 Boolean IntegerList::QueryEntry(int i)
 {
-  int j;  
+  IntegerListEntry* ILEntry;  
   
       for (IntegerListIter ILIter(this);
-	   j = ILIter()->GetValue();)
-	if (i == j) return true;
+	   ILEntry = ILIter();)
+	if (i == ILEntry->GetValue()) return true;
       return false;
 } 
 
