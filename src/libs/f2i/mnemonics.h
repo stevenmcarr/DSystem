@@ -1,4 +1,4 @@
-/* $Id: mnemonics.h,v 1.2 1997/03/27 20:30:00 carr Exp $ */
+/* $Id: mnemonics.h,v 1.3 1997/04/10 14:21:41 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -363,9 +363,6 @@ struct htable_elt
 	int	opcode;
 };
 
-int	*ftable;
-char	**ntable;
-struct htable_elt	*htable;
 
 #endif
 
