@@ -1,4 +1,4 @@
-/* $Id: la.h,v 1.6 1998/06/08 15:25:21 carr Exp $ */
+/* $Id: la.h,v 1.7 1998/07/07 19:42:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -206,6 +206,7 @@ class GroupSpatialSet :
 		int Subs;
 		int IsSelfTemporal;
 		int IsSelfSpatial;
+		Boolean NegativeStep;
 		ComputeBoard *computeboard;
 	 	la_matrix H;	
 	 public:
@@ -261,6 +262,7 @@ class DataReuseModelEntry:
 		Boolean HasSelfSpatialReuse(AST_INDEX node);
 		Boolean HasGroupTemporalReuse(AST_INDEX node);
 		Boolean HasSelfTemporalReuse(AST_INDEX node);
+		GroupSpatialSet *GetGSSet() { return gsset; }
 	};
 
 class DataReuseModel:
