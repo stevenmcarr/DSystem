@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.12 1994/04/13 14:25:48 carr Exp $ */
+/* $Id: mh.h,v 1.13 1994/05/31 15:08:42 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -82,6 +82,7 @@ struct loop_struct {
                   distribute,
                   expand,
                   unroll,
+		  reversed,
                   reduction;
   loop_shape_type type;
   trap_fn_type    trap_fn;

@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.4 1994/01/18 14:24:43 carr Exp $ */
+/* $Id: LoopStats.h,v 1.5 1994/05/31 15:10:01 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -37,6 +37,7 @@ typedef struct loopstatstype {
           UnsafeInterchange,
           DistributionUnsafe,
           NeedsScalarExpansion,
+          Reversed,
           TooComplex,
           Imperfect,
           Nests,
