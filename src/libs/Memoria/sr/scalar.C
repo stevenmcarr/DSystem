@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.23 1995/03/29 08:06:39 carr Exp $ */
+/* $Id: scalar.C,v 1.24 1995/04/17 14:31:25 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -228,7 +228,12 @@ static int get_prelim_info(AST_INDEX          stmt,
        }
      else if (is_write(stmt))
        walk_expression(gen_WRITE_get_data_vars_LIST(stmt),
-		       (WK_EXPR_CLBACK)count_arrays,NOFUNC,(Generic)prelim_info);
+		       (WK_EXPR_CLBACK)count_arrays,NOFUNC,
+		       (Generic)prelim_info);
+     else if (is_print(stmt))
+       walk_expression(gen_PRINT_get_data_vars_LIST(stmt),
+		       (WK_EXPR_CLBACK)count_arrays,NOFUNC,
+		       (Generic)prelim_info);
      else if (is_read_short(stmt))
        walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),
 		       (WK_EXPR_CLBACK)count_arrays,NOFUNC,(Generic)prelim_info);

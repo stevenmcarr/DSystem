@@ -1,4 +1,4 @@
-/* $Id: mark.C,v 1.9 1995/03/29 08:06:00 carr Exp $ */
+/* $Id: mark.C,v 1.10 1995/04/17 14:31:36 carr Exp $ */
 
 
 /****************************************************************************/
@@ -98,8 +98,13 @@ int ut_mark_do_pre(AST_INDEX       stmt,
      walk_expression(gen_GUARD_get_rvalue(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,
 		     pre_info);
    else if (is_write(stmt))
-     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)
-		     NOFUNC,pre_info);
+     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),
+		     (WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,
+		     pre_info);
+   else if (is_print(stmt))
+     walk_expression(gen_PRINT_get_data_vars_LIST(stmt),
+		     (WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,
+		     pre_info);
    else if (is_read_short(stmt))
      walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),(WK_EXPR_CLBACK)
 		     set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,pre_info);
