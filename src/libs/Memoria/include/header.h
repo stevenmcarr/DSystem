@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.5 1992/12/11 11:19:46 carr Exp $ */
+/* $Id: header.h,v 1.6 1993/06/15 14:06:54 carr Exp $ */
 
 #ifndef header_h
 #define header_h
@@ -22,9 +22,14 @@
 #include <LoopStats.h>           /* for LoopStatsType */
 #endif 
 
+#include <fort/FortTextTree.h>
+#include <ArrayTable.h>
+
 EXTERN(void, memory_interchange_stats,(PedInfo ped,AST_INDEX root,
 					       int level,
 				               LoopStatsType *LoopStats,
+				               char *routine,
+				               char *program,
 					       SymDescriptor symtab,
 					       arena_type *ar));
 
@@ -38,7 +43,16 @@ EXTERN(AST_INDEX, memory_unroll_and_jam,(PedInfo ped,AST_INDEX root,
 					     arena_type *ar));
 
 EXTERN(void, memory_scalar_replacement,(PedInfo ped,AST_INDEX root,
-						SymDescriptor symtab,
-						arena_type *ar));
+					int level,SymDescriptor symtab,
+					arena_type *ar));
+
+EXTERN(void, memory_software_prefetch,(PedInfo ped,AST_INDEX root,
+				       int level,SymDescriptor symtab,
+				       arena_type *ar));
+
+EXTERN(void, memory_AnnotateWithCacheCalls,(AST_INDEX root, int level,
+					    char *routine,
+					    TableInfoType *TableInfo,
+					    FortTextTree ftt));
 
 #endif
