@@ -1,4 +1,4 @@
-/* $Id: mem_util.h,v 1.13 1995/08/21 14:20:24 carr Exp $ */
+/* $Id: mem_util.h,v 1.14 1995/08/24 14:25:53 yguan Exp $ */
 
 #ifndef mem_util_h
 #define mem_util_h
@@ -34,7 +34,6 @@
 #ifndef dp_h
 #include <dp.h>
 #endif
-
 
 #include <UniformlyGeneratedSets.h>
 
@@ -122,5 +121,7 @@ EXTERN(int,ut_change_logical_to_block_if, (AST_INDEX stmt,
 					   int       level,
 					   int       dummy));
 EXTERN(int, ut_CyclesPerIteration, (AST_INDEX Node, PedInfo   ped));
+
+EXTERN(int, ut_LoopSize, (AST_INDEX Node, PedInfo   ped));
 
 #endif
