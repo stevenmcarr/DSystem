@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.35 2000/06/15 14:15:47 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.36 2001/09/14 16:58:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -244,6 +244,26 @@ static int CreateDepInfo(AST_INDEX node,
      return(WALK_CONTINUE);
   }
 
+static Boolean EarlierStoreExists(AST_INDEX Node,
+				  PedInfo ped)
+
+{
+ DG_Edge *dg;
+ int vector;
+ EDGE_INDEX edge;
+ AST_INDEX name;
+ Boolean Earlier = false;
+	
+ name = gen_SUBSCRIPT_get_name(Node);
+ dg = dg_get_edge_structure( PED_DG(ped));
+ vector = get_info(ped,name,type_levelv);
+ for (edge = dg_first_sink_ref(PED_DG(ped),vector);
+      edge != END_OF_LIST && NOT(Earlier);
+      edge = dg_next_sink_ref(PED_DG(ped),edge))
+   if (dg[edge].type == dg_true)
+     Earlier = true;
+ return Earlier;
+}
 
 static int StoreCacheInfo(AST_INDEX     node,
 			  CacheInfoType *CacheInfo)
@@ -285,8 +305,15 @@ static int StoreCacheInfo(AST_INDEX     node,
       if (aiSpecialCache && 
 	  NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
 	  CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
-	DepInfoPtr(node)->UsePrefetchingLoad = 
-	  CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
+	{
+	  DepInfoPtr(node)->UsePrefetchingLoad = 
+	 	 CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
+	  if (DepInfoPtr(node)->UsePrefetchingLoad &&
+	      EarlierStoreExists(node,CacheInfo->ped))
+	    cerr << "Found store that is earlier than prefetching load" 
+		 << endl; 
+		
+	}
       else if (DepInfoPtr(node)->Locality == NONE && 
 	       IsConstantStride(node,*(CacheInfo->IVar)))
 
@@ -940,6 +967,11 @@ static int SetDistance(AST_INDEX Node,
 	      DepInfoPtr(Node)->PrefetchDistance =
 		(ceil_ab(PrefetchData->PrefetchLatency,PrefetchData->LoopCycles) + 1) *
 		PrefetchData->LineSize;
+	      
+	      if (mod((DepInfoPtr(Node)->PrefetchDistance / 
+		       PrefetchData->LineSize),2) == 0)
+		DepInfoPtr(Node)->PrefetchDistance +=
+		  PrefetchData->LineSize;
 
 	      DepInfoPtr(Node)->PrefetchOffsetAST = AST_NIL;
             }
