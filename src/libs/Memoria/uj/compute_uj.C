@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.19 1995/06/07 16:04:42 carr Exp $ */
+/* $Id: compute_uj.C,v 1.20 1995/06/27 10:54:40 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -2492,6 +2492,43 @@ int mh_increase_unroll(int   max,
 /****************************************************************************/
 
 
+static void ComputeUsingLinearAlgebra(dep_info_type *dep_info,
+				      int           *unroll_vector,
+				      int           *unroll_loops,
+				      model_loop    *loop_data,
+				      int           loop,
+				      UtilList      *loop_list)
+  {
+   char *IVar[80];
+   UtilNode *lnode;
+   int n;
+   UniformlyGeneratedSets *UGS;
+
+     IVar = new char*[loop_data[loop].level];
+     for (lnode = UTIL_HEAD(loop_list),n = 0;
+	  lnode != NULLNODE;
+	  lnode = UTIL_NEXT(lnode), n++)
+       {
+	loop = UTIL_NODE_ATOM(lnode);
+	IVar[n] = gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
+					                loop_data[loop].node)));
+       }
+     UGS = new UniformlyGeneratedSets(loop_data[loop].node,loop_data[loop].level,IVar);
+
+     /* Yiping UGS will contain the uniformly generated reference sets */
+  }
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void ComputeTwoCache(model_loop    *loop_data,
 			    int           *unroll_vector,
 			    int           *unroll_loops,
@@ -2986,7 +3023,8 @@ static void do_computation(model_loop    *loop_data,
 			   int           count,
 			   PedInfo       ped,
 			   SymDescriptor symtab,
-			   arena_type    *ar)
+			   arena_type    *ar,
+			   UtilList      *loop_list)
 
   {
    int           i,j,k,regs,LineSize; float         rhoL_lp,bal,MissCost;
@@ -3149,6 +3187,9 @@ static void do_computation(model_loop    *loop_data,
        }
      else
        {
+	if (mc_extended_cache)
+	  ComputeUsingLinearAlgebra(&dep_info,unroll_vector,unroll_loops,
+				    loop_data,loop,loop_list);
 	if (count == 2)
 	  if (mc_unroll_cache)
 	    ComputeTwoCache(loop_data,unroll_vector,unroll_loops,loop,
@@ -3212,6 +3253,7 @@ static void compute_values(model_loop    *loop_data,
 			   int           *unroll_vector,
 			   int           *unroll_loops,
 			   int           count,
+			   UtilList      *loop_list,
 			   PedInfo       ped,
 			   SymDescriptor symtab,
 			   arena_type    *ar)
@@ -3219,15 +3261,16 @@ static void compute_values(model_loop    *loop_data,
   {
    int i;
 
+     util_append(loop_list,util_node_alloc(loop,"loop node"));
      if (loop_data[loop].inner_loop == -1)
        if (count > 0)
          do_computation(loop_data,loop,unroll_vector,unroll_loops,count,ped,
-			symtab,ar);
+			symtab,ar,loop_list);
        else if (loop_data[loop].reduction)
 	 {
 	  unroll_loops[count] = loop;
 	  do_computation(loop_data,loop,unroll_vector,unroll_loops,count,ped,
-			 symtab,ar);
+			 symtab,ar,loop_list);
 	 }
        else
          loop_data[loop].NoImprovement = true;
@@ -3238,7 +3281,7 @@ static void compute_values(model_loop    *loop_data,
 	i = loop_data[loop].inner_loop;
 	while(i != -1)
 	  {
-	   compute_values(loop_data,i,unroll_vector,unroll_loops,count,ped,
+	   compute_values(loop_data,i,unroll_vector,unroll_loops,count,loop_list,ped,
 			  symtab,ar);
 	   i = loop_data[i].next_loop;
 	   if (i != -1)
@@ -3251,6 +3294,7 @@ static void compute_values(model_loop    *loop_data,
 	   
 	  }
        }
+     util_pluck(UTIL_TAIL(loop_list));
   }
 
 
@@ -3274,11 +3318,14 @@ void mh_compute_unroll_amounts(model_loop    *loop_data,
 			       
   {
    int unroll_loops[2];
+   UtilList      *loop_list;
 
+     loop_list = util_list_alloc((Generic)NULL,"loop-list");
      pick_loops(loop_data,size,num_loops,ped,symtab,ar);
      loop_data[0].unroll_vector = (int *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 								   MAXLOOP * 
 								   sizeof(int));
-     compute_values(loop_data,0,loop_data[0].unroll_vector,unroll_loops,0,ped,
+     compute_values(loop_data,0,loop_data[0].unroll_vector,unroll_loops,0,loop_list,ped,
 		    symtab,ar);
+     util_list_free(loop_list);
   }
