@@ -1,4 +1,4 @@
-/* $Id: stats.C,v 1.7 1994/05/31 15:01:23 carr Exp $ */
+/* $Id: stats.C,v 1.8 1994/07/11 13:39:50 carr Exp $ */
 
 /****************************************************************/
 /*                                                              */
@@ -60,96 +60,6 @@
 #ifndef dg_h
 #include	<dg.h>		/* dg_add_edge()		*/
 #endif 
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   Remove_Edges                                   */
-/*                                                              */
-/*   Input:      stmt - statement in AST                        */
-/*               level - nesting level of stmt                  */
-/*               ped - structure containing dependence graph    */
-/*                                                              */
-/*   Description:  removes io, control, exit and call           */
-/*                 dependences from the dependence graph.       */
-/*                 called by walk_statements.                   */
-/*                                                              */
-/****************************************************************/
-
-static int RemoveEdges(AST_INDEX stmt,
-			int       level,
-			PedInfo   ped)
-
-  {
-   DG_Edge    *dg;
-   int        vector;
-   EDGE_INDEX edge,
-              next_edge;
-   int        i;
-
-     dg = dg_get_edge_structure( PED_DG(ped));
-     vector = get_info(ped,stmt,type_levelv);
-   
-       /* remove carried dependences */
-
-     for (i = 1;i <= level; i++)
-       {
-
-	        /* remove outgoing dependences */
-
-	for (edge = dg_first_src_stmt( PED_DG(ped),vector,i);
-	     edge != END_OF_LIST;
-	     edge = next_edge)
-	  {
-	   next_edge = dg_next_src_stmt( PED_DG(ped),edge);
-	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge( PED_DG(ped),edge);
-	  }
-
-	        /* remove incoming dependences */
-
-	for (edge = dg_first_sink_stmt( PED_DG(ped),vector,i);
-	     edge != END_OF_LIST;
-	     edge = next_edge)
-	  {
-	   next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
-	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge( PED_DG(ped),edge);
-	  }
-       }
-
-	        /* remove outgoing loop-independent dependences */
-
-     for (edge = dg_first_src_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
-	  edge != END_OF_LIST;
-	  edge = next_edge)
-       {
-	next_edge = dg_next_src_stmt( PED_DG(ped),edge);
-	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	    dg[edge].type == dg_call || dg[edge].type == dg_control ||
-	    dg[edge].src == dg[edge].sink ||
-	    (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink) &&
-	     dg[edge].type == dg_true))
-	  dg_delete_free_edge( PED_DG(ped),edge);
-       }
-
-	        /* remove incoming loop-independent dependences */
-
-     for (edge = dg_first_sink_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
-	  edge != END_OF_LIST;
-	  edge = next_edge)
-       {
-	next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
-	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	    dg[edge].type == dg_call || dg[edge].type == dg_control ||
-	    dg[edge].src == dg[edge].sink ||
-	    (ut_get_stmt(dg[edge].src) == ut_get_stmt(dg[edge].sink) &&
-	     dg[edge].type == dg_true))
-	   dg_delete_free_edge( PED_DG(ped),edge);
-       }
-     return(WALK_CONTINUE);
-  }
 
 
 /****************************************************************/
@@ -840,10 +750,6 @@ void memory_interchange_stats(PedInfo       ped,
 
      if (pre_info.abort)
        return;
-
-             /* remove dependence edges not wanted */
-
-     walk_statements(root,level,RemoveEdges,NOFUNC,(Generic)ped);
 
      loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 					 pre_info.loop_num*sizeof(model_loop));
