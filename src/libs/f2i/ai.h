@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.8 1998/04/29 13:00:23 carr Exp $ */
+/* $Id: ai.h,v 1.9 1998/07/07 19:25:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -28,6 +28,7 @@
 #include <libs/Memoria/annotate/DirectivesInclude.h>
 #include <libs/Memoria/include/memory_menu.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
+#include <libs/Memoria/include/ASTToIntMap.h>
 
   /* the various flags - initialized in main.c */
     extern    int aiAnnotate;	/* automatically generate comments	*/
@@ -49,6 +50,8 @@
     extern int aiRocket;	/* compile with Rocket naming	*/
     extern int aiRt;   	/* generate code for Rt                 */
                         /* so default is for itoc  (cij 8/6/92) */
+    extern int aiOptimizeAddressCode; /* utilize non-zero offsets in 
+					 address generation */
     extern int aiCache; /* do cache reuse analysis */
     extern int aiSpecialCache; /* make self spatial gs leaders cache misses */
     extern int aiLongIntegers; /* use 64-bit integers */
@@ -84,6 +87,9 @@
      */
     extern AST_INDEX   root_node;
     extern AST_INDEX	formal_list;
+
+
+    extern ASTToIntMap *ASTRegMap;
 
   /* globally used routines */
     void ERROR();
@@ -163,6 +169,8 @@ typedef struct DepInfoStruct {
   UtilList *DependenceList;
   LocalityType Locality;
   Boolean IsGroupSpatialTrailer;
+  AST_INDEX AddressLeader;
+  int Offset;
  } DepInfoType;         /* copy in Memoria/annotate/CacheAnalysis.h */
 
 typedef struct depstruct {
@@ -276,12 +284,12 @@ EXTERN(int,HandleExponent,(AST_INDEX ));
 EXTERN(char*, GenDepComment,(AST_INDEX));
 EXTERN(char*,GenDepCommentForStmt,(Directive*));
 EXTERN(void,generate,(int, int, Generic, Generic, Generic, char*));
-EXTERN(void,generate_store,( int, int, int, int, char*));
+EXTERN(void,generate_store,( int, int, int, int, char*,int offset = 0));
 EXTERN(void,generate_move,( int, int, int));
 EXTERN(void, generate_branch,(int, int, int, int, int, int, int, char*));
 EXTERN(void,generate_string,(char*, int, Generic, Generic, Generic, char*));
-EXTERN(void,generate_load,(int, int, int, int, char*));
-EXTERN(void, generate_cache_op,(int, int, Directive *));
+EXTERN(void,generate_load,(int, int, int, int, char*,int offset = 0));
+EXTERN(void, generate_cache_op,(int, int, Directive *,int offset = 0));
 EXTERN(void,PrintData,(int  , int  , int  , int ));
 EXTERN(void,generate_long,(int, int, Generic, Generic, Generic, 
 			   Generic,Generic,Generic, Generic, char * ));

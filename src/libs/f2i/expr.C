@@ -1,4 +1,4 @@
-/* $Id: expr.C,v 1.2 1998/04/29 21:43:45 carr Exp $ */
+/* $Id: expr.C,v 1.3 1998/07/07 19:25:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -27,6 +27,10 @@
 
 #include <libs/f2i/mnemonics.h>
 
+#include <libs/Memoria/include/ASTToIntMap.h>
+
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+
 /* functions in this file */
 /* int getExprInReg(node)          get expr at node (node) into a register */
 /*                                 and returns register value, makes iloc  */
@@ -48,6 +52,8 @@
 
 /* global data structure */
 extern int subs_by_type[];
+
+extern ASTToIntMap *ASTRegMap;
 
 /* local data structures */
 static char name_buffer[128];
@@ -291,7 +297,7 @@ int getConversion( int reg, int type )
 int getIdInRegister(AST_INDEX node)
   // AST_INDEX node;
 {
-  int Index, Index_type, AReg, DReg, node_type;
+  int Index, Index_type, AReg, DReg, node_type, Offset = 0;
   char *comment;
 
   node_type = gen_get_node_type(node);
@@ -313,11 +319,36 @@ int getIdInRegister(AST_INDEX node)
 	break;
 
     case GEN_SUBSCRIPT:
-	AReg  = getSubscriptLValue(node);
 	Index = getIndex(gen_SUBSCRIPT_get_name(node));
 	Index_type = fst_my_GetFieldByIndex(ft_SymTable, Index, SYMTAB_TYPE);
-	DReg  = StrTempReg("!", AReg, Index_type);
 	comment = GenDepComment(node);
+	if (aiOptimizeAddressCode)
+	  if (DepInfoPtr(node)->AddressLeader == node)
+	    {
+	      AReg  = getSubscriptLValue(node);
+	      DReg  = StrTempReg("!", AReg, Index_type);
+	      ASTRegMap->MapAddEntry(node,AReg);
+	    }
+	  else
+	    {
+	      // create code to for address arithmetic that can be peepholed
+	      // to use register + offset addressing mode
+
+	      AReg = ASTRegMap->MapToValue(DepInfoPtr(node)->AddressLeader);
+	      Offset = DepInfoPtr(node)->Offset*GetDataSize(TYPE_INTEGER);
+	      int OffsetReg = getConstantInRegFromInt(Offset);
+	      int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
+	      int TempIndex = TempReg(AReg, OffsetReg, op, TYPE_INTEGER);
+	      generate(0, op, AReg, OffsetReg, TempIndex, NOCOMMENT);
+	      AReg = TempIndex;
+	      DReg  = StrTempReg("!", AReg, Index_type);
+		
+	    }
+	else
+	  {
+	    AReg  = getSubscriptLValue(node);
+	    DReg  = StrTempReg("!", AReg, Index_type);
+	  }
 	generate_load( DReg, AReg, Index_type, Index, comment);
 	free(comment);
 	Index = DReg;

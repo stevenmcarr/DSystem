@@ -1,4 +1,4 @@
-/* $Id: ai.C,v 1.3 1998/04/29 13:00:23 carr Exp $ */
+/* $Id: ai.C,v 1.4 1998/07/07 19:25:02 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -26,6 +26,8 @@
 #include <libs/Memoria/include/memory_menu.h>
 #include <libs/moduleAnalysis/dependence/edgeList/el_header.h>
 
+#include <libs/Memoria/include/ASTToIntMap.h>
+
 /* forward declaration */
 static void fixDoEnddoExact(FortTree  , FortTextTree );
 static void fixItems(AST_INDEX );
@@ -38,6 +40,7 @@ static long glabel = 99999;
    FortTree             ft;
    FortTextTree		ftt;
 
+ASTToIntMap *ASTRegMap;
 
 /* the real main routine of the AST->iloc translator */
 void ai(Context m_context,FortTree local_ft,FortTextTree local_ftt,char *FileName)
@@ -92,7 +95,7 @@ void ai(Context m_context,FortTree local_ft,FortTextTree local_ftt,char *FileNam
       }
 
     aiInit();
-    if (aiCache)
+    if (aiCache || aiOptimizeAddressCode)
       {
        dg_all(m_context,CONTEXT_NULL,CONTEXT_NULL,ftt,ft,&DG,&EL,&LI,&SI,&DT,
 	      &cfgModule,true);
@@ -104,7 +107,7 @@ void ai(Context m_context,FortTree local_ft,FortTextTree local_ftt,char *FileNam
        PED_DT_INFO(ped)    = DT;
        PED_MH_CONFIG(ped)  = NULL; 
 
-       ApplyMemoryCompiler(CACHE_ANALYSIS,ped,PED_ROOT(ped),ft,m_context,NULL);
+       ApplyMemoryCompiler(F2I_ANALYSIS,ped,PED_ROOT(ped),ft,m_context,NULL);
 
        cfgval_Close(cfgModule);
        ssa_Close(cfgModule);
@@ -117,10 +120,20 @@ void ai(Context m_context,FortTree local_ft,FortTextTree local_ftt,char *FileNam
 
        ftt_TreeChanged(ftt,ft_Root(ft));
       }
+    if (aiOptimizeAddressCode)
+      {
+	ASTRegMap = new ASTToIntMap;
+	ASTRegMap->MapCreate(100);
+      }
     aiProcedures(ft_Root(ft), ft); 
     (void) fflush(stdout);
     if (FileName != NULL)
       fclose(stdout);
+    if (aiOptimizeAddressCode)
+      {
+	ASTRegMap->Destroy();
+	delete ASTRegMap;
+      }
   }
 
 } /* ai */
