@@ -1,4 +1,4 @@
-/* $Id: config.C,v 1.25 1997/03/11 14:27:39 carr Exp $ */
+
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -74,7 +74,22 @@ char *BOX_MARKED   = "\204\205";
 char *BOX_EMPTY = "\202\203";          
 
    /* official architecture name - see arch.h for more info */
-char *D_arch_name = DSYSTEM_ARCH;       
+
+#ifdef DSYSTEM_ARCH_SUNOS_4x      
+char *D_arch_name = "SunOS-4.x";
+#endif
+
+#ifdef DSYSTEM_ARCH_SUNOS_5x      
+char *D_arch_name = "SunOS-5.x";
+#endif
+
+#ifdef DSYSTEM_ARCH_AIX_3x      
+char *D_arch_name = "AIX-3.x";
+#endif
+
+#ifdef DSYSTEM_ARCH_OSF1      
+char *D_arch_name = "OSF1";
+#endif
 
    /* Zero terminated list of directories */ 
 char *D_font_dirs[] =
