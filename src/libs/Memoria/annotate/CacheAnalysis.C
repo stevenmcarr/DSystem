@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.15 1997/11/19 14:44:51 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.16 1998/06/08 15:26:06 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -206,16 +206,20 @@ static int StoreCacheInfo(AST_INDEX     node,
   {
      if (is_subscript(node))
       {
-       DepInfoPtr(node)->Locality = 
-         ut_GetReferenceType(node,CacheInfo->loop_data,CacheInfo->loop,
-			     CacheInfo->ped,NULL);
-       if (DepInfoPtr(node)->Locality == SELF_SPATIAL)
-	 {
-	   CacheInfo->HasSelfSpatial = true;
-	   if (aiSpecialCache)
-	     DepInfoPtr(node)->IsGroupSpatialTrailer = 
-	       CacheInfo->ReuseModel->IsGroupSpatialTrailer(node);
-	 }
+       DepInfoPtr(node)->Locality = CacheInfo->ReuseModel->GetNodeReuseType(node);
+
+       //
+       // Identify the load that should bring in two cache lines
+       // to eliminate misses for a group of references in a cache line
+       // This should only happen after the prefetching algorithm is run
+       // so that original self-spatial loads are copied so that we can
+       // schedule the trailer node as a miss and the others as hits.
+       //
+
+       if (aiSpecialCache && DepInfoPtr(node)->Locality == GROUP_SPATIAL &&
+	   CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
+	 DepInfoPtr(node)->IsGroupSpatialTrailer = 
+	   CacheInfo->ReuseModel->IsGroupSpatialTrailer(node);
       }
      return(WALK_CONTINUE);
   }
@@ -389,7 +393,7 @@ static void BuildPrefetchDependenceList(CacheInfoType *CacheInfo)
 void GroupSpatialEntry::AddSpatialDependences(AST_INDEX TrailerNode)
 
 {
-  GenericListIter GLIter(*this);
+  GenericListIter GLIter(*NodeList);
   GenericListEntry *GLEntry;
   AST_INDEX Node;
   DepStruct *Dep;
@@ -465,31 +469,31 @@ static void walk_loops(CacheInfoType  *CacheInfo,
      if (CacheInfo->loop_data[loop].inner_loop == -1)
        {
 	CacheInfo->loop = loop;
-	if (aiSpecialCache)
-	  {
-	    LIS = new int[CacheInfo->loop_data[loop].level];
-	    for (i = 0; i < CacheInfo->loop_data[loop].level-1; i++)
-		LIS[i] = 0;
-	    LIS[CacheInfo->loop_data[loop].level-1] = 1;
-	    UGS = new UniformlyGeneratedSets(CacheInfo->loop_data[loop].node,
-					     CacheInfo->loop_data[loop].level,
-					     CacheInfo->IVar,LIS);
-	    CacheInfo->ReuseModel = new DataReuseModel(UGS);
-	  }
+	LIS = new int[CacheInfo->loop_data[loop].level];
+	for (i = 0; i < CacheInfo->loop_data[loop].level-1; i++)
+	  LIS[i] = 0;
+	AST_INDEX step = gen_INDUCTIVE_get_rvalue3(
+                           gen_DO_get_control(CacheInfo->loop_data[loop].node));
+	if (step == NULL)
+	  LIS[CacheInfo->loop_data[loop].level-1] = 1;
+	else if (pt_eval(step,&LIS[CacheInfo->loop_data[loop].level-1]))
+	  LIS[CacheInfo->loop_data[loop].level-1] = 1;
+	UGS = new UniformlyGeneratedSets(CacheInfo->loop_data[loop].node,
+					 CacheInfo->loop_data[loop].level,
+					 CacheInfo->IVar,LIS);
+	CacheInfo->ReuseModel = new DataReuseModel(UGS);
 	walk_expression(CacheInfo->loop_data[loop].node,(WK_EXPR_CLBACK)StoreCacheInfo,
 			NOFUNC,(Generic)CacheInfo);
 	walk_expression(CacheInfo->loop_data[loop].node,
 			(WK_EXPR_CLBACK)BuildDependenceList,NOFUNC,(Generic)CacheInfo);
 	BuildPrefetchDependenceList(CacheInfo);
 	if (aiSpecialCache)
-	  {
-	    walk_expression(CacheInfo->loop_data[loop].node,
-			    (WK_EXPR_CLBACK)BuildGroupSpatialDependenceList,NOFUNC,
-			    (Generic)CacheInfo->ReuseModel);
-	    delete CacheInfo->ReuseModel;
-	    delete UGS;
-	    delete LIS;
-	  }
+	  walk_expression(CacheInfo->loop_data[loop].node,
+			  (WK_EXPR_CLBACK)BuildGroupSpatialDependenceList,NOFUNC,
+			  (Generic)CacheInfo->ReuseModel);
+	delete CacheInfo->ReuseModel;
+	delete UGS;
+	delete LIS;
        }
      else
        {
