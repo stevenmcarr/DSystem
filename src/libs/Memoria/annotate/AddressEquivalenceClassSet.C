@@ -233,7 +233,7 @@ AddressEquivalenceClassSet::AddressEquivalenceClassSet(AST_INDEX loop,
 		     (WK_EXPR_CLBACK)BuildEquivalenceClasses,
 		     (WK_EXPR_CLBACK)NOFUNC,(Generic)this);
      ComputeAddressOffsets();
-     Dump();
+     //Dump();
   }
 
 void AddressEquivalenceClassSet::ComputeAddressOffsets()
