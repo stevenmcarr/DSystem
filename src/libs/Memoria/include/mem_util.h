@@ -1,4 +1,4 @@
-/* $Id: mem_util.h,v 1.17 1997/04/08 20:50:26 carr Exp $ */
+/* $Id: mem_util.h,v 1.18 1997/10/30 15:12:13 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -123,7 +123,8 @@ EXTERN(LocalityType, ut_GetReferenceType, (AST_INDEX  node,
 					   int        loop,
 					   PedInfo    ped,
 					   UniformlyGeneratedSets *UGS));
-EXTERN(void, ut_GetSubscriptText, (AST_INDEX Node, char *Text));
+EXTERN(void, ut_GetSubscriptText, (AST_INDEX Node, char *Text,
+	                           SymDescriptor symtab = NULL));
 
 EXTERN(int,ut_change_logical_to_block_if, (AST_INDEX stmt,
 					   int       level,
@@ -135,7 +136,5 @@ EXTERN(int,ut_CyclesPerIteration, (AST_INDEX Node,
 				   PedInfo   ped));
 
 EXTERN(int, ut_LoopSize, (AST_INDEX Node, PedInfo   ped));
-
-EXTERN(void,      pt_get_constant,(AST_INDEX expr, int *constant));
 
 #endif

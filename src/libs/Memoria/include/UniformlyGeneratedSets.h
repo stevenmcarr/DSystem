@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.h,v 1.8 1997/03/27 20:24:47 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.h,v 1.9 1997/10/30 15:11:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,7 +13,7 @@
 #include <libs/support/lists/SinglyLinkedList.h>
 #include <libs/frontEnd/ast/treeutil.h>
 
-#include <libs/Memoria/include/IntegerList.h>
+#include <libs/Memoria/include/GenericList.h>
 #include <libs/frontEnd/ast/AstIter.h>
 #include <libs/support/Lambda/Lambda.h>
 
@@ -24,7 +24,7 @@
 #endif
 
 
-class UniformlyGeneratedSetsEntry : public IntegerList {
+class UniformlyGeneratedSetsEntry : public GenericList {
 
   int NestingLevel,Subscripts;
   char name[80];
@@ -42,7 +42,7 @@ class UniformlyGeneratedSetsEntry : public IntegerList {
 public:
 
   UniformlyGeneratedSetsEntry(char *EntryName,la_matrix nodeH, int level,int subs,
-			      la_vect LIS, Boolean uniform) : IntegerList()
+			      la_vect LIS, Boolean uniform) : GenericList()
   {
    int i,j;
 
@@ -121,15 +121,15 @@ public:
  };
 
 
-class UGSEntryIterator : public IntegerListIter {
+class UGSEntryIterator : public GenericListIter {
 
   public:
     UGSEntryIterator(UniformlyGeneratedSetsEntry& UGSEntry) : 
-      IntegerListIter(UGSEntry)
+      GenericListIter(UGSEntry)
       {
       }; 
     UGSEntryIterator(UniformlyGeneratedSetsEntry* UGSEntry) : 
-      IntegerListIter(UGSEntry)
+      GenericListIter(UGSEntry)
       {
       };
 
@@ -139,7 +139,7 @@ class UGSEntryIterator : public IntegerListIter {
 
 
 
-class UniformlyGeneratedSets : public IntegerList {
+class UniformlyGeneratedSets : public GenericList {
   int NestingLevel;
   char **IndexVars;
   int *LocalizedIterationSpace;
@@ -172,19 +172,19 @@ public:
      UniformlyGeneratedSetsEntry *UGSEntry;
 
        la_vecCopy(LIS,LocalizedIterationSpace,NestingLevel);
-       for (IntegerListIter UGSIter(*this);
+       for (GenericListIter UGSIter(*this);
 	    UGSEntry = (UniformlyGeneratedSetsEntry*)UGSIter();)
          UGSEntry->SetLocalizedIterationSpace(LIS);
     }
  };
 
-class UGSIterator : public IntegerListIter {
+class UGSIterator : public GenericListIter {
 
   public:
-    UGSIterator(UniformlyGeneratedSets& UGS) : IntegerListIter(UGS)
+    UGSIterator(UniformlyGeneratedSets& UGS) : GenericListIter(UGS)
       {
       };
-    UGSIterator(UniformlyGeneratedSets* UGS) : IntegerListIter(UGS)
+    UGSIterator(UniformlyGeneratedSets* UGS) : GenericListIter(UGS)
       {
       };
 

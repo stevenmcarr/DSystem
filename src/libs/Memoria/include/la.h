@@ -1,4 +1,4 @@
-/* $Id: la.h,v 1.3 1997/03/27 20:24:47 carr Exp $ */
+/* $Id: la.h,v 1.4 1997/10/30 15:11:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -175,6 +175,7 @@ class GroupSpatialEntry:
 		void FillArray(int* a,int s) {gts->FillArray(a, s);}
 		void DoAnalysis();
 		la_vect Leader() { return leader_v; };
+		AST_INDEX LeaderNode() { return leader_n; };
 		void PrintOut();
 	};
 
@@ -236,6 +237,7 @@ class DataReuseModelEntry:
 		void DoAnalysis() {gsset->DoAnalysis(); };
 		float ComputePrefetch(int, int, int, int);
 		float ComputePrefetch(int, int);
+		Boolean IsGroupSpatialLeader(AST_INDEX node);
 	};
 
 class DataReuseModel:
@@ -251,6 +253,7 @@ class DataReuseModel:
 		void DoAnalysis(int);
 		float ComputePrefetch(int, int, int, int);
 		float ComputePrefetch(int, int);
+		Boolean IsGroupSpatialLeader(AST_INDEX node);
 	};
 
 class DRIter:

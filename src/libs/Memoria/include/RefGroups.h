@@ -1,4 +1,4 @@
-/* $Id: RefGroups.h,v 1.4 1997/03/20 15:49:33 carr Exp $ */
+/* $Id: RefGroups.h,v 1.5 1997/10/30 15:11:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,7 +10,7 @@
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh.h>
 #include <libs/frontEnd/ast/AstIter.h>
-#include <libs/Memoria/include/IntegerList.h>
+#include <libs/Memoria/include/GenericList.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
 class RefGroupSet;
@@ -46,7 +46,7 @@ public:
 
 
 
-class RefGroupMember : public IntegerList, RefGroupCore {
+class RefGroupMember : public GenericList, RefGroupCore {
 
   Boolean SelfTemporal,
           SelfSpatial,
@@ -92,19 +92,19 @@ public:
 
 
 
-class RefGroupMemberIter : public IntegerListIter {
+class RefGroupMemberIter : public GenericListIter {
 
   public:
-    RefGroupMemberIter(RefGroupMember& RGS) : IntegerListIter(RGS)
+    RefGroupMemberIter(RefGroupMember& RGS) : GenericListIter(RGS)
       {
       }
-    RefGroupMemberIter(RefGroupMember* RGS) : IntegerListIter(RGS)
+    RefGroupMemberIter(RefGroupMember* RGS) : GenericListIter(RGS)
       {
       } 
 
    AST_INDEX operator() ()
     {
-     IntegerListEntry *Entry = IntegerListIter::operator()();
+     GenericListEntry *Entry = GenericListIter::operator()();
      if (Entry != NULL)
        return (AST_INDEX) Entry->GetValue();
      else
@@ -116,7 +116,7 @@ class RefGroupMemberIter : public IntegerListIter {
 
 
 
-class RefGroupSet : public IntegerList, RefGroupCore {
+class RefGroupSet : public GenericList, RefGroupCore {
 
   UniformlyGeneratedSets *UGS;
   Boolean UseUniformlyGeneratedSets;
@@ -136,19 +136,19 @@ public:
 
 
 
-class RefGroupSetIter : public IntegerListIter {
+class RefGroupSetIter : public GenericListIter {
 
   public:
-    RefGroupSetIter(RefGroupSet& RGS) : IntegerListIter(RGS)
+    RefGroupSetIter(RefGroupSet& RGS) : GenericListIter(RGS)
       {
       }
-    RefGroupSetIter(RefGroupSet* RGS) : IntegerListIter(RGS)
+    RefGroupSetIter(RefGroupSet* RGS) : GenericListIter(RGS)
       {
       } 
 
    RefGroupMember *operator() ()
     {
-     IntegerListEntry *Entry = IntegerListIter::operator()();
+     GenericListEntry *Entry = GenericListIter::operator()();
      if (Entry != NULL)
        return (RefGroupMember *) Entry->GetValue();
      else

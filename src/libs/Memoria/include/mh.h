@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.25 1997/03/20 15:49:33 carr Exp $ */
+/* $Id: mh.h,v 1.26 1997/10/30 15:12:13 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -137,7 +137,8 @@ typedef struct subscriptinfotype {
   UtilNode  *lnode;
   Boolean   store;
   LocalityType Locality;
-  int          GroupDistance;
+  int          GroupTemporalDistance;
+  int          GroupSpatialDistance;
  } subscript_info_type;
 
 typedef struct stmtinfotype {
