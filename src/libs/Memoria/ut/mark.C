@@ -1,4 +1,4 @@
-/* $Id: mark.C,v 1.8 1995/02/13 15:16:48 carr Exp $ */
+/* $Id: mark.C,v 1.9 1995/03/29 08:06:00 carr Exp $ */
 
 
 /****************************************************************************/
@@ -122,7 +122,7 @@ int ut_mark_do_pre(AST_INDEX       stmt,
      walk_expression(gen_RETURN_get_rvalue(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,
 		     pre_info);
    else if (is_if(stmt) || is_continue(stmt) || is_goto(stmt) ||
-            is_assigned_goto(stmt) || is_format(stmt));
+            is_assigned_goto(stmt) || is_format(stmt) || is_stop(stmt));
    else if (executable_stmt(stmt))
      { 
       char errmsg[30];
