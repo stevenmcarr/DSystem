@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.14 1995/08/22 14:19:32 carr Exp $ */
+/* $Id: header.h,v 1.15 1995/08/31 12:47:24 carr Exp $ */
 
 #ifndef header_h
 #define header_h
@@ -54,7 +54,8 @@ EXTERN(void, memory_software_prefetch,(PedInfo ped,AST_INDEX root,
 
 EXTERN(void, memory_AnnotateWithCacheCalls,(AST_INDEX root, int level,
 					    char *routine,
-					    FortTextTree ftt));
+					    FortTextTree ftt,
+					    SymDescriptor symtab));
 
 EXTERN (void, ApplyMemoryCompiler, (int selection, PedInfo ped, AST_INDEX root,
 				    FortTree ft, Context contxt, 
