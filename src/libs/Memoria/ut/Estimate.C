@@ -1,4 +1,4 @@
-/* $Id: Estimate.C,v 1.2 1997/03/27 20:29:09 carr Exp $ */
+/* $Id: Estimate.C,v 1.3 1997/04/07 13:40:23 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,7 +31,7 @@ ComputeBoard::ComputeBoard(int n, int d)
  Initialize(n,d);
 }
 
-ComputeBoard::Initialize(int n, int d)
+void ComputeBoard::Initialize(int n, int d)
 {
  stride = n;
  dimension = d;

@@ -1,4 +1,4 @@
-/* $Id: la-private.h,v 1.2 1997/03/27 20:47:40 carr Exp $ */
+/* $Id: la-private.h,v 1.3 1997/04/07 13:40:08 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,7 +30,7 @@
 
 #include <libs/support/Lambda/Lambda.h>
 
-#if defined(LA_SunOS)
+#if (defined(LA_SunOS) && !defined(LA_sun4m))
 int LA_PROTO(fprintf,(FILE *fp, char *format, ...));
 int LA_PROTO(printf,(char *format, ...));
 FILE  *LA_PROTO(fopen,(char *, char *));

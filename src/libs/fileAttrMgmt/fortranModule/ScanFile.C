@@ -1,4 +1,4 @@
-/* $Id: ScanFile.C,v 1.2 1997/03/27 20:31:44 carr Exp $ */
+/* $Id: ScanFile.C,v 1.3 1997/04/07 13:40:35 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,8 +13,13 @@ int ScanFile(const char *srcFile, ScanFileFileFunc enterFile,
   va_list args;
   va_start(args, procFileLine);
 
+#ifdef OSF1
   ftt_TraverseTextV((char *) srcFile, (PushFuncV) enterFile, 
 		    (PopFuncV) exitFile, (EnterFuncV) procFileLine, args);
+#else
+  ftt_TraverseText((char *) srcFile, (PushFunc) enterFile, 
+		    (PopFunc) exitFile, (EnterFunc) procFileLine, args);
+#endif
   va_end(args);
   return 0;
 }
