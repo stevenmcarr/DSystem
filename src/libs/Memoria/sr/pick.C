@@ -1,4 +1,4 @@
-/* $Id: pick.C,v 1.8 1994/07/20 11:32:52 carr Exp $ */
+/* $Id: pick.C,v 1.9 1995/12/27 14:01:23 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -229,6 +229,10 @@ static int get_gen(AST_INDEX         node,
 			   psink->is_consistent =
 			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 			  }
+			else if (dist == psink->gen_distance &&
+				 pick_info->dg[edge].consistent != inconsistent
+				 && !pick_info->dg[edge].symbolic)
+			  GList.Append(psrc);
 			else;
 		      else if (pick_info->dg[edge].consistent != 
 			          inconsistent &&
@@ -284,6 +288,10 @@ static int get_gen(AST_INDEX         node,
 			   psink->is_consistent=
 			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 			  }
+			else if (dist == psink->gen_distance &&
+				 pick_info->dg[edge].consistent != inconsistent
+				 && !pick_info->dg[edge].symbolic)
+			  GList.Append(psrc);
 			else;
 		      else if ((!psink->is_consistent || !psink->constant) && 
 			       pick_info->dg[edge].consistent != inconsistent
@@ -329,6 +337,9 @@ static int get_gen(AST_INDEX         node,
 		      psink->is_consistent = 
 			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 		     }
+		   else if (pick_info->dg[edge].consistent != inconsistent &&
+			    !pick_info->dg[edge].symbolic)
+		      GList.Append(psrc);
 		   else;
 		 else if (ut_member_number(pick_info->LI_pavail,
 					   psrc->table_index))
@@ -369,6 +380,9 @@ static int get_gen(AST_INDEX         node,
 		      psink->is_consistent =
 			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 		     }
+		   else if (pick_info->dg[edge].consistent != inconsistent &&
+			    !pick_info->dg[edge].symbolic)
+		      GList.Append(psrc);
 		}
 	     }
 	   edge = next_edge;
