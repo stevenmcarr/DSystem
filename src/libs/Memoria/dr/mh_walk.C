@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.29 1995/01/19 13:36:36 carr Exp $ */
+/* $Id: mh_walk.C,v 1.30 1995/03/13 15:06:34 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -16,7 +16,6 @@
 #include <mh.h>
 #include <mh_ast.h>
 #include <fort/walk.h>
-#include <fort/FortTextTree.h>
 #include <pt_util.h>
 #include <mem_util.h>
 #include <assert.h>
@@ -1223,14 +1222,8 @@ void mh_walk_ast(int          selection,
 		     (Generic)NULL);
      walk_statements(root,LEVEL1,(WK_STMT_CLBACK)build_label_symtab,
 		     (WK_STMT_CLBACK)check_labels,(Generic)&walk_info);
-   /*   if (selection != CACHE_ANALYSIS)
-
-        a2i barfs if I modify program structure.  It needs to map statements
-	  back into there original parsed text.  I should fix this sometime */
-
-       walk_statements(root,LEVEL1,NOFUNC,
-		       (WK_STMT_CLBACK)ut_change_logical_to_block_if,
-		       (Generic)NULL);
+     walk_statements(root,LEVEL1,NOFUNC,
+		     (WK_STMT_CLBACK)ut_change_logical_to_block_if,(Generic)NULL);
      walk_statements(root,LEVEL1,(WK_STMT_CLBACK)pre_walk,(WK_STMT_CLBACK)post_walk,
 		     (Generic)&walk_info);
      if (selection == FUSION || selection == LI_FUSION)
@@ -1465,8 +1458,9 @@ void mh_walk_ast(int          selection,
 	          += walk_info.LoopStats->UniformRefs;
 	   LoopStats->NonUniformRefs
 	          += walk_info.LoopStats->NonUniformRefs;
-	   LoopStats->NonUniformLoopsReplaced
-	          += walk_info.LoopStats->NonUniformLoopsReplaced;
+//	   LoopStats->NonUniformLoops
+//	          += walk_info.LoopStats->NonUniformLoops;
+
            SRStatsDump(((config_type *)PED_MH_CONFIG(ped))->logfile,
 				       walk_info.LoopStats);
            break;
@@ -1515,9 +1509,8 @@ void ApplyMemoryCompiler(int         selection,
      LoopStats = (LoopStatsType *)calloc(1,sizeof(LoopStatsType));
    
    fprintf(stderr,"Analyzing %s...\n", ctxLocation(mod_context));
-   ftt_TreeWillChange(PED_FTT(ped),root);
+   
    mh_walk_ast(selection,ped,root,ft, mod_context, &ar);
-   ftt_TreeChanged(PED_FTT(ped),root);
   }
 
 
@@ -1655,18 +1648,22 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 
    /* QUNYAN 0002 */
    /* Add print for LIAV, LCAV .. and average */
-
-   fprintf(logfile, "Total Number of LIAV = %dn\n", LoopStats->NumLIAV);
-   fprintf(logfile, "Total Number of LCAV = %d\n\n", LoopStats->NumLCAV);
-   fprintf(logfile, "Total Number of LIPAV = %d\n\n", LoopStats->NumLIPAV);
-   fprintf(logfile, "Total Number of LCPAV = %d\n\n", LoopStats->NumLCPAV);
+   fprintf(logfile, "Total Number of LIAV = %d\n\n",
+			LoopStats->NumLIAV);
+   fprintf(logfile, "Total Number of LCAV = %d\n\n",
+			LoopStats->NumLCAV);
+   fprintf(logfile, "Total Number of LIPAV = %d\n\n",
+			LoopStats->NumLIPAV);
+   fprintf(logfile, "Total Number of LCPAV = %d\n\n",
+			LoopStats->NumLCPAV);
    fprintf(logfile, "Total Number of Loop Carried Invariant = %d\n\n",
 			LoopStats->NumInv);
    fprintf(logfile, "Total Number of Loop Carried Distance 1 = %d\n\n",
 			LoopStats->NumLC1);
-   fprintf(logfile,"Average LIAV Pressure/Loop Replaced w/ pressur = %.4f\n\n",
+   fprintf(logfile, "Average LIAV Pressure/Loop Replaced w/ pressur = %.4f\n\n",
   	            (float)LoopStats->NumLIAV/(float)LoopRepw_pressure);
-   fprintf(logfile,"Average LCAV register Pressure/Loop Replaced w/ pressur = %.4f\n\n", (float)LoopStats->NumLCAV/(float)LoopRepw_pressure);
+   fprintf(logfile, "Average LCAV register Pressure/Loop Replaced w/ pressur = %.4f\n\n",
+		    (float)LoopStats->NumLCAV/(float)LoopRepw_pressure);
    fprintf(logfile, "Average LIPAV register Pressure/Loop Replaced w/ pressur = %.4f\n\n",
 		    (float)LoopStats->NumLIPAV/(float)LoopRepw_pressure);
    fprintf(logfile, "Average LCPAV register Pressure/Loop Replaced w/ pressur = %.4f\n\n",
@@ -1702,8 +1699,8 @@ void SRStatsDump(FILE *logfile, LoopStatsType *LoopStats)
 			LoopStats->UniformRefs);
    fprintf(logfile, "Total Number of Non-Uniform References = %d\n\n",
 			LoopStats->NonUniformRefs);
-   fprintf(logfile, "Total Number of Loops w/ Non-Uniform References = %d\n\n",
-			LoopStats->NonUniformLoopsReplaced);
+//   fprintf(logfile, "Total Number of Loops w/ Non-Uniform References = %d\n\n",
+//			LoopStats->NonUniformLoops);
    fprintf(logfile, "Total Number of Loops w/ Non-Uniform References and no FP Pressure = %d\n\n",
 			LoopStats->NonUniformLoopsZeroFP);
 
