@@ -1,25 +1,30 @@
-/* $Id: pick.C,v 1.9 1995/12/27 14:01:23 carr Exp $ */
+/* $Id: pick.C,v 1.10 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <pick.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/sr/pick.h>
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 #ifndef dt_h
-#include <dt.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
 #endif
 
-#include <pt_util.h>
-#include <mem_util.h>
-#include <GenList.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/Memoria/include/GenList.h>
 
 static int update_avail(AST_INDEX       node,
 			pick_info_type  *pick_info)
@@ -393,7 +398,7 @@ static int get_gen(AST_INDEX         node,
 	   while(GLI->Current() != NULL)
 	     {
 	      GLI->Current()->GetValue()->is_generator = true;
-	      (void)(*GLI)++;
+	      ++(*GLI);
 	     }
 	  }
        }

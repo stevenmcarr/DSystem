@@ -1,26 +1,31 @@
-/* $Id: dfrgen.h,v 1.4 1992/12/11 11:22:38 carr Exp $ */
+/* $Id: dfrgen.h,v 1.5 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef dfrgen_h
 #define dfrgen_h
 
 #ifndef block_h
-#include <block.h>
+#include <libs/Memoria/include/block.h>
 #endif
 
 #ifndef check_h
-#include <check.h>
+#include <libs/Memoria/sr/check.h>
 #endif
 
 #ifndef ast_h
-#include <ast.h>
+#include <libs/frontEnd/ast/ast.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 #ifndef cgen_set_h
-#include <cgen_set.h>
+#include <libs/Memoria/include/cgen_set.h>
 #endif
 
 typedef struct rgeninfotype {

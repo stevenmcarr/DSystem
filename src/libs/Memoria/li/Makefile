@@ -1,8 +1,7 @@
-# $Id: Makefile,v 1.11 1995/08/23 14:28:21 carr Exp $
-HERE = libs/mc_lib/li
-INCLUDEDIRS	= libs/mc_lib/include
-ARCHIVE		= ../mc-$(RN_ARCH)$(ENV_FLAG).a
-SRCS		= interchange.C stats.C MemoryOrder.C fusion.ansi.c  Reversal.C \
-		  FDgraph.ansi.C
+# $Id: Makefile,v 1.12 1997/03/27 20:25:24 carr Exp $
+HERE = libs/Memoria/li
+ARCHIVE		= ../Memoria-$(DSYSTEM_OS)-g.a
+SRCS		= interchange.C stats.C MemoryOrder.C fusion.c  Reversal.C \
+		  FDgraph.c
 
 include Makeinclude

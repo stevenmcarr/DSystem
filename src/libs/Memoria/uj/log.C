@@ -1,17 +1,22 @@
-/* $Id: log.C,v 1.13 1996/02/14 11:01:05 carr Exp $ */
-#include <general.h>
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <log.h>
-#include <header.h>
-#include <do_unroll.h>
-#include <mem_util.h>
-#include <dg.h>
-#include <fort/gi.h>
-#include <mh_config.h>
-#include <label.h>
-#include <LoopStats.h>
+/* $Id: log.C,v 1.14 1997/03/27 20:28:01 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/uj/log.h>
+#include <libs/Memoria/include/header.h>
+#include <libs/Memoria/uj/do_unroll.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
+#include <libs/frontEnd/include/gi.h>
+#include <libs/Memoria/include/mh_config.h>
+#include <libs/Memoria/include/label.h>
+#include <libs/Memoria/include/LoopStats.h>
 
 static int LoopNumber = 1;
 

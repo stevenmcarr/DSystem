@@ -1,36 +1,41 @@
-/* $Id: scalar.h,v 1.8 1994/11/30 15:44:51 carr Exp $ */
+/* $Id: scalar.h,v 1.9 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef scalar_h
 #define scalar_h
 
-#include <LoopStats.h>
+#include <libs/Memoria/include/LoopStats.h>
 
 #ifndef general_h
-#include <general.h>
+#include <libs/support/misc/general.h>
 #endif
 
 #ifndef ast_h
-#include <ast.h>
+#include <libs/frontEnd/ast/ast.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 #ifndef fortsym_h
-#include <fort/fortsym.h>
+#include <libs/frontEnd/fortTree/fortsym.h>
 #endif
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 #ifndef groups_h
-#include <fort/groups.h>
+#include <libs/frontEnd/ast/groups.h>
 #endif
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif
 
 typedef struct arraytabletype {

@@ -1,7 +1,6 @@
-# $Id: Makefile,v 1.5 1995/12/28 10:46:24 carr Exp $
-HERE = libs/mc_lib/annotate
-INCLUDEDIRS	= libs/mc_lib/include 
-ARCHIVE		= ../mc-$(RN_ARCH)$(ENV_FLAG).a
+# $Id: Makefile,v 1.6 1997/03/27 20:22:30 carr Exp $
+HERE = libs/Memoria/annotate
+ARCHIVE		= ../Memoria-$(DSYSTEM_OS)-g.a
 SRCS		= annotate.C CacheAnalysis.C ldst.C lexDirectives.c yaccDirectives.c
 
 %.h %.c: %.y

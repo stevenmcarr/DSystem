@@ -1,21 +1,27 @@
+/* $Id: CacheAnalysis.C,v 1.11 1997/03/27 20:22:30 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
-#include <mh.h>
-#include <mh_ast.h>
-#include <mh_config.h>
-#include <label.h>
-#include <pt_util.h>
-#include <bound.h>
-#include <fort/walk.h>
-#include <header.h>
-#include <mark.h>
-#include <analyze.h>
-#include <mem_util.h>
-#include <CacheAnalysis.h>
-#include <DirectivesInclude.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/Memoria/include/mh_config.h>
+#include <libs/Memoria/include/Memoria_label.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/bound.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/include/header.h>
+#include <libs/Memoria/include/mark.h>
+#include <libs/Memoria/include/analyze.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/Memoria/annotate/CacheAnalysis.h>
+#include <libs/Memoria/annotate/DirectivesInclude.h>
 
 static int RefCount = 0;
 
@@ -208,7 +214,7 @@ static Boolean IsPrefetch(AST_INDEX Stmt)
 {
   if (is_comment(Stmt))
     if (DirectiveInfoPtr(Stmt) != NULL)
-      return (DirectiveInfoPtr(Stmt)->Instr == PrefetchInstruction);
+      return (BOOL(DirectiveInfoPtr(Stmt)->Instr == PrefetchInstruction));
   return false;
 }
 
@@ -217,7 +223,7 @@ static Boolean IsDead(AST_INDEX Stmt)
 {
   if (is_comment(Stmt))
     if (DirectiveInfoPtr(Stmt) != NULL)
-      return (DirectiveInfoPtr(Stmt)->Instr == FlushInstruction);
+      return (BOOL(DirectiveInfoPtr(Stmt)->Instr == FlushInstruction));
   return false;
 }
 

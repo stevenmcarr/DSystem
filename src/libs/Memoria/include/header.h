@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.17 1997/03/20 15:49:33 carr Exp $ */
+/* $Id: header.h,v 1.18 1997/03/27 20:24:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -24,7 +24,7 @@
 #include <libs/support/memMgmt/Arena.h>
 #endif
 #ifndef LoopStats_h
-#include <LoopStats.h>
+#include <libs/Memoria/include/LoopStats.h>
 #endif 
 
 #include <libs/frontEnd/fortTextTree/FortTextTree.h>

@@ -1,31 +1,36 @@
-/* $Id: prune.C,v 1.13 1995/12/27 16:13:28 carr Exp $ */
+/* $Id: prune.C,v 1.14 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <prune.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/sr/prune.h>
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 #ifndef dt_h
-#include <dt.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
 #endif
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif
 
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 
 static void MarkAllSinksAsNotScalar(PedInfo ped,
 				    AST_INDEX node)
@@ -143,7 +148,7 @@ static void prune_dependence_edges(AST_INDEX     node,
      if (scalar_sink->generator != -1)
        {
 	name=gen_SUBSCRIPT_get_name(gen_info->array_table[scalar_sink->generator].node);
-	Invariant = scalar_sink->scalar || get_scalar_info_ptr(name)->scalar;
+	Invariant = BOOL(scalar_sink->scalar || get_scalar_info_ptr(name)->scalar);
        }
   }
 

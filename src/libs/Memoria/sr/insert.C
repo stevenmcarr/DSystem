@@ -1,21 +1,26 @@
-/* $Id: insert.C,v 1.4 1992/12/11 11:22:17 carr Exp $ */
+/* $Id: insert.C,v 1.5 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
 
-#include <insert.h>
+#include <libs/Memoria/sr/insert.h>
 
 #ifndef dfantic_h
-#include <dfantic.h>
+#include <libs/Memoria/sr/dfantic.h>
 #endif
 
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 
 static void hoist_inserts(block_type *entry,
 			  int        size,

@@ -1,20 +1,25 @@
-/* $Id: name.C,v 1.14 1995/12/27 16:13:01 carr Exp $ */
+/* $Id: name.C,v 1.15 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
 #define DEBUG 1
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <name.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/sr/name.h>
 
 #ifndef dt_h
-#include <dt.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
 #endif
 
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 
 #ifdef DEBUG
 

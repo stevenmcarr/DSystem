@@ -1,34 +1,40 @@
-#ifndef a2i_options_h
-#define a2i_options_h
+/* $Id: f2i_options.h,v 1.2 1997/03/27 20:15:16 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
 
-#include <misc/Options.h>
+#ifndef f2i_options_h
+#define f2i_options_h
 
-#define A2I_PGM_OPT           'P'
-#define A2I_MOD_OPT           'M'
+#include <libs/support/optParsing/Options.h>
 
-#define A2I_ANNOTATE_FLAG     'a'
-#define A2I_ALIGNDOUBLES_FLAG 'n'
-#define A2I_CONSTANTS_FLAG    'C'
-#define A2I_DEBUG_FLAG        'd'
-#define A2I_ENREGGLOBALS_FLAG 'E'
-#define A2I_FATALS_FLAG       'F'
-#define A2I_GENERATE_FLAG     'g'
-#define A2I_MESSAGEID_FLAG    'I'
-#define A2I_NOALIAS_FLAG      'A'
-#define A2I_PARSECOMMENTS_FLAG 'p'
-#define A2I_SYMDUMP_FLAG      's'
-#define A2I_TREECHECK_FLAG    'c'
-#define A2I_TREEDUMP_FLAG     't'
-#define A2I_VIRTUAL_FLAG      'v'
-#define A2I_SYMMAP_FLAG       'm'
-#define A2I_SPARC_FLAG        'S'
-#define A2I_ROCKET_FLAG       'R'
-#define A2I_RT_FLAG           'r'
-#define A2I_CACHE_FLAG        'h'
-#define A2I_LONGINTEGERS_FLAG 'l'
-#define A2I_DOUBLEREALS_FLAG  'D'
+#define F2I_PGM_OPT           'P'
+#define F2I_MOD_OPT           'M'
 
-void a2i_init_options(Options &opts);
-void a2i_options_usage(char *pgm_name);
+#define F2I_ANNOTATE_FLAG     'a'
+#define F2I_ALIGNDOUBLES_FLAG 'n'
+#define F2I_CONSTANTS_FLAG    'C'
+#define F2I_DEBUG_FLAG        'd'
+#define F2I_ENREGGLOBALS_FLAG 'E'
+#define F2I_FATALS_FLAG       'F'
+#define F2I_GENERATE_FLAG     'g'
+#define F2I_MESSAGEID_FLAG    'I'
+#define F2I_NOALIAS_FLAG      'A'
+#define F2I_PARSECOMMENTS_FLAG 'p'
+#define F2I_SYMDUMP_FLAG      's'
+#define F2I_TREECHECK_FLAG    'c'
+#define F2I_TREEDUMP_FLAG     't'
+#define F2I_VIRTUAL_FLAG      'v'
+#define F2I_SYMMAP_FLAG       'm'
+#define F2I_SPARC_FLAG        'S'
+#define F2I_ROCKET_FLAG       'R'
+#define F2I_RT_FLAG           'r'
+#define F2I_CACHE_FLAG        'h'
+#define F2I_LONGINTEGERS_FLAG 'l'
+#define F2I_DOUBLEREALS_FLAG  'D'
+
+EXTERN(int,f2i_init_options,(int,char**));
+EXTERN(void,f2i_options_usage,(char *pgm_name));
 
 #endif

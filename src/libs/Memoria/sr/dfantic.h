@@ -1,18 +1,23 @@
-/* $Id: dfantic.h,v 1.5 1993/06/21 13:46:50 carr Exp $ */
+/* $Id: dfantic.h,v 1.6 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef dfantic_h
 #define  dfantic_h
 
 #ifndef block_h
-#include <block.h>
+#include <libs/Memoria/include/block.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 

@@ -1,27 +1,32 @@
-/* $Id: dfrgen.C,v 1.7 1994/07/20 11:32:49 carr Exp $ */
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
+/* $Id: dfrgen.C,v 1.8 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 #ifndef dfrgen_h
-#include <dfrgen.h>
+#include <libs/Memoria/sr/dfrgen.h>
 #endif
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
-#include <mem_util.h>
-#include <pt_util.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 
 static int add_gens(AST_INDEX      node,
 		    rgen_info_type *rgen_info)

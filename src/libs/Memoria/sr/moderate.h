@@ -1,4 +1,9 @@
-/* $Id: moderate.h,v 1.6 1993/07/20 16:33:22 carr Exp $ */
+/* $Id: moderate.h,v 1.7 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef moderate_h
 #define moderate_h
@@ -6,34 +11,34 @@
 #include <stdio.h>
 
 #ifndef general_h
-#include <general.h>
+#include <libs/support/misc/general.h>
 #endif
 
 #ifndef scalar_h
-#include <scalar.h>
+#include <libs/Memoria/sr/scalar.h>
 #endif
 
 #ifndef cgen_set_h
-#include <cgen_set.h>
+#include <libs/Memoria/include/cgen_set.h>
 #endif
 
 #ifndef list_h
-#include <misc/list.h>
+#include <libs/support/lists/list.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 #ifndef name_h
-#include <name.h>
+#include <libs/Memoria/sr/name.h>
 #endif
 
-#include <LoopStats.h>
+#include <libs/Memoria/include/LoopStats.h>
 
 #define GREEDY   0
 

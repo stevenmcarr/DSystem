@@ -1,19 +1,25 @@
-%{
-#include <general.h>
-#include <fort/ast.h>
-#include <fort/astutil.h>
-#include <fort/astlist.h>
-#include <fort/astcons.h>
-#include <fort/astnode.h>
-#include <fort/astsel.h>
-#include <fort/asttree.h>
-#include <fort/astrec.h>
-#include <fort/gen.h>
-#include <fort/forttypes.h>
-#include <fort/walk.h>
-#include <fort/fortsym.h>
+/* $Id: yaccDirectives.y,v 1.2 1997/03/27 20:22:50 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
 
-#include <DirectivesInclude.h>
+%{
+#include <libs/support/misc/general.h>
+#include <libs/frontEnd/ast/ast.h>
+#include <libs/frontEnd/ast/astutil.h>
+#include <libs/frontEnd/ast/astlist.h>
+#include <include/frontEnd/astcons.h>
+#include <include/frontEnd/astnode.h>
+#include <include/frontEnd/astsel.h>
+#include <libs/frontEnd/ast/asttree.h>
+#include <include/frontEnd/astrec.h>
+#include <libs/frontEnd/ast/gen.h>
+#include <libs/frontEnd/ast/forttypes.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/frontEnd/fortTree/fortsym.h>
+
+#include <libs/Memoria/annotate/DirectivesInclude.h>
 
 
 char *a2i_DirectiveString;

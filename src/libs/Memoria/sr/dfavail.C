@@ -1,27 +1,32 @@
-/* $Id: dfavail.C,v 1.6 1994/07/20 11:32:48 carr Exp $ */
+/* $Id: dfavail.C,v 1.7 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif 
 
 #ifndef dfavail_h
-#include <dfavail.h>
+#include <libs/Memoria/sr/dfavail.h>
 #endif 
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif 
 
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 
 static void allocate_sets(block_type *block,
 			  int        size,

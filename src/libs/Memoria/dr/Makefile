@@ -1,8 +1,7 @@
-# $Id: Makefile,v 1.11 1995/08/18 10:09:04 trsuchyt Exp $
-HERE = libs/mc_lib/dr
-INCLUDEDIRS	= libs/mc_lib/include libs/ped_cp/ped_include libs/ped_cp/pt
-ARCHIVE		= ../mc-$(RN_ARCH)$(ENV_FLAG).a
-SRCS		= memory_menu.C mh_config.c mh_walk.C
+# $Id: Makefile,v 1.12 1997/03/27 20:23:39 carr Exp $
+HERE = libs/Memoria/dr
+ARCHIVE		= ../Memoria-$(DSYSTEM_OS)-g.a
+SRCS		= mh_config.c mh_walk.C
 DERIVED		= mh_config.c
 
 include Makeinclude

@@ -1,10 +1,15 @@
-/* $Id: balance.h,v 1.10 1996/02/19 13:55:22 carr Exp $ */
+/* $Id: balance.h,v 1.11 1997/03/27 20:28:01 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef balance_h
 #define balance_h
 
-#include <general.h>
-#include <compute_uj.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/uj/compute_uj.h>
 
 EXTERN(int, mh_fp_register_pressure,(int reg_coeff[4][3][3],int *scalar_coeff,
 				  int x1, int x2));

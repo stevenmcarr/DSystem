@@ -1,4 +1,9 @@
-/* $Id: log.h,v 1.5 1993/07/20 16:35:12 carr Exp $ */
+/* $Id: log.h,v 1.6 1997/03/27 20:28:01 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef log_h
 #define log_h
@@ -6,11 +11,11 @@
 #include <stdio.h>
 
 #ifndef general_h
-#include <general.h>
+#include <libs/support/misc/general.h>
 #endif
 
 #ifndef mh_h
-#include <mh.h>
+#include <libs/Memoria/include/mh.h>
 #endif
 
 EXTERN(void, mh_log_data,(model_loop *loop_data,

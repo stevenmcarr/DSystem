@@ -1,33 +1,38 @@
-/* $Id: moderate.C,v 1.15 1995/04/11 15:45:42 carr Exp $ */
+/* $Id: moderate.C,v 1.16 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <moderate.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/sr/moderate.h>
 
 #ifndef table_h
-#include <table.h>
+#include <libs/Memoria/sr/table.h>
 #endif
 
 #ifndef gi_h
-#include <fort/gi.h>
+#include <libs/frontEnd/include/gi.h>
 #endif
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
 #include <malloc.h>
 
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 
 /*
 

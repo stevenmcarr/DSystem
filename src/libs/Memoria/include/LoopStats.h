@@ -1,11 +1,9 @@
-/* $Id: LoopStats.h,v 1.14 1996/01/17 11:27:44 carr Exp $ */
+/* $Id: LoopStats.h,v 1.15 1997/03/27 20:24:47 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
 
-#ifndef general_h
-#include <general.h>        /* for Boolean */
-#endif
+#include <libs/support/misc/general.h>        /* for Boolean */
 
 #define NESTING_DEPTH 10
 

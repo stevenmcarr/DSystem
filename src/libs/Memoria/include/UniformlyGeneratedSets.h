@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.h,v 1.7 1997/03/20 15:49:33 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.h,v 1.8 1997/03/27 20:24:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -15,7 +15,7 @@
 
 #include <libs/Memoria/include/IntegerList.h>
 #include <libs/frontEnd/ast/AstIter.h>
-#include <Lambda/Lambda.h>
+#include <libs/support/Lambda/Lambda.h>
 
 #define MINVAL -1.0E+99
 #define EPSILON 1.0E-10

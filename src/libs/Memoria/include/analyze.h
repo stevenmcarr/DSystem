@@ -1,4 +1,4 @@
-/* $Id: analyze.h,v 1.6 1997/03/20 15:49:33 carr Exp $ */
+/* $Id: analyze.h,v 1.7 1997/03/27 20:24:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,7 +21,7 @@
 #include <libs/frontEnd/fortTree/fortsym.h>
 #endif
 #ifndef ast_h
-#include <fort/ast_h>
+#include <libs/frontEnd/ast/ast.h>
 #endif
 
 typedef struct buildinfotype {

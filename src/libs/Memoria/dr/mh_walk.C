@@ -1,4 +1,9 @@
-/* $Id: mh_walk.C,v 1.42 1996/10/14 14:49:22 carr Exp $ */
+/* $Id: mh_walk.C,v 1.43 1997/03/27 20:23:39 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -8,45 +13,45 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <general.h>
+#include <libs/support/misc/general.h>
 
 #include <stdlib.h>
 #include <memory.h>
 
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <pt_util.h>
-#include <mem_util.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/mem_util.h>
 #include <assert.h>
 
 #ifndef memory_menu_h
-#include <memory_menu.h>
+#include <libs/Memoria/include/memory_menu.h>
 #endif
 
 #ifndef mh_walk_h
-#include <mh_walk.h>
+#include <libs/Memoria/dr/mh_walk.h>
 #endif
 
 #ifndef gi_h
-#include <fort/gi.h>
+#include <libs/frontEnd/include/gi.h>
 #endif
 
 #ifndef header_h
-#include <header.h>
+#include <libs/Memoria/include/header.h>
 #endif
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif
 
 #ifndef message_h
-#include <dialogs/message.h>
+#include <libs/graphicInterface/oldMonitor/include/dialogs/message.h>
 #endif
 
-#include <fort/FortTextTree.h>
-#include <FDgraph.h>
-#include <PedExtern.h>
+#include <libs/frontEnd/fortTextTree/FortTextTree.h>
+#include <libs/Memoria/include/FDgraph.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/PedExtern.h>
 
 extern char *mc_program;
 extern char *mc_module_list;
@@ -760,25 +765,25 @@ static int build_label_symtab(AST_INDEX   stmt,
 	fst_InitField(walk_info->symtab,REFD,false,0);
        }
      else if (is_goto(stmt))
-       fst_PutField(walk_info->symtab,(int)gen_get_text(gen_GOTO_get_lbl_ref(stmt)),
+       fst_PutField(walk_info->symtab,gen_get_text(gen_GOTO_get_lbl_ref(stmt)),
 		    REFD,(int)true);
      else if (is_arithmetic_if(stmt))
        {
 	fst_PutField(walk_info->symtab,
-		     (Generic)gen_get_text(gen_ARITHMETIC_IF_get_lbl_ref1(stmt)),REFD,
+		     gen_get_text(gen_ARITHMETIC_IF_get_lbl_ref1(stmt)),REFD,
 		     (int)true);
 	fst_PutField(walk_info->symtab,
-		     (Generic)gen_get_text(gen_ARITHMETIC_IF_get_lbl_ref2(stmt)),REFD,
+		     gen_get_text(gen_ARITHMETIC_IF_get_lbl_ref2(stmt)),REFD,
 		     (int)true);
 	fst_PutField(walk_info->symtab,
-		     (Generic)gen_get_text(gen_ARITHMETIC_IF_get_lbl_ref3(stmt)),REFD,
+		     gen_get_text(gen_ARITHMETIC_IF_get_lbl_ref3(stmt)),REFD,
 		     (int)true);
        }
      else if (is_computed_goto(stmt))
        for (label_ref = list_first(gen_COMPUTED_GOTO_get_lbl_ref_LIST(stmt));
 	    label_ref != AST_NIL;
 	    label_ref = list_next(label_ref))
-         fst_PutField(walk_info->symtab,(Generic)gen_get_text(label_ref),REFD,(int)true);
+         fst_PutField(walk_info->symtab,gen_get_text(label_ref),REFD,(int)true);
      return(WALK_CONTINUE);
   }
 
@@ -1300,7 +1305,7 @@ void mh_walk_ast(int          selection,
 	 selection == LI_STATS || selection == UJ_STATS || 
 	 selection == SR_STATS)
        {
-	sprintf(fn,"%s.STATSLOG", ctxLocation(mod_context));
+	sprintf(fn,"%s.STATSLOG", mod_context->ReferenceFilePathName());
 	((config_type *)PED_MH_CONFIG(ped))->logfile = fopen(fn,"w");
        }
 
@@ -1309,7 +1314,7 @@ void mh_walk_ast(int          selection,
      walk_info.ft = ft;
      walk_info.ftt = PED_FTT(ped);
      walk_info.ar = ar;
-     walk_info.program = ctxLocation(mod_context); 
+     walk_info.program = mod_context->ReferenceFilePathName(); 
      walk_info.LoopStats = (LoopStatsType *)calloc(1,sizeof(LoopStatsType));
      
      walk_info.MainProgram = false;
@@ -1610,7 +1615,7 @@ void ApplyMemoryCompiler(int         selection,
    if (LoopStats == NULL)
      LoopStats = (LoopStatsType *)calloc(1,sizeof(LoopStatsType));
    
-   fprintf(stderr,"Analyzing %s...\n", ctxLocation(mod_context));
+   fprintf(stderr,"Analyzing %s...\n", mod_context->ReferenceFilePathName());
    
    mh_walk_ast(selection,ped,root,ft, mod_context, &ar);
   }

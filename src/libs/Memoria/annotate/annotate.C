@@ -1,20 +1,26 @@
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-#include <general.h>
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <fort/groups.h>
-#include <pt_util.h>
-#include <header.h>
-#include <annotate.h>
-#include <mem_util.h>
-#include <string.h>
-#include <DirectivesInclude.h>
+/* $Id: annotate.C,v 1.12 1997/03/27 20:22:30 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
 
-#include <misc/Arena.h>
+/****************************************************************************/
+/*                                                                          */
+/*                                                                          */
+/****************************************************************************/
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/frontEnd/ast/groups.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/header.h>
+#include <libs/Memoria/annotate/annotate.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <string.h>
+#include <libs/Memoria/annotate/DirectivesInclude.h>
+
+#include <libs/support/memMgmt/Arena.h>
 
 EXTERN(void, message,(char *str));
 

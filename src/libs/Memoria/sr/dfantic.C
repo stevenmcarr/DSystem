@@ -1,25 +1,30 @@
-/* $Id: dfantic.C,v 1.7 1994/11/30 15:43:05 carr Exp $ */
+/* $Id: dfantic.C,v 1.8 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
+#include <libs/support/misc/general.h>
 
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
 
-#include <dfantic.h>
+#include <libs/Memoria/sr/dfantic.h>
 
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 
 #ifndef cgen_set_h
-#include <cgen_set.h>
+#include <libs/Memoria/include/cgen_set.h>
 #endif
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif
 
 

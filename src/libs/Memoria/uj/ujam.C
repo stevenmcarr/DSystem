@@ -1,33 +1,38 @@
-/* $Id: ujam.C,v 1.9 1996/10/14 14:47:35 carr Exp $ */
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-#include <general.h>
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <ujam.h>
-#include <log.h>
+/* $Id: ujam.C,v 1.10 1997/03/27 20:28:01 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
 
-#include <mark.h>
-#include <mem_util.h>
-#include <analyze.h>
-#include <shape.h>
-#include <compute_uj.h>
-#include <do_unroll.h>
-#include <do_dist.h>
+/****************************************************************************/
+/*                                                                          */
+/*                                                                          */
+/****************************************************************************/
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/uj/ujam.h>
+#include <libs/Memoria/uj/log.h>
+
+#include <libs/Memoria/include/mark.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/Memoria/include/analyze.h>
+#include <libs/Memoria/include/shape.h>
+#include <libs/Memoria/uj/compute_uj.h>
+#include <libs/Memoria/uj/do_unroll.h>
+#include <libs/Memoria/uj/do_dist.h>
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 #ifndef dt_h
-#include <dt.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
 #endif
 
 static int RemoveInterloopDependences(AST_INDEX node,

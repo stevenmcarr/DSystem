@@ -1,4 +1,4 @@
-/* $Id: Estimate.h,v 1.2 1997/03/20 15:49:33 carr Exp $ */
+/* $Id: Estimate.h,v 1.3 1997/03/27 20:24:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -10,10 +10,9 @@
 #ifndef Estimate_h
 #define Estimate_h
 
-#ifndef la_h
-#include la.h
-#endif
+#include <libs/Memoria/include/la.h>
 
+class Rows;
 
 class CacheBlock
        {
@@ -22,14 +21,14 @@ class CacheBlock
                 int TotalBlock;
                 int *Gap;
 		int Num_Rows;
-		class Rows *rows;
+		Rows *rows;
         public:
                 CacheBlock();
                 int Miss( int );  // estimate cache miss according to the unroll amount
 		int least_unroll_amount;
 		int start;
 		int end;
-		void TakeRows(class GroupSpatialEntry*);
+		void TakeRows(GroupSpatialEntry*);
 		void Analysis();
 		float Estimate(int, int);
        };        
@@ -38,8 +37,8 @@ class SomeRow:
         public SinglyLinkedListEntry
        {
         public:
-                class GroupSpatialEntry *e;
-                SomeRow(class GroupSpatialEntry *r)
+                GroupSpatialEntry *e;
+                SomeRow(GroupSpatialEntry *r)
                 {
                  e = r ;
                 };
@@ -84,7 +83,7 @@ class RowsIter:
                 {
                  SomeRow *e =
                     (SomeRow*) SinglyLinkedListIterator::Current();
-                 (*this)++;
+                 ++(*this);
                  return e;
                 };
        };
@@ -108,7 +107,7 @@ class ComputeBoard
                 int stride;
                 int dimension;
                 la_matrix coef_mat;  // Coefficient Matrix
-                class CacheBlock *block_array;
+                CacheBlock *block_array;
 		GroupSpatialEntry **gse_array;
 		struct Entry_Info *entry_info_array;
 		int matrix_row;
@@ -120,6 +119,7 @@ class ComputeBoard
          public:
                 ComputeBoard(){};
                 ComputeBoard(int, int );
+                Initialize(int, int );
                 void TakeRows( GroupSpatialEntry* );
                 int TotalMiss( int );
                 void PrintOut();

@@ -1,34 +1,39 @@
-/* $Id: pick.h,v 1.4 1992/12/11 11:22:45 carr Exp $ */
+/* $Id: pick.h,v 1.5 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef pick_h
 #define pick_h
 
 #ifndef general_h
-#include <general.h>
+#include <libs/support/misc/general.h>
 #endif
 
 #ifndef scalar_h
-#include <scalar.h>
+#include <libs/Memoria/sr/scalar.h>
 #endif
 
 #ifndef block_h
-#include <block.h>
+#include <libs/Memoria/include/block.h>
 #endif
 
 #ifndef cgen_set_h
-#include <cgen_set.h>
+#include <libs/Memoria/include/cgen_set.h>
 #endif
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 #ifndef ast_h
-#include <ast.h>
+#include <libs/frontEnd/ast/ast.h>
 #endif
 
 typedef struct pickinfotype {

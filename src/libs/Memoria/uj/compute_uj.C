@@ -1,4 +1,9 @@
-/* $Id: compute_uj.C,v 1.27 1996/10/17 16:59:13 carr Exp $ */
+/* $Id: compute_uj.C,v 1.28 1997/03/27 20:28:01 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
@@ -11,32 +16,32 @@
 /****************************************************************************/
 
 
-#include <general.h>
+#include <libs/support/misc/general.h>
 #include <iostream.h>
-#include <mh.h>
-#include <la.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <compute_uj.h>
-#include <balance.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/la.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/uj/compute_uj.h>
+#include <libs/Memoria/uj/balance.h>
 
 #ifndef gi_h
-#include <fort/gi.h>
+#include <libs/frontEnd/include/gi.h>
 #endif 
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif 
 
 #ifndef dt_h
-#include <dt.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
 #endif 
 
 #ifndef pt_util_h
-#include <pt_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #endif 
 
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 
 extern Boolean mc_unroll_cache;
 dep_info_type *machine_info;
@@ -74,12 +79,12 @@ static Boolean pick_innermost_parallel_loop(model_loop         *loop_data,
 
   {
    int next;
-   Boolean InnerFound = False;
+   Boolean InnerFound = false;
 
      for (next = loop_data[loop].inner_loop;
 	  next != -1;
 	  next = loop_data[next].next_loop)
-       InnerFound = InnerFound || pick_innermost_parallel_loop(loop_data,next);
+       InnerFound = BOOL(InnerFound || pick_innermost_parallel_loop(loop_data,next));
      if (NOT(InnerFound) && loop_data[loop].CarriedDependences == 0)
        {
 	 loop_data[loop].unroll = true;
@@ -653,7 +658,7 @@ static int survey_edges(AST_INDEX     node,
 			   SYMTAB_NUM_DIMS) == 0)
        if (fst_GetField(dep_info->symtab,gen_get_text(node),FIRST))
 	 {
-	  fst_PutField(dep_info->symtab,(int)gen_get_text(node),FIRST,false);
+	  fst_PutField(dep_info->symtab,gen_get_text(node),FIRST,false);
 	  if (gen_get_converted_type(node) == TYPE_REAL)
 	    dep_info->scalar_regs++;
 	  else if (gen_get_converted_type(node) == TYPE_DOUBLE_PRECISION)

@@ -1,21 +1,26 @@
-/* $Id: ujam.h,v 1.6 1993/07/20 16:35:17 carr Exp $ */
+/* $Id: ujam.h,v 1.7 1997/03/27 20:28:01 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef ujam_h
 #define ujam_h
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 #ifndef fortsym_h
-#include <fort/fortsym.h>
+#include <libs/frontEnd/fortTree/fortsym.h>
 #endif
 
-#include <LoopStats.h>
+#include <libs/Memoria/include/LoopStats.h>
 
 typedef struct loopinfotype {
   int     unroll_level,

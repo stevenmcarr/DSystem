@@ -1,135 +1,150 @@
-/* $Id: f2i.C,v 1.1 1997/03/20 19:56:39 carr Exp $ */
+/* $Id: f2i.C,v 1.2 1997/03/27 20:15:16 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /************************************************************************/
-/*   File:  a2i.C                                                        */
+/*   File:  f2i.C                                                        */
 /*                                                                      */
 /************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <strstream.h>
 
-#include <general.h>
-#include <mon/standalone.h>
-#include <interact.h>
+#include <libs/support/misc/general.h>
+#include <libs/graphicInterface/oldMonitor/include/mon/standalone.h>
+#include <libs/support/msgHandlers/interact.h>
 #include <ctype.h>
 
-#include <misc/mem.h>
-#include <misc/rn_string.h>
+#include <libs/support/memMgmt/mem.h>
+#include <libs/support/strings/rn_string.h>
 
-#include <context.h>
-#include <fort/fortObject.h>
-#include <fort/compositions.h>
+#include <libs/support/database/context.h>
 
-#include <IPQuery.h>
-#include <CallGraph.h>
+#include <libs/ipAnalysis/interface/IPQuery.h>
+#include <libs/ipAnalysis/callGraph/CallGraph.h>
 #include <sys/file.h>
-#include <maxdefs.h>
-#include <fort/gi.h>
-#include <fort/ast.h>
-#include <fort/FortTree.h>
-#include <fort/FortTextTree.h>
+#include <include/maxdefs.h>
+#include <libs/frontEnd/include/gi.h>
+#include <libs/frontEnd/ast/ast.h>
+#include <libs/frontEnd/fortTree/FortTree.h>
+#include <libs/frontEnd/fortTextTree/FortTextTree.h>
 #include <string.h>
 
-#include <a2i_options.h>
-#include <ai.h>
+#include <execs/f2i/f2i_options.h>
+#include <libs/f2i/ai.h>
 
-extern char *a2i_program;             /* composition to optimize */
-extern char *a2i_module;
-extern char *a2i_module_list;
+#include <libs/support/msgHandlers/ErrorMsgHandler.h>
+#include <libs/support/file/UnixFile.h>
+
+#include <libs/fileAttrMgmt/composition/Composition.h>
+#include <libs/fileAttrMgmt/composition/CompositionIterators.h>
+
+#include <libs/fileAttrMgmt/fortranModule/FortranModule.h>
+#include <libs/fileAttrMgmt/fortranModule/FortTreeModAttr.h>
+#include <libs/fileAttrMgmt/fortranModule/FortTextTreeModAttr.h>
+
+#include <libs/ipAnalysis/callGraph/CallGraph.h>
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 1024
+#endif
+
+extern char *f2i_program;             /* composition to optimize */
+extern char *f2i_module;
+extern char *f2i_module_list;
 
 C_CallGraph ProgramCallGraph;
 
-DB_FP   *stderr_fp;
-
 /************************************************************************/
 /*                                                                      */
-/*   Function:  a2iFile                                                 */
+/*   Function:  f2iFile                                                 */
 /*                                                                      */
 /************************************************************************/
     
-void a2iFile(Context m_context,
-	     char    *a2i_module)
+void f2iFile(FortranModule *module,
+	     char          *FileName)
 {
-  FortTextTree ftt;
-  AST_INDEX root;
-  FILE *fd;
-  char fn[80];
-  FortObject     fo;
-  Boolean has_errors;
+  FortTreeModAttr*      ftAttr = ATTACH_ATTRIBUTE(module, FortTreeModAttr);
+  FortTextTreeModAttr*  fttAttr = ATTACH_ATTRIBUTE(module, FortTextTreeModAttr);
+  FortTree              ft = ftAttr->ft;
+  FortTextTree          ftt = fttAttr->ftt;
   
-  if (m_context == CONTEXT_NULL)
-    {
-      fprintf(stderr, "Failed to allocate context for module %s.\n",
-	      a2i_module);
-      exit(-1);
-    }
+  ai((Context)module,ft,ftt,FileName);
   
-  /* create a database object */
-  fo = fo_Open(m_context, false, stderr_fp, &has_errors); 
-  
-  if (has_errors)
-    {
-      fprintf(stderr, "Module %s contains errors.\n", a2i_module);
-      exit(-1);
-    }
-  
-   
-  ai(fo,m_context);
-  
-  fo_Close(fo);
 }
 
-int a2iWrapper(int argc, char **argv)
+int f2iMain(int argc, char **argv)
 {
-  Options a2i_options("memory compiler options");
-  Context p_context;
-  Context m_context;
-  Composition comp;
-  FortObject  fo;
   Boolean has_errors;
   FILE    *fd;
+  DB_FP*           stderr_fp;
+  char             buffer[MAXPATHLEN];
+  FortranModule *module;
 
-  a2i_init_options(a2i_options);
-  
   stderr_fp = db_convert_fp_to_db_fp(stderr);
-  if (opt_parse_argv(&a2i_options,0,argc,argv)) {
-    a2i_options_usage(argv[0]);
-    return -1;
-  }
+  if (f2i_module)
+    {
+      module = new FortranModule;
+      if (module->Open(f2i_module) != 0)
+	f2iFile(module,NULL);
+      else
+	errorMsgHandler.HandleMsg("Module %s not found.\n", f2i_module);
+    }
+  else if (f2i_program) 
+    {
+      Composition *comp = new Composition;
+      if (comp->Open(f2i_program) != 0 ||
+	  comp->IsCompleteAndConsistent() == false) 
+	{
+	  errorMsgHandler.HandleMsg
+	    ("Not using program context %s, since it contains errors\n",
+	     f2i_program);
+	}
+      else
+	{ 
+	  ProgramCallGraph = IPQuery_Init((Context)comp);
+	  for(CompModulesIterator modules(comp);
+	      module = (FortranModule *)modules.Current(); 
+	      ++modules) 
+	    {
+	      if (module->Open(module->ReferenceFilePathName()) != 0)
+		f2iFile(module,module->ReferenceFilePathName());
+	      else
+		errorMsgHandler.HandleMsg("Module %s not found.\n",
+					  module->ReferenceFilePathName());
+	    }
+	  IPQuery_Fini(ProgramCallGraph);
+	}
+      delete comp;
+    } 
+  else /* f2i_module_list */
+    {
+
+
+      istrstream ModuleList(f2i_module_list);
+      if (!ModuleList)
+	{
+	  cerr << "The module list file " << f2i_module_list <<  "could not be opened..."
+	       << endl;
+	  return -1;
+	}
+      f2i_module = (char *)new char[512];
+      while (ModuleList >> f2i_module)
+	{
+	  module = new FortranModule;
+	  if (module->Open(f2i_module) != 0)
+	    f2iFile(module,f2i_module);
+	  else
+	    errorMsgHandler.HandleMsg("Module %s not found.\n", f2i_module);
+	  delete module;
+	}
+      delete f2i_module;
+    }
   
-  if (!a2i_module) {
-    fprintf(stderr, "Specify one of -P, -L and -M\n");
-    a2i_options_usage(argv[0]);
-    return -1;
-  }
-  else {
-    
-    /* Run the a2i on each file in a composition */
-    
-    if (a2i_program) {
-       p_context = ctxAlloc(ObjectFortComp, a2i_program);
-       if (p_context == CONTEXT_NULL)
-	 {
-	  fprintf(stderr, "Failed to allocate context for composition %s.\n",
-		  a2i_program);
-	  return -1;
-	 }
-       comp = comp_Open(p_context, false,stderr_fp, &has_errors);
-    
-       if (has_errors)
-	 {
-	  fprintf(stderr, "Composition %s contains errors.\n",
-		  a2i_program);
-	  return -1;
-	 }
-       else
-	 ProgramCallGraph = IPQuery_Init(p_context);
-      }
-    a2iFile(ctxAlloc(ObjectFortSrc, a2i_module),a2i_module);;
-    if (a2i_program)
-       IPQuery_Fini(ProgramCallGraph);
-    return 0;    
-  }
   return 0; // JA2I 2/93
 }
 
@@ -138,7 +153,7 @@ int main(int argc, char **argv)
   int ret;
   Boolean answer;
   
-  ret = runRoot(argc, argv, NULL, a2iWrapper);
+  ret = runRoot(argc, (char **)argv,f2i_init_options , f2iMain);
   return ret;
 }
 

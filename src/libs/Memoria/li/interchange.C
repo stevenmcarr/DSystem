@@ -1,4 +1,9 @@
-/* $Id: interchange.C,v 1.14 1995/04/11 15:46:56 carr Exp $ */
+/* $Id: interchange.C,v 1.15 1997/03/27 20:25:24 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************/
 /*                                                              */
@@ -18,54 +23,54 @@
 
 
 #ifndef general_h
-#include <general.h>
+#include <libs/support/misc/general.h>
 #endif
 
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <pt_util.h>
-#include <mh_config.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/mh_config.h>
 
 #ifndef header_h
-#include <header.h>
+#include <libs/Memoria/include/header.h>
 #endif
 
 #ifndef dt_h
-#include <dt.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
 #endif
 
 #ifndef gi_h
-#include <fort/gi.h>
+#include <libs/frontEnd/include/gi.h>
 #endif
 
 #ifndef interchange_h
-#include <interchange.h>
+#include <libs/Memoria/li/interchange.h>
 #endif
 
 #ifndef analyze_h
-#include <analyze.h>
+#include <libs/Memoria/include/analyze.h>
 #endif
 
 #ifndef shape_h
-#include <shape.h>
+#include <libs/Memoria/include/shape.h>
 #endif
 
 #ifndef mem_util_h
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 #endif
 
 #ifndef mark_h
-#include <mark.h>
+#include <libs/Memoria/include/mark.h>
 #endif
 
 #ifndef dg_h
-#include	<dg.h>		/* dg_add_edge()		*/
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
-#include <MemoryOrder.h>
-#include <FDgraph.h> 
-#include <fort/cd_branch.h>
+#include <libs/Memoria/li/MemoryOrder.h>
+#include <libs/Memoria/include/FDgraph.h>
+#include <libs/frontEnd/ast/cd_branch.h>
 
 
 /****************************************************************************/

@@ -1,11 +1,17 @@
+/* $Id: CacheAnalysis.h,v 1.10 1997/03/27 20:22:30 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #ifndef CacheAnalysis_h
 #define CacheAnalysis_h
 
-#include <general.h>
-#include <mh.h>
-#include <dp.h>
-#include <dg.h>
-#include <misc/list.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
+#include <libs/support/lists/list.h>
 #include <malloc.h>
 
 typedef struct CacheInfoStruct {

@@ -1,11 +1,16 @@
-/* $Id: prefetch.h,v 1.6 1995/08/22 10:56:35 carr Exp $ */
+/* $Id: prefetch.h,v 1.7 1997/03/27 20:26:39 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef prefetch_h
 #define prefetch_h
 
-#include <misc/Arena.h>
-#include <PrefetchList.h>
-#include <UniformlyGeneratedSets.h>
+#include <libs/support/memMgmt/Arena.h>
+#include <libs/Memoria/include/PrefetchList.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
 typedef struct intinfotype {
   SymDescriptor symtab;

@@ -1,80 +1,85 @@
-/* $Id: scalar.C,v 1.30 1996/01/17 11:27:24 carr Exp $ */
+/* $Id: scalar.C,v 1.31 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <scalar.h>
-#include <LoopStats.h>
-#include <fort/AstIter.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/sr/scalar.h>
+#include <libs/Memoria/include/LoopStats.h>
+#include <libs/frontEnd/ast/AstIter.h>
 
 #ifndef check_h
-#include <check.h>
+#include <libs/Memoria/sr/check.h>
 #endif
 
 #ifndef codegen_h
-#include <codegen.h>
+#include <libs/Memoria/sr/codegen.h>
 #endif
 
 #ifndef dfantic_h
-#include <dfantic.h>
+#include <libs/Memoria/sr/dfantic.h>
 #endif
 
 #ifndef dfavail_h
-#include <dfavail.h>
+#include <libs/Memoria/sr/dfavail.h>
 #endif
 
 #ifndef dfrgen_h
-#include <dfrgen.h>
+#include <libs/Memoria/sr/dfrgen.h>
 #endif
 
 #ifndef gavail_h
-#include <gavail.h>
+#include <libs/Memoria/sr/gavail.h>
 #endif
 
 #ifndef insert_h
-#include <insert.h>
+#include <libs/Memoria/sr/insert.h>
 #endif
 
 #ifndef name_h
-#include <name.h>
+#include <libs/Memoria/sr/name.h>
 #endif
 
 #ifndef moderate_h
-#include <moderate.h>
+#include <libs/Memoria/sr/moderate.h>
 #endif
 
 #ifndef pick_h
-#include <pick.h>
+#include <libs/Memoria/sr/pick.h>
 #endif
 
 #ifndef profit_h
-#include <profit.h>
+#include <libs/Memoria/sr/profit.h>
 #endif
 
 #ifndef prune_h
-#include <prune.h>
+#include <libs/Memoria/sr/prune.h>
 #endif
 
 #ifndef table_h
-#include <table.h>
+#include <libs/Memoria/sr/table.h>
 #endif
 
 #ifndef gi_h
-#include <fort/gi.h>
+#include <libs/frontEnd/include/gi.h>
 #endif
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif
 
 #include <malloc.h>
-#include <mem_util.h>
-#include <pt_util.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 
 int dummy = 0; /* this decl keeps Rn from dying in get_mem (why?) */
 
@@ -177,7 +182,7 @@ static int count_arrays(AST_INDEX          node,
 	     else if (gen_get_converted_type(node) == TYPE_COMPLEX)
 	       prelim_info->scalar_regs += 2;
 	    }
-	  fst_PutField(prelim_info->symtab,(int)gen_get_text(node),REFS,++refs);
+	  fst_PutField(prelim_info->symtab,gen_get_text(node),REFS,++refs);
 	 }
      return(WALK_CONTINUE);
   }

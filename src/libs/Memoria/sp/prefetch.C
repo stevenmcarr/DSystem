@@ -1,4 +1,9 @@
-/* $Id: prefetch.C,v 1.11 1996/10/17 16:59:45 carr Exp $ */
+/* $Id: prefetch.C,v 1.12 1997/03/27 20:26:39 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 //  
 //  File:  prefetch.C
@@ -16,27 +21,27 @@
 //
 //                  fixed bug in unroll amount determination - smc 9/29/96
 
-#include <mh.h>
-#include <fort/gi.h>
-#include <prefetch.h>
-#include <analyze.h>
-#include <shape.h>
-#include <mem_util.h>
-#include <mark.h>
-#include <mh_ast.h>
-#include <pt_util.h>
-#include <fort/walk.h>
-#include <dt.h>
-#include <mh_config.h>
-#include <misc/sllist.h>
-#include <label.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/frontEnd/include/gi.h>
+#include <libs/Memoria/sp/prefetch.h>
+#include <libs/Memoria/include/analyze.h>
+#include <libs/Memoria/include/shape.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/Memoria/include/mark.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
+#include <libs/Memoria/include/mh_config.h>
+#include <libs/support/lists/SinglyLinkedList.h>
+#include <libs/Memoria/include/label.h>
 #include <strings.h>
 
 #include <assert.h>
 
-#include	<dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 
-#include <UniformlyGeneratedSets.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
 //
 //  Function: remove_edges
@@ -477,12 +482,12 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 	  if (ScheduleBandwidth <= (PrefetchBandwidth - 1.0/Cycles))
 	    {
 	     ScheduleBandwidth += (1.0/Cycles);
-	     (void)WordIterator++;
+	     ++WordIterator;
 	    }
 	  else
 	    {
 	     temp = WordIterator.current();
-	     (void)WordIterator++;
+	     ++WordIterator;
 	     WordPrefetches->Delete(temp);
 	    }
 
@@ -492,12 +497,12 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 	  if (ScheduleBandwidth <= (PrefetchBandwidth - LineValue/Cycles))
 	    {
 	     ScheduleBandwidth += (LineValue/Cycles);
-	     (void)LineIterator++;
+	     ++LineIterator;
 	    }
 	  else
 	    {
 	     temp = LineIterator.current();
-	     (void)LineIterator++;
+	     ++LineIterator;
 	     LinePrefetches->Delete(temp);
 	    }
        }
@@ -583,7 +588,7 @@ static void InsertPrefetchesBeforeStmt(AST_INDEX    Stmt,
 	else
          list_insert_before(ut_get_stmt(Node->GetValue()),
 			    MakePrefetchStmt(Node->GetValue(),Var,distance));
-	Iterator++;
+	++Iterator;
        }
   }
 

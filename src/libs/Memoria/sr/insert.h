@@ -1,22 +1,27 @@
-/* $Id: insert.h,v 1.5 1993/06/21 13:46:57 carr Exp $ */
+/* $Id: insert.h,v 1.6 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef insert_h
 #define insert_h
 
 #ifndef cgen_set_h
-#include <cgen_set.h>
+#include <libs/Memoria/include/cgen_set.h>
 #endif
 
 #ifndef block_h
-#include <block.h>
+#include <libs/Memoria/include/block.h>
 #endif
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 typedef struct setinfo{

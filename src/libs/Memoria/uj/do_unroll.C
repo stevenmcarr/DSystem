@@ -1,41 +1,46 @@
-/* $Id: do_unroll.C,v 1.15 1995/08/22 14:34:38 carr Exp $ */
+/* $Id: do_unroll.C,v 1.16 1997/03/27 20:28:01 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
-#include <mh.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <do_unroll.h>
-#include <LoopStats.h>
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/mh.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/uj/do_unroll.h>
+#include <libs/Memoria/include/LoopStats.h>
 
-#include <ujam.h>
-#include <mem_util.h>
-#include <pt_util.h>
-#include <label.h>
-#include <analyze.h>
-#include <shape.h>
-#include <compute_uj.h>
-#include <log.h>
+#include <libs/Memoria/uj/ujam.h>
+#include <libs/Memoria/include/mem_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/label.h>
+#include <libs/Memoria/include/analyze.h>
+#include <libs/Memoria/include/shape.h>
+#include <libs/Memoria/uj/compute_uj.h>
+#include <libs/Memoria/uj/log.h>
 
-#include <mark.h>
-#include <bound.h>
+#include <libs/Memoria/include/mark.h>
+#include <libs/Memoria/include/bound.h>
 
 #ifndef gi_h
-#include <fort/gi.h>
+#include <libs/frontEnd/include/gi.h>
 #endif
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
 #ifndef dt_h
-#include <dt.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dt.h>
 #endif
 
 #ifndef header_h
-#include <header.h>
+#include <libs/Memoria/include/header.h>
 #endif
 
 extern Boolean RestrictedUnrolling;

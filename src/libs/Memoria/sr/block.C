@@ -1,4 +1,9 @@
-/* $Id: block.C,v 1.8 1995/08/21 15:09:51 carr Exp $ */
+/* $Id: block.C,v 1.9 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 /****************************************************************************/
 /*  block.c                                                                 */
 /*                                                                          */
@@ -7,23 +12,23 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <general.h>
+#include <libs/support/misc/general.h>
 
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <pt_util.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 
 #ifndef block_h
-#include <block.h>
+#include <libs/Memoria/include/block.h>
 #endif
 
 #ifndef codegen_h
-#include <codegen.h>
+#include <libs/Memoria/sr/codegen.h>
 #endif
 
 #ifndef label_h
-#include <label.h>
+#include <libs/Memoria/include/label.h>
 #endif
 
 

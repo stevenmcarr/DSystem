@@ -1,30 +1,35 @@
-/* $Id: do_unroll.h,v 1.7 1993/07/20 16:35:08 carr Exp $ */
+/* $Id: do_unroll.h,v 1.8 1997/03/27 20:28:01 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 #ifndef do_unroll_h
 #define do_unroll_h
 
 #ifndef general_h
-#include <general.h>
+#include <libs/support/misc/general.h>
 #endif
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 #ifndef fortsym_h
-#include <fort/fortsym.h>
+#include <libs/frontEnd/fortTree/fortsym.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 #ifndef ast_h
-#include <ast.h>
+#include <libs/frontEnd/ast/ast.h>
 #endif
 
 #ifndef mh_h
-#include <mh.h>
+#include <libs/Memoria/include/mh.h>
 #endif
 
 typedef struct dupdinfotype {

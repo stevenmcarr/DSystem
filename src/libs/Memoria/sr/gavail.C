@@ -1,18 +1,23 @@
-/* $Id: gavail.C,v 1.4 1994/07/20 11:32:50 carr Exp $ */
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <gavail.h>
+/* $Id: gavail.C,v 1.5 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
 
-#include <mem_util.h>
+/****************************************************************************/
+/*                                                                          */
+/*                                                                          */
+/****************************************************************************/
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/sr/gavail.h>
+
+#include <libs/Memoria/include/mem_util.h>
 
 #ifndef mh_config_h
-#include <mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #endif
 
 static int update_LI_avail(AST_INDEX         node,

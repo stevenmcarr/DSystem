@@ -1,15 +1,20 @@
-/* $Id: profit.C,v 1.4 1994/07/20 11:32:52 carr Exp $ */
-#include <general.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
-#include <profit.h>
+/* $Id: profit.C,v 1.5 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
+#include <libs/support/misc/general.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
+#include <libs/Memoria/sr/profit.h>
 
 #ifndef table_h
-#include <table.h>
+#include <libs/Memoria/sr/table.h>
 #endif
 
-#include <mem_util.h>
+#include <libs/Memoria/include/mem_util.h>
 
 static int chk_pav(AST_INDEX      node,
 		   prof_info_type *prof_info)

@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.9 1994/01/25 13:55:16 carr Exp $
-HERE = libs/mc_lib
+# $Id: Makefile,v 1.10 1997/03/27 20:21:21 carr Exp $
+HERE = libs/Memoria
 DIRS		= annotate dr li sp sr uj ut include 
-ARCHIVE		= mc-$(RN_ARCH)$(ENV_FLAG).a
+ARCHIVE		= Memoria-$(DSYSTEM_OS)-g.a
 
 include Makeinclude
 

@@ -1,33 +1,38 @@
-/* $Id: stats.h,v 1.8 1995/03/13 15:10:23 carr Exp $ */
+/* $Id: stats.h,v 1.9 1997/03/27 20:25:24 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 #ifndef stats_h
 #define stats_h
 
 #ifndef general_h
-#include <general.h>
+#include <libs/support/misc/general.h>
 #endif
 
 #ifndef Arena_h
-#include <misc/Arena.h>
+#include <libs/support/memMgmt/Arena.h>
 #endif
 
 #ifndef dp_h
-#include <dp.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
 #endif
 
 #ifndef dg_h
-#include <dg.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #endif
 
 #ifndef list_h
-#include <misc/list.h>
+#include <libs/support/lists/list.h>
 #endif
 
 #ifndef mh_h
-#include <mh.h>
+#include <libs/Memoria/include/mh.h>
 #endif
 
-#include <LoopStats.h>
-#include <UniformlyGeneratedSets.h>
+#include <libs/Memoria/include/LoopStats.h>
+#include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
 /* #define STATSDEBUG  */
 

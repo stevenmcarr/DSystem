@@ -1,4 +1,4 @@
-/* $Id: bstring.h,v 1.3 1997/03/11 14:27:32 carr Exp $ */
+/* $Id: bstring.h,v 1.4 1997/03/27 20:20:40 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,9 +19,11 @@
 
 #ifdef BSD
 
+#ifndef OSF1
 EXTERN(void, bcopy, (const void* src_addr, void* dest_addr, int nbytes));
 EXTERN(void, bzero, (void* src_addr, int nbytes));
 EXTERN(int, bcmp, (const void* src_addr, const void* dest_addr, int nbytes));
+#endif
 
 #else
 

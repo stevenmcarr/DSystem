@@ -1,4 +1,4 @@
-/* $Id: Checker.C,v 1.4 1997/03/11 14:27:26 carr Exp $ */
+/* $Id: Checker.C,v 1.5 1997/03/27 20:15:38 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -53,14 +53,13 @@
 
 
 
-/* 
+ 
 #include <libs/support/msgHandlers/interact.h>
 
 #include <libs/support/memMgmt/mem.h>
 #include <libs/support/strings/rn_string.h>
 
 #include <libs/support/database/context.h>
-#include <libs/frontEnd/ast/OBSOLETE/fortObject.h>
 
 #include <libs/moduleAnalysis/dependence/utilities/side_info.h>
 #include <libs/moduleAnalysis/dependence/dependenceGraph/dg_instance.h>
@@ -72,7 +71,7 @@
 #include <libs/moduleAnalysis/cfg/cfg.h>
 #include <libs/moduleAnalysis/ssa/ssa.h>
 #include <libs/moduleAnalysis/cfgValNum/cfgval.h>
-*/
+
 
 /**************************** Variable Definitions ****************************/
 
@@ -238,7 +237,7 @@ int main(int argc, char **argv)
 {
   int returnValue;
 
-  returnValue = runRoot(argc, argv, CheckerOptsProcess, CheckerMain);
+  returnValue = runRoot(argc, (char **)argv, CheckerOptsProcess, CheckerMain);
 
   return returnValue;
 }
@@ -271,23 +270,21 @@ static void CheckFile(DB_FP *stderr_fp, FortranModule* module)
   FortTextTree          ftt = fttAttr->ftt;
 
 
-#if 0
-  //DG_Instance*DG;
-  //EL_Instance*EL;
-  //LI_Instance*LI;
-  //SideInfo*SI;
-  //char        suffix[80];
-  //char* depGraph_path;
-  //FILE*gptr;
-  //FortObject  fo;
-  //Boolean has_errors;
-  //CfgInfo      cfgModule;
+  DG_Instance *DG;
+  EL_Instance *EL;
+  LI_Instance *LI;
+  SideInfo *SI;
+  char        suffix[80];
+  char* depGraph_path;
+  FILE*gptr;
+  Boolean has_errors;
+  CfgInfo    cfgModule;
 
   if (global_dep_opt)
   {
-     dg_all(m_context,
+     dg_all((Context)module,
             CONTEXT_NULL,
-            p_context,
+            CONTEXT_NULL,
             ftt,
             ft,
             &DG,
@@ -319,5 +316,4 @@ static void CheckFile(DB_FP *stderr_fp, FortranModule* module)
 
      fclose(global_dep_ptr);
   }
-#endif
 }

@@ -1,22 +1,27 @@
-/* $Id: codegen.C,v 1.10 1995/12/27 16:12:50 carr Exp $ */
+/* $Id: codegen.C,v 1.11 1997/03/27 20:27:20 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <general.h>
+#include <libs/support/misc/general.h>
 #include <string.h>
-#include <sr.h>
-#include <mh_ast.h>
-#include <fort/walk.h>
+#include <libs/Memoria/include/sr.h>
+#include <libs/Memoria/include/mh_ast.h>
+#include <libs/frontEnd/include/walk.h>
 
-#include <pt_util.h>
-#include <mem_util.h>
+#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+#include <libs/Memoria/include/mem_util.h>
 
-#include <name.h>
-#include <codegen.h>
-#include <label.h>
-#include <bound.h>
+#include <libs/Memoria/sr/name.h>
+#include <libs/Memoria/sr/codegen.h>
+#include <libs/Memoria/include/label.h>
+#include <libs/Memoria/include/bound.h>
 	
 static int null_scratch(AST_INDEX node,
 			int dummy)
@@ -54,7 +59,7 @@ static void insert_load(block_type *block,
      new_stmt = gen_ASSIGNMENT(AST_NIL,ut_gen_ident(symtab,reg,
 			       gen_get_real_type(table_entry.node)),
 			       array_ref);
-     fst_PutField(symtab,(int)reg,NUM_REGS,table_entry.regs-1);
+     fst_PutField(symtab,reg,NUM_REGS,table_entry.regs-1);
      if (NOT(top))
        if (block->last != (Generic)NULL)
          if (is_guard(block->last))

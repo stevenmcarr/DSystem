@@ -1,4 +1,4 @@
-/* $Id: la.h,v 1.2 1997/03/20 15:49:33 carr Exp $ */
+/* $Id: la.h,v 1.3 1997/03/27 20:24:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -22,17 +22,18 @@
 #ifndef la_h
 #define la_h
 
-#include <Lambda/Lambda.h>
+#include <libs/support/Lambda/Lambda.h>
 #include <libs/support/lists/SinglyLinkedList.h>
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/frontEnd/ast/AstIter.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
-#include <libs/Memoria/include/Estimate.h>
 #include <libs/Memoria/uj/compute_uj.h>
 
 
 #define True  1
 #define False 0
+
+class ComputeBoard;
 
 extern int BlockSize;
 class VectListEntry:
@@ -189,7 +190,7 @@ class GroupSpatialSet :
 		int Subs;
 		int IsSelfTemporal;
 		int IsSelfSpatial;
-		class ComputeBoard *computeboard;
+		ComputeBoard *computeboard;
 	 	la_matrix H;	
 	 public:
 		GroupSpatialSet(la_vect, int, int, char*, la_matrix);

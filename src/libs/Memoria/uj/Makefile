@@ -1,7 +1,6 @@
-# $Id: Makefile,v 1.6 1994/01/25 15:12:08 carr Exp $
-HERE = libs/mc_lib/uj
-INCLUDEDIRS	= libs/mc_lib/include
-ARCHIVE		= ../mc-$(RN_ARCH)$(ENV_FLAG).a
+# $Id: Makefile,v 1.7 1997/03/27 20:28:01 carr Exp $
+HERE = libs/Memoria/uj
+ARCHIVE		= ../Memoria-$(DSYSTEM_OS)-g.a
 SRCS		= ujam.C compute_uj.C balance.C do_unroll.C log.C do_dist.C
 
 include Makeinclude
