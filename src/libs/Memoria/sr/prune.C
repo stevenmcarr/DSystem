@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.10 1995/04/11 15:45:58 carr Exp $ */
+/* $Id: prune.C,v 1.11 1995/08/21 15:11:31 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -48,7 +48,8 @@ static void MarkAllSinksAsNotScalar(PedInfo ped,
    
 static void prune_dependence_edges(AST_INDEX     node,
 				   int           distance,
-				   gen_info_type *gen_info)
+				   gen_info_type *gen_info,
+				   Boolean&      Invariant)
 
 /****************************************************************************/
 /*                                                                          */
@@ -118,7 +119,10 @@ static void prune_dependence_edges(AST_INDEX     node,
 		       }
 		     if (dg[edge].src == dg[edge].sink && 
 			 dg[edge].type == dg_input && !scalar_src->prevent_slr)
-		       scalar_src->scalar = true;
+		       {
+		        scalar_src->scalar = true;
+			Invariant = true;
+		       }
 		     if (edge_dist > distance)
 		       dg_delete_free_edge( PED_DG(gen_info->ped),edge);
 		   /*  else if (edge_dist == distance && 
@@ -132,6 +136,7 @@ static void prune_dependence_edges(AST_INDEX     node,
 		       {
 			scalar_src->prevent_slr = true;
 			scalar_src->scalar = false;
+			Invariant = false;
 			MarkAllSinksAsNotScalar(gen_info->ped,dg[edge].src);
 		       }
 		     dg_delete_free_edge( PED_DG(gen_info->ped),edge);
@@ -141,7 +146,10 @@ static void prune_dependence_edges(AST_INDEX     node,
 		    if (dg[edge].consistent == consistent_SIV && 
 			!dg[edge].symbolic && dg[edge].src == dg[edge].sink &&
 			!scalar_src->prevent_slr)
-		      scalar_src->scalar = true;
+		      {
+		       scalar_src->scalar = true;
+		       Invariant = true;
+		      }
 		  break;
 		case dg_anti:
 		  if (dg[edge].consistent != inconsistent &&
@@ -168,6 +176,7 @@ static int check_gen(AST_INDEX       node,
   {
    AST_INDEX        name;
    scalar_info_type *scalar_info;
+   Boolean Invariant;
 
      if (is_subscript(node))
        {
@@ -177,30 +186,39 @@ static int check_gen(AST_INDEX       node,
 	 
 	/* no generator */
 
-	  prune_dependence_edges(name,-2,gen_info);
+	  prune_dependence_edges(name,-2,gen_info,Invariant);
 	else if (!scalar_info->is_consistent || !scalar_info->constant)
 	  {
 	   scalar_info->generator = -1;
-	   prune_dependence_edges(name,-2,gen_info);
+	   prune_dependence_edges(name,-2,gen_info,Invariant);
 	  }
-	else if (scalar_info->gen_distance == 0)
+	else if (scalar_info->gen_type == LIAV && ReplaceLevel > 0)
 
-	/* loop-independent generator */
+	/* loop-independent available generator */
 
-	  prune_dependence_edges(name,0,gen_info);
-	else if (scalar_info->gen_type == LCAV)
+	  prune_dependence_edges(name,0,gen_info,Invariant);
+	else if (scalar_info->gen_type == LIPAV && ReplaceLevel > 5)
+	  prune_dependence_edges(name,0,gen_info,Invariant);
+	else if (scalar_info->gen_type == LCAV &&
+		 ((scalar_info->gen_distance == 1 && ReplaceLevel > 1) ||
+		  (scalar_info->gen_distance > 1 && ReplaceLevel > 3)))
 	
 	/* loop-carried available generator */
 
 	  {
 	   prune_dependence_edges(name,scalar_info->gen_distance,
-				  gen_info);
+				  gen_info,Invariant);
+	   if (ReplaceLevel < 3 && NOT(Invariant))
+	     {
+	      scalar_info->generator = -1;
+	      prune_dependence_edges(name,-2,gen_info,Invariant);
+	     }
 	  }
-	else 
+	else if (scalar_info->gen_type == LCPAV && ReplaceLevel > 5)
 	  {
 	    /* loop-carried partially available generator */
 
-	    prune_dependence_edges(name,scalar_info->gen_distance,gen_info);
+	    prune_dependence_edges(name,scalar_info->gen_distance,gen_info,Invariant);
 	    
 	    if (scalar_info->gen_type != LCPAV ||
 		(!ut_member_number(gen_info->entry->LC_antic_in,
@@ -213,10 +231,15 @@ static int check_gen(AST_INDEX       node,
 
 	      {
 		scalar_info->generator = -1;
-		prune_dependence_edges(name,-2,gen_info);
+		prune_dependence_edges(name,-2,gen_info,Invariant);
 		scalar_info->scalar = false;  /* invariant code motion
 						    is unsafe if PAV */
 	      }
+	  }
+	else
+	  {
+	   scalar_info->generator = -1;
+	   prune_dependence_edges(name,-2,gen_info,Invariant);
 	  }
        }
    return(WALK_CONTINUE);

@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.26 1995/08/18 10:22:43 trsuchyt Exp $ */
+/* $Id: scalar.C,v 1.27 1995/08/21 15:10:13 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -659,6 +659,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      prelim_info.NonUniformRefs = 0;
      walk_statements(root,level,(WK_STMT_CLBACK)get_prelim_info,NOFUNC,
 		     (Generic)&prelim_info);
+     if (prelim_info.contains_cf && ReplaceLevel < 5)
+       return;
      if (prelim_info.contains_goto_or_label)
        {
 	walk_statements(loop_body,level,(WK_STMT_CLBACK)check_gotos,NOFUNC,
