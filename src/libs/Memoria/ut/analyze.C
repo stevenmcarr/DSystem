@@ -1,4 +1,4 @@
-/* $Id: analyze.C,v 1.13 1994/07/20 11:33:19 carr Exp $ */
+/* $Id: analyze.C,v 1.14 1995/08/18 10:32:39 trsuchyt Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -38,7 +38,7 @@
 #include <fort/treeutil.h>
 #include <assert.h>
 
-extern Boolean mc_allow_expansion;
+static Boolean mc_allow_expansion = false;
 
 /****************************************************************/
 /*                                                              */

@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.25 1995/08/16 16:00:19 carr Exp $ */
+/* $Id: scalar.C,v 1.26 1995/08/18 10:22:43 trsuchyt Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -510,9 +510,6 @@ static int count_regs(AST_INDEX     stmt,
      else if (is_read_short(stmt))
        walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
 		       (WK_EXPR_CLBACK)get_expr_regs,(Generic)reg_info);
-     else if (is_read_long(stmt))
-       walk_expression(gen_READ_LONG_get_io_LIST(stmt),NOFUNC,
-		       (WK_EXPR_CLBACK)get_expr_regs,(Generic)reg_info);
      else if (is_write(stmt))
        walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
 		       (WK_EXPR_CLBACK)get_expr_regs,(Generic)reg_info);
@@ -847,10 +844,6 @@ static int pre_scalar(AST_INDEX     stmt,
      walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),
 		     (WK_EXPR_CLBACK)set_surrounding_do,NOFUNC,
 		     (Generic)do_info->ar);
-   else if (is_read_long(stmt))
-     walk_expression(gen_READ_LONG_get_io_LIST(stmt),
-		     (WK_EXPR_CLBACK)set_surrounding_do,NOFUNC,
-		     (Generic)do_info->ar);
    else if (is_logical_if(stmt))
      walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),
 		     (WK_EXPR_CLBACK)set_surrounding_do,NOFUNC,
@@ -872,10 +865,7 @@ static int pre_scalar(AST_INDEX     stmt,
 		     (Generic)do_info->ar);
    else if (is_if(stmt) || is_continue(stmt) || is_goto(stmt) ||
 	    is_computed_goto(stmt) || is_assigned_goto(stmt) || 
-	    is_format(stmt) || is_stop(stmt) || 
-	    is_format(stmt) || is_return(stmt) || is_data(stmt) || is_entry(stmt) ||
-	    is_close(stmt) || is_open(stmt) || is_rewind_short(stmt) ||
-	    is_rewind_long(stmt));
+	    is_format(stmt) || is_stop(stmt));
    else if (executable_stmt(stmt))
      { 
       char errmsg[30];

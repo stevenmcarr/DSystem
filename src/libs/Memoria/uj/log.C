@@ -1,4 +1,4 @@
-/* $Id: log.C,v 1.10 1995/06/07 16:04:45 carr Exp $ */
+/* $Id: log.C,v 1.11 1995/08/18 10:25:06 trsuchyt Exp $ */
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -15,7 +15,7 @@
 
 static int LoopNumber = 1;
 
-extern Boolean mc_extended_cache;
+//static Boolean mc_extended_cache = false;
 
 static void print_predicted_info(model_loop *loop_data,
 				 int        loop,

@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.6 1995/06/29 12:35:32 carr Exp $ */
+/* $Id: prefetch.C,v 1.7 1995/08/18 10:20:54 trsuchyt Exp $ */
 
 #include <mh.h>
 #include <fort/gi.h>
@@ -164,6 +164,91 @@ static void CheckRefsForPrefetch(model_loop    *loop_data,
      delete locality_info.UGS;
   }
    
+
+static int LoadCycles(AST_INDEX Node,
+		      PedInfo   ped)
+
+  {
+   int LoadPenalty;
+
+    LoadPenalty = ((config_type *)PED_MH_CONFIG(ped))->hit_cycles;
+    if (gen_get_converted_type(Node) == TYPE_REAL)
+      return(LoadPenalty);
+    else if (gen_get_converted_type(Node) == TYPE_DOUBLE_PRECISION ||
+            gen_get_converted_type(Node) == TYPE_COMPLEX)
+      return(((config_type *)PED_MH_CONFIG(ped))->double_fetches*LoadPenalty);
+    else	
+      return(0);
+  }
+
+
+static int OperationCycles(AST_INDEX Node,
+			   PedInfo   ped)
+
+  {
+   int ops;
+     
+     if (!is_binary_times(Node) || 
+	 (!is_binary_plus(tree_out(Node)) && 
+	  !is_binary_minus(tree_out(Node))) ||
+	 !((config_type *)PED_MH_CONFIG(ped))->mult_accum)
+       if (gen_get_converted_type(Node) == TYPE_DOUBLE_PRECISION ||
+	   gen_get_converted_type(Node) == TYPE_COMPLEX ||
+	   gen_get_converted_type(Node) == TYPE_REAL)
+	 {
+	  if (gen_get_converted_type(Node) == TYPE_COMPLEX)
+	    ops = 2;
+	  else
+	    ops = 1;
+	  if (is_binary_times(Node))
+	    return(((config_type *)PED_MH_CONFIG(ped))->mul_cycles * ops);
+	  else if (is_binary_plus(Node) || is_binary_minus(Node))
+	    return(((config_type *)PED_MH_CONFIG(ped))->add_cycles * ops);
+	  else if (is_binary_divide(Node))
+	    return(((config_type *)PED_MH_CONFIG(ped))->div_cycles * ops);
+	  else
+	    return(ops); 
+	 }
+     return(0);
+  }
+
+
+static int CountCycles(AST_INDEX     Node,
+		       CycleInfoType *CycleInfo)
+
+  {
+   subscript_info_type *sptr;
+
+     if (is_subscript(Node))
+       {
+	sptr = get_subscript_ptr(gen_SUBSCRIPT_get_name(Node));
+	if (sptr->Locality == NONE || sptr->Locality == SELF_SPATIAL ||
+	    sptr->Locality == GROUP_SPATIAL)
+	  CycleInfo->MemCycles += LoadCycles(Node,CycleInfo->ped);
+       }
+     else if (is_binary_op(Node))
+	CycleInfo->FlopCycles += OperationCycles(Node,CycleInfo->ped);
+     return(WALK_CONTINUE);
+  }
+
+
+static int CyclesPerIteration(AST_INDEX Node,
+			      PedInfo   ped)
+
+  {
+   CycleInfoType CycleInfo;
+  
+     CycleInfo.MemCycles = 0;
+     CycleInfo.FlopCycles = 0;
+     CycleInfo.ped = ped;
+     walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountCycles,NOFUNC,
+		     (Generic)&CycleInfo);
+     if (CycleInfo.MemCycles >= CycleInfo.FlopCycles)
+       return(CycleInfo.MemCycles);
+     else
+       return(CycleInfo.FlopCycles);
+  }
+
 static void ModeratePrefetchRequirements(model_loop   *loop_data,
 					 int          loop,
 					 PrefetchList *SPLinePrefetches,
@@ -194,7 +279,7 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
      DPLineValue = ((float)DPLinePrefetches->Count()) *
                            (8.0/(float)((config_type *)PED_MH_CONFIG(ped))->line);
      BandwidthNeeded += SPLineValue + DPLineValue;
-     Cycles = ut_CyclesPerIteration(loop_data[loop].node,ped);
+     Cycles = CyclesPerIteration(loop_data[loop].node,ped);
      BandwidthNeeded /= Cycles;
      if (BandwidthNeeded > PrefetchBandwidth)
        {
@@ -594,7 +679,7 @@ static void SchedulePrefetches(model_loop *loop_data,
              IterationDist,
              Cycles;
 
-     Cycles = ut_CyclesPerIteration(loop_data[loop].node,ped);
+     Cycles = CyclesPerIteration(loop_data[loop].node,ped);
      IterationDist = ceil_ab(((config_type *)PED_MH_CONFIG(ped))->
 			     prefetch_latency,Cycles);
      if (NOT(WordPrefetches->NullList()))

@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.12 1995/08/07 16:51:14 carr Exp $ */
+/* $Id: header.h,v 1.13 1995/08/18 10:13:54 trsuchyt Exp $ */
 
 #ifndef header_h
 #define header_h
@@ -74,7 +74,4 @@ EXTERN(void, memory_PerformCacheAnalysis, (PedInfo      ped,
 					   AST_INDEX    root,
 					   int          level));
 
-EXTERN(void, memory_AnnotateWithLDSTCount, (AST_INDEX    root,
-					    int          level,
-					    Boolean      MainProgram));
 #endif

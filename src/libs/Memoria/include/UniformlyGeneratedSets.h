@@ -21,7 +21,6 @@
 class UniformlyGeneratedSetsEntry : public IntegerList {
 
   int NestingLevel,Subscripts;
-  char name[80];
   la_matrix H;
   la_vect ZeroSpace, LocalizedIterationSpace;
   Boolean Uniform;
@@ -36,12 +35,11 @@ class UniformlyGeneratedSetsEntry : public IntegerList {
 
 public:
 
-  UniformlyGeneratedSetsEntry(char *EntryName,la_matrix nodeH, int level,int subs,
-			      la_vect LIS, Boolean uniform) : IntegerList()
+  UniformlyGeneratedSetsEntry(la_matrix nodeH, int level,int subs,la_vect LIS,
+			      Boolean uniform) : IntegerList()
   {
    int i,j;
 
-     (void)strcpy(name,EntryName);
      NestingLevel = level;
      Subscripts = subs;
      Uniform = uniform;
@@ -103,12 +101,8 @@ public:
   Boolean NodesHaveGroupTemporalReuse(AST_INDEX node1, AST_INDEX node2);
   Boolean SingleNodeHasSelfTemporalReuse();
   Boolean SingleNodeHasSelfSpatialReuse();
-  Boolean SameUniformlyGeneratedSet(AST_INDEX node,la_matrix nodeH);
+  Boolean SameUniformlyGeneratedSet(la_matrix nodeH);
   void InterchangeRows(int *IV);
-  la_vect getLocal() { return LocalizedIterationSpace;};
-  int getNestl() { return NestingLevel;};
-  int getSubs() { return Subscripts;};
-  la_matrix getH() { return H;};
  };
 
 
@@ -140,7 +134,7 @@ class UniformlyGeneratedSets : public IntegerList {
   int *LocalizedIterationSpace;
 
   UniformlyGeneratedSetsEntry *GetUniformlyGeneratedSet(AST_INDEX node);
-  UniformlyGeneratedSetsEntry *GetUniformlyGeneratedSet(AST_INDEX node, la_matrix NodeH);
+  UniformlyGeneratedSetsEntry *GetUniformlyGeneratedSet(la_matrix NodeH);
   void AddNode(AST_INDEX node);
   void Append(la_matrix nodeH, AST_INDEX node, int NumSubs, Boolean uniform );
   int GetIndex(char *ivar);
