@@ -1,4 +1,4 @@
-/* $Id: pick.C,v 1.5 1993/06/21 13:46:40 carr Exp $ */
+/* $Id: pick.C,v 1.6 1993/09/06 14:55:08 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -19,6 +19,7 @@
 
 #include <pt_util.h>
 #include <mem_util.h>
+#include <GenList.h>
 
 static int update_avail(AST_INDEX       node,
 			pick_info_type  *pick_info)
@@ -127,7 +128,8 @@ static int chk_store(AST_INDEX         node,
        }
      return(WALK_CONTINUE);
   }
-	    
+
+
 
 static int get_gen(AST_INDEX         node,
 		   pick_info_type    *pick_info)
@@ -142,6 +144,8 @@ static int get_gen(AST_INDEX         node,
                     next_edge,
                     sink_ref,
                     dist;
+   GenList          GList;
+   GenListIterator  *GLI;
    scalar_info_type *psrc,
                     *psink;
 
@@ -157,8 +161,9 @@ static int get_gen(AST_INDEX         node,
 	    the sink.  Available consistent edges will always be chosen
 	    over inconsistent edges. */
 
-	if (edge != END_OF_LIST)
-	  psink = get_scalar_info_ptr(pick_info->dg[edge].sink);
+	if (edge == END_OF_LIST)
+	  return(WALK_CONTINUE);
+	psink = get_scalar_info_ptr(pick_info->dg[edge].sink);
 	while (edge != END_OF_LIST)
 	  {
 	   next_edge = dg_next_sink_ref( PED_DG(pick_info->ped),edge);
@@ -182,7 +187,7 @@ static int get_gen(AST_INDEX         node,
 					 psrc->array_num) ||
 		     !ut_member_number(pick_info->exit_block->LC_rgen_out_if_1,
 				       psrc->array_num) || dist != 1))
-		   dg_delete_free_edge( PED_DG(pick_info->ped),edge);
+		   /* dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
 		 else
 		   {
 		    if (ut_member_number(pick_info->exit_block->LC_avail_out,
@@ -197,9 +202,10 @@ static int get_gen(AST_INDEX         node,
 
 		      if (psink->gen_type == LIAV && psink->is_consistent &&
 			  psink->constant)
-		        dg_delete_free_edge( PED_DG(pick_info->ped),edge);
+		        /* dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
 		      else if (psink->generator == -1)
 			{
+			 GList.Append(psrc);
 			 psink->generator = psrc->table_index;
 			 psink->gen_distance = dist;
 			 psink->gen_type = LCAV;
@@ -214,6 +220,8 @@ static int get_gen(AST_INDEX         node,
 			     pick_info->dg[edge].consistent != inconsistent
 			     && !pick_info->dg[edge].symbolic))
 			  {
+			   GList.Clear();
+			   GList.Append(psrc);
 			   psink->generator = psrc->table_index;
 			   psink->gen_distance = dist;
 			   psink->gen_type = LCAV;
@@ -226,6 +234,8 @@ static int get_gen(AST_INDEX         node,
 			          inconsistent &&
 			       !pick_info->dg[edge].symbolic)
 			{
+			 GList.Clear();
+			 GList.Append(psrc);
 			 psink->generator = psrc->table_index;
 			 psink->gen_distance = dist;
 			 psink->gen_type = LCAV;
@@ -244,9 +254,10 @@ static int get_gen(AST_INDEX         node,
 
 		      if (psink->gen_type == LIAV && psink->is_consistent &&
 			  psink->constant)
-		        dg_delete_free_edge( PED_DG(pick_info->ped),edge);
+		       /*  dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
 		      else if (psink->generator == -1)
 			{
+			 GList.Append(psrc);
 			 psink->generator = psrc->table_index;
 			 psink->gen_distance = dist;
 			 psink->gen_type = LCPAV;
@@ -264,6 +275,8 @@ static int get_gen(AST_INDEX         node,
 			    (dist > psink->gen_distance || 
 			     !psink->is_consistent || !psink->constant))
 			  {
+			   GList.Clear();
+			   GList.Append(psrc);
 			   psink->generator = psrc->table_index;
 			   psink->gen_distance = dist;
 			   psink->gen_type = LCPAV;
@@ -276,6 +289,8 @@ static int get_gen(AST_INDEX         node,
 			       pick_info->dg[edge].consistent != inconsistent
 			       && !pick_info->dg[edge].symbolic)
 			{
+			 GList.Clear();
+			 GList.Append(psrc);
 			 psink->generator = psrc->table_index;
 			 psink->gen_distance = dist;
 			 psink->gen_type = LCPAV;
@@ -289,15 +304,15 @@ static int get_gen(AST_INDEX         node,
 		{
 		   /* loop-independent edge */
 
-		 if (!ut_member_number(pick_info->LI_rgen,psrc->array_num))
-		   dg_delete_free_edge( PED_DG(pick_info->ped),edge);
+		 if (!ut_member_number(pick_info->LI_rgen,psrc->array_num)) 
+		/*   dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
 		 else if (ut_member_number(pick_info->LI_avail,
 					   psrc->table_index))
 		   if (psink->gen_type == LIAV && psink->is_consistent &&
 		       psink->constant && 
 		       (pick_info->dg[edge].consistent == inconsistent ||
 			pick_info->dg[edge].symbolic))
-		     dg_delete_free_edge( PED_DG(pick_info->ped),edge);
+	/*	     dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
 		   else if (psink->generator == -1 ||
 			    !psink->is_consistent || 
 			    !psink->constant || 
@@ -305,6 +320,8 @@ static int get_gen(AST_INDEX         node,
 			     pick_info->dg[edge].consistent != inconsistent 
 			     && !pick_info->dg[edge].symbolic))
 		     {
+		      GList.Clear();
+		      GList.Append(psrc);
 		      psink->generator = psrc->table_index;
 		      psink->gen_distance = 0;
 		      psink->gen_type = LIAV;
@@ -320,12 +337,14 @@ static int get_gen(AST_INDEX         node,
 
 		   if (psink->gen_type == LIAV && psink->is_consistent &&
 		       psink->constant)
-		     dg_delete_free_edge( PED_DG(pick_info->ped),edge);
+		/*     dg_delete_free_edge( PED_DG(pick_info->ped),edge) */;
 		   else if (psink->generator == -1 || 
 			    ((!psink->is_consistent  || !psink->constant) &&
 			     pick_info->dg[edge].consistent != inconsistent 
 			     && !pick_info->dg[edge].symbolic))
 		     {
+		      GList.Clear();
+		      GList.Append(psrc);
 		      psink->generator = psrc->table_index;
 		      psink->gen_distance = 0;
 		      psink->gen_type = LIPAV;
@@ -341,6 +360,8 @@ static int get_gen(AST_INDEX         node,
 		     a LI pavail is chosen over LC */
 		   
 		     {
+		      GList.Clear();
+		      GList.Append(psrc);
 		      psink->generator = psrc->table_index;
 		      psink->gen_distance = 0;
 		      psink->gen_type = LIPAV;
@@ -351,6 +372,15 @@ static int get_gen(AST_INDEX         node,
 		}
 	     }
 	   edge = next_edge;
+	  }
+	if (psink->constant && psink->is_consistent && NOT(GList.NullList()))
+	  {
+	   GLI = new GenListIterator(&GList);
+	   while(GLI->Current() != NULL)
+	     {
+	      GLI->Current()->GetValue()->is_generator = true;
+	      (void)(*GLI)++;
+	     }
 	  }
        }
    return(WALK_CONTINUE);
