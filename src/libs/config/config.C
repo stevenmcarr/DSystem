@@ -91,6 +91,14 @@ char *D_arch_name = "AIX-3.x";
 char *D_arch_name = "OSF1";
 #endif
 
+#ifdef DSYSTEM_ARCH_LINUX_I686      
+char *D_arch_name = "Linux-i686";
+#endif
+
+#ifdef DSYSTEM_ARCH_LINUX_ALPHA      
+char *D_arch_name = "Linux-alpha";
+#endif
+
    /* Zero terminated list of directories */ 
 char *D_font_dirs[] =
   {
