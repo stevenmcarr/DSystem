@@ -40,7 +40,7 @@
 #include <el.h>
 #include <dp.h>
 #include <dt.h>
-#include <rsd.h>
+#include <dep/rsd.h>
 #include <walk.h>
 #include <mh_config.h>
 #include <pt_util.h>
