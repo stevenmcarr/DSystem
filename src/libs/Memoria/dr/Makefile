@@ -1,5 +1,4 @@
-# $Id: Makefile,v 1.9 1994/01/18 14:23:13 carr Exp $
-ENV_FLAG := -g
+# $Id: Makefile,v 1.10 1994/01/25 13:57:20 carr Exp $
 HERE = libs/mc_lib/dr
 INCLUDEDIRS	= libs/mc_lib/include
 ARCHIVE		= ../mc-$(RN_ARCH)$(ENV_FLAG).a
