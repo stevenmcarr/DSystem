@@ -412,6 +412,11 @@ AST_INDEX AddressEquivalenceClassSet::GetLeader(AST_INDEX node)
   la_matrix nodeH = la_matNew(Subscripts,NestingLevel);
 
   GetH(node,nodeH,uniform);
+
+  // Is this right? uniform == false means no AEC... MJB XXX
+  if (uniform == false)
+      return NULL;
+
   return GetAddressEquivalenceClass(node,nodeH)->GetLeader();
 }
 
@@ -424,6 +429,10 @@ AST_INDEX AddressEquivalenceClassSet::GetFirstInLoop(AST_INDEX node)
   la_matrix nodeH = la_matNew(Subscripts,NestingLevel);
 
   GetH(node,nodeH,uniform);
+
+  // Is this right? uniform == false means no AEC... MJB XXX
+  if (uniform == false)
+      return NULL;
 
   return GetAddressEquivalenceClass(node,nodeH)->GetFirstInLoop();
 }

@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.31 2000/05/03 04:57:32 mjbedy Exp $ */
+/* $Id: CacheAnalysis.C,v 1.32 2000/05/09 20:14:48 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1042,7 +1042,7 @@ static void walk_loops(CacheInfoType  *CacheInfo,
 				    CacheInfo->ReuseModel,
 				    CacheInfo->AECS->GetSize(),
 				    CacheInfo->ped,
-                                    CacheInfo->IVar[loop],
+                                    CacheInfo->IVar[CacheInfo->loop_data[loop].level-1],
 				    CacheInfo->LogMaxBytesPerWord,
                                     CacheInfo->symtab);
         
