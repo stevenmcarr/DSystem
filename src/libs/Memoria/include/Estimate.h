@@ -1,4 +1,4 @@
-/* $Id: Estimate.h,v 1.3 1997/03/27 20:24:47 carr Exp $ */
+/* $Id: Estimate.h,v 1.4 1997/04/07 14:48:18 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -119,7 +119,7 @@ class ComputeBoard
          public:
                 ComputeBoard(){};
                 ComputeBoard(int, int );
-                Initialize(int, int );
+                void Initialize(int, int );
                 void TakeRows( GroupSpatialEntry* );
                 int TotalMiss( int );
                 void PrintOut();
