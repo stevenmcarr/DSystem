@@ -1,4 +1,4 @@
-/* $Id: yaccDirectives.y,v 1.6 1999/06/11 17:45:08 carr Exp $ */
+/* $Id: yaccDirectives.y,v 1.7 1999/07/22 18:08:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,7 +21,6 @@
 
 #include <libs/Memoria/annotate/DirectivesInclude.h>
 
-
 char *a2i_DirectiveString;
 
 Directive a2i_Directive;
@@ -39,7 +38,7 @@ Boolean a2i_IsDirective;
   }
 
 %token CDIR
-%token PREFETCH FLUSH DEP SETSLR
+%token PREFETCH FLUSH DEP
 %token <cval> NAME ICONST
 %token LPAR RPAR COMMA
 %token PLUS MINUS TIMES DIVIDE
@@ -73,11 +72,6 @@ command : PREFETCH constexpr COMMA subvar
 	      $$.Instr = Dependence;
 	      $$.Subscript = $4;
 	      $$.DirectiveNumber = atoi(gen_get_text($2));
-	    }
-        | SETSLR constexpr
-            {
-	     $$.Instr = SetSLRInstruction;
-	     $$.SpecialLoadStride = $2;
 	    }
         ;
 

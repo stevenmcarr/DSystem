@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.24 1999/06/23 13:39:34 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.25 1999/07/22 18:08:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -32,79 +32,6 @@ extern int aiCache;
 extern int aiOptimizeAddressCode;
 
 static int RefCount = 0;
-
-static int remove_edges(AST_INDEX      stmt,
-			int            level,
-			PedInfo        ped)
-
-  {
-   DG_Edge    *dg;
-   int        vector,lvl;
-   EDGE_INDEX edge,
-              next_edge;
-   stmt_info_type *sptr;
-
-     if (is_assignment(stmt))
-       if (is_subscript(gen_ASSIGNMENT_get_lvalue(stmt)))
-         get_subscript_ptr(gen_SUBSCRIPT_get_name(gen_ASSIGNMENT_get_lvalue(
-                           stmt)))->store = true;
-     dg = dg_get_edge_structure( PED_DG(ped));
-     vector = get_info(ped,stmt,type_levelv);
-     for (lvl = 1; lvl < level;lvl++)
-       {
-	for (edge = dg_first_src_stmt( PED_DG(ped),vector,lvl);
-	     edge != END_OF_LIST;
-	     edge = next_edge)
-	  {
-	   next_edge = dg_next_src_stmt( PED_DG(ped),edge);
-	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge( PED_DG(ped),edge);
-	   else 
-	     if ((sptr=get_stmt_info_ptr(ut_get_stmt(dg[edge].sink))) == NULL)
-	       dg_delete_free_edge( PED_DG(ped),edge);
-	  }
-	for (edge = dg_first_sink_stmt( PED_DG(ped),vector,lvl);
-	     edge != END_OF_LIST;
-	     edge = next_edge)
-	  {
-	   next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
-	   if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	       dg[edge].type == dg_call || dg[edge].type == dg_control)
-	     dg_delete_free_edge( PED_DG(ped),edge);
-	   else 
-	     if ((sptr = get_stmt_info_ptr(ut_get_stmt(dg[edge].src))) == NULL)
-	       dg_delete_free_edge( PED_DG(ped),edge);
-	  }
-       }
-     for (edge = dg_first_src_stmt( PED_DG(ped),vector,
-				   LOOP_INDEPENDENT);
-	  edge != END_OF_LIST;
-	  edge = next_edge)
-       {
-	next_edge = dg_next_src_stmt( PED_DG(ped),edge);
-	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	    dg[edge].type == dg_call || dg[edge].type == dg_control)
-	  dg_delete_free_edge( PED_DG(ped),edge);
-	else 
-	  if ((sptr = get_stmt_info_ptr(ut_get_stmt(dg[edge].sink))) == NULL)
-	    dg_delete_free_edge( PED_DG(ped),edge);
-       }
-     for (edge = dg_first_sink_stmt( PED_DG(ped),vector,
-				    LOOP_INDEPENDENT);
-	  edge != END_OF_LIST;
-	  edge = next_edge)
-       {
-	next_edge = dg_next_sink_stmt( PED_DG(ped),edge);
-	if (dg[edge].type == dg_exit || dg[edge].type == dg_io ||
-	    dg[edge].type == dg_call || dg[edge].type == dg_control)
-	  dg_delete_free_edge( PED_DG(ped),edge);
-	else 
-	  if ((sptr = get_stmt_info_ptr(ut_get_stmt(dg[edge].src))) == NULL)
-	    dg_delete_free_edge( PED_DG(ped),edge);
-       }
-     return(WALK_CONTINUE);
-  }
 
 static Boolean IsValidDependence(AST_INDEX PrefetchNode,
 				 AST_INDEX RefNode,
@@ -260,7 +187,6 @@ static int CreateDepInfo(AST_INDEX node,
 		 break;
 		 
 	       case FlushInstruction:
-	       case SetSLRInstruction:
 		 break;
 	       }
 	   }
@@ -296,12 +222,11 @@ static int StoreCacheInfo(AST_INDEX     node,
 	   NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
 	   CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
 	 {
-	   DepInfoPtr(node)->UseSpecialSelfSpatialLoad = 
+	   DepInfoPtr(node)->UsePrefetchingLoad = 
 	     CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
-	   CacheInfo->HasSpecialSelfSpatial = 
-	     BOOL(CacheInfo->HasSpecialSelfSpatial
-	    	  || DepInfoPtr(node)->UseSpecialSelfSpatialLoad);
 	 }
+       else
+	 DepInfoPtr(node)->UsePrefetchingLoad = false;
       }
      return(WALK_CONTINUE);
   }
@@ -496,7 +421,7 @@ static int BuildGroupSpatialDependenceList(AST_INDEX     node,
 			  
   {
      if (is_subscript(node))
-       if (DepInfoPtr(node)->UseSpecialSelfSpatialLoad)
+       if (DepInfoPtr(node)->UsePrefetchingLoad)
 	 ReuseModel->AddSpatialDependences(node);
      return(WALK_CONTINUE);
   }
@@ -649,46 +574,50 @@ static int CyclesPerIteration(AST_INDEX Node,
       return(CycleInfo.FPCycles);
   }
 
-static void AddSpecialLoadDistanceInstruction(AST_INDEX LoopHeader,
-	 				      DataReuseModel *ReuseModel,
-					      int NumberOfAddressSets,
-					      PedInfo ped)
+static int SetDistance(AST_INDEX Node,
+		       PrefetchDataType *PrefetchData)
+
 {
+  if (is_subscript(Node))
+    {
+       if (DepInfoPtr(Node)->UsePrefetchingLoad)
+	 {
+	   DepInfoPtr(Node)->PrefetchDistance =
+	     ceil_ab(PrefetchData->PrefetchLatency,
+		     PrefetchData->LoopCycles*(PrefetchData->LineSize >> 3)) * 
+	         PrefetchData->LineSize;
+           DepInfoPtr(Node)->PrefetchOffsetAST = AST_NIL;
+         }
+       else
+	 DepInfoPtr(Node)->PrefetchDistance = 0;
+    }
+  return (WALK_CONTINUE);
+}
+
+static void SetPrefetchLoadDistance(AST_INDEX LoopHeader,
+				    DataReuseModel *ReuseModel,
+				    int NumberOfAddressSets,
+				    PedInfo ped)
+{
+  PrefetchDataType PrefetchData;
   
   // Get the number of cycles for enough loop iterations to go through an
   // an entire cache line
 
-  int LoopCycles = CyclesPerIteration(LoopHeader,ReuseModel,
-				      NumberOfAddressSets,ped) * 
-    (((config_type *)PED_MH_CONFIG(ped))->line >> 3); 
+  PrefetchData.LoopCycles = CyclesPerIteration(LoopHeader,ReuseModel,
+					       NumberOfAddressSets,ped);
 
   // Get how long will it take for the Special Load to fetch the 
   // prefetched cache line
 
-  int PrefetchLatency = ((config_type *) PED_MH_CONFIG(ped))->prefetch_latency;
+  PrefetchData.PrefetchLatency = 
+	((config_type *) PED_MH_CONFIG(ped))->prefetch_latency;
 
-  // Get how far away in memory the prefetched line is
 
-  int SpecialLoadDistance = ceil_ab(PrefetchLatency,LoopCycles) *
-    ((config_type *)PED_MH_CONFIG(ped))->line;
+  PrefetchData.LineSize = ((config_type *) PED_MH_CONFIG(ped))->line;
 
-  
-  // Build directive to set special load distance 
-
-  char *Instruction = new char[72];
-
-  sprintf(Instruction,"$directive setslr %d",SpecialLoadDistance);
-
-  AST_INDEX NewDirective = pt_gen_comment(Instruction);
-  
-  Directive *Dir = new Directive;
-  Dir->DependenceList = util_list_alloc((int)NULL,NULL);
-  Dir->StmtNumber = 0;
-  Dir->Instr = SetSLRInstruction;
-  Dir->SpecialLoadStride = SpecialLoadDistance;
-  PutDirectiveInfoPtr(NewDirective,Dir);
-
-  list_insert_before(LoopHeader,NewDirective);
+  walk_expression(gen_DO_get_stmt_LIST(LoopHeader),(WK_EXPR_CLBACK)SetDistance,
+		  (WK_EXPR_CLBACK)NOFUNC,(Generic)&PrefetchData);
 
 }
 
@@ -708,7 +637,6 @@ static void walk_loops(CacheInfoType  *CacheInfo,
      if (CacheInfo->loop_data[loop].inner_loop == -1)
        {
 	CacheInfo->loop = loop;
-	CacheInfo->HasSpecialSelfSpatial = false;
 	LIS = new int[CacheInfo->loop_data[loop].level];
 	for (i = 0; i < CacheInfo->loop_data[loop].level-1; i++)
 	  LIS[i] = 0;
@@ -739,11 +667,10 @@ static void walk_loops(CacheInfoType  *CacheInfo,
 	    walk_expression(CacheInfo->loop_data[loop].node,
 			    (WK_EXPR_CLBACK)BuildGroupSpatialDependenceList,
 			    NOFUNC,(Generic)CacheInfo->ReuseModel);
-	    if (CacheInfo->HasSpecialSelfSpatial)
-	     AddSpecialLoadDistanceInstruction(CacheInfo->loop_data[loop].node,
-					       CacheInfo->ReuseModel,
-					       CacheInfo->AECS->GetSize(),
-					       CacheInfo->ped);
+	    SetPrefetchLoadDistance(CacheInfo->loop_data[loop].node,
+				    CacheInfo->ReuseModel,
+				    CacheInfo->AECS->GetSize(),
+				    CacheInfo->ped);
 	    delete CacheInfo->AECS;
 	  }
 	      

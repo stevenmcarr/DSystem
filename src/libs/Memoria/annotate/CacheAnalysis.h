@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.h,v 1.17 1999/06/11 17:44:03 carr Exp $ */
+/* $Id: CacheAnalysis.h,v 1.18 1999/07/22 18:08:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -24,7 +24,6 @@ typedef struct CacheInfoStruct {
   SymDescriptor symtab;
   arena_type *ar;
   char       **IVar;
-  Boolean    HasSpecialSelfSpatial;
   DataReuseModel *ReuseModel;
   AddressEquivalenceClassSet *AECS;
  } CacheInfoType;
@@ -33,11 +32,13 @@ typedef struct DepInfoStruct {
   int ReferenceNumber;
   UtilList *DependenceList;
   LocalityType Locality;
-  Boolean UseSpecialSelfSpatialLoad;
+  Boolean UsePrefetchingLoad;
   AST_INDEX AddressLeader;
   AST_INDEX FirstInLoop;
   int       Offset;
   int       StmtNumber;
+  int       PrefetchDistance;
+  AST_INDEX PrefetchOffsetAST;
  } DepInfoType;         /* copy in a2i_lib/ai.h */
 
 typedef struct depstruct {
@@ -53,6 +54,12 @@ typedef struct cachecycleinfostruct {
     PedInfo         ped;
     DataReuseModel *ReuseModel;
 } CacheCycleInfoType;
+
+typedef struct prefetchdatatypestruct {
+   int LoopCycles;
+   int PrefetchLatency;
+   int LineSize;
+} PrefetchDataType;
 
 #define DepInfoPtr(n) \
    ((DepInfoType *)ast_get_scratch(n))

@@ -1,4 +1,4 @@
-/* $Id: DirectivesInclude.h,v 1.8 1999/06/11 17:44:03 carr Exp $ */
+/* $Id: DirectivesInclude.h,v 1.9 1999/07/22 18:08:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -12,8 +12,7 @@
 #include <libs/support/lists/list.h>
 #include <libs/frontEnd/fortTree/fortsym.h>
 
-typedef enum {PrefetchInstruction,FlushInstruction,Dependence,
-              SetSLRInstruction} Instruction;
+typedef enum {PrefetchInstruction,FlushInstruction,Dependence} Instruction;
 
 typedef struct DirectiveStruct {
   Instruction Instr;

@@ -24,12 +24,6 @@ flush                        {
                               return FLUSH;
                              }
 
-setslr                        {
-                              yylval.ival = SetSLRInstruction;
-                              return SETSLR;
-                             }
-
-
 [a-zA-Z][a-zA-Z$_0-9]*       {
                               yylval.cval = (char *)malloc(strlen(yytext) *
                                                            sizeof(char));
