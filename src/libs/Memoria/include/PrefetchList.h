@@ -1,4 +1,4 @@
-/* $Id: PrefetchList.h,v 1.1 1993/06/15 14:06:39 carr Exp $ */
+/* $Id: PrefetchList.h,v 1.2 1993/06/30 21:36:42 johnmc Exp $ */
 #ifndef PrefetchList_h
 #define PrefetchList_h
 
@@ -26,14 +26,14 @@ public:
   void append_entry(AST_INDEX n) 
     {
      PrefetchListEntry *e = new PrefetchListEntry(n);
-     SinglyLinkedList::append_entry(e);
+     SinglyLinkedList::Append(e);
     };
   PrefetchListEntry *first_entry()
-    {return (PrefetchListEntry *) SinglyLinkedList::first_entry();};
+    {return (PrefetchListEntry *) SinglyLinkedList::First();};
   PrefetchListEntry *last_entry()
-    {return (PrefetchListEntry *) SinglyLinkedList::last_entry();};
+    {return (PrefetchListEntry *) SinglyLinkedList::Last();};
   void free_head()
-    { delete_entry(SinglyLinkedList::first_entry());};
+    { Delete(SinglyLinkedList::First());};
   Boolean NullList()
     {return first_entry() == NULL;}
  };
@@ -42,9 +42,14 @@ class PrefetchListIterator : public SinglyLinkedListIterator {
 public:
 	// old style
 	PrefetchListEntry *next_entry()
-	 {return (PrefetchListEntry *)SinglyLinkedListIterator::next_entry();};
+	{ 
+	  // Steve: this next_entry interface is deprecated 
+	  // use ++ and Current() instead -- JMC 6/30/93
+	 *this++; 
+	 return (PrefetchListEntry *) SinglyLinkedListIterator::Current();
+	 };
 	PrefetchListEntry *current()
-	 {return (PrefetchListEntry *)SinglyLinkedListIterator::current();};
+	 {return (PrefetchListEntry *)SinglyLinkedListIterator::Current();};
 
 };
 #endif PrefetchList_h
