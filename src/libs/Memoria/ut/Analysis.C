@@ -116,6 +116,7 @@ float GroupSpatialSet::ComputePrefetch(int level1, int amount1, int level2, int 
  for(i=1; i<Subs; ++i)
        if(i == dim1) prefetch_needed += computeboard[i].Estimate(IsSelfSpatial, gs_degree, amount1); 
        else if(i == dim2) prefetch_needed += computeboard[i].Estimate(IsSelfSpatial, gs_degree, amount2); 
+       else prefetch_needed += computeboard[i].Estimate(IsSelfSpatial, gs_degree, 0);
 
  return prefetch_needed;
 
