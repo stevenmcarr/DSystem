@@ -1,4 +1,21 @@
-/* $Id: interchange.C,v 1.8 1992/12/11 11:19:04 carr Exp $ */
+/* $Id: interchange.C,v 1.9 1993/06/15 14:04:05 carr Exp $ */
+
+/****************************************************************/
+/*                                                              */
+/*   File:        interchange.C                                 */
+/*                                                              */
+/*   Description: Performs loop interchange on a loop nest to   */
+/*                improve cache performance.  Each loop in a    */
+/*                perfect nest is considered as the innermost   */
+/*                loop of the nest and then the loops are       */
+/*                from inner to outer based upon increasing     */
+/*                memory costs associated with each loop when   */
+/*                it is in the innermost position.  Legality    */
+/*                is preserved and distribution is performed    */
+/*                when necessary.                               */
+/*                                                              */
+/****************************************************************/
+
 
 #ifndef general_h
 #include <general.h>
@@ -47,6 +64,20 @@
 #endif
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:   remove_edges                                   */
+/*                                                              */
+/*   Input:      stmt - statement in AST                        */
+/*               level - nesting level of stmt                  */
+/*               ped - structure containing dependence graph    */
+/*                                                              */
+/*   Description:  removes io, control, exit and call           */
+/*                 dependences from the dependence graph.       */
+/*                 called by walk_statements.                   */
+/*                                                              */
+/****************************************************************/
+
 
 static int remove_edges(AST_INDEX stmt,
 			int       level,
@@ -61,8 +92,14 @@ static int remove_edges(AST_INDEX stmt,
 
      dg = dg_get_edge_structure( PED_DG(ped));
      vector = get_info(ped,stmt,type_levelv);
+   
+       /* remove carried dependences */
+
      for (i = 1;i <= level; i++)
        {
+
+	        /* remove outgoing dependences */
+
 	for (edge = dg_first_src_stmt( PED_DG(ped),vector,i);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
@@ -72,6 +109,9 @@ static int remove_edges(AST_INDEX stmt,
 	       dg[edge].type == dg_call || dg[edge].type == dg_control)
 	     dg_delete_free_edge( PED_DG(ped),edge);
 	  }
+
+	        /* remove incoming dependences */
+
 	for (edge = dg_first_sink_stmt( PED_DG(ped),vector,i);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
@@ -82,6 +122,9 @@ static int remove_edges(AST_INDEX stmt,
 	     dg_delete_free_edge( PED_DG(ped),edge);
 	  }
        }
+
+	        /* remove outgoing loop-independent dependences */
+
      for (edge = dg_first_src_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
@@ -91,6 +134,9 @@ static int remove_edges(AST_INDEX stmt,
 	    dg[edge].type == dg_call || dg[edge].type == dg_control)
 	  dg_delete_free_edge( PED_DG(ped),edge);
        }
+
+	        /* remove incoming loop-independent dependences */
+
      for (edge = dg_first_sink_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
@@ -103,152 +149,25 @@ static int remove_edges(AST_INDEX stmt,
      return(WALK_CONTINUE);
   }
 
-static Boolean not_in_other_positions(AST_INDEX node,
-				      char      *var)
-
-  {
-     for (node = list_next(list_first(node));
-	  node != AST_NIL;
-	  node = list_next(node))
-       if (pt_find_var(node,var))
-         return(false);
-     return(true);
-  }
-
-
-static Boolean can_move_to_innermost(DG_Edge *edge)
-
-  {
-   int i;
-   
-     for (i = edge->level; i < gen_get_dt_LVL(edge);i++)
-       if (gen_get_dt_DIS(edge,i) != 0)
-         return(false);
-     return(true);
-  }
-
-
-static RefType reference_type(AST_INDEX node,
-			      int       level,
-			      PedInfo   ped)
-
-  {
-   AST_INDEX name;
-   DG_Edge   *dg;
-   int       vector;
-   EDGE_INDEX edge;
-   RefType   rtype;
-
-     rtype = MISS;
-     name = gen_SUBSCRIPT_get_name(node);
-     dg = dg_get_edge_structure( PED_DG(ped));
-     vector = get_info(ped,name,type_levelv);
-     for (edge = dg_first_sink_ref( PED_DG(ped),vector);
-	  edge != END_OF_LIST;
-	  edge = dg_next_sink_ref( PED_DG(ped),edge))
-       if (dg[edge].consistent != inconsistent && !dg[edge].symbolic)
-	 if ((dg[edge].level == level && can_move_to_innermost(&dg[edge])) || 
-	    dg[edge].level == LOOP_INDEPENDENT)
-           if (dg[edge].type == dg_true || dg[edge].type == dg_input)
-	     if (dg[edge].consistent == consistent_SIV)
-	       return(REGISTER);
-	     else
-	       rtype = AHIT;
-	   else if (((config_type *)PED_MH_CONFIG(ped))->write_back)
-	     rtype = AHIT;
-	   else;
-	 else if (dg[edge].src == dg[edge].sink && rtype == MISS)
-	   rtype = IHIT;
-     return(rtype);
-  }
-
-
-static int chk_array_refs(AST_INDEX     node,
-			  int_info_type *int_info)
-
-  {
-   AST_INDEX sub_list,
-             sub;
-   Boolean   lin;
-   int       coeff,words,loop,hit,miss,in_cache;
-   int       level_val,dims;
-   char      *var;
-   UtilNode  *lnode;
-
-     if (is_subscript(node))
-       {
-	if (gen_get_converted_type(node) == TYPE_DOUBLE_PRECISION ||
-	    gen_get_converted_type(node) == TYPE_COMPLEX)
-	  words = (((config_type *)PED_MH_CONFIG(int_info->ped))->line) >> 3; 
-	else
-	  words = (((config_type *)PED_MH_CONFIG(int_info->ped))->line) >> 2; 
-	hit = ((config_type *)PED_MH_CONFIG(int_info->ped))->hit_cycles;
-	miss = ((config_type *)PED_MH_CONFIG(int_info->ped))->miss_cycles;
-	sub_list = gen_SUBSCRIPT_get_rvalue_LIST(node);
-	for (lnode = UTIL_HEAD(int_info->loop_list);
-	     lnode != NULLNODE;
-	     lnode = UTIL_NEXT(lnode))
-	  {
-	   loop = (int)UTIL_NODE_ATOM(lnode);
-	   var = gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
-				   int_info->loop_data[loop].node)));
-	   if (pt_find_var(sub_list,var))
-	     {
-	      sub = list_first(sub_list);
-	      if (pt_find_var(sub,var) && not_in_other_positions(sub_list,var))
-		{
-		 pt_get_coeff(sub,var,&lin,&coeff);
-		 if (coeff < words && lin)
-		   {
-		    in_cache = words/coeff - 1;
-		    switch(reference_type(node,int_info->loop_data[loop].level,
-					  int_info->ped))
-		      {
-		       case IHIT: 
-		         int_info->loop_data[loop].stride +=
-			   (in_cache * hit +  (words - in_cache) * miss);
-			 break;
-	       	       case AHIT: 
-			 int_info->loop_data[loop].stride += (words*hit);
-			 break;
-		       default:;
-			}
-		   }
-		 else
-		   int_info->loop_data[loop].stride += (words * miss);
-		}
-	      else 
-	        switch(reference_type(node,int_info->loop_data[loop].level,
-				      int_info->ped))
-		  {
-		   case MISS:
-		     int_info->loop_data[loop].stride += (words * miss);
-	             break;
-		   case IHIT: 
-		     int_info->loop_data[loop].stride +=
-		       (in_cache * hit +  (words - in_cache) * miss);
-		     break;
-		   case AHIT:
-	             int_info->loop_data[loop].stride += (words * hit);
-	             break;
-		   default:;
-		  }
-	     }
-	  }
-	return(WALK_SKIP_CHILDREN);
-       }
-     return(WALK_CONTINUE);
-  }
+/****************************************************************/
+/*                                                              */
+/*   Function:      heapify                                     */
+/*                                                              */
+/*   Input:     heap - array of loops and their memory cost     */
+/*              i - beginning index of heap                     */
+/*              j - ending index of heap                        */
+/*              n - size of the array                           */
+/*                                                              */
+/*   Description:  Create a heap out of the array of loops      */
+/*                 based on memory cost                         */
+/*                                                              */
+/****************************************************************/
 
 static void heapify(heap_type *heap,
 		    int       i,
 		    int       j,
 		    int       n)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
 
   {
    int k,i1,i2,
@@ -283,6 +202,26 @@ static void heapify(heap_type *heap,
        }
   }
      
+
+/****************************************************************/
+/*                                                              */
+/*   Function:     order_loops_for_stride                       */
+/*                                                              */
+/*   Input:        loop_data - loop structure                   */
+/*                 num_loops - number of loops in the nest      */
+/*                 outermost_lvl - outermost level that can     */
+/*                                 be permuted                  */
+/*                 ped - dependence graph handle                */
+/*                 symtab - symbol table                        */
+/*                 loop_list - list of loops in the perfect     */
+/*                             nest                             */
+/*                 heap - order of loops after interchange      */
+/*                                                              */
+/*   Description:  Perform a heap sort on the list of loops     */
+/*                 based upon their memory cost.                */
+/*                                                              */
+/****************************************************************/
+
 static void order_loops_for_stride(model_loop *loop_data,
 				   int        num_loops,
 				   int        outermost_lvl,
@@ -304,6 +243,10 @@ static void order_loops_for_stride(model_loop *loop_data,
 	  node = UTIL_NEXT(node),i++)
        {
 	if (loop_data[UTIL_NODE_ATOM(node)].level < outermost_lvl)
+
+	    /* ensure that levels where interchange is illegal remain
+	       in their same position */
+
 	  {
 	   heap[i].index = UTIL_NODE_ATOM(node);
 	   heap[i].stride = MAXINT - i;
@@ -329,6 +272,25 @@ static void order_loops_for_stride(model_loop *loop_data,
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:     check_interchange                            */
+/*                                                              */
+/*   Input:        loop_data - loop structure                   */
+/*                 loop      - innermost loop index             */
+/*                 num_loops - number of loops in nest          */
+/*                 outermost_lvl - outermost level where        */
+/*                                 permuation is legal.         */
+/*                 symtab    - symbol table                     */
+/*                 ped       - handle to dependence graph       */
+/*                 loop_list - list of loops in a perfect nest  */
+/*                 heap      - loop order after permutation     */
+/*                                                              */
+/*   Description:  Compute the best order of a perfect loop     */
+/*                 nest with regard to cache performance        */
+/*                                                              */
+/****************************************************************/
+
 
 static void check_interchange(model_loop    *loop_data,
 			      int           loop,
@@ -340,18 +302,56 @@ static void check_interchange(model_loop    *loop_data,
 			      heap_type     *heap)
 
   {
-   int_info_type int_info;
+   StatsInfoType StatsInfo;
+   UtilNode      *lnode;
 
-     int_info.symtab = symtab;
-     int_info.ped = ped;
-     int_info.loop_data = loop_data;
-     int_info.loop_list = loop_list;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),chk_array_refs,
-		     NOFUNC,(Generic)&int_info);
-     order_loops_for_stride(loop_data,num_loops,outermost_lvl,
-			    ped,symtab,loop_list,heap);
+     StatsInfo.ped = ped;
+     StatsInfo.mops = 0.0;
+     StatsInfo.flops = 0.0;
+     StatsInfo.loop_data = loop_data;
+     StatsInfo.UseCache = true;        
+     for (lnode = UTIL_HEAD(loop_list);
+	  lnode != NULLNODE;
+	  lnode = UTIL_NEXT(lnode))
+       {
+	StatsInfo.loop = (int)UTIL_NODE_ATOM(lnode);
+
+	   /* compute the cost in memory cycles of one iteration of a loop as if it
+	      were innermost */
+
+	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_ComputeBalance,
+			NOFUNC,(Generic)&StatsInfo);
+	loop_data[StatsInfo.loop].stride = (int)(StatsInfo.mops * 100.0);
+       }
+
+        /* compute memory order */
+
+     order_loops_for_stride(loop_data,num_loops,outermost_lvl,ped,symtab,loop_list,heap);
   }
    
+
+/****************************************************************/
+/*                                                              */
+/*   Function:     walk_loops                                   */
+/*                                                              */
+/*   Input:        loop_data - loop structure                   */
+/*                 loop      - innermost loop index             */
+/*                 outermost_lvl - outermost level where        */
+/*                 num_loops - number of loops in nest          */
+/*                 loop_list - list of loops in a perfect nest  */
+/*                 heap      - loop order after permutation     */
+/*                                 permuation is legal.         */
+/*                 symtab    - symbol table                     */
+/*                 ped       - handle to dependence graph       */
+/*                 ar        - arena for memory allocation      */
+/*                                                              */
+/*   Description:  Walk the loop structure build a list of      */
+/*                 each possible perfect loop nest.  Then       */
+/*                 determine memory order for that perfect      */
+/*                 nest.                                        */
+/*                                                              */
+/****************************************************************/
+
 
 static void walk_loops(model_loop    *loop_data,
 		       int           loop,
@@ -372,6 +372,10 @@ static void walk_loops(model_loop    *loop_data,
      if (!loop_data[loop].transform || !loop_data[loop].interchange ||
 	 !loop_data[loop].distribute || loop_data[loop].type == COMPLEX ||
 	 loop_data[loop].type == TRAP)
+
+          /* we have found a level where interchange is illegal, note that
+	     fact in outermost_lvl */
+
        outermost_lvl = loop_data[loop].level+1;
      if (loop_data[loop].inner_loop == -1)
        check_interchange(loop_data,loop,num_loops,outermost_lvl,symtab,
@@ -385,6 +389,11 @@ static void walk_loops(model_loop    *loop_data,
 		      symtab,ped,ar);
 	   next = loop_data[next].next_loop;
 	   if (next != -1)
+
+	      /* whenever there are multiple loops at a single level, there
+		 will be multiple perfect nests.  Keep a heap for each perfect
+		 nest at the point where the multiple nests originate.  */
+
 	     {
 	      loop_data[next].heap=(heap_type *)ar->arena_alloc_mem(LOOP_ARENA,
 								    MAXLOOP * 
@@ -395,6 +404,22 @@ static void walk_loops(model_loop    *loop_data,
        }
      util_pluck(UTIL_TAIL(loop_list));
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:     add_edge                                     */
+/*                                                              */
+/*   Input:        ped - depedence graph handle                 */
+/*                 dg  - dependence graph edge                  */
+/*                 old_edge - edge from which a copy is made    */
+/*                 level - new nesting level for edge           */
+/*                                                              */
+/*   Description:  Move a dependence edge from one level to     */
+/*                 another.  This happens as a result of        */
+/*                 interchange.  Does not delete old edge       */
+/*                                                              */
+/****************************************************************/
 
 
 static void add_edge(PedInfo      ped,
@@ -421,6 +446,9 @@ static void add_edge(PedInfo      ped,
      sink = dg[old_edge].sink;
      if (level != LOOP_INDEPENDENT && dg[old_edge].type == dg_input)
        {
+
+	   /* determine if an input dependence changes direction */
+
 	dir = gen_get_dt_DIS(&dg[old_edge],level);
         switch(dir)
 	 {
@@ -451,22 +479,40 @@ static void add_edge(PedInfo      ped,
      dg[new_edge].src_ref = get_info(ped,source,type_levelv);
      dg[new_edge].sink_ref = get_info(ped,sink,type_levelv);
 
-     /* stmt level vectors have already been created */
-
-      /* hack because ast makes no sense */
+      /* hack because ast makes no sense (IF-statement construction) */
 
      src_stmt = ut_get_stmt(source);
      if (is_logical_if(tree_out(src_stmt)) || is_guard(src_stmt))
        src_stmt = tree_out(src_stmt);
-     dg[new_edge].src_vec = get_info(ped,src_stmt,type_levelv);
      sink_stmt = ut_get_stmt(sink);
      if (is_logical_if(tree_out(sink_stmt)) || is_guard(sink_stmt))
        sink_stmt = tree_out(sink_stmt);
+
+     /* stmt level vectors have already been created */
+
+     dg[new_edge].src_vec = get_info(ped,src_stmt,type_levelv);
      dg[new_edge].sink_vec = get_info(ped,sink_stmt,type_levelv);
+
      dt_copy_info( PED_DT_INFO(ped),&dg[old_edge],&dg[new_edge]);
      dt_info_str( PED_DT_INFO(ped),&dg[new_edge]);
      dg_add_edge( PED_DG(ped),new_edge);
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:     update_edges                                 */
+/*                                                              */
+/*   Input:        node - index of AST node                     */
+/*                 info - structure containing dependendence    */
+/*                        graph, etc.                           */
+/*                                                              */
+/*   Description:  Walk the dependence edges for a node and     */
+/*                 create loop independent edges for those that */
+/*                 cross loop bodies.  This is done after       */
+/*                 distribution.                                */
+/*                                                              */
+/****************************************************************/
 
 static int update_edges(AST_INDEX node,
 			level_info_type *info)
@@ -488,6 +534,10 @@ static int update_edges(AST_INDEX node,
 	     edge = next_edge)
 	  {
 	   next_edge = dg_next_src_ref( PED_DG(info->ped),edge);
+
+	     /* look for carried edges that cross loop bodies, these will be
+		loop independent after distribution */
+
 	   if (dg[edge].level == info->level && 
 	       get_stmt_info_ptr(ut_get_stmt(dg[edge].sink))->surrounding_do !=
 	       surrounding_do)
@@ -508,6 +558,22 @@ static int update_edges(AST_INDEX node,
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:     distribute_loop                              */
+/*                                                              */
+/*   Input:        loop_data - loop structure                   */
+/*                 loop - index of loop to distribute           */
+/*                 ped  - dependence graph handle               */
+/*                 symtab - symbol table                        */
+/*                 ar - arena for memory allocation             */
+/*                                                              */
+/*   Description:  Distribute a loop across each of the loop    */
+/*                 nests at the next inner nesting level.       */
+/*                                                              */
+/****************************************************************/
+
+
 static void distribute_loop(model_loop    *loop_data,
 			     int           loop,
 			     PedInfo       ped,
@@ -523,6 +589,10 @@ static void distribute_loop(model_loop    *loop_data,
 
      i = 0;
      stmt = list_first(gen_DO_get_stmt_LIST(loop_data[loop].node));
+
+       /* create blocks of statements around which we distribute the loop.
+	  a block consists of a list of non-do statements or a just one do-statement */
+
      while (stmt != AST_NIL)
        {
 	stmt_list[i] = list_create(AST_NIL);
@@ -551,12 +621,18 @@ static void distribute_loop(model_loop    *loop_data,
      info.level = loop_data[loop].level;
      tree_free(gen_DO_get_stmt_LIST(loop_data[loop].node));
      gen_DO_put_stmt_LIST(loop_data[loop].node,AST_NIL);
+
+       /* distribute the loop around each block of statements */
+
      for (j = i-1; j > 0; j--)
        {
 	walk_expression(stmt_list[j],update_edges,NOFUNC,(Generic)&info);
 	new_do = tree_copy_with_type(loop_data[loop].node);
 	gen_DO_put_stmt_LIST(new_do,stmt_list[j]);
 	list_insert_after(loop_data[loop].node,new_do);
+
+	   /* perform interchange on each new nest */
+
 	memory_loop_interchange(ped,new_do,loop_data[loop].level,symtab,ar);
        }
      walk_expression(stmt_list[0],update_edges,NOFUNC,(Generic)&info);
@@ -564,6 +640,19 @@ static void distribute_loop(model_loop    *loop_data,
      memory_loop_interchange(ped,loop_data[loop].node,loop_data[loop].level,
 			     symtab,ar);
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:      heap_position                               */
+/*                                                              */
+/*   Input:         heap - array of loops sorted order          */
+/*                  loop - index of loop to be located          */
+/*                  size - size of the array                    */
+/*                                                              */
+/*   Description:   Locate a loop index in the array of loops   */
+/*                                                              */
+/****************************************************************/
 
 
 static int heap_position(heap_type *heap,
@@ -584,6 +673,23 @@ static int heap_position(heap_type *heap,
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:      shift_loop                                  */
+/*                                                              */
+/*   Input:         loop_data - loop structure                  */
+/*                  outer - index of loop to be moved inward    */
+/*                  inner - index of loop inside which outer    */
+/*                          loop is to be moved.                */
+/*                  heap - sorted array of loop indices         */
+/*                  size - size of heap                         */
+/*                                                              */
+/*   Description:   Move a loop inward to a new nesting level.  */
+/*                  Handle triangular loops also.               */
+/*                                                              */
+/****************************************************************/
+
+
 static void shift_loop(model_loop *loop_data,
 		       int        outer,
 		       int        inner,
@@ -598,6 +704,9 @@ static void shift_loop(model_loop *loop_data,
              ivar,const1;
    int       coeff;
              
+
+             /* perform the loop shifting */
+
      slist1 = gen_DO_get_stmt_LIST(loop_data[outer].node);
      slist2 = gen_DO_get_stmt_LIST(loop_data[inner].node);
      gen_DO_put_stmt_LIST(loop_data[outer].node,AST_NIL);
@@ -608,6 +717,9 @@ static void shift_loop(model_loop *loop_data,
      gen_DO_put_stmt_LIST(loop_data[outer].node,slist2);
      gen_DO_put_stmt_LIST(loop_data[inner].node,
 			  list_create(loop_data[outer].node));
+
+             /* update triangular bounds if necessary */
+
      if (loop_data[outer].type != RECT && 
 	 heap_position(heap,outer,size) >= 
 	 heap_position(heap,loop_data[outer].tri_loop,size))
@@ -674,6 +786,22 @@ static void shift_loop(model_loop *loop_data,
        }
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:     rearrange_loops                              */
+/*                                                              */
+/*   Input:        loop_data - loop structure                   */
+/*                 heap      - sorted array of loop indices     */
+/*                 num_loops - number of loops in perfect nest  */
+/*                 innermost_loop - index of innermost loop     */
+/*                                                              */
+/*   Description:  Permute the loop order based upon the sorted */
+/*                 array "heap".  This will put the loop in     */
+/*                 memory order.                                */
+/*                                                              */
+/****************************************************************/
+
 static void rearrange_loops(model_loop *loop_data,
 			    heap_type  *heap, 
 			    int        num_loops,
@@ -688,6 +816,20 @@ static void rearrange_loops(model_loop *loop_data,
        else
 	 innermost_loop = loop_data[innermost_loop].parent;
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:     new_level                                    */
+/*                                                              */
+/*   Input:        edge - dependence edge                       */
+/*                 max - max nesting level possible             */
+/*                 init_level - initial edge level              */
+/*                                                              */
+/*   Description:  Determine the new level of an edge after     */
+/*                 interchange.                                 */
+/*                                                              */
+/****************************************************************/
 
 static int new_level(DG_Edge edge,
 		     int     max,
@@ -705,6 +847,18 @@ static int new_level(DG_Edge edge,
        return(LOOP_INDEPENDENT);
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:     new_dir                                      */
+/*                                                              */
+/*   Input:        dir - direction vector entry                 */
+/*                                                              */
+/*   Description:  Return the opposite direction vector entry   */
+/*                 This happens if an input edge is reversed    */
+/*                                                              */
+/****************************************************************/
+
 static int new_dir(int dir)
 
   {
@@ -717,6 +871,20 @@ static int new_dir(int dir)
        return(dir);
     }
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:      update_vectors                              */
+/*                                                              */
+/*   Input:         node - AST node                             */
+/*                  upd_info - structure with dependence graph, */
+/*                             etc.                             */
+/*                                                              */
+/*   Description:   Update the direction vectors for the new    */
+/*                  loop order.                                 */
+/*                                                              */
+/****************************************************************/
 
 static int update_vectors(AST_INDEX     node,
 			  upd_info_type *upd_info)
@@ -740,14 +908,28 @@ static int update_vectors(AST_INDEX     node,
 	 next_edge = dg_next_src_ref( PED_DG(upd_info->ped),edge);
 	 if (dg[edge].level != LOOP_INDEPENDENT)
 	   {
+
+	       /* create a copy of the direction vector so that the real one
+		  can be modified */
+
 	    for (i = 0; i < upd_info->num_loops;i++)
 	      temp_vec[i] = gen_get_dt_DIS(&dg[edge],i+1);
+
+	       /* rearrange the edge's direction vector */
+
 	    for (i = 0; i < upd_info->num_loops;i++)
 	      gen_put_dt_DIS(&dg[edge],i+1,temp_vec[upd_info->
 			     loop_data[upd_info->heap[i].index].level-1]);
+
+	       /* get the new nesting level */
+
 	    nlevel = new_level(dg[edge],upd_info->num_loops,dg[edge].level);
 	    if (dg[edge].type == dg_input)
 	      {
+
+	          /* input dependence can reverse direction, so we must check that
+		     here */
+
 	       dist = gen_get_dt_DIS(&dg[edge],nlevel);
 	       if ((dist < 0 && dist >= DDATA_BASE) || dist == DDATA_GT ||
 		   dist == DDATA_GT)
@@ -766,8 +948,14 @@ static int update_vectors(AST_INDEX     node,
 		    }
 		 }
 	      }
+
+	      /* add a new edge with the new distance vector */
+
 	    add_edge(upd_info->ped,dg,edge,nlevel);
 	    i = nlevel;
+
+	        /* may be multiple new edges because of the vector is a summary */
+
 	    while((gen_get_dt_DIS(&dg[edge],i) == DDATA_ANY ||
 		   gen_get_dt_DIS(&dg[edge],i) == DDATA_GE ||
 		   gen_get_dt_DIS(&dg[edge],i) == DDATA_LE ||
@@ -786,12 +974,33 @@ static int update_vectors(AST_INDEX     node,
 		}
 	      else
 	        i++;
+
+	       /* remove original edge */
+
 	    dg_delete_free_edge( PED_DG(upd_info->ped),edge);
 	   }
 	}
      }
    return(WALK_CONTINUE);
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:     perform_interchange                          */
+/*                                                              */
+/*   Input:        loop_data - loop structure                   */
+/*                 heap      - sorted array of loop indices     */
+/*                 innermost_loop - index of innermost loop     */
+/*                 num_loops - number of loops in perfect nest  */
+/*                 symtab - symbol table                        */
+/*                 ped - dependence graph handle                */
+/*                 ar - arena for memory allocation             */
+/*                                                              */
+/*   Description:  Determine if interchange must be done and    */
+/*                 do it if it is legal.                        */
+/*                                                              */
+/****************************************************************/
 
 static void perform_interchange(model_loop *loop_data,
 				heap_type  *heap,
@@ -807,20 +1016,51 @@ static void perform_interchange(model_loop *loop_data,
 
      for (j = loop_data[innermost_loop].level,i = num_loops-1;i >= 0 && 
 	  !do_interchange;i--,j--)
+
+          /* Is interchange necessary? */
+
        if (loop_data[heap[i].index].level != j)
+
+          /* Is interchange legal?  This check is probably redundant */
+
          if (loop_data[heap[i].index].interchange)
 	   do_interchange = true;
+
      if (do_interchange)
        {
+
+	   /* reorder the loop nest based upon heap */
+
 	rearrange_loops(loop_data,heap,num_loops,innermost_loop);
 	upd_info.ped = ped;
 	upd_info.heap = heap;
 	upd_info.loop_data = loop_data;
 	upd_info.num_loops = num_loops;
+
+	   /* update the dependence graph */
+
 	walk_expression(loop_data[heap[num_loops-1].index].node,
 			update_vectors,NOFUNC,(Generic)&upd_info);
        }
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:     outer_levels_ok                              */
+/*                                                              */
+/*   Input:        heap - sorted array of loop indices          */
+/*                 loop_data - loop structure                   */
+/*                 chk_level - level where original outer loops */
+/*                             are not to move inside of        */
+/*                 outermost - index of outermost loop that can */
+/*                             be interchanged inward.          */
+/*                                                              */
+/*   Description:  Determine if the new loops originally        */
+/*                 outside of chk_level have stayed outside     */
+/*                 that level                                   */
+/*                                                              */
+/****************************************************************/
 
 static Boolean outer_levels_ok(heap_type *heap,
 			       model_loop *loop_data,
@@ -838,6 +1078,25 @@ static Boolean outer_levels_ok(heap_type *heap,
          return(false);
      return(true);
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:      levels_in_order                             */
+/*                                                              */
+/*   Input:         heap - sorted array of loop indices         */
+/*                  loop_data - loop structure                  */
+/*                  loop - index of loop to be checked          */
+/*                  chk_level - the level outside of which the  */
+/*                              nest of loops will be checked   */
+/*                  outermost - outermost level where           */
+/*                              interchange can occur safely    */
+/*                                                              */
+/*   Description:   Determines if no loop that was originally   */
+/*                  between chk_level and outermost has moved   */
+/*                  inside of chk_level after interchange       */
+/*                                                              */
+/****************************************************************/
 
 
 static Boolean levels_in_order(heap_type *heap,
@@ -866,6 +1125,26 @@ static Boolean levels_in_order(heap_type *heap,
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:     walk_loops_to_interchange                    */
+/*                                                              */
+/*   Input:        loop_data - loop structure                   */
+/*                 loop - index of loop being examined          */
+/*                 outermost - outermost loop that can be       */
+/*                             interchanged inward              */
+/*                 num_loops - number of loops in perfect nest  */
+/*                 heap - sorted array of loop indices          */
+/*                 symtab - symbol table                        */
+/*                 ped - dependence graph handle                */
+/*                 ar - arena for memory allocation             */
+/*                                                              */
+/*   Description:  Walk the loop structure performing           */
+/*                 interchage as necessary.                     */
+/*                                                              */
+/****************************************************************/
+
+
 static void walk_loops_to_interchange(model_loop *loop_data,
 				      int        loop,
 				      int        outermost,
@@ -886,6 +1165,11 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 	 !loop_data[loop].distribute || loop_data[loop].type == COMPLEX ||
 	 loop_data[loop].type == TRAP)
        {
+
+	   /* we've found a level where interchange is illegal, recurse and 
+	      note that fact in outer.  The safety of the order has already 
+	      been determined.  This is recorded for indexing purposes. */
+
 	if (loop_data[loop].inner_loop != -1)
 	  walk_loops_to_interchange(loop_data,loop_data[loop].inner_loop,
 				    loop_data[loop].inner_loop,num_loops+1,
@@ -912,6 +1196,9 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 	   || levels_in_order(heap,loop_data,loop,loop_data[loop].level,
 			      outermost))
 	 {
+
+	     /* no distribution is necessary */
+
 	  if (loop_data[loop].inner_loop == -1)
 	    perform_interchange(loop_data,heap,loop,num_loops,symtab,ped,ar);
 	  else
@@ -922,11 +1209,18 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 	 distribute_loop(loop_data,loop,ped,symtab,ar);
      else
        {
+
+	    /* imperfect nest.  Determine if an outer level moves inside of this
+	       level to see if distribution is necessary */
+
 	if (NOT(levels_in_order(heap,loop_data,loop_data[loop].parent,
 				loop_data[loop].level-1,outermost)))
 	  distribute_loop(loop_data,loop_data[loop].parent,ped,symtab,ar);
 	else
 	  {
+
+	       /* all common levels are identical */
+
 	   next = loop;
 	   while(next != -1)
 	     {
@@ -948,6 +1242,22 @@ static void walk_loops_to_interchange(model_loop *loop_data,
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:     memory_loop_interchange                      */
+/*                                                              */
+/*   Input:        ped - dependence graph handle                */
+/*                 root - AST index of an outermost loop        */
+/*                 level - nesting level of root                */
+/*                 symtab - symbol table                        */
+/*                 ar - arena for memory allocation             */
+/*                                                              */
+/*   Description:  Order a loop nest based upon memory          */
+/*                 performance                                  */
+/*                                                              */
+/****************************************************************/
+
+
 void memory_loop_interchange(PedInfo       ped,
 			     AST_INDEX     root,
 			     int           level,
@@ -966,23 +1276,38 @@ void memory_loop_interchange(PedInfo       ped,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
+
+       /* prepare nest for analyzing, record surrounding do information */
+
      walk_statements(root,level,ut_mark_do_pre,ut_mark_do_post,
 		     (Generic)&pre_info);
      if (pre_info.abort)
        return;
+
+       /* remove unnecessary dependence edges */
+
      walk_statements(root,level,remove_edges,NOFUNC,(Generic)ped);
      loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 					 pre_info.loop_num*sizeof(model_loop));
+       /* create loop structure */
+
      ut_analyze_loop(root,loop_data,level,ped,symtab);
      ut_check_shape(loop_data,0);
+
      fst_InitField(symtab,INDEX,-1,0);
      loop_list = util_list_alloc((Generic)NULL,"loop-list");
      loop_data[0].heap = (heap_type *)ar->arena_alloc_mem(LOOP_ARENA,
 							  MAXLOOP*
 							  sizeof(heap_type));
+
+       /* determine order of each perfect loop nest */
+
      walk_loops(loop_data,0,0,1,loop_list,loop_data[0].heap,symtab,ped,ar);
      util_list_free(loop_list);
      fst_KillField(symtab,INDEX);
+
+       /* reorder loop nests as necessary */
+
      walk_loops_to_interchange(loop_data,0,0,1,loop_data[0].heap,symtab,ped,
 			       ar);
   }

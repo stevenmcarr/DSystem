@@ -1,4 +1,4 @@
-/* $Id: interchange.h,v 1.4 1992/12/11 11:19:19 carr Exp $ */
+/* $Id: interchange.h,v 1.5 1993/06/15 14:04:33 carr Exp $ */
 
 #ifndef interchange_h
 #define interchange_h

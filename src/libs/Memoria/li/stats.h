@@ -1,4 +1,4 @@
-/* $Id: stats.h,v 1.4 1992/12/11 11:19:20 carr Exp $ */
+/* $Id: stats.h,v 1.5 1993/06/15 14:04:39 carr Exp $ */
 #ifndef stats_h
 #define stats_h
 
@@ -25,6 +25,8 @@
 #ifndef mh_h
 #include <mh.h>
 #endif
+
+#define STATSDEBUG 1
 
 typedef struct refinfotype {
   PedInfo       ped;

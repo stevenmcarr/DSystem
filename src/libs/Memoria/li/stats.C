@@ -1,4 +1,15 @@
-/* $Id: stats.C,v 1.4 1992/12/11 11:19:16 carr Exp $ */
+/* $Id: stats.C,v 1.5 1993/06/15 14:04:29 carr Exp $ */
+
+/****************************************************************/
+/*                                                              */
+/*   File:   stats.C                                            */
+/*                                                              */
+/*   Description: Compute locality and permutation stats        */
+/*                for a loop nest.                              */
+/*                                                              */
+/*                                                              */
+/****************************************************************/
+
 #ifndef general_h
 #include <general.h>
 #endif 
@@ -51,6 +62,19 @@
 
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:   Remove_Edges                                   */
+/*                                                              */
+/*   Input:      stmt - statement in AST                        */
+/*               level - nesting level of stmt                  */
+/*               ped - structure containing dependence graph    */
+/*                                                              */
+/*   Description:  removes io, control, exit and call           */
+/*                 dependences from the dependence graph.       */
+/*                 called by walk_statements.                   */
+/*                                                              */
+/****************************************************************/
 
 static int RemoveEdges(AST_INDEX stmt,
 			int       level,
@@ -65,8 +89,14 @@ static int RemoveEdges(AST_INDEX stmt,
 
      dg = dg_get_edge_structure( PED_DG(ped));
      vector = get_info(ped,stmt,type_levelv);
+   
+       /* remove carried dependences */
+
      for (i = 1;i <= level; i++)
        {
+
+	        /* remove outgoing dependences */
+
 	for (edge = dg_first_src_stmt( PED_DG(ped),vector,i);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
@@ -76,6 +106,9 @@ static int RemoveEdges(AST_INDEX stmt,
 	       dg[edge].type == dg_call || dg[edge].type == dg_control)
 	     dg_delete_free_edge( PED_DG(ped),edge);
 	  }
+
+	        /* remove incoming dependences */
+
 	for (edge = dg_first_sink_stmt( PED_DG(ped),vector,i);
 	     edge != END_OF_LIST;
 	     edge = next_edge)
@@ -86,6 +119,9 @@ static int RemoveEdges(AST_INDEX stmt,
 	     dg_delete_free_edge( PED_DG(ped),edge);
 	  }
        }
+
+	        /* remove outgoing loop-independent dependences */
+
      for (edge = dg_first_src_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
@@ -98,6 +134,9 @@ static int RemoveEdges(AST_INDEX stmt,
 	     dg[edge].type == dg_true))
 	  dg_delete_free_edge( PED_DG(ped),edge);
        }
+
+	        /* remove incoming loop-independent dependences */
+
      for (edge = dg_first_sink_stmt( PED_DG(ped),vector,LOOP_INDEPENDENT);
 	  edge != END_OF_LIST;
 	  edge = next_edge)
@@ -114,6 +153,18 @@ static int RemoveEdges(AST_INDEX stmt,
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:   UnsetVisitedMark                               */
+/*                                                              */
+/*   Input:      node - node in the AST                         */
+/*               dummy - anything                               */
+/*                                                              */
+/*   Description: set the visited mark for depth-first search   */
+/*                to false for each subscript.                  */
+/*                                                              */
+/****************************************************************/
+
 static int UnsetVisitedMark(AST_INDEX node,
 			    int       dummy)
 
@@ -129,8 +180,21 @@ static int UnsetVisitedMark(AST_INDEX node,
     }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:   NotInOtherPositions                            */
+/*                                                              */
+/*   Input:      node - subscript list                          */
+/*               var - induction variable search for            */
+/*                                                              */
+/*   Description: search list of subscripts of an array         */
+/*                to determine if var appears in any subscript  */
+/*                position other than the first.                */
+/*                                                              */
+/****************************************************************/
+
 static Boolean NotInOtherPositions(AST_INDEX node,
-				      char      *var)
+				   char      *var)
 
   {
      for (node = list_next(list_first(node));
@@ -140,6 +204,20 @@ static Boolean NotInOtherPositions(AST_INDEX node,
          return(false);
      return(true);
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   FindInductionVar                               */
+/*                                                              */
+/*   Input:      loop_data - loop structure                     */
+/*               node - node in AST                             */
+/*               level - nesting level of induction var         */
+/*                                                              */
+/*   Description:  Search loops surrounding node for the        */
+/*                 induction variable at nesting level "level"  */
+/*                                                              */
+/****************************************************************/
 
 static char *FindInductionVar(model_loop *loop_data,
 			      AST_INDEX  node,
@@ -154,6 +232,21 @@ static char *FindInductionVar(model_loop *loop_data,
      return(gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
 			 loop_data[i].node))));
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   OnlyInInnermostPostion                         */
+/*                                                              */
+/*   Input:      loop_data - loop structure                     */
+/*               node - subscript node in AST                   */
+/*               level - nesting level of induction var         */
+/*                                                              */
+/*   Description: Determines if the induction var at nesting    */
+/*                level "level" only appears in the first       */
+/*                subscript position of node.                   */
+/*                                                              */
+/****************************************************************/
 
 static Boolean OnlyInInnermostPosition(model_loop *loop_data,
 				       AST_INDEX  node,
@@ -174,6 +267,18 @@ static Boolean OnlyInInnermostPosition(model_loop *loop_data,
      return(false);
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   CanMoveToInnermost                             */
+/*                                                              */
+/*   Input:      edge - dependence edge                         */
+/*                                                              */
+/*   Description: Determines if edge can become carried by the  */
+/*                innermost loop through loop interchange.      */
+/*                                                              */
+/****************************************************************/
+
 static Boolean CanMoveToInnermost(DG_Edge *edge)
 
   {
@@ -188,6 +293,27 @@ static Boolean CanMoveToInnermost(DG_Edge *edge)
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:   DoPartition                                    */
+/*                                                              */
+/*   Input:      name - array name node in ast                  */
+/*               RefGroup - reference group structure           */
+/*               dg - dependence graph                          */
+/*               ped - graph and ast information                */
+/*               level - nesting level of loop on which to      */
+/*                       to compute RefGroups                   */
+/*               VisitedMark - for DFS                          */
+/*               loop_data - loop structure information         */
+/*                                                              */
+/*   Description: Partitions the references in the innermost    */
+/*                loop body into RefGroups based on the         */
+/*                dependences carried by the loop at nesting    */
+/*                level "level".  This loop is being considered */
+/*                as if it were in the innermost position.      */
+/*                                                              */
+/****************************************************************/
+
 static void DoPartition(AST_INDEX name,
 			RefGroupType *RefGroup,
 			DG_Edge   *dg,
@@ -195,11 +321,6 @@ static void DoPartition(AST_INDEX name,
 			int       level,
 			Boolean   VisitedMark,
 			model_loop *loop_data)
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
- 
 
   {
    subscript_info_type *sptr1,*sptr2;
@@ -209,18 +330,31 @@ static void DoPartition(AST_INDEX name,
      sptr1 = get_subscript_ptr(name);
      sptr1->visited = VisitedMark;
      sptr1->lnode = util_node_alloc(name,NULL);
+
+              /* add reference to RefGroup */
+
      util_append(RefGroup->RefList,sptr1->lnode);
      RefGroup->number++;
      refl = get_info(ped,name,type_levelv);
+
+              /* look at all outgoing edges for references that belong
+		 in the same RefGroup.  Only consider loop-independent 
+		 edges and edges carried by the the loop at "level" or
+		 edges that give rise to group-spatial locality.  
+		 Additionally, each edge must be able to move into
+		 the innermost position with interchange.   */
+
      for (edge = dg_first_src_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST;
 	  edge = dg_next_src_ref( PED_DG(ped),edge))
-       if ((dg[edge].consistent == consistent_SIV ||
+
+              
+       if ((dg[edge].consistent == consistent_SIV ||   /* check consistency */
 	    (dg[edge].consistent == consistent_MIV && 
 	     (dg[edge].level == LOOP_INDEPENDENT ||
 	      dg[edge].src == dg[edge].sink))) &&
 	   NOT(dg[edge].symbolic) &&
-	   (CanMoveToInnermost(&dg[edge]) && 
+	   (CanMoveToInnermost(&dg[edge]) &&          /* innermost edge? */
 	    (dg[edge].level == level || 
 	     dg[edge].level == LOOP_INDEPENDENT ||
 	     OnlyInInnermostPosition(loop_data,dg[edge].src,dg[edge].level))))
@@ -232,15 +366,19 @@ static void DoPartition(AST_INDEX name,
 	    DoPartition(dg[edge].sink,RefGroup,dg,ped,level,VisitedMark,
 			loop_data);
 	 }
+
+           /* look at all incoming edges for references fitting the
+	      same criteria. */
+
      for (edge = dg_first_sink_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST;
 	  edge = dg_next_sink_ref( PED_DG(ped),edge))
-       if ((dg[edge].consistent == consistent_SIV ||
+       if ((dg[edge].consistent == consistent_SIV ||   /* check consistency */
 	    (dg[edge].consistent == consistent_MIV && 
 	     dg[edge].level == LOOP_INDEPENDENT ||
 	     dg[edge].src == dg[edge].sink)) &&
 	   NOT(dg[edge].symbolic) &&
-	   (CanMoveToInnermost(&dg[edge]) && 
+	   (CanMoveToInnermost(&dg[edge]) &&          /* innermost edge? */
 	    (dg[edge].level == level || 
 	     dg[edge].level == LOOP_INDEPENDENT ||
 	     OnlyInInnermostPosition(loop_data,dg[edge].src,dg[edge].level))))
@@ -254,13 +392,23 @@ static void DoPartition(AST_INDEX name,
 	 }
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   PartitionNames                                 */
+/*                                                              */
+/*   Input:      node - node in the AST                         */
+/*               RefInfo - various information                  */
+/*                                                              */
+/*   Description: Search AST for references that are not in a   */
+/*                RefGroup and call DoPartition on those        */
+/*                references.                                   */
+/*                                                              */
+/****************************************************************/
+
 static int PartitionNames(AST_INDEX   node,
 			   RefInfoType *RefInfo)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
 
   {
    subscript_info_type *sptr;
@@ -288,6 +436,25 @@ static int PartitionNames(AST_INDEX   node,
     return(WALK_CONTINUE);
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   FindOldestValue                                */
+/*                                                              */
+/*   Input:      RefGroup - reference group                     */
+/*               ped - various loop information                 */
+/*                                                              */
+/*   Description: Search through RefGroup for the array         */
+/*                reference that is first to reference the      */
+/*                value that flows through out the group.       */
+/*                That reference will have no incoming          */
+/*                dependence from a another member of the       */
+/*                group or will only have dependences that      */
+/*                are carried by a loop that the reference is   */
+/*                invariant with respect to.                    */
+/*                                                              */
+/****************************************************************/
+
 static AST_INDEX FindOldestValue(RefGroupType *RefGroup,
 				 PedInfo      ped)
 
@@ -307,21 +474,34 @@ static AST_INDEX FindOldestValue(RefGroupType *RefGroup,
                         type_levelv);
 	dg = dg_get_edge_structure( PED_DG(ped));
         found = true;
+
+	    /*  Assume reference is the oldest value.  Search incoming
+		edges for an edge that disproves the assertion. */
+
         for (edge = dg_first_sink_ref( PED_DG(ped),refl);
              edge != END_OF_LIST;
              edge = dg_next_sink_ref( PED_DG(ped),edge))
-          if (dg[edge].src != dg[edge].sink &&
+
+          if (dg[edge].src != dg[edge].sink &&  /* edge not from self */
 	      ((!pt_expr_equal(tree_out(dg[edge].src),tree_out(dg[edge].sink)) 
 		&& gen_get_dt_DIS(&dg[edge],dg[edge].level) != DDATA_ANY) || 
-	       dg[edge].level == LOOP_INDEPENDENT) &&
+	       dg[edge].level == LOOP_INDEPENDENT) && /* make sure edge not
+							 carried by 
+							 src-invariant loop */
+
 	      get_subscript_ptr(dg[edge].src)->surrounding_do ==
-	      get_subscript_ptr(dg[edge].sink)->surrounding_do &&
+	      get_subscript_ptr(dg[edge].sink)->surrounding_do && /* source
+								     and sink
+								     in same
+								     loop */
+
 	      (dg[edge].consistent == consistent_SIV ||
-	       (dg[edge].consistent == consistent_MIV && 
+	       (dg[edge].consistent == consistent_MIV && /* consistent edge */
 		dg[edge].level == LOOP_INDEPENDENT)) &&
 	      NOT(dg[edge].symbolic))
+
             if (util_in_list(get_subscript_ptr(dg[edge].src)->lnode,
-			     RefGroup->RefList))
+			     RefGroup->RefList))  /* in same ref group */
               {
                found = false;
                break;
@@ -331,6 +511,24 @@ static AST_INDEX FindOldestValue(RefGroupType *RefGroup,
        }
      return(UTIL_NODE_ATOM(RefNode));
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   CheckTemporal                                  */
+/*                                                              */
+/*   Input:      node - oldest value in a RefGroup              */
+/*               ped - dependence graph, etc.                   */
+/*               loop_data - loop structure                     */
+/*               loop - loop being considered as innermost      */
+/*               TemporalCost - lines/iteration required for    */
+/*                              groups with temporal reuse      */
+/*               RefGroup - reference group                     */
+/*                                                              */
+/*   Description: Determines if ref group with "node" as        */
+/*                oldest value has temporal reuse               */
+/*                                                              */
+/****************************************************************/
 
 static void CheckTemporal(AST_INDEX  node,
 			  PedInfo    ped,
@@ -349,15 +547,42 @@ static void CheckTemporal(AST_INDEX  node,
      for (edge = dg_first_src_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST && NOT(RefGroup->Temporal);
 	  edge = dg_next_src_ref( PED_DG(ped),edge))
+
+           /* look for outgoing consistent edge that would be 
+	      loop independent or carried by the innermost loop
+              if "loop" were innermost */
+
        if ((dg[edge].level == loop_data[loop].level  ||
 	    dg[edge].level == LOOP_INDEPENDENT) && 
 	   CanMoveToInnermost(&dg[edge]))
 	 {
 	  RefGroup->Temporal = true;
+
+	           /* make sure cost not counted elsewhere */
+
 	  if (NOT(RefGroup->Spatial) && NOT(RefGroup->Invariant))
 	    (*TemporalCost) += 1.0;
 	 }
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   CheckOtherSpatial                              */
+/*                                                              */
+/*   Input:      node - oldest value in a RefGroup              */
+/*               ped - dependence graph, etc.                   */
+/*               loop_data - loop structure                     */
+/*               loop - loop being considered as innermost      */
+/*               OtherSpatialCost - lines/iteration required for*/
+/*                              groups with group-spatial reuse */
+/*               RefGroup - reference group                     */
+/*               words - number of words in a cache line        */
+/*                                                              */
+/*   Description: Check if ref group with "node" as oldest      */
+/*                value has group-spatial reuse.                */
+/*                                                              */
+/****************************************************************/
 
 static void CheckOtherSpatial(AST_INDEX  node,
 			      PedInfo    ped,
@@ -377,22 +602,52 @@ static void CheckOtherSpatial(AST_INDEX  node,
 
      refl = get_info(ped,node,type_levelv);
      dg = dg_get_edge_structure( PED_DG(ped));
+
+               /* look for an outgoing edge that is carried by the
+		  loop with its induction variable in the first
+		  subscript position and has no other non-zero 
+		  distance vector entries */
+
      for (edge = dg_first_src_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST && NOT(RefGroup->OtherSpatial);
 	  edge = dg_next_src_ref( PED_DG(ped),edge))
        if (dg[edge].level != loop_data[loop].level && 
 	   dg[edge].level != LOOP_INDEPENDENT &&
-	   CanMoveToInnermost(&dg[edge]))
+	   CanMoveToInnermost(&dg[edge]))  /* check distance vector */
 	 {
 	  if (OnlyInInnermostPosition(loop_data,node,dg[edge].level) &&
 	      gen_get_dt_DIS(&dg[edge],dg[edge].level) < words)
+
+	           /* make sure index in first subscript position and
+		      the dependence distance is less than the number
+		      of words in a line */
 	    {
 	     RefGroup->OtherSpatial = true;
+
+	          /* make sure cost not counted elsewhere */
+
 	     if (NOT(RefGroup->Temporal) && NOT(RefGroup->Invariant))
 	      (*OtherSpatialCost) += 1.0;
 	    }
 	 }
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:  CheckInvariant                                  */
+/*                                                              */
+/*   Input:      node - oldest value in a RefGroup              */
+/*               ped - dependence graph, etc.                   */
+/*               loop_data - loop structure                     */
+/*               loop - loop being considered as innermost      */
+/*               InvariantCost - lines/iteration required for   */
+/*                              groups with self-temporal reuse */
+/*               RefGroup - reference group                     */
+/*                                                              */
+/*   Description:
+/*                                                              */
+/****************************************************************/
 
 static void CheckInvariant(AST_INDEX  node,
 			   PedInfo    ped,
@@ -408,6 +663,10 @@ static void CheckInvariant(AST_INDEX  node,
 
      refl = get_info(ped,node,type_levelv);
      dg = dg_get_edge_structure( PED_DG(ped));
+
+                 /* look for consisitent dependence from a reference to
+		    itself */
+
      for (edge = dg_first_src_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST && NOT(RefGroup->Invariant);
 	  edge = dg_next_src_ref( PED_DG(ped),edge))
@@ -421,6 +680,19 @@ static void CheckInvariant(AST_INDEX  node,
 	 }
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   CheckRefGroups                                 */
+/*                                                              */
+/*   Input:      loop_data - loop structure                     */
+/*               loop - loop considered as innermost            */
+/*               RefInfo - miscellaneous data                   */
+/*                                                              */
+/*   Description: Go through list of ref groups and determine   */
+/*                locality properties.                          */
+/*                                                              */
+/****************************************************************/
 
 static void CheckRefGroups(model_loop    *loop_data,
 			   int           loop,
@@ -452,6 +724,10 @@ static void CheckRefGroups(model_loop    *loop_data,
 	else
 	  words = (((config_type *)PED_MH_CONFIG(RefInfo->ped))->
 		   line) >> 2; 
+ 
+	        /* check for self-spatial reuse, induction var
+		   appears in first subscript position only */
+
 	if (pt_find_var(sub_list,var))
 	  {
 	   sub = list_first(sub_list);
@@ -460,6 +736,9 @@ static void CheckRefGroups(model_loop    *loop_data,
 	      pt_get_coeff(sub,var,&lin,&coeff);	
 	      if (coeff < 0)
 	        coeff = -coeff;
+
+	                /* make sure step size less than line size */
+
 	      if (coeff < words && lin)
 		{
 		 RefGroup->Spatial = true;
@@ -468,11 +747,16 @@ static void CheckRefGroups(model_loop    *loop_data,
 	     }
 	  }
 	else 
+
+	         /* check for invariant reuse */
 	  {
 	   node = FindOldestValue(RefGroup,RefInfo->ped);
 	   CheckInvariant(node,RefInfo->ped,loop_data,loop,
 			  &RefInfo->InvariantCost,RefGroup);
 	  }
+
+	        /* check for group reuse */
+
 	if (UTIL_HEAD(RefGroup->RefList) != UTIL_TAIL(RefGroup->RefList))
 	  {
 	   node = FindOldestValue(RefGroup,RefInfo->ped);
@@ -481,12 +765,28 @@ static void CheckRefGroups(model_loop    *loop_data,
 	   CheckOtherSpatial(node,RefInfo->ped,loop_data,loop,
 			     &RefInfo->OtherSpatialCost,RefGroup,words);
 	  }
+
+	       /* check if no reuse found */
+
 	if (NOT(RefGroup->Invariant) && NOT(RefGroup->Spatial) &&
 	    NOT(RefGroup->OtherSpatial) && NOT(RefGroup->Temporal))
 	   RefInfo->NoneCost += 1.0;
        }
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   LoopsNotInOrder                                */
+/*                                                              */
+/*   Input:      loop_data - loop structure                     */
+/*               heap - sorted order of loops                   */
+/*               num_loops - number of loops in permutation     */
+/*                                                              */
+/*   Description:  Determine if "heap" does not reperesent the  */
+/*                 original order of loops.                     */
+/*                                                              */
+/****************************************************************/
 
 static Boolean LoopsNotInOrder(model_loop *loop_data,
 			       heap_type  *heap,
@@ -496,21 +796,33 @@ static Boolean LoopsNotInOrder(model_loop *loop_data,
    int i;
    
      for (i = 0; i < num_loops; i++)
+
+          /* level that does not match index means not in order */
+
        if (loop_data[heap[i].index].level != i+1)
          return(true);
      return(false);
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:  Heapify                                         */
+/*                                                              */
+/*   Input:     heap - heap of loops ordered by memory cost     */
+/*              i - beginning index of heap                     */
+/*              j - ending index of heap                        */
+/*              n - size of heap                                */
+/*                                                              */
+/*   Description: make a section of the array "heap" into a     */
+/*                heap ordered by memory costs.                 */
+/*                                                              */
+/****************************************************************/
+
 static void Heapify(heap_type *heap,
 		    int       i,
 		    int       j,
 		    int       n)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
 
   {
    int k,i1,i2,
@@ -547,12 +859,31 @@ static void Heapify(heap_type *heap,
        }
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   GetLoopCost                                    */
+/*                                                              */
+/*   Input:      TemporalCost - cost associated with temporal   */
+/*                              reuse.                          */
+/*               SpatialCost - cost associated with spatial     */
+/*                             reuse.                           */
+/*               OtherSpatialCost - cost associated with        */
+/*                                  group-spatial reuse.        */
+/*               InvariantCost - cost associated with           */
+/*                               self-temporal reuse.           */
+/*               NoneCost - cost associated with no reuse       */
+/*                                                              */
+/*   Description:  Compute total loop cost given the costs for  */
+/*                 each ref group based on its locality type.   */
+/*                                                              */
+/****************************************************************/
+
 static int GetLoopCost(float TemporalCost,
 		       float SpatialCost,
                        float OtherSpatialCost,
 		       float InvariantCost,
-		       float NoneCost,
-		       int   num_loops)
+		       float NoneCost)
 
   {
      return((int)((TemporalCost     * 100.0 +
@@ -562,9 +893,23 @@ static int GetLoopCost(float TemporalCost,
 		   InvariantCost) * 10.0));
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function: GetLoopCostFirst                                 */
+/*                                                              */
+/*   Input:    loop_data - loop structure                       */
+/*             j - index into loop structure                    */
+/*                                                              */
+/*   Description:  To handle non-perfectly nested loops there   */
+/*                 is a list of costs associated with each      */
+/*                 possible perfect nest.  This function returns*/
+/*                 the cost of the first loop on the list.      */
+/*                                                              */
+/****************************************************************/
+
 static int GetLoopCostFirst(model_loop *loop_data,
-			   int        j,
-			   int        num_loops)
+			   int        j)
 
   {
    return
@@ -572,14 +917,26 @@ static int GetLoopCostFirst(model_loop *loop_data,
 		 loop_data[j].SpatialCostList.first_entry()->GetValue(),
 		 loop_data[j].OtherSpatialCostList.first_entry()->GetValue(),
 		 loop_data[j].InvariantCostList.first_entry()->GetValue(),
-		 loop_data[j].NoneCostList.first_entry()->GetValue(),
-		 num_loops);
+		 loop_data[j].NoneCostList.first_entry()->GetValue());
   }
-     
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function: GetLoopCostLast                                  */
+/*                                                              */
+/*   Input:    loop_data - loop structure                       */
+/*             j - index into loop structure                    */
+/*                                                              */
+/*   Description:  To handle non-perfectly nested loops there   */
+/*                 is a list of costs associated with each      */
+/*                 possible perfect nest.  This function returns*/
+/*                 the cost of the last loop on the list.       */
+/*                                                              */
+/****************************************************************/
 
 static int GetLoopCostLast(model_loop *loop_data,
-			  int        j,
-			  int        num_loops)
+			  int        j)
 
   {
    return
@@ -587,9 +944,25 @@ static int GetLoopCostLast(model_loop *loop_data,
 		 loop_data[j].SpatialCostList.last_entry()->GetValue(),
 		 loop_data[j].OtherSpatialCostList.last_entry()->GetValue(),
 		 loop_data[j].InvariantCostList.last_entry()->GetValue(),
-		 loop_data[j].NoneCostList.last_entry()->GetValue(),
-		 num_loops);
+		 loop_data[j].NoneCostList.last_entry()->GetValue());
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   ComputeLoopOrder                               */
+/*                                                              */
+/*   Input:      loop_data - loop structure                     */
+/*               num_loops - number of loops in perfect nest    */
+/*               ped - dependence information, etc.             */
+/*               loop_list - list of loops in perfect nest      */
+/*               heap - sorted list of loops in memory order    */
+/*                       (output)                               */
+/*                                                              */
+/*   Description: Perform a heap sort of the list of loops to   */
+/*                compute memory order                          */
+/*                                                              */
+/****************************************************************/
 
 static void ComputeLoopOrder(model_loop *loop_data,
 			     int        num_loops,
@@ -608,7 +981,7 @@ static void ComputeLoopOrder(model_loop *loop_data,
        {
 	heap[i].index = UTIL_NODE_ATOM(node);
 	j = heap[i].index;
-	heap[i].stride = GetLoopCostLast(loop_data,j,num_loops);
+	heap[i].stride = GetLoopCostLast(loop_data,j);
        }
      for (i = (num_loops-1) >> 1; i >= 0; i--)
        Heapify(heap,i,num_loops-1,num_loops-1);
@@ -623,6 +996,19 @@ static void ComputeLoopOrder(model_loop *loop_data,
 	Heapify(heap,0,i-1,i-1);
        }
   }
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   GeneratePreventingEdgeList                     */
+/*                                                              */
+/*   Input:      node - ast node                                */
+/*               EdgeInfo - dependence graph, edge list, etc.   */
+/*                                                              */
+/*   Description: Search for dependence edges that could        */
+/*                memory order and append them to a list.       */
+/*                                                              */
+/****************************************************************/
 
 static int GeneratePreventingEdgeList(AST_INDEX node,
 				      EdgeInfoType *EdgeInfo)
@@ -643,26 +1029,29 @@ static int GeneratePreventingEdgeList(AST_INDEX node,
 	     edge != END_OF_LIST;
 	     edge = dg_next_src_ref( PED_DG(EdgeInfo->ped),edge))
 	  {
-	   if (dg[edge].type == dg_input) 
+	   if (dg[edge].type == dg_input)  /* inputs can change direction */
 	     continue;
 	   less = false;
 	   i = dg[edge].level + 1;
+
+	            /* found (<), now look for inner (>) */
+
 	   while(i <= gen_get_dt_LVL(&dg[edge]) && !less)
 	     {
 	      dist = gen_get_dt_DIS(&dg[edge],i);
 	      switch(dist) {
+	        case DDATA_NE:
 		case DDATA_GE:
-		case DDATA_GT: break;
-			       
+		case DDATA_GT:  less = true;
+			        break;
+
 		case DDATA_LT:
-	        case DDATA_LE:
-	        case DDATA_NE:  less = true;
-	                        break;
+	        case DDATA_LE:  break;
 
 	        case DDATA_ANY: if (dg[edge].consistent == inconsistent || 
 				    (dg[edge].consistent == consistent_MIV &&
 				     dg[edge].src != dg[edge].sink) ||
-				    dg[edge].symbolic)
+				    dg[edge].symbolic)  /*rule out invariants*/
 	                          less = true;
 	                        break;
 
@@ -682,6 +1071,22 @@ static int GeneratePreventingEdgeList(AST_INDEX node,
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:   CleanEdgeList                                  */
+/*                                                              */
+/*   Input:      EdgeList - list of preventing edges            */
+/*               ped - dependence info, etc.                    */
+/*               old_level - original level of a loop for which */
+/*                           a position in memory order has     */
+/*                           been chosen.                       */
+/*                                                              */
+/*   Description: Remove edges from the preventing edge list    */
+/*                whose legality has been satisfied by the loop */
+/*                at "old_level".                               */
+/*                                                              */
+/****************************************************************/
+
 static void CleanEdgeList(UtilList *EdgeList,
 			  PedInfo  ped,
 			  int      old_level)
@@ -698,13 +1103,21 @@ static void CleanEdgeList(UtilList *EdgeList,
        {
 	edge = UTIL_NODE_ATOM(Edge);
 	dist = gen_get_dt_DIS(&dg[edge],old_level);
+
+	      /* only edges that are not carried by a loop at this 
+		 point in memory order will be left on the list.
+		 Remove any edges that will be carried by the loop
+		 from "old_level" since their legality has been 
+		 satisfied */
+
 	switch(dist) {
+	  case DDATA_NE: 
 	  case DDATA_GE:
-	  case DDATA_GT: util_pluck(Edge);
-			 break;
+	  case DDATA_GT: break;
+
 	  case DDATA_LT:
-	  case DDATA_LE:
-	  case DDATA_NE: break;
+	  case DDATA_LE: util_pluck(Edge);
+			 break;
 
 	  case DDATA_ANY: if ((dg[edge].consistent == consistent_SIV ||
 			       (dg[edge].consistent == consistent_MIV &&
@@ -723,6 +1136,21 @@ static void CleanEdgeList(UtilList *EdgeList,
        }
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   LegalPostion                                   */
+/*                                                              */
+/*   Input:      EdgeList - list of preventing edges            */
+/*               ped - handle to dependence info                */
+/*               new_level - desired level in permutation       */
+/*               old_level - original level of loop             */
+/*                                                              */
+/*   Description:  Determine if loop in nest that was           */
+/*                 at level "old_level" can be safely           */
+/*                 moved to "new_level"                         */
+/*                                                              */
+/****************************************************************/
 
 static Boolean LegalPosition(UtilList *EdgeList,
 			     PedInfo  ped,
@@ -743,14 +1171,18 @@ static Boolean LegalPosition(UtilList *EdgeList,
        {
 	edge = UTIL_NODE_ATOM(Edge);
 	dist = gen_get_dt_DIS(&dg[edge],old_level);
+
+	    /* look for a (>) or a distance < 0 at old_level in the
+	       preventing edge list.  This means an illegal interchange */
+
 	switch(dist) {
 	  case DDATA_GE:
-	  case DDATA_GT: break;
-
-	  case DDATA_LT:
-	  case DDATA_LE:
+	  case DDATA_GT: 
 	  case DDATA_NE:  return(false);
 	                  break;
+
+	  case DDATA_LT:
+	  case DDATA_LE:  break;
 
 	  case DDATA_ANY: if (dg[edge].consistent == inconsistent || 
 			      (dg[edge].consistent == consistent_MIV &&
@@ -770,7 +1202,27 @@ static Boolean LegalPosition(UtilList *EdgeList,
        }
      return(true);
   }
-	
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:  ComputeLegalOrder                               */
+/*                                                              */
+/*   Input:     loop_data - loop structure                      */
+/*              loop - index of innermost loop                  */
+/*              num_loops - number of loops in perfect nest     */
+/*              ped - handle to dependence graph                */
+/*              heap - list of loops in Memory Order            */
+/*              outermost_lvl - outermost loop level where      */
+/*                              permutation can occur           */
+/*              EdgeList - list of interchange preventing edges */
+/*              ar - arena object for memory allocation         */
+/*                                                              */
+/*   Description:  Use the algorithm "NearbyPermutation" to     */
+/*                 compute the closest legal approximation to   */
+/*                 Memory Order.  (alg. form McKinley's thesis) */
+/*                                                              */
+/****************************************************************/
      
 static void ComputeLegalOrder(model_loop *loop_data,
 			      int        loop,
@@ -790,6 +1242,11 @@ static void ComputeLegalOrder(model_loop *loop_data,
      new_heap = (heap_type *)ar->arena_alloc_mem(LOOP_ARENA,MAXLOOP*
 						 sizeof(heap_type));
      LoopChosen = ut_create_set(ar,LOOP_ARENA,num_loops);
+
+              /* store heap in new_heap so that we have the original
+		 memory order available for priority in level
+		 placement.  */
+
      for (i = 0; i < num_loops; i ++)
        {
 	new_heap[i].index = heap[i].index;
@@ -799,10 +1256,19 @@ static void ComputeLegalOrder(model_loop *loop_data,
        {
 	j = 0;
 	loop_not_chosen = true;
+
+	        /* In the set of loops that have not been chosen, look for
+		   the loop that has the highest cost that can legally be
+		   placed at level "i". */
+
 	while (j < num_loops && loop_not_chosen)
 	  {
 	   if (!ut_member_number(LoopChosen,j))
 	     if (outermost_lvl > i+1)
+
+	        /* all levels outside of "outermost_lvl" must
+		   remain in original order to preserve correctness */
+
 	       if (loop_data[new_heap[j].index].level == i+1)
 		 {
 		  heap[i] =  new_heap[j];
@@ -813,11 +1279,17 @@ static void ComputeLegalOrder(model_loop *loop_data,
 	       else if (NOT(LegalPosition(EdgeList,ped,i+1,
 					  loop_data[new_heap[j].index].level)))
 		 {
+		    /* this is checked for stats only */
+
 		  loop_data[loop].interchange = false;
 		  ut_add_number(loop_data[loop].PreventLvl[i],
 				loop_data[new_heap[j].index].level);
 		 }
 	       else;
+
+	         /* check if placement at level "i" does not change the
+		    direction of a dependence */
+
 	     else if (LegalPosition(EdgeList,ped,i+1,
 				    loop_data[new_heap[j].index].level))
 		 {
@@ -836,6 +1308,10 @@ static void ComputeLegalOrder(model_loop *loop_data,
 	   j++;
 	  }
        }
+
+       /* store the original Memory Order and the best legal order
+	  for statistics reporting */
+
      for (i = 0; i < num_loops; i++)
        {
 	loop_data[loop].MemoryOrder[i] = loop_data[new_heap[i].index].level; 
@@ -843,6 +1319,28 @@ static void ComputeLegalOrder(model_loop *loop_data,
        }
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   CheckInterchange                               */
+/*                                                              */
+/*   Input:      loop_data - loop structure                     */
+/*               loop - index of innermost loop                 */
+/*               num_loop - number of loops in perfect nest     */
+/*               outermost_lvl - outermost level of legal       */
+/*                               interchange                    */
+/*               ped - handle to dependence information         */
+/*               ar - arena object for memory allocation        */
+/*               loop_list - list of loops in perfect nest      */
+/*               heap - array to store loop permutation         */
+/*                                                              */
+/*   Description: Compute the RefGroups and cost for each loop  */
+/*                in loop_list as if it were in the innermost   */
+/*                position.   Based on those costs, compute the */
+/*                legal permutation that is closest to memory   */
+/*                order.                                        */
+/*                                                              */
+/****************************************************************/
 
 static void CheckInterchange(model_loop    *loop_data,
 			     int           loop,
@@ -868,6 +1366,10 @@ static void CheckInterchange(model_loop    *loop_data,
 		     UnsetVisitedMark,NOFUNC,(Generic)NULL);
      RefInfo.VisitedMark = true;
      loop_data[loop].OutermostLvl = outermost_lvl;
+
+           /* for each loop in the perfect nest, compute RefGroups and
+	      RefCost */
+
      for (lnode = UTIL_HEAD(loop_list);
 	  lnode != NULLNODE;
 	  lnode = UTIL_NEXT(lnode))
@@ -875,16 +1377,28 @@ static void CheckInterchange(model_loop    *loop_data,
 	RefInfo.GroupList = util_list_alloc((Generic)NULL,"group-list");
 	loop1 = UTIL_NODE_ATOM(lnode);
 	RefInfo.level = loop_data[loop1].level;
+
+	      /* compute RefGroups */
+
 	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 			PartitionNames, NOFUNC,(Generic)&RefInfo);
+
 	RefInfo.InvariantCost= 0.0;
 	RefInfo.TemporalCost= 0.0;
 	RefInfo.SpatialCost= 0.0;
 	RefInfo.OtherSpatialCost= 0.0;
 	RefInfo.NoneCost= 0.0;
+
+	   /* compute costs */
+
 	CheckRefGroups(loop_data,loop1,&RefInfo);
+
 	util_append(loop_data[loop1].GroupList,
 		    util_node_alloc((Generic)RefInfo.GroupList,NULL));
+
+	  /* need a list of costs because a loop may be in more than
+	     one perfect nest */
+
 	loop_data[loop1].InvariantCostList.append_entry(RefInfo.InvariantCost);
 	loop_data[loop1].TemporalCostList.append_entry(RefInfo.TemporalCost);
 	loop_data[loop1].SpatialCostList.append_entry(RefInfo.SpatialCost);
@@ -893,18 +1407,33 @@ static void CheckInterchange(model_loop    *loop_data,
 	loop_data[loop1].NoneCostList.append_entry(RefInfo.NoneCost);
 	RefInfo.VisitedMark = NOT(RefInfo.VisitedMark);
        }
+
+            /* compute memory order */
+
      ComputeLoopOrder(loop_data,num_loops,ped,loop_list,heap);
+
      if (LoopsNotInOrder(loop_data,heap,num_loops))
        {
 	EdgeInfo.ped = ped;
 	EdgeInfo.EdgeList = util_list_alloc((Generic)NULL,"edge-list");
+
+	    /* build list of edges that can prevent memory order */
+
 	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 			GeneratePreventingEdgeList,NOFUNC,(Generic)&EdgeInfo);
 	if (outermost_lvl > 1 || NOT(util_list_empty(EdgeInfo.EdgeList)))
 	  {
+
+	      /* if there are preventing edges or if distribution or loop
+		 shape, etc. prevents moving certain loops, compute the 
+		 closest legal permutation. */
+
 	   for (i = 0; i < num_loops; i++)
 	     loop_data[loop].PreventLvl[i] = ut_create_set(ar,LOOP_ARENA,
 							   num_loops);
+
+	       /* compute NearbyPermutation */
+
 	   ComputeLegalOrder(loop_data,loop,num_loops,ped,heap,outermost_lvl,
 			     EdgeInfo.EdgeList,ar);
 	  }
@@ -922,7 +1451,28 @@ static void CheckInterchange(model_loop    *loop_data,
 	  loop_data[loop].MemoryOrder[i] = loop_data[heap[i].index].level; 
 	 }
   }
-   
+
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   walk_loops                                     */
+/*                                                              */
+/*   Input:      loop_data - loop structure                     */
+/*               loop - current loop being examined             */
+/*               outermost_lvl  - outermost nesting level where */
+/*                                interchange is safe           */
+/*               num_loops - number of loops in perfect nest    */
+/*               loop_list - list of loops in perfect nest      */
+/*               heap - storage for loop order                  */
+/*               symtab - symbol table                          */
+/*               ped - handle for dependence graph              */
+/*               ar - arena object for memory allocation        */
+/*                                                              */
+/*   Description:  Walk loop_data structure and at each         */
+/*                 innermost loop compute memory order for the  */
+/*                 perfect nest of loops surrounding that loop  */
+/*                                                              */
+/****************************************************************/
 
 static void walk_loops(model_loop    *loop_data,
 		       int           loop,
@@ -942,8 +1492,16 @@ static void walk_loops(model_loop    *loop_data,
 					!loop_data[loop].expand) || 
 	 loop_data[loop].type == COMPLEX || loop_data[loop].type == TRAP ||
 	 loop_data[loop].type == MULT)
+
+           /* illegal distribution and complex iteration space shapes prevent
+	      interchange at this level and out.  This is a sufficient 
+	      condition for safety, not necessary */
+
        outermost_lvl = loop_data[loop].level+1;
      if (loop_data[loop].inner_loop == -1)
+
+               /* compute best loop order */
+
        CheckInterchange(loop_data,loop,num_loops,outermost_lvl,
 			ped,ar,loop_list,heap);
      else
@@ -955,6 +1513,9 @@ static void walk_loops(model_loop    *loop_data,
 		      symtab,ped,ar);
 	   next = loop_data[next].next_loop;
 	   if (next != -1)
+
+	           /* create a heap for a new perfect loop nest */
+
 	     {
 	      loop_data[next].heap=(heap_type *)ar->arena_alloc_mem(LOOP_ARENA,
 								    MAXLOOP * 
@@ -967,16 +1528,34 @@ static void walk_loops(model_loop    *loop_data,
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:   DumpLoopStats                                  */
+/*                                                              */
+/*   Input:      loop_data - loop structure                     */
+/*               loop - loop for which stats are printed        */
+/*               GroupList - list of RefGroups for loop in a    */
+/*                           particular perfect nest            */
+/*               LoopStats - permutation statistics             */
+/*               logfile - output file                          */
+/*                                                              */
+/*   Description: print out RefGroup statistics for a loop      */
+/*                                                              */
+/****************************************************************/
+
 static void DumpLoopStats(model_loop *loop_data,
 			  int        loop,
 			  int        num_loops,
 			  UtilList   *GroupList,
 			  LoopStatsType *LoopStats,
-			  FILE       *logfile)
+			  FILE       *logfile,
+			  AST_INDEX  InnerLoop,
+			  PedInfo    ped)
   {
    int i;
    UtilNode *GroupNode;
    RefGroupType *RefGroup;
+   StatsInfoType BalanceStats;
 
      fprintf(logfile,"Statistics for Loop at Level %d\n",
 	     loop_data[loop].level);
@@ -1007,10 +1586,38 @@ static void DumpLoopStats(model_loop *loop_data,
 	fprintf(logfile,"\n\n");
        }
      fprintf(logfile,"\n\n\tNumber of Ref Groups: %d\n",i);
-     fprintf(logfile,"\tLoop Cost %d\n\n\n",GetLoopCostFirst(loop_data,loop,
-							     num_loops));
+     fprintf(logfile,"\tLoop Cost %d\n\n\n",GetLoopCostFirst(loop_data,loop));
+     BalanceStats.ped = ped;
+     BalanceStats.flops = 0.0;
+     BalanceStats.mops = 0.0;
+     BalanceStats.level = loop_data[loop].level;
+     BalanceStats.UseCache = true;
+     BalanceStats.loop_data = loop_data;
+     BalanceStats.loop = loop;
+     walk_expression(InnerLoop,ut_ComputeBalance,NOFUNC,
+		     (Generic)&BalanceStats);
+     loop_data[loop].fbalance = ((float)BalanceStats.mops) /
+                                ((float)BalanceStats.flops);
+   
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:   GetLocalityStats                               */
+/*                                                              */
+/*   Input:      LoopStatsLocalityMatrix - locality stats for   */
+/*                                         entire loop nest     */
+/*               LocalityMatrix - locality stats for one perfect*/
+/*                                nest                          */
+/*               OtherSpatialGroups - # of group-spatial RefGrps*/
+/*               GroupList - list of RefGroups for a loop in a  */
+/*                           particular perfect nest            */
+/*                                                              */
+/*   Description: Accumulate the locality properties of the    */
+/*                RefGroups for a particular loop.              */
+/*                                                              */
+/****************************************************************/
 
 static void GetLocalityStats(LocalityMatrixType *LoopStatsLocalityMatrix,
 			     LocalityMatrixType *LocalityMatrix,
@@ -1078,12 +1685,33 @@ static void GetLocalityStats(LocalityMatrixType *LoopStatsLocalityMatrix,
        += LocalityMatrix->MultiRefs.None;
   }
 
+
+/****************************************************************/
+/*                                                              */
+/*   Function:  DumpPermutationStats                            */
+/*                                                              */
+/*   Input:     loop_data - loop structure                      */
+/*              loop - innermost loop of a perfect nest         */
+/*              num_loops - number of loops in the perfect nest */
+/*              inner_loops - number of innermost loops in      */
+/*                            entire imperfect nest             */
+/*              LoopStats - permuation statistics               */
+/*              logfile - output file                           */
+/*                                                              */
+/*   Description:  Print out the permutation statistics for a   */
+/*                 perfect nest of loops.                       */
+/*                                                              */
+/****************************************************************/
+
 static void DumpPermutationStats(model_loop *loop_data,
 				 int        loop,
 				 int        num_loops,
 				 int        *inner_loops,
 				 LoopStatsType *LoopStats,
-				 FILE       *logfile)
+				 FILE       *logfile,
+				 PedInfo    ped,
+				 char       *routine,
+				 char       *program)
 
   {
    int i,j,
@@ -1096,6 +1724,7 @@ static void DumpPermutationStats(model_loop *loop_data,
        MemoryOtherSpatialGroups = 0;
    float OriginalCost,
          FinalCost,
+         FinalRatio,
          MemoryCost;
    LocalityMatrixType  
       OriginalLocalityMatrix = {{0,0,0},{0,0,0},{0,0,0}},
@@ -1113,13 +1742,19 @@ static void DumpPermutationStats(model_loop *loop_data,
 
      fprintf(logfile,"Permutation Statistic for Perfect Loop Nest %d\n\n",
 	     *inner_loops);
+
+           /* print out RefGroup stats */
+
      for (i = loop;
 	  i != -1;
 	  i = loop_data[i].parent)
        DumpLoopStats(loop_data,i,num_loops,
 		     (UtilList *)UTIL_NODE_ATOM(UTIL_HEAD(loop_data[i].
 							  GroupList)),
-		     LoopStats,logfile);
+		     LoopStats,logfile,loop_data[loop].node,ped);
+
+          /* print out permutation statistics */
+
      fprintf(logfile,"\t **** Permutation Results ***\n\n");
      fprintf(logfile,"\tFinal Order:");
      for (i = 0; i < num_loops; i++)
@@ -1136,6 +1771,9 @@ static void DumpPermutationStats(model_loop *loop_data,
 	for (i = 0; i < num_loops; i++)
           fprintf(logfile," %d",loop_data[loop].MemoryOrder[i]);
 	fprintf(logfile,"\n\n");
+
+	       /* print out prevention statistics */
+
 	if (NOT(loop_data[loop].interchange))
 	  {
 	   fprintf(logfile,"\t******* Interchange Not Safe *******\n\n");
@@ -1168,6 +1806,9 @@ static void DumpPermutationStats(model_loop *loop_data,
 		  Distribution = true;
 		  if (loop_data[i].level == 1 && loop_data[i].level != 
 		      loop_data[loop].MemoryOrder[loop_data[i].level])
+
+		          /* check for time-step loops */
+
 		    if (loop_data[i].inner_loop != -1)
 		      if (loop_data[loop_data[i].inner_loop].next_loop != -1)
 			{
@@ -1307,8 +1948,10 @@ static void DumpPermutationStats(model_loop *loop_data,
 		OriginalLocalityMatrix.MultiRefs.Invariant,
 		OriginalLocalityMatrix.MultiRefs.Spatial,
 		OriginalLocalityMatrix.MultiRefs.None);
-     fprintf(logfile,"Other Spatial %d\n\n\n",
+     fprintf(logfile,"Other Spatial %d\n\n",
 		OriginalOtherSpatialGroups);
+     fprintf(logfile,"Orginal Balance   = %.4f\n\n\n",
+	     loop_data[loop].fbalance);
      fprintf(logfile,"Final Loop Locality\n");
      fprintf(logfile,"======================\n\n");
      fprintf(logfile,"RefGroups\n");
@@ -1327,8 +1970,10 @@ static void DumpPermutationStats(model_loop *loop_data,
 		FinalLocalityMatrix.MultiRefs.Invariant,
 		FinalLocalityMatrix.MultiRefs.Spatial,
 		FinalLocalityMatrix.MultiRefs.None);
-     fprintf(logfile,"Other Spatial %d\n\n\n",
+     fprintf(logfile,"Other Spatial %d\n\n",
 		FinalOtherSpatialGroups);
+     fprintf(logfile,"Final Balance   = %.4f\n\n\n",
+	     loop_data[FinalLoop].fbalance);
      fprintf(logfile,"Memory Loop Locality\n");
      fprintf(logfile,"======================\n\n");
      fprintf(logfile,"RefGroups\n");
@@ -1347,18 +1992,28 @@ static void DumpPermutationStats(model_loop *loop_data,
 		MemoryLocalityMatrix.MultiRefs.Invariant,
 		MemoryLocalityMatrix.MultiRefs.Spatial,
 		MemoryLocalityMatrix.MultiRefs.None);
-     fprintf(logfile,"Other Spatial %d\n\n\n",
+     fprintf(logfile,"Other Spatial %d\n\n",
 		MemoryOtherSpatialGroups);
+     fprintf(logfile,"Memory Balance   = %.4f\n\n\n",
+	     loop_data[MemoryLoop].fbalance);
      depth = loop_data[loop].level;
-     FinalCost = GetLoopCostFirst(loop_data,FinalLoop,depth);
-     MemoryCost = GetLoopCostFirst(loop_data,MemoryLoop,depth);
-     OriginalCost = GetLoopCostFirst(loop_data,loop,depth);
+     FinalCost = GetLoopCostFirst(loop_data,FinalLoop);
+     MemoryCost = GetLoopCostFirst(loop_data,MemoryLoop);
+     OriginalCost = GetLoopCostFirst(loop_data,loop);
      if (FinalCost != 0)
        {
-	LoopStats->FinalRatio[depth-1] += 
-	    (((float)OriginalCost)/((float)FinalCost));
-	fprintf(logfile,"\tFinal Ratio = %.2f\n",
-		((float)OriginalCost)/((float)FinalCost));
+	FinalRatio = ((float)OriginalCost)/((float)FinalCost);
+	LoopStats->FinalRatio[depth-1] += FinalRatio;
+	fprintf(logfile,"\tFinal Ratio = %.2f\n",FinalRatio);
+#ifdef STATSDEBUG
+	if (FinalRatio > 1.00)
+	  {
+           printf("Debug Info for Perfect Loop Nest %d\n\n",*inner_loops);
+	   printf("%s: %s  CostRatio = %.2f  BalanceRatio = %.2f\n",program,
+		  routine,FinalRatio,
+		  loop_data[loop].fbalance/loop_data[FinalLoop].fbalance);
+	  }
+#endif
        }
      else
        {
@@ -1398,12 +2053,30 @@ static void DumpPermutationStats(model_loop *loop_data,
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:  WalkLoopsForStats                               */
+/*                                                              */
+/*   Input:     loop_data - loop structure                      */
+/*              loop - loop being walked                        */
+/*              num_loops - number of loop in perfect nest      */
+/*              inner_loops - number of innermost loops         */
+/*              ped - handle to dependence graph                */
+/*              LoopStats - permutation statistics              */
+/*                                                              */
+/*   Description: Walk loop_data structure and print out        */
+/*                permutation statistics for each perfect nest  */
+/*                                                              */
+/****************************************************************/
+
 static void WalkLoopsForStats(model_loop *loop_data,
 			      int        loop,
 			      int        num_loops,
 			      int        *inner_loops,
 			      PedInfo    ped,
-			      LoopStatsType *LoopStats)
+			      LoopStatsType *LoopStats,
+			      char       *routine,
+			      char       *program)
   {
    int next,temp;
 
@@ -1412,7 +2085,8 @@ static void WalkLoopsForStats(model_loop *loop_data,
        {
 	*inner_loops = *inner_loops + 1;
 	DumpPermutationStats(loop_data,loop,num_loops,inner_loops,LoopStats,
-			     ((config_type *)PED_MH_CONFIG(ped))->logfile);
+			     ((config_type *)PED_MH_CONFIG(ped))->logfile,
+			     ped,routine,program);
        }
      else
        {
@@ -1422,17 +2096,35 @@ static void WalkLoopsForStats(model_loop *loop_data,
 	while (next != -1)
 	  {
 	   WalkLoopsForStats(loop_data,next,num_loops+1,inner_loops,ped,
-			     LoopStats);
+			     LoopStats,routine,program);
 	   next = loop_data[next].next_loop;
 	  }
        }
   }
 
 
+/****************************************************************/
+/*                                                              */
+/*   Function:  memory_interchange_stats                        */
+/*                                                              */
+/*   Input:     ped - dependence graph handle                   */
+/*              root - ast index of outermost loop statement    */
+/*              level - level of root                           */
+/*              LoopStats - permutation statistics              */
+/*              symtab - symbol table                           */
+/*              ar - arena object for memory allocation         */
+/*                                                              */
+/*   Description: Driver for gathering loop permutation         */
+/*                statistics on a loop nest.                    */
+/*                                                              */
+/****************************************************************/
+
 void memory_interchange_stats(PedInfo       ped,
 			      AST_INDEX     root,
 			      int           level,
 			      LoopStatsType *LoopStats,
+			      char          *routine,
+			      char          *program,
 			      SymDescriptor symtab,
 			      arena_type    *ar)
 
@@ -1449,27 +2141,52 @@ void memory_interchange_stats(PedInfo       ped,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
+
+              /* build surrounding do information and initialize 
+		 scratch field in ast */
+
      walk_statements(root,level,ut_mark_do_pre,ut_mark_do_post,
 		     (Generic)&pre_info);
+
      if (pre_info.abort)
        return;
+
+             /* remove dependence edges not wanted */
+
      walk_statements(root,level,RemoveEdges,NOFUNC,(Generic)ped);
+
      loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 					 pre_info.loop_num*sizeof(model_loop));
+
+             /* build structure representing loop nest */
+
      ut_analyze_loop(root,loop_data,level,ped,symtab);
+
      if (loop_data[0].inner_loop == -1)
        return;
+
+             /* examine the iteration space shape for the loop nest */
+
      ut_check_shape(loop_data,0);
+
      loop_list = util_list_alloc((Generic)NULL,"loop-list");
      loop_data[0].heap = (heap_type *)ar->arena_alloc_mem(LOOP_ARENA,
 							  MAXLOOP*
 							  sizeof(heap_type));
+
+           /* compute permutatation information */
+
      walk_loops(loop_data,0,0,1,loop_list,loop_data[0].heap,symtab,ped,ar);
+
      util_list_free(loop_list);
      inner_loops = 0;
      fprintf(((config_type *)PED_MH_CONFIG(ped))->logfile,
 	     "*********************************************************\n\n");
      fprintf(((config_type *)PED_MH_CONFIG(ped))->logfile,
 	     "Statistics for New Loop Nest\n\n");
-     WalkLoopsForStats(loop_data,0,1,&inner_loops,ped,LoopStats);
+
+          /* print permutation statistics */
+
+     WalkLoopsForStats(loop_data,0,1,&inner_loops,ped,LoopStats,routine,
+		       program);
   }
