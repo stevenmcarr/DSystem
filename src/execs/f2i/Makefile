@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 1997/04/09 17:06:20 carr Exp $
+# $Id: Makefile,v 1.4 1999/07/22 18:10:17 carr Exp $
 
 HERE = execs/f2i
 
@@ -10,6 +10,10 @@ EXEC	= f2i-$(DSYSTEM_OS)-g
 
 DSYSTEM_LIBS = $(NLIBS)
 
-LOCAL_LIBS = -lm  -ll
+ifeq ($(DSYSTEM_OS),Linux)
+  LOCAL_LIBS = -lm  -fl
+else
+  LOCAL_LIBS = -lm  -ll
+endif
 
 include Makeinclude
