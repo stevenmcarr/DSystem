@@ -1,8 +1,8 @@
-# $Id: Makefile,v 1.12 1997/03/27 20:23:39 carr Exp $
+# $Id: Makefile,v 1.13 1997/10/30 15:10:35 carr Exp $
 HERE = libs/Memoria/dr
 ARCHIVE		= ../Memoria-$(DSYSTEM_OS)-g.a
-SRCS		= mh_config.c mh_walk.C
-DERIVED		= mh_config.c
+SRCS		= MemoriaConfig.c mh_walk.C
+DERIVED		= MemoriaConfig.c
 
 include Makeinclude
 
