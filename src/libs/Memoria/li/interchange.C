@@ -1,4 +1,4 @@
-/* $Id: interchange.C,v 1.15 1997/03/27 20:25:24 carr Exp $ */
+/* $Id: interchange.C,v 1.16 1997/04/09 18:37:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -69,7 +69,6 @@
 #endif
 
 #include <libs/Memoria/li/MemoryOrder.h>
-#include <libs/Memoria/include/FDgraph.h>
 #include <libs/frontEnd/ast/cd_branch.h>
 
 
@@ -135,95 +134,7 @@ static model_loop *PrepareLoopForInterchange(PedInfo       ped,
    
      return loop_data;
   }
-/*
-static void WalkLoopsToCheckForFuse(model_loop *loop_data,
-				    int        loop,
-				    int        num_loops,
-				    Boolean    *Interchange,
-				    Boolean    *Imperfect)
 
-  {
-   int next,i;
-   
-     if (loop_data[loop].inner_loop == -1)
-       for (i = 0; i < num_loops; i++)
-         if (loop_data[loop].FinalOrder[i] != loop_data[loop].MemoryOrder[i])
-	   *Interchange = true;
-	 else;
-     else
-       {
-	next = loop_data[loop].inner_loop;
-	while (next != -1)
-	  {
-	   WalkLoopsToCheckForFuse(loop_data,next,num_loops+1,Interchange,
-				   Imperfect);
-	   if ((next = loop_data[next].next_loop) != -1)
-	     *Imperfect = true;
-	  }
-       }
-  }
-
-static void WalkLoopsToPerformFusion(model_loop    *loop_data,
-				     int           loop,
-				     PedInfo       ped,
-				     SymDescriptor symtab,
-				     arena_type    *ar,
-				     Boolean       *Fuse)
-
-  {
-   Boolean any,all,Imperfect = false;
-   FDGraph *problem;
-   int next;
-   
-     next = loop_data[loop].inner_loop;
-     while (next != -1)
-       {
-	WalkLoopsToPerformFusion(loop_data,next,ped,symtab,ar,Fuse);
-	if ((next = loop_data[next].next_loop) != -1)
-	  Imperfect = true;
-       }
-     if (Imperfect)
-       if ((problem = fdBuildFusion(ped,loop_data[loop_data[loop].inner_loop].node,
-				    false)) != NULL)
-	 {
-	  fdGreedyFusion(ped,problem,true,&all,&any);
-	  if (all)
-	    {
-	     fprintf(stderr,"Fusion Candidates = %d\n",problem->size);
-	     fprintf(stderr,"Fusion Applied = %d\n",problem->types);
-	     fdDoFusion(ped,problem,loop_data[0].node);
-	     fdDestroyProblem(problem);
-	     *Fuse = true;
-	    }
-	  else
-	    fdDestroyProblem(problem);
-	 }
-  }
-
-
-static model_loop *TryFusionToEnableInterchange(model_loop    *loop_data,
-						PedInfo       ped,
-						SymDescriptor symtab,
-						arena_type    *ar)
-
-  {
-   Boolean Interchange = false, Imperfect = false, Fuse = false;
-
-     WalkLoopsToCheckForFuse(loop_data,0,1,&Interchange,&Imperfect);
-     if (Interchange && Imperfect)
-       {
-	WalkLoopsToPerformFusion(loop_data,0,ped,symtab,ar,&Fuse);
-	if (Fuse)
-	  {
-	   fprintf(stderr,"Fusion Has Been Performed To Enable Interchange\n");
-	   return(PrepareLoopForInterchange(ped,loop_data[0].node,
-					    loop_data[0].level,symtab,ar));
-	  }
-       }
-     return loop_data;
-  }
-
-*/
 /****************************************************************/
 /*                                                              */
 /*   Function:     add_edge                                     */
@@ -397,8 +308,7 @@ static void distribute_loop(model_loop    *loop_data,
 			    int           loop,
 			    PedInfo       ped,
 			    SymDescriptor symtab,
-			    arena_type    *ar,
-			    Boolean       Fusion)
+			    arena_type    *ar)
   {
    AST_INDEX stmt,
              stmt_list[MAXLOOP],
@@ -455,8 +365,8 @@ static void distribute_loop(model_loop    *loop_data,
 	   /* perform interchange on each new nest if it is separate*/
 	
 	if (loop_data[loop].parent == -1)
-	   memory_loop_interchange(ped,new_do,loop_data[loop].level,symtab,ar,
-				   Fusion);
+	   memory_loop_interchange(ped,new_do,loop_data[loop].level,symtab,ar);
+				   
        }
      walk_expression(stmt_list[0],(WK_EXPR_CLBACK)update_edges,NOFUNC,(Generic)&info);
      gen_DO_put_stmt_LIST(loop_data[loop].node,stmt_list[0]);
@@ -465,7 +375,7 @@ static void distribute_loop(model_loop    *loop_data,
 	   /* perform interchange on each new nest if it is separate*/
 	
        memory_loop_interchange(ped,loop_data[loop].node,loop_data[loop].level,
-			       symtab,ar,Fusion);
+			       symtab,ar);
      else
        /* perform interchange on whole new nest (may need outer distributions) */
        {
@@ -476,7 +386,7 @@ static void distribute_loop(model_loop    *loop_data,
 	   /* interchange only on outermost loop */
 
 	memory_loop_interchange(ped,loop_data[i].node,loop_data[i].level,
-				symtab,ar,Fusion);
+				symtab,ar);
        }
   }
 
@@ -997,8 +907,7 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 				      heap_type  *heap,
 				      SymDescriptor symtab,
 				      PedInfo    ped,
-				      arena_type *ar,
-				      Boolean    Fusion)
+				      arena_type *ar)
   {
    int next,temp;
    AST_INDEX stmt_list[MAXLOOP];
@@ -1018,7 +927,7 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 	if (loop_data[loop].inner_loop != -1)
 	  walk_loops_to_interchange(loop_data,loop_data[loop].inner_loop,
 				    loop_data[loop].inner_loop,num_loops+1,
-				    heap,symtab,ped,ar,Fusion);
+				    heap,symtab,ped,ar);
 	for (next = loop_data[loop].next_loop;
 	     next != -1;
 	     next = temp)
@@ -1032,7 +941,7 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 
 	   heap = loop_data[next].heap;
 	   walk_loops_to_interchange(loop_data,next,next,num_loops,heap,symtab,
-				     ped,ar,Fusion);
+				     ped,ar);
 	   loop_data[next].next_loop = temp;
 	  }
 	}  
@@ -1048,11 +957,10 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 	    perform_interchange(loop_data,heap,loop,num_loops,symtab,ped,ar);
 	  else
 	    walk_loops_to_interchange(loop_data,loop_data[loop].inner_loop,
-				      outermost,num_loops+1,heap,symtab,ped,ar,
-				      Fusion);
+				      outermost,num_loops+1,heap,symtab,ped,ar);
 	 }
        else
-	 distribute_loop(loop_data,loop,ped,symtab,ar,Fusion);
+	 distribute_loop(loop_data,loop,ped,symtab,ar);
      else
        {
 
@@ -1061,7 +969,7 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 
 	if (NOT(levels_in_order(heap,loop_data,loop_data[loop].parent,
 				loop_data[loop].level-1,outermost)))
-	  distribute_loop(loop_data,loop_data[loop].parent,ped,symtab,ar,Fusion);
+	  distribute_loop(loop_data,loop_data[loop].parent,ped,symtab,ar);
 	else
 	  {
 
@@ -1078,7 +986,7 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 	      loop_data[next].next_loop = -1;
 
 	      walk_loops_to_interchange(loop_data,next,next,num_loops,
-					heap,symtab,ped,ar,Fusion);	   
+					heap,symtab,ped,ar);	   
 	      loop_data[next].next_loop = temp;
 	      next = temp;
 	      heap = loop_data[next].heap;
@@ -1108,8 +1016,7 @@ void memory_loop_interchange(PedInfo       ped,
 			     AST_INDEX     root,
 			     int           level,
 			     SymDescriptor symtab,
-			     arena_type    *ar,
-			     Boolean       Fusion)
+			     arena_type    *ar)
 
   {
    model_loop *loop_data;
@@ -1118,12 +1025,9 @@ void memory_loop_interchange(PedInfo       ped,
      if ((loop_data = PrepareLoopForInterchange(ped,root,level,symtab,ar)) == NULL)
        return;
 
-/*      if (Fusion)
-       loop_data = TryFusionToEnableInterchange(loop_data,ped,symtab,ar);
-*/
-       /* reorder loop nests as necessary */
+     /* reorder loop nests as necessary */
 
      walk_loops_to_interchange(loop_data,0,0,1,loop_data[0].heap,symtab,ped,
-			       ar,Fusion);
+			       ar);
 
   }

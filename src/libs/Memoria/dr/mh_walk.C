@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.43 1997/03/27 20:23:39 carr Exp $ */
+/* $Id: mh_walk.C,v 1.44 1997/04/09 18:33:13 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -50,7 +50,6 @@
 #endif
 
 #include <libs/frontEnd/fortTextTree/FortTextTree.h>
-#include <libs/Memoria/include/FDgraph.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/PedExtern.h>
 
 extern char *mc_program;
@@ -270,13 +269,12 @@ static void InterchangeStats(AST_INDEX      stmt,
 
 static void Interchange(AST_INDEX      stmt,
 			int            level,
-			walk_info_type *walk_info,
-			Boolean        Fusion)
+			walk_info_type *walk_info)
   {
       /* perform loop interchange */
    memory_loop_interchange(walk_info->ped,stmt,
 			   LEVEL1,walk_info->symtab,
-			   walk_info->ar,Fusion);
+			   walk_info->ar);
 
      /* re-initialize scratch field (no dangling pointers) */
    walk_expression(stmt,set_scratch,NOFUNC,
@@ -581,7 +579,7 @@ static int post_walk(AST_INDEX      stmt,
       switch(walk_info->selection) {
 	case LI_STATS:       InterchangeStats(stmt,level,walk_info);
 	                     break;
-	case INTERCHANGE:    Interchange(stmt,level,walk_info,false);
+	case INTERCHANGE:    Interchange(stmt,level,walk_info);
 	                     break;
 	case SCALAR_REP:     ScalarReplacement(stmt,level,walk_info);
 	                     break;
@@ -609,15 +607,13 @@ static int post_walk(AST_INDEX      stmt,
 			       }
 			     ScalarReplacement(stmt,level,walk_info);
 	                     break;
-	case LI_SCALAR:      Interchange(stmt,level,walk_info,false);
+	case LI_SCALAR:      Interchange(stmt,level,walk_info);
 			     ScalarReplacement(stmt,level,walk_info);
 	                     break;
-	case LI_UNROLL:      Interchange(stmt,level,walk_info,false);
+	case LI_UNROLL:      Interchange(stmt,level,walk_info);
 			     (void)UnrollAndJam(stmt,level,walk_info);
 	                     break;
-	case LI_FUSION:      Interchange(stmt,level,walk_info,true);
-	                     break;
-	case MEM_ALL:        Interchange(stmt,level,walk_info,true);
+	case MEM_ALL:        Interchange(stmt,level,walk_info);
 			     new_stmt = UnrollAndJam(stmt,level,walk_info);
 
 			        /* perform scalar replacement on each of the
@@ -643,7 +639,6 @@ static int post_walk(AST_INDEX      stmt,
 	                     break;
 	case CACHE_ANALYSIS: PerformCacheAnalysis(stmt,level,walk_info);
 			     break;
-	case FUSION:         break;
        }
       return(WALK_FROM_OLD_NEXT);
      } 
@@ -657,75 +652,6 @@ static int post_walk(AST_INDEX      stmt,
   }
 
 
-static int TryFusionToCleanup(AST_INDEX stmt,
-			      int       level,
-			      PedInfo   ped)
-
-  {
-   FDGraph *problem;
-   Boolean   all, any, free;
-   int       depth;
-   AST_INDEX scope;
-
-     if (is_do(stmt) && level == LEVEL1)
-       {
-    
- 
-	problem = fdBuildFusion(ped, stmt, false, FD_ALL);
-	free    = false;
-	if (problem == NULL)
-	  return(WALK_CONTINUE);
-
-	fdGreedyFusion(ped, problem, false, &all, &any);
-   
-	for (depth = problem->depth; depth >= 1 ;  )
-	  {     
-	   /* Do the fusion */ 
-	   if (any)
-	     {
-	      scope = find_scope(stmt);
-
-	      fdDoFusion(ped, problem);
-	      
-	      pedReinitialize(ped);
-
-	      fprintf(stderr, "Fusion Performed to Improve Cache Performance\n");
-	      fprintf(stderr, "Fusion Candidates = %d\n", problem->size);
-	      fprintf(stderr, "Fusion Applied = %d\n", problem->types);
-	      if (all)
-		depth--;
-	     }
-	   else
-	     depth--;
-
-	   fdDestroyProblem(problem);
-	   free = true;
-
-	   /* try again at this depth (if all = false) because fusion may 
-	    * change reuse between loops, if no fusions, go shallower,
-	    * 
-	    */
-	   for ( ; depth >= 1; depth--)
-	     {
-	      problem = fdBuildFusion(ped, stmt, false, depth);
-	      free    = false;
-	      if (problem != NULL)
-		break;
-	     }
-	   if ((problem == NULL) || (depth < 1))
-	     break;
-
-	   else 
-	     fdGreedyFusion(ped, problem, false, &all, &any);
-	  }
-	if ((!free) && problem != NULL)
-	  fdDestroyProblem(problem);
-	return(WALK_CONTINUE);
-       }
-     return(WALK_CONTINUE);
-  }
-
- 
 /****************************************************************************/
 /*                                                                          */
 /*   Function:   build_label_symtab                                         */
@@ -1314,7 +1240,7 @@ void mh_walk_ast(int          selection,
      walk_info.ft = ft;
      walk_info.ftt = PED_FTT(ped);
      walk_info.ar = ar;
-     walk_info.program = mod_context->ReferenceFilePathName(); 
+     walk_info.program = (char *)mod_context->ReferenceFilePathName(); 
      walk_info.LoopStats = (LoopStatsType *)calloc(1,sizeof(LoopStatsType));
      
      walk_info.MainProgram = false;
@@ -1327,9 +1253,6 @@ void mh_walk_ast(int          selection,
 		     (WK_STMT_CLBACK)ut_change_logical_to_block_if,(Generic)NULL);
      walk_statements(root,LEVEL1,(WK_STMT_CLBACK)pre_walk,(WK_STMT_CLBACK)post_walk,
 		     (Generic)&walk_info);
-     if (selection == FUSION || selection == LI_FUSION)
-       walk_statements(root,LEVEL1,(WK_STMT_CLBACK)TryFusionToCleanup,NOFUNC,
-		       (Generic)ped);
      walk_statements(root,LEVEL1,(WK_STMT_CLBACK)build_label_symtab,
 		     (WK_STMT_CLBACK)check_labels,(Generic)&walk_info);
      walk_statements(root,LEVEL1,(WK_STMT_CLBACK)get_symtab_for_decls,NOFUNC,

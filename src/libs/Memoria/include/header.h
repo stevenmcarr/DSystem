@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.18 1997/03/27 20:24:47 carr Exp $ */
+/* $Id: header.h,v 1.19 1997/04/09 18:40:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -40,7 +40,7 @@ EXTERN(void, memory_interchange_stats,(PedInfo ped,AST_INDEX root,
 
 EXTERN(void, memory_loop_interchange,(PedInfo ped,AST_INDEX root,
 				      int level,SymDescriptor symtab,
-				      arena_type *ar, Boolean Fusion));
+				      arena_type *ar));
 
 EXTERN(AST_INDEX, memory_unroll_and_jam,(PedInfo ped,AST_INDEX root,
 					 int level,int num_loops,

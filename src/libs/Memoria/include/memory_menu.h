@@ -1,4 +1,4 @@
-/* $Id: memory_menu.h,v 1.13 1997/03/20 15:49:33 carr Exp $ */
+/* $Id: memory_menu.h,v 1.14 1997/04/09 18:40:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -18,17 +18,15 @@
 #define MEM_ALL			6 
 #define PREFETCH                7
 #define ANNOTATE                8
-#define LI_FUSION		9
-#define CACHE_ANALYSIS          10
-#define LI_STATS                11
-#define UJ_STATS                12
-#define SR_STATS                13
-#define STATS			14
-#define FUSION                  15
-#define LDST		        16
-#define DEAD			17    
-#define PARTITION_UNROLL	18    
-#define MEM_SIZE		19    /* MUST BE LAST! */
+#define CACHE_ANALYSIS          9
+#define LI_STATS                10
+#define UJ_STATS                11
+#define SR_STATS                12
+#define STATS			13
+#define LDST		        14
+#define DEAD			15    
+#define PARTITION_UNROLL	16    
+#define MEM_SIZE		17    /* MUST BE LAST! */
 
 #define ARENAS 1
 
