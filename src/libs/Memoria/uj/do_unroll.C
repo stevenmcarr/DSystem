@@ -184,7 +184,7 @@ static int create_ref_lists(AST_INDEX node,
 	if (get_info(ped,get_subscript_ptr(name)->original,type_levelv) >= 0)
 	  {
 	   ref = dg_alloc_ref_list( PED_DG(ped));
-	   create_info(ped,name);
+	   create_info(PED_INFO(ped),name);
 	   put_info(ped,name,type_levelv,ref);
 	  }
        }
@@ -228,7 +228,7 @@ static void set_level_vectors(AST_INDEX old_list,
 	   v_size = dg_length_level_vector( PED_DG(ped),
 					   get_info(ped,old,type_levelv));
 	   vector = dg_alloc_level_vector( PED_DG(ped),v_size);
-	   create_info(ped,newa);
+	   create_info(PED_INFO(ped),newa);
 	   put_info(ped,newa,type_levelv,vector);
 	   walk_expression(newa,create_ref_lists,NOFUNC,(Generic)ped);
 	  }
