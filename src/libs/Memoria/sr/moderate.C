@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.9 1994/06/13 16:12:08 carr Exp $ */
+/* $Id: moderate.C,v 1.10 1994/06/30 14:35:52 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -674,15 +674,17 @@ void sr_moderate_pressure(PedInfo  ped,
        {
 	fprintf(logfile,"FP Register Pressure = %d\n",
 	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs));
+        LoopStats->FPRegisterPressure += 
+	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs);
 	fprintf(logfile,"Free Registers = %d\n",free_regs-regs);
 	LoopStats->ActualFPRegisterPressure += 
 	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs);
-	return;
        }
      if (regs > free_regs)
        {
 
 	/* GET SPILL STATS HERE */
+	++ LoopStats->NumLoopSpilled;
 
 	if (logfile != NULL)
 	  fprintf(logfile,"need to spill registers\n");
@@ -696,7 +698,11 @@ void sr_moderate_pressure(PedInfo  ped,
 	/* GET REGS AFTER SPILLING HERE */
 
         do_allocation(glist,allocate,opt_allocate,&free_regs,heap,size,ped,ar);
+        size = 0;
+        regs = 0;
+        build_cost_info(glist,&size,&regs,ped);
        }
    *redo = false;
+   LoopStats->NumRefRep += size;
    complete_temp_names(glist,redo,array_table);
   }

@@ -1,4 +1,4 @@
-/* $Id: block.C,v 1.5 1994/06/13 16:11:58 carr Exp $ */
+/* $Id: block.C,v 1.6 1994/06/30 14:35:35 carr Exp $ */
 /****************************************************************************/
 /*  block.c                                                                 */
 /*                                                                          */
@@ -278,7 +278,8 @@ static void link_basic_blocks(flow_graph_type *flow_graph,
 void sr_build_flow_graph(flow_graph_type *flow_graph,
 			 AST_INDEX stmt_list,
   			 SymDescriptor symtab,
-			 arena_type *ar)
+			 arena_type *ar,
+			 LoopStatsType *loopstats)
 
 /****************************************************************************/
 /*                                                                          */
@@ -303,6 +304,8 @@ void sr_build_flow_graph(flow_graph_type *flow_graph,
 				&block_num,ar);
 
    /* # BASIC BLOCKS IS CONTAINED IN block_num */
+   /* printf("number of basic block = %d\n", block_num); */
+     loopstats->NumBasicBlock += block_num;
 
      link_basic_blocks(flow_graph,symtab,ar);
      block->next = flow_graph->exit;

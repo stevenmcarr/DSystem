@@ -1,4 +1,4 @@
-/* $Id: scalar.h,v 1.6 1993/07/20 16:33:44 carr Exp $ */
+/* $Id: scalar.h,v 1.7 1994/06/30 14:36:06 carr Exp $ */
 
 #ifndef scalar_h
 #define scalar_h
@@ -49,7 +49,10 @@ typedef struct preliminfotype {
                    level,
                    stmt_num;
   Boolean          contains_cf,
-                   contains_goto,
+                   contains_goto_or_label,
+		   premature_exit,
+		   backjump,
+                   illegal_jump,
                    jumps_ok;
   array_table_type *array_table;
   SymDescriptor    symtab;

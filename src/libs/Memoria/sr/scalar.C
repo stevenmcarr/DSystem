@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.15 1994/06/16 15:48:22 yguan Exp $ */
+/* $Id: scalar.C,v 1.16 1994/06/30 14:36:04 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -138,7 +138,7 @@ static int count_arrays(AST_INDEX          node,
 	     else if (gen_get_converted_type(node) == TYPE_COMPLEX)
 	       prelim_info->scalar_regs += 2;
 	    }
-	  fst_PutField(prelim_info->symtab,gen_get_text(node),REFS,++refs);
+	  fst_PutField(prelim_info->symtab,(int)gen_get_text(node),REFS,++refs);
 	 }
      return(WALK_CONTINUE);
   }
@@ -162,6 +162,7 @@ static int get_prelim_info(AST_INDEX          stmt,
        return(WALK_CONTINUE);
      if ((label = gen_get_label(stmt)) != AST_NIL)
        {
+	prelim_info->contains_goto_or_label = true;
 	set_label_sym_index(label,fst_QueryIndex(prelim_info->symtab,
 						 gen_get_text(label)));
 	fst_PutFieldByIndex(prelim_info->symtab,get_label_sym_index(label),
@@ -195,7 +196,7 @@ static int get_prelim_info(AST_INDEX          stmt,
      else if (is_arithmetic_if(stmt))
        {
 	prelim_info->contains_cf = true;
-	prelim_info->contains_goto = true;
+	prelim_info->contains_goto_or_label = true;
 	walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),count_arrays,NOFUNC,
 			(Generic)prelim_info);
        }
@@ -204,7 +205,7 @@ static int get_prelim_info(AST_INDEX          stmt,
      else if (is_goto(stmt) || is_computed_goto(stmt))
        {
 	prelim_info->contains_cf = true;
-	prelim_info->contains_goto = true;
+	prelim_info->contains_goto_or_label = true;
        }
      else if (is_call(stmt))
        walk_expression(gen_CALL_get_invocation(stmt),count_arrays,NOFUNC,
@@ -225,6 +226,8 @@ static int check_gotos(AST_INDEX        stmt,
    fst_index_t index1,
                index2,
                index3;
+   
+
 
      if (is_goto(stmt))
        {
@@ -234,12 +237,14 @@ static int check_gotos(AST_INDEX        stmt,
 					     LBL_STMT)) == AST_NIL)
 	  {
 	   prelim_info->jumps_ok = false;
+	   prelim_info->premature_exit = true;
 	   return(WALK_ABORT);
 	  }
 	else if (get_stmt_info_ptr(stmt)->stmt_num >=
 		get_stmt_info_ptr(lbl_stmt1)->stmt_num)
 	  {
 	   prelim_info->jumps_ok = false;
+	   prelim_info->backjump = true;
 	   return(WALK_ABORT);
 	  }
 	else
@@ -266,6 +271,7 @@ static int check_gotos(AST_INDEX        stmt,
 					     LBL_STMT)) == AST_NIL)
 	 {
 	  prelim_info->jumps_ok = false;
+	  prelim_info->premature_exit = true;
 	  return(WALK_ABORT);
 	 }
        else if (get_stmt_info_ptr(stmt)->stmt_num >=
@@ -276,6 +282,7 @@ static int check_gotos(AST_INDEX        stmt,
 		get_stmt_info_ptr(lbl_stmt3)->stmt_num)
 	 {
 	  prelim_info->jumps_ok = false;
+	  prelim_info->backjump = true;
 	  return(WALK_ABORT);
 	 }
        else
@@ -306,11 +313,13 @@ static int check_gotos(AST_INDEX        stmt,
 						LBL_STMT)) == AST_NIL)
 	     {
 	      prelim_info->jumps_ok = false;
+	      prelim_info->premature_exit = true;
 	      return(WALK_ABORT);
 	     }
 	   else if (stmt_num >= get_stmt_info_ptr(lbl_stmt1)->stmt_num)
 	     {
 	      prelim_info->jumps_ok = false;
+	      prelim_info->backjump = true;
 	      return(WALK_ABORT);
 	     }
 	   else
@@ -325,6 +334,28 @@ static int check_gotos(AST_INDEX        stmt,
      return(WALK_CONTINUE);
   }
 
+
+static int check_illegal_jumps (AST_INDEX        stmt,
+				int              level,
+				prelim_info_type *prelim_info)
+
+  {
+   AST_INDEX label;
+   fst_index_t index1;
+
+     if ((label = gen_get_label(stmt)) != AST_NIL)
+       {		       
+	index1 = fst_QueryIndex(prelim_info->symtab,gen_get_text(label));
+	if (fst_GetFieldByIndex(prelim_info->symtab,index1,REFS) == 0)
+	  {
+	   prelim_info->illegal_jump = true;
+	   prelim_info->jumps_ok = false;
+	   return(WALK_ABORT);
+	  }
+       }
+     return(WALK_CONTINUE);
+  }
+	
 
 static int get_expr_regs(AST_INDEX     node,
 			 reg_info_type *reg_info)
@@ -542,8 +573,11 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      prelim_info.def_num = 0;
      prelim_info.stmt_num = 0;
      prelim_info.contains_cf = false;
-     prelim_info.contains_goto = false;
+     prelim_info.contains_goto_or_label = false;
      prelim_info.jumps_ok = true;
+     prelim_info.premature_exit = false;
+     prelim_info.backjump = false;
+     prelim_info.illegal_jump = false;
      prelim_info.ped = do_info->ped;
      prelim_info.level = level;
      prelim_info.ar = do_info->ar;
@@ -554,20 +588,32 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      fst_InitField(do_info->symtab,NEW_LBL_INDEX,SYM_INVALID_INDEX,0);
      prelim_info.symtab = do_info->symtab;
      walk_statements(root,level,get_prelim_info,NOFUNC,(Generic)&prelim_info);
-     if (prelim_info.contains_goto)
+     if (prelim_info.contains_goto_or_label)
        {
 	walk_statements(loop_body,level,check_gotos,NOFUNC,
+			(Generic)&prelim_info);
+	walk_statements(loop_body,level,check_illegal_jumps,NOFUNC,
 			(Generic)&prelim_info);
 	if (!prelim_info.jumps_ok)
 	  {
 	   
 	   /* INCREMENT BAD CONTROL FLOW HERE */
+	   ++ do_info->LoopStats->Numbadflow;
+	   if(prelim_info.premature_exit == true)
+              ++ do_info->LoopStats->NumLoop_badexit;
+           else if (prelim_info.backjump == true)
+	      ++ do_info->LoopStats->NumLoop_backjump;
+	   else if (prelim_info.illegal_jump)
+	      printf("ILLEGAL JUMP\n");
+	   else printf("What kind bad flow !!\n");
 
 	   if (logfile != NULL)
 	     fprintf(logfile,"bad control flow\n");
 	   return;
 	  }
        }
+
+
      prelim_info.array_table = (array_table_type *)
        do_info->ar->arena_alloc_mem_clear(LOOP_ARENA,prelim_info.array_refs*
 					  sizeof(array_table_type));
@@ -575,6 +621,10 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 		     (Generic)&prelim_info);
      if (prelim_info.array_refs == 0)
        return;
+
+       /* increment the number of loops repaced */ 
+     ++ do_info->LoopStats->NumLoopReplaced;
+
      check_info.size = prelim_info.array_refs;
      check_info.LC_kill = ut_create_set(do_info->ar,LOOP_ARENA,
 					check_info.size);
@@ -582,7 +632,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      check_info.ar = do_info->ar;
      check_info.level = level;
      sr_check_inconsistent_edges(loop_body,&check_info);
-     sr_build_flow_graph(&flow_graph,loop_body,prelim_info.symtab,do_info->ar);
+     sr_build_flow_graph(&flow_graph,loop_body,prelim_info.symtab,do_info->ar,
+			 do_info->LoopStats);
      sr_perform_avail_analysis(flow_graph,check_info);
      sr_perform_rgen_analysis(flow_graph,check_info);
      sr_pick_possible_generators(flow_graph,level,&prelim_info,do_info->ped);
@@ -663,10 +714,17 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 	bal_info.ped = do_info->ped;
 	walk_expression(root,compute_balance,NOFUNC,(Generic)&bal_info);
 	if (bal_info.flops > 0)
+         {
 	  fprintf(logfile,"Final Loop Balance = %.4f\n",
 		  ((float) bal_info.mem)/((float) bal_info.flops));
+          do_info->LoopStats->LoopBal += 
+		     (float) bal_info.mem/(float) bal_info.flops;
+         }
 	else
+	 {
 	  fprintf(logfile,"Final Loop Balance = 0.0\n");
+	  do_info->LoopStats->LoopBal += 0.0;
+         }
        }
      fst_KillField(do_info->symtab,LBL_STMT);
      fst_KillField(do_info->symtab,REFS);
@@ -764,13 +822,16 @@ static int post_scalar(AST_INDEX     stmt,
    if is_do(stmt) 
      {
       if (do_info->inner_do == 0)
-        if (!do_info->abort)
-	  {
-	   do_info->do_num++;
-	   perform_scalar_replacement(do_info,stmt,level);
-	  }
-	else
-	  do_info->abort = false;
+        {
+          if (!do_info->abort)
+	    {
+	     do_info->do_num++;
+	     ++ do_info->LoopStats->NumInnermostLoop; 
+	     perform_scalar_replacement(do_info,stmt,level);
+	    }
+	  else
+	    do_info->abort = false;
+	}
       do_info->inner_do = 1;
      }
    return(WALK_FROM_OLD_NEXT);
