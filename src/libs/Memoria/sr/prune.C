@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.14 1997/03/27 20:27:20 carr Exp $ */
+/* $Id: prune.C,v 1.15 1998/06/01 15:40:39 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -54,7 +54,8 @@ static void MarkAllSinksAsNotScalar(PedInfo ped,
 static void prune_dependence_edges(AST_INDEX     node,
 				   int           distance,
 				   gen_info_type *gen_info,
-				   Boolean&      Invariant)
+				   Boolean&      Invariant,
+				   Boolean&      Recurrence)
 
 /****************************************************************************/
 /*                                                                          */
@@ -109,21 +110,14 @@ static void prune_dependence_edges(AST_INDEX     node,
 			  get_stmt_info_ptr(sink_stmt)->stmt_num) &&
 			  edge_dist == 1 && !scalar_sink->prevent_rec &&
 			 !scalar_src->prevent_rec)
-
-		       /* set to false for now, most of the time this can
-			  be true, but there are cases that fail, see
-			  psmoo_i.f in {carr flo52} in the database. 
-			  When loop independent intrastatement 
-			  anti dependences are added this can be changed 
-			  back to true.*/
-
-			scalar_src->recurrence = false;
+		       scalar_src->recurrence = true;
 		     else if (edge_dist != 0)
 		       {
 			scalar_src->recurrence = false;
 			scalar_src->prevent_rec = true;
 		       }
-		     if (edge_dist > distance)
+		     if (edge_dist > distance && 
+			 NOT(scalar_src->recurrence && ReplaceLevel > 1))
 		       dg_delete_free_edge( PED_DG(gen_info->ped),edge);
 		    }
 		  else
@@ -149,6 +143,7 @@ static void prune_dependence_edges(AST_INDEX     node,
        {
 	name=gen_SUBSCRIPT_get_name(gen_info->array_table[scalar_sink->generator].node);
 	Invariant = BOOL(scalar_sink->scalar || get_scalar_info_ptr(name)->scalar);
+	Recurrence = get_scalar_info_ptr(name)->recurrence;
        }
   }
 
@@ -164,6 +159,7 @@ static int check_gen(AST_INDEX       node,
    AST_INDEX        name;
    scalar_info_type *scalar_info;
    Boolean Invariant = false;
+   Boolean Recurrence = false;
 
      if (is_subscript(node))
        {
@@ -174,22 +170,22 @@ static int check_gen(AST_INDEX       node,
 	/* no generator */
 
 	  {
-	   prune_dependence_edges(name,-2,gen_info,Invariant);
+	   prune_dependence_edges(name,-2,gen_info,Invariant,Recurrence);
 	   if (Invariant && (ReplaceLevel < 2 || ReplaceLevel == 5))
 	     scalar_info->scalar = false;
 	  }
 	else if (!scalar_info->is_consistent || !scalar_info->constant)
 	  {
 	   scalar_info->generator = -1;
-	   prune_dependence_edges(name,-2,gen_info,Invariant);
+	   prune_dependence_edges(name,-2,gen_info,Invariant,Recurrence);
 	  }
 	else if (scalar_info->gen_type == LIAV && ReplaceLevel > 0)
 
 	/* loop-independent available generator */
 
-	  prune_dependence_edges(name,0,gen_info,Invariant);
+	  prune_dependence_edges(name,0,gen_info,Invariant,Recurrence);
 	else if (scalar_info->gen_type == LIPAV && ReplaceLevel > 6)
-	  prune_dependence_edges(name,0,gen_info,Invariant);
+	  prune_dependence_edges(name,0,gen_info,Invariant,Recurrence);
 	else if (scalar_info->gen_type == LCAV &&
 		 ((scalar_info->gen_distance == 1 && ReplaceLevel > 1 &&
 		   ReplaceLevel != 5) ||
@@ -200,18 +196,19 @@ static int check_gen(AST_INDEX       node,
 
 	  {
 	   prune_dependence_edges(name,scalar_info->gen_distance,
-				  gen_info,Invariant);
-	   if (ReplaceLevel < 3 && NOT(Invariant))
+				  gen_info,Invariant,Recurrence);
+	   if (ReplaceLevel < 3 && NOT(Invariant) && NOT(Recurrence))
 	     {
 	      scalar_info->generator = -1;
-	      prune_dependence_edges(name,-2,gen_info,Invariant);
+	      prune_dependence_edges(name,-2,gen_info,Invariant,Recurrence);
 	     }
 	  }
 	else if (scalar_info->gen_type == LCPAV && ReplaceLevel == 8)
 	  {
 	    /* loop-carried partially available generator */
 
-	    prune_dependence_edges(name,scalar_info->gen_distance,gen_info,Invariant);
+	    prune_dependence_edges(name,scalar_info->gen_distance,gen_info,Invariant,
+				   Recurrence);
 	    
 	    if (scalar_info->gen_type != LCPAV ||
 		(!ut_member_number(gen_info->entry->LC_antic_in,
@@ -224,7 +221,7 @@ static int check_gen(AST_INDEX       node,
 
 	      {
 		scalar_info->generator = -1;
-		prune_dependence_edges(name,-2,gen_info,Invariant);
+		prune_dependence_edges(name,-2,gen_info,Invariant,Recurrence);
 		scalar_info->scalar = false;  /* invariant code motion
 						    is unsafe if PAV */
 	      }
@@ -232,7 +229,7 @@ static int check_gen(AST_INDEX       node,
 	else
 	  {
 	   scalar_info->generator = -1;
-	   prune_dependence_edges(name,-2,gen_info,Invariant);
+	   prune_dependence_edges(name,-2,gen_info,Invariant,Recurrence);
 	  }
        }
    return(WALK_CONTINUE);
