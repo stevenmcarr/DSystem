@@ -1,4 +1,4 @@
-/* $Id: la.C,v 1.2 1997/03/27 20:29:09 carr Exp $ */
+/* $Id: la.C,v 1.3 1997/10/30 15:19:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -62,6 +62,30 @@ void DataReuseModel::PrintOut()
   e->PrintOut();
   ++ i;
  }
+}
+
+Boolean DataReuseModel::IsGroupSpatialLeader(AST_INDEX node)
+
+{
+  DRIter ReuseIter(*this);
+  Boolean IsLeader = false;
+  DataReuseModelEntry *ReuseEntry;
+
+  while ((ReuseEntry = ReuseIter()) != NULL && NOT(IsLeader))
+    IsLeader = ReuseEntry->IsGroupSpatialLeader(node);
+  return IsLeader;
+}
+
+Boolean DataReuseModelEntry::IsGroupSpatialLeader(AST_INDEX node)
+
+{
+  GSSetIter GSIter(*gsset);
+  Boolean IsLeader = false;
+  GroupSpatialEntry *GSEntry;
+
+  while ((GSEntry = GSIter()) != NULL && NOT(IsLeader))
+    IsLeader = BOOL(GSEntry->LeaderNode() == node);
+  return IsLeader;
 }
 
 DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse)

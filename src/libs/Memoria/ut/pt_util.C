@@ -1,4 +1,4 @@
-/* $Id: pt_util.C,v 1.1 1997/04/30 15:22:22 carr Exp $ */
+/* $Id: pt_util.C,v 1.2 1997/10/30 15:19:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -2068,4 +2068,5 @@ pt_gen_mod(AST_INDEX arg1, AST_INDEX arg2)
 	return gen_INVOCATION(pt_gen_ident("mod"), 
 		list_append(list_create(arg1),list_create(arg2)));
 }
+
 

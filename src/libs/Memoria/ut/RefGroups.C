@@ -1,4 +1,4 @@
-/* $Id: RefGroups.C,v 1.4 1997/06/25 15:25:14 carr Exp $ */
+/* $Id: RefGroups.C,v 1.5 1997/10/30 15:19:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -446,7 +446,7 @@ void RefGroupSet::BuildRefGroupsWithUGS()
   {
    UniformlyGeneratedSetsEntry *UGSEntry;
    RefGroupMember *RefGroup;
-   IntegerList UGSTemp;
+   GenericList UGSTemp;
    AST_INDEX node,newnode;
    Boolean DoCompare = false;
    UGSIterator UGSIter(*UGS);

@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.C,v 1.6 1997/06/25 15:25:14 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.C,v 1.7 1997/10/30 15:19:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -468,9 +468,9 @@ void UniformlyGeneratedSetsEntry::PrintOut()
 
 AST_INDEX UGSEntryIterator::operator() ()
 {
-IntegerListEntry *e;
+GenericListEntry *e;
 
-     e = IntegerListIter::operator()();
+     e = GenericListIter::operator()();
      if( e != NULL )
          return (AST_INDEX)( e->GetValue());
      else return NULL;
@@ -648,9 +648,9 @@ Boolean UniformlyGeneratedSets::NodeHasSelfTemporalReuse(AST_INDEX node)
 
 UniformlyGeneratedSetsEntry* UGSIterator::operator() ()
 {
-     IntegerListEntry *e;
+     GenericListEntry *e;
 
-     e = IntegerListIter::operator()();
+     e = GenericListIter::operator()();
      if ( e != NULL )
        return (UniformlyGeneratedSetsEntry*)(e->GetValue());
      else return NULL;
