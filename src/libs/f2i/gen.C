@@ -1,4 +1,4 @@
-/* $Id: gen.C,v 1.13 2002/02/20 16:18:34 carr Exp $ */
+/* $Id: gen.C,v 1.14 2002/03/18 22:14:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -43,7 +43,7 @@ void generate(int label, int op, Generic r1, Generic r2, Generic r3, char *Initi
 //   char *comment;
 //   int label, op, r1, r2, r3;
 {
-    char comment[80];
+    char *comment = new char[strlen(InitialComment)+20];
     /* return if no output is to be generated */
     if (aiGenerate != 0)
      return;
@@ -212,6 +212,7 @@ void generate(int label, int op, Generic r1, Generic r2, Generic r3, char *Initi
     else (void) fprintf(stdout, "\n");
 
   aiNumInstructions++;
+  delete comment;
 } /* generate */
 
 
@@ -224,7 +225,7 @@ void generate_long(int label, int op, Generic r1, Generic r2, Generic r3,
 //   int label, op, r1, r2, r3, r4, r5, r6, r7;
 {
 
-  char comment[80];
+  char *comment = new char[strlen(InitialComment)+20];
 
   /* return if no output is to be generated */
   if (aiGenerate != 0)
@@ -399,6 +400,7 @@ void generate_long(int label, int op, Generic r1, Generic r2, Generic r3,
   else (void) fprintf(stdout, "\n");
   
   aiNumInstructions++;
+  delete comment;
 } /* generate_long */
 
 
