@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.3 1997/04/24 14:06:18 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.4 1997/10/30 15:31:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -52,6 +52,7 @@ void MemoriaOptionsUsage(char *pgm_name)
   puts("         -u  do unroll-and-jam without cache model");
   puts("         -w#  do unroll-and-jam for partitioned register files");
   puts("         -U  do unroll-and-jam with cache model");
+  puts("         -S  do depencence statistics");
   puts("         -D  issue DEAD instructions for dead cache lines");
   puts("         -P  program composition");
   puts("         -M  Fortran module");
@@ -61,6 +62,17 @@ void MemoriaOptionsUsage(char *pgm_name)
   fflush(stdout);
   exit(-1);
 }
+
+static void mc_opt_dependence_stats(void *state)
+{
+  select_char = 'S';
+  switch(selection) {
+  case NO_SELECT:
+    selection = DEP_STATS;
+    break;
+  default:
+    mc_options_usage("mc");
+  }
 
 static void mc_set_dependence_level(void *state,Generic level)
 
@@ -378,6 +390,11 @@ static struct flag_	statistics_f = {
   "report locality and loop permutation statistics",
 };
 
+static struct flag_	dependence_stats_f = {
+  mc_opt_dependence_stats,
+  "dependence statistics",
+  "report dependence statistics",
+};
 
 static struct flag_	annotate_f = {
   mc_opt_annotate,
@@ -507,8 +524,9 @@ int MemoriaInitOptions(int argc, char **argv)
     *mc_extended_cache_flag = InitOption(flag,MC_EXTENDED_CACHE_FLAG,(Generic)false,true,
 					 (Generic)&extended_cache_f),
     *RestrictedUnrolling_flag = InitOption(flag,MC_RESTRICTED_FLAG,(Generic)false,true,
-					   (Generic)&RestrictedUnrolling_f);
-
+					   (Generic)&RestrictedUnrolling_f),
+    *mc_dep_stats_flag = InitOption(flag,MC_DEPENDENCE_STATS_FLAG,(Generic)false,true,
+				    (Generic)&dependence_stats_f);
   MemoriaOptions.Add(mc_mod_opt);
   MemoriaOptions.Add(mc_pgm_opt);
   MemoriaOptions.Add(mc_lst_opt);
@@ -523,6 +541,7 @@ int MemoriaInitOptions(int argc, char **argv)
   MemoriaOptions.Add(mc_ldst_anal_flag);
   MemoriaOptions.Add(mc_dep_choice);
   MemoriaOptions.Add(mc_stats_flag);
+  MemoriaOptions.Add(mc_dep_stats_flag);
   MemoriaOptions.Add(mc_annotate_flag);
   MemoriaOptions.Add(mc_unroll_flag);
   MemoriaOptions.Add(mc_unroll_cache_flag);

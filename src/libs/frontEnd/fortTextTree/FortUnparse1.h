@@ -1,4 +1,4 @@
-/* $Id: FortUnparse1.h,v 1.7 1997/03/11 14:29:37 carr Exp $ */
+/* $Id: FortUnparse1.h,v 1.8 1997/10/30 15:27:36 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,6 +17,7 @@
 #ifndef FortUnparse1_h
 #define FortUnparse1_h
 
+#include <libs/frontEnd/fortTextTree/FortTextTree.i>
 
 /* no instances of this module */
 
@@ -64,6 +65,7 @@ EXTERN(void,		unp1_NodeToText, (FortTextTree ftt, TT_Line line,
                                           FortTreeNode node, int *firstChar,
                                           int *lastChar));
 
+EXTERN(Boolean,		unp1_pred_parens, (FortTreeNode node));
 
 
 

@@ -1,4 +1,4 @@
-/* $Id: FortUnparse1.C,v 1.1 1997/06/24 17:51:10 carr Exp $ */
+/* $Id: FortUnparse1.C,v 1.2 1997/10/30 15:27:36 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -84,7 +84,6 @@ STATIC(Boolean, pred_emphasize, (FortTreeNode node));
 STATIC(Boolean, pred_exists, (FortTreeNode node));
 STATIC(Boolean, pred_empty_dim, (FortTreeNode node));
 STATIC(Boolean, pred_last_ep, (void));
-STATIC(Boolean, pred_parens, (FortTreeNode node));
 STATIC(Boolean, pred_first, (FortTreeNode node));
 STATIC(Boolean, pred_placeholder, (FortTreeNode node));
 
@@ -101,7 +100,7 @@ static struct pred_map
     "emphasize",        pred_emphasize,
     "exists",           pred_exists,
     "emptydim",         pred_empty_dim,
-    "parens",           pred_parens,
+    "parens",           unp1_pred_parens,
     "first",            pred_first,
     "placeholder",      pred_placeholder,
     "",                 0
@@ -1134,7 +1133,7 @@ static Boolean LeftMostChild(FortTreeNode node)
 
 /*************************************************
  *
- *    pred_parens(node)
+ *    unp1_pred_parens(node)
  *
  *    determine if semantics of ast requires 
  *    parentheses around node 
@@ -1147,8 +1146,7 @@ static Boolean LeftMostChild(FortTreeNode node)
  *************************************************/
 
        
-static
-Boolean pred_parens(FortTreeNode node)
+Boolean unp1_pred_parens(FortTreeNode node)
 {
  FortTreeNode parent;
 
@@ -1200,7 +1198,7 @@ Boolean pred_parens(FortTreeNode node)
 	   if (WhichChild(parent,node) == RIGHT)
 	     return true;
            else
-	     if (NOT(pred_parens(parent)))
+	     if (NOT(unp1_pred_parens(parent)))
 	       if (NOT(LeftMostChild(parent)))
 	         return true;
 	       else

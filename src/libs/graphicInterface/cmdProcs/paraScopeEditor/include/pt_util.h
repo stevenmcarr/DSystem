@@ -1,4 +1,4 @@
-/* $Id: pt_util.h,v 1.16 1997/06/25 13:52:01 carr Exp $ */
+/* $Id: pt_util.h,v 1.17 1997/10/30 15:28:09 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -82,5 +82,6 @@ EXTERN(void, pt_insert_before, (AST_INDEX target, AST_INDEX inject));
 EXTERN(void, pt_insert_after, (AST_INDEX target, AST_INDEX inject));
 EXTERN(int,       pt_unroll_estimate, (PedInfo ped, Boolean jam));
 EXTERN(void,      pt_unroll_jam, (PedInfo ped, char *degree, Boolean jam));
+EXTERN(void, pt_get_constant,(AST_INDEX expr, int *constant));
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.6 1997/04/24 14:06:18 carr Exp $ */
+/* $Id: Memoria.C,v 1.7 1997/10/30 15:31:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -136,7 +136,8 @@ void CompileFile(FortranModule *module)
   
   ApplyMemoryCompiler(selection,ped,root,ft,(Context)module,mc_config);
   
-  if (selection != LI_STATS && selection != UJ_STATS && selection != SR_STATS)
+  if (selection != LI_STATS && selection != UJ_STATS && selection != SR_STATS &&
+      selection != DEP_STATS)
     {
       /* save the transformed ast in a new file.  If stats are
 	 chosen then no changes are done to the tree. */
@@ -289,7 +290,10 @@ int MemoriaMain(int argc, char **argv)
 	 /* PUT CALL HERE TO DUMP PROGRAM STATS TOTALS */
          memory_SRStatsTotal(mc_module_list);
 	 break;
-        default:
+       case DEP_STATS:
+	 memory_DepStatsTotal(mc_module_list);
+	 break;
+       default:
 	 break;
       }
   }

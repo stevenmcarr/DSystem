@@ -1,4 +1,4 @@
-/* $Id: val_simplify.C,v 2.11 1997/03/11 14:36:22 carr Exp $ */
+/* $Id: val_simplify.C,v 2.12 1997/10/30 15:28:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -21,7 +21,7 @@ extern char *D_sym_simplify;
 
 static const unsigned int MAX_SCORE = ~0;
 
-static unsigned int score(ValTable &V, ValNumber vn);
+static unsigned long score(ValTable &V, ValNumber vn);
 
 static ValNumber simplify_plus(ValTable &V, ValEntry *value);
 static ValNumber simplify_times(ValTable &V, ValEntry *value);
@@ -566,8 +566,8 @@ static ValNumber simplify_plus(ValTable &V,
     }
     else if (is_sum(V,R))	// left is non-sum, right is sum
     {
-	unsigned int scoreL  = score(V,L);
-	unsigned int scoreLR = score(V, ve_left(V[R]));
+	unsigned long scoreL  = score(V,L);
+	unsigned long scoreLR = score(V, ve_left(V[R]));
 
 	if (scoreL == scoreLR)	// combine terms (may have diff. coeffs)
 	{
@@ -596,8 +596,8 @@ static ValNumber simplify_plus(ValTable &V,
     }
     else			// both are non-sums
     {
-	unsigned int scoreL = score(V,L);
-	unsigned int scoreR = score(V,R);
+	unsigned long scoreL = score(V,L);
+	unsigned long scoreR = score(V,R);
 
 	if (scoreL == scoreR)	// combine terms (may have diff. coeffs)
 	{
@@ -628,8 +628,8 @@ static ValNumber simplify_times(ValTable &V,
     {
 	// if is_sum(V,L), should distribute R over L, but punt for now
 
-	unsigned int scoreL  = score(V,L);
-	unsigned int scoreLR = score(V, ve_left(V[R]));
+	unsigned long scoreL  = score(V,L);
+	unsigned long scoreLR = score(V, ve_left(V[R]));
 
 	if (scoreL == scoreLR)		// combine (constant?) factors
 	{
@@ -667,7 +667,7 @@ static ValNumber simplify_times(ValTable &V,
 
 
 
-static unsigned int score(ValTable &V, ValNumber vn)
+static unsigned long score(ValTable &V, ValNumber vn)
 {
     if (ve_type(V[vn]) == VAL_CONST) return MAX_SCORE;
 
@@ -687,13 +687,13 @@ static unsigned int score(ValTable &V, ValNumber vn)
      */
     const unsigned int shift = (sizeof(ValNumber)*8)-6;
 
-    int level = ve_level(V[vn]);
-    if (!((vn < (1 << shift)) &&
+    long level = ve_level(V[vn]);
+    if (!((vn < (1L << shift)) &&
 	  (((level << shift)>>shift) == level))
 	)
 	die_with_message("score: problem with levels\n");
 
-    unsigned int sc = vn | (level << shift);
+    unsigned long sc = vn | (level << shift);
 
     if (sc == MAX_SCORE)	// don't want competition with constants
 	die_with_message("score: too high\n");

@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.4 1997/06/25 15:25:53 carr Exp $ */
+/* $Id: f2i_options.C,v 1.5 1997/10/30 15:29:19 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -56,6 +56,8 @@ int blue_color = 0;
  int aiRt;    /* generate code for Rt                 */
                         /* so default is for itoc  (cij 8/6/92) */
  int aiCache; /* do cache reuse analysis */
+ int aiSpecialCache; /* do cache reuse analysis, self-spatial refs that are
+		        leaders of a group-spatial set are given no reuse */
  int aiLongIntegers; /* use 64-bit integers */
  int aiDoubleReals; /* use double-precision reals*/
  int aiAlignDoubles; /* set by various machine preferences    */
@@ -100,22 +102,24 @@ void f2i_options_usage(char *pgm_name)
   cerr << "\t-A  assume no aliases exist" << endl;
   cerr << "\t-c  run type checker on tree" << endl;
   cerr << "\t-d  print out debugging information" << endl;
+  cerr << "\t-D  double precision reals only" << endl;
+  cerr << "\t-E  enable enregistering of common variables" << endl;
+  cerr << "\t-F  continue after fatal error" << endl;
   cerr << "\t-g  don't print out iloc code" << endl;
+  cerr << "\t-h  transmit cache analysis information" << endl;
+  cerr << "\t-H  transmit cache analysis w/ special self-spatial analysis" << endl;
   cerr << "\t-I  change error message format" << endl;
   cerr << "\t-l  use 64-bit integers" << endl;
   cerr << "\t-m  print out storage map" << endl;
+  cerr << "\t-M  Fortran module" << endl;
   cerr << "\t-n  no align doubles" << endl;
   cerr << "\t-p  parse comments for directives" << endl;
+  cerr << "\t-P  program composition" << endl;
   cerr << "\t-r  generate code for RT" << endl;
   cerr << "\t-s  dump symbol table" << endl;
+  cerr << "\t-S  compile with Sparc attributes" << endl;
   cerr << "\t-t  dump ast" << endl;
   cerr << "\t-v  report on virtual register usage" << endl;
-  cerr << "\t-E  enable enregistering of common variables" << endl;
-  cerr << "\t-F  continue after fatal error" << endl;
-  cerr << "\t-S  compile with Sparc attributes" << endl;
-  cerr << "\t-h  transmit cache analysis information" << endl;
-  cerr << "\t-M  Fortran module" << endl;
-  cerr << "\t-P  program composition" << endl;
 
   exit(-1);
 }
@@ -215,6 +219,12 @@ static void f2i_opt_Cache(void *state)
    aiCache++;
   }
 
+static void f2i_opt_SpecialCache(void *state)
+  {
+   aiSpecialCache++;
+   aiCache++;
+  }
+
 static void f2i_opt_LongIntegers(void *state)
   {
    aiLongIntegers++;
@@ -258,6 +268,12 @@ static struct flag_	Constants_f = {
 static struct flag_	Cache_f = {
   f2i_opt_Cache,
   "Cache analysis flag",	
+  " ",
+};
+
+static struct flag_	SpecialCache_f = {
+  f2i_opt_SpecialCache,
+  "Special Cache analysis flag",	
   " ",
 };
 
@@ -388,6 +404,8 @@ Option f2i_pgm_opt = {string, F2I_PGM_OPT,(Generic) "", true,(Generic)&program_s
        f2i_Constants_flag ={flag, F2I_CONSTANTS_FLAG, (Generic)false,true, 
 			    (Generic)&Constants_f},
        f2i_Cache_flag = {flag, F2I_CACHE_FLAG, (Generic)false, true, (Generic)&Cache_f},
+       f2i_SpecialCache_flag = {flag, F2I_SPECIALCACHE_FLAG, (Generic)false, true, 
+				(Generic)&SpecialCache_f},
        f2i_Debug_flag = {flag, F2I_DEBUG_FLAG, (Generic)false, true, (Generic)&Debug_f},
        f2i_EnregGlobals_flag = {flag, F2I_ENREGGLOBALS_FLAG, (Generic)false, true,
 				(Generic)&EnregGlobals_f},
@@ -428,6 +446,7 @@ int f2i_init_options(int argc, char **argv)
   aiAlignDoubles	= 1;
   aiConstants 		= 0;
   aiCache 		= 0;
+  aiSpecialCache	= 0;
   aiLongIntegers	= 0;
   aiDoubleReals    	= 0;
   aiDebug		= 0;
@@ -452,6 +471,7 @@ int f2i_init_options(int argc, char **argv)
   f2iOptions.Add(&f2i_AlignDoubles_flag);
   f2iOptions.Add(&f2i_Constants_flag);
   f2iOptions.Add(&f2i_Cache_flag);
+  f2iOptions.Add(&f2i_SpecialCache_flag);
   f2iOptions.Add(&f2i_Debug_flag);
   f2iOptions.Add(&f2i_EnregGlobals_flag);
   f2iOptions.Add(&f2i_Fatals_flag);

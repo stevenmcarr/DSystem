@@ -1,4 +1,4 @@
-/* $Id: f2i_options.h,v 1.2 1997/03/27 20:15:16 carr Exp $ */
+/* $Id: f2i_options.h,v 1.3 1997/10/30 15:29:19 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -31,6 +31,7 @@
 #define F2I_ROCKET_FLAG       'R'
 #define F2I_RT_FLAG           'r'
 #define F2I_CACHE_FLAG        'h'
+#define F2I_SPECIALCACHE_FLAG 'H'
 #define F2I_LONGINTEGERS_FLAG 'l'
 #define F2I_DOUBLEREALS_FLAG  'D'
 
