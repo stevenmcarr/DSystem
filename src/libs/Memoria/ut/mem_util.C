@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.7 1993/07/20 16:35:46 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.8 1994/04/13 14:27:48 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -22,6 +22,39 @@
 #endif
 
 #include <pt_util.h>
+
+AST_INDEX ut_GetSubprogramStmtList(AST_INDEX stmt)
+
+  {
+   while (NOT(is_subprogram_stmt(stmt)) && stmt != AST_NIL)
+      stmt = tree_out(stmt);
+   assert(stmt != AST_NIL);
+   return(gen_get_stmt_list(stmt));
+  }
+
+int ut_change_logical_to_block_if(AST_INDEX stmt,
+				  int       level,
+				  int       dummy)
+  
+  {
+   AST_INDEX  guard,
+              block_if,
+              rvalue,
+              stmt_list;
+
+     if (is_logical_if(stmt))
+       {
+	rvalue = gen_LOGICAL_IF_get_rvalue(stmt);
+	tree_replace(rvalue,AST_NIL);
+	stmt_list = gen_LOGICAL_IF_get_stmt_LIST(stmt);
+	tree_replace(stmt_list,AST_NIL);
+	guard = gen_GUARD(AST_NIL,rvalue,stmt_list);
+	block_if = gen_IF(tree_copy_with_type(gen_get_label(stmt)),AST_NIL,
+			  list_create(guard));
+	pt_tree_replace(stmt,block_if);
+       }
+     return(WALK_FROM_OLD_NEXT);
+  }
 
 
 /****************************************************************************/
