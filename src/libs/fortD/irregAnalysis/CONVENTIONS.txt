@@ -1,0 +1,122 @@
+/* $Id: CONVENTIONS.txt,v 1.4 1997/03/11 14:28:25 carr Exp $ */
+/**********************************************************************
+*                                                                     *
+* Naming conventions etc. for irregular part of the Fortran D         *
+* compiler.                                                           *
+*                                                                     *
+**********************************************************************/
+
+/**********************************************************************
+ * Revision History:
+ * $Log: CONVENTIONS.txt,v $
+ * Revision 1.4  1997/03/11 14:28:25  carr
+ * newly checked in as revision 1.4
+ *
+Revision 1.4  93/03/01  15:20:32  reinhard
+No change.
+
+# Revision 1.1  1993/02/09  17:19:09  reinhard
+# Initial revision
+#
+Revision 1.2  93/01/25  15:48:01  reinhard
+Added note on initializing comments deserving future attention.
+
+Revision 1.1  93/01/22  13:55:18  reinhard
+Initial revision
+
+ */
+
+ ------------------------- Where things go --------------------------
+
+ * Obviously, each file should have at least some HEADER INFORMATION
+   about what goes in it, and this information should be kept updated
+
+ * In general, ABSTRACTION is not only good for understanding the code,
+   but also crucial for keeping things as independent and open for 
+   changes as possible.  This is particularly important when accessing
+   outside data structures which are not cast in stone.  For example,
+   the AST_INDEX's are pretty safe to use, but (at least right now) 
+   symbol table information is likely to change.
+
+   Information about where abstracted functions go should be 
+   incorporated in the headers of the files, and in some, important cases
+   also be incorporated here:
+  
+   - [from <irr_Globals.h>:]
+     As of Dec. '92, there are two symbol table structures around in the
+     Dist Mem world, 
+
+     1. the symbol table created within dc ("dc-table"), containing SNODE's
+
+     2. the global symbol table created by John Mellor-Crummey ("global table").
+
+     Right now there is some redundancy between these, and they are not
+     kept consisten w/ each other.  Eventually, only the global table should
+     survive, augmented w/ a trimmed down version of SNODE's which only contains
+     dist-mem specific info.
+     To facilitate this later move, and b/c it's a good idea to keep this
+     kind of functionality in one place anyway, everything accessing the
+     symbol table should be a method of irr_Globals.
+
+ ------------------------- Variable names ---------------------------
+
+ (here <name> stands for an arbitrary name)
+
+ * Type names:  - if array:   <name>_arrtype 
+                - if pointer: <name>_ptr
+                - else:       <name>_type
+                - start with uppercase letter.
+
+ * #define'd constants: 
+                - all upper case.
+                - .h guards are _<name>
+
+ * Type specific names: 
+    
+   Type                 Name
+   ====                 ====
+   AST_INDEX            <name>_node
+   Dist_Globals *       dh
+   IrrGlobals *         di
+   SsaEdgeId            <name>_ssa_edge;
+   SsaNodeId            <name>_ssa_node;
+   char *               <name>_name   if it is a name
+                        <name>_str    otherwise
+
+ ------------------------- Classes ---------------------------------
+
+ * The constructor should always initialize ALL class member
+   (possibly with 0 or NIL)
+ 
+ * simple access functions for <member> should be called 
+   put<Member> or get<Member>
+
+ ------------------------- Assertions  ------------------------------
+
+ * I LOVE THEM !!!
+
+ * For assertions regarding internal consistency of the compiler:
+   use assert() (from assert.h)
+
+ * For assertions regarding properties of the compiled program (like
+   the max # of irreg refs):
+   use die_with_message(<string>, <args> ...), where <string>
+   should begin with the name of the caller, f.
+
+ ------------------------- Comments  --------------------------------
+
+ * Usually, the /* ...  format should be reserved for structuring
+   comments, like the beginning of a new function.
+
+ * In other cases (ie., for single stmts or groups of stmts), the 
+   // notation should be used.
+
+ * All comments which somehow deserve future attention, for example
+   b/c they indicate an only temporary hack, an incomplete part of
+   the code, or a bug elsewhere in the system, should be annotated
+   w/ a date and initials, like "930123RvH: ..."
+
+   One advantage of this is that grepping for initials indicates
+   current weaknesses of the code.
+
+*/
