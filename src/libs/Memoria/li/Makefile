@@ -1,6 +1,6 @@
-# $Id: Makefile,v 1.3 1992/10/03 15:50:18 rn Exp $
-HERE		= ped_cp/memory/li
-INCLUDEDIRS	= ped_cp/memory/include ped_cp/ped_include
+# $Id: Makefile,v 1.4 1992/11/20 13:52:49 joel Exp $
+HERE = libs/ped_cp/memory/li
+INCLUDEDIRS	= libs/ped_cp/memory/include libs/ped_cp/ped_include
 ARCHIVE		= ../ped-$(RN_ARCH)$(ENV_FLAG).a
 SRCS		= interchange.C 
 

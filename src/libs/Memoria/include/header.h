@@ -1,9 +1,9 @@
-/* $Id: header.h,v 1.2 1992/10/03 15:50:58 rn Exp $ */
+/* $Id: header.h,v 1.3 1992/11/20 13:51:11 joel Exp $ */
 #ifndef header_h
 #define header_h
 
 #include <general.h>
-#include <database.h>
+#include <newdatabase.h>
 #include <ped.h>
 #include <fort/ast.h>
 #include <fort/strutil.h>

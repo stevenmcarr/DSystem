@@ -1,4 +1,4 @@
-/* $Id: sr.h,v 1.4 1992/10/03 15:51:05 rn Exp $ */
+/* $Id: sr.h,v 1.5 1992/11/20 13:51:19 joel Exp $ */
 /*-------------------------------------------------------------
 
 	scalar.h
@@ -9,17 +9,17 @@
 #define sr_h
 
 #include <general.h>
-#include <database.h>
+#include <newdatabase.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <util/kb.h>
-#include <util/point.h>
-#include <util/rect.h>
-#include <util/rect_list.h>
+#include <misc/kb.h>
+#include <misc/point.h>
+#include <misc/rect.h>
+#include <misc/rect_list.h>
 #include <mon/gfx.h>
 #include <mon/font.h>
-#include <util/rn_string.h>
-#include <util/mem.h>
+#include <misc/rn_string.h>
+#include <misc/mem.h>
 #include <std.h>
 #include <fort/ast.h>
 #include <fort/strutil.h>
@@ -43,7 +43,7 @@
 #include <el.h>
 #include <dt.h>
 #include <dep/rsd.h>
-#include <util/list.h>
+#include <misc/list.h>
 #include <fort/walk.h>
 #include <mh_config.h>
 #include <pt_util.h>

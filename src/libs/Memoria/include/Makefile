@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.4 1992/10/03 15:51:22 rn Exp $
+# $Id: Makefile,v 1.5 1992/11/20 13:51:03 joel Exp $
 #
 #
 
-HERE = ped_cp/memory/include
+HERE = libs/ped_cp/memory/include
 
 include Makeinclude
