@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.8 1998/07/07 20:26:43 carr Exp $ */
+/* $Id: f2i_options.C,v 1.9 1999/02/10 16:23:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -117,6 +117,7 @@ void f2i_options_usage(char *pgm_name)
   cerr << "\t-m  print out storage map" << endl;
   cerr << "\t-M  Fortran module" << endl;
   cerr << "\t-n  no align doubles" << endl;
+  cerr << "\t-o  optimize address arithmetic in loops" << endl;
   cerr << "\t-p  parse comments for directives" << endl;
   cerr << "\t-P  program composition" << endl;
   cerr << "\t-r  generate code for RT" << endl;
