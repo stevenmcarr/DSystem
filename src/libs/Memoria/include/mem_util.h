@@ -1,4 +1,4 @@
-/* $Id: mem_util.h,v 1.19 2001/10/12 19:21:47 carr Exp $ */
+/* $Id: mem_util.h,v 1.20 2002/01/30 18:52:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -136,5 +136,7 @@ EXTERN(int,ut_CyclesPerIteration, (AST_INDEX Node,
 				   PedInfo   ped));
 
 EXTERN(int, ut_LoopSize, (AST_INDEX Node, PedInfo   ped));
+
+EXTERN(void, ut_PrintDependences,(AST_INDEX Node, PedInfo ped));
 
 #endif
