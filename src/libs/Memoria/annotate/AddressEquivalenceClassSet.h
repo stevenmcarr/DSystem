@@ -20,9 +20,9 @@ class AddressEquivalenceClassSet : public GenericList
 
   void GetH(AST_INDEX node,
 	    la_matrix nodeH,
-	    Boolean *uniform);
+	    Boolean& uniform);
   void ComputeH(AST_INDEX node,la_matrix nodeH,
-		Boolean *uniform, AST_INDEX expr,
+		Boolean& uniform, AST_INDEX expr,
 		int SubPos);
   AddressEquivalenceClass *Append(la_matrix nodeH, AST_INDEX node,
 	      int NumSubs, Boolean uniform);
@@ -42,13 +42,13 @@ public:
       delete IndexVars;
     }
 
+  void Dump(void);
   AST_INDEX GetLeader(AST_INDEX node);
   AST_INDEX GetFirstInLoop(AST_INDEX node);
   int GetOffset(AST_INDEX n);
   void AddNode(AST_INDEX node);
   void AddNode(Directive *Dir);
-  int GetSize() {return Size;};
-  void Dump();
+  int GetSize() {return Size;}
 
 };
 
@@ -103,6 +103,7 @@ public:
   void AddEntry(AST_INDEX n) 
     { (*this) += (Generic)n; }
 
+  void Dump(void);
   AST_INDEX GetLeader() {return Leader;}
   AST_INDEX GetFirstInLoop() {return FirstInLoop;}
 
@@ -116,7 +117,7 @@ public:
 			      la_matrix nodeH);
   void GetConstants(AST_INDEX node1,la_vect C);
   int GetSubscripts() {return Subscripts;}
-  void Dump();
+  Boolean GetUniform() {return Uniform;}
 };
 
 class AddressClassIterator : public GenericListIter {

@@ -233,7 +233,6 @@ AddressEquivalenceClassSet::AddressEquivalenceClassSet(AST_INDEX loop,
 		     (WK_EXPR_CLBACK)BuildEquivalenceClasses,
 		     (WK_EXPR_CLBACK)NOFUNC,(Generic)this);
      ComputeAddressOffsets();
-     //Dump();
   }
 
 void AddressEquivalenceClassSet::ComputeAddressOffsets()
@@ -247,19 +246,22 @@ void AddressEquivalenceClassSet::ComputeAddressOffsets()
   
   for (AddressEquivSetIterator AECSIter(*this);
        Class = AECSIter();)
-    {
-      la_vect C_L = la_vecNew(Class->GetSubscripts());
-      Class->GetConstants(Class->GetLeader(),C_L);
-      for (AddressClassIterator ACIter(*Class);
-	   node = ACIter();)
-	{
-	  la_vect C_n = la_vecNew(Class->GetSubscripts());
-	  Class->GetConstants(node,C_n);
-	  Offsets->MapAddEntry(node,C_n[0] - C_L[0]);
-	  la_vecFree(C_n);
-	}
-      la_vecFree(C_L);
-    }
+    if (Class->GetUniform())
+      {
+	la_vect C_L = la_vecNew(Class->GetSubscripts());
+	Class->GetConstants(Class->GetLeader(),C_L);
+	for (AddressClassIterator ACIter(*Class);
+	     node = ACIter();)
+	  {
+	    la_vect C_n = la_vecNew(Class->GetSubscripts());
+	    Class->GetConstants(node,C_n);
+	    Offsets->MapAddEntry(node,C_n[0] - C_L[0]);
+	    la_vecFree(C_n);
+	  }
+	la_vecFree(C_L);
+      }
+    else
+      Offsets->MapAddEntry(node,0);
 }
   
 int AddressEquivalenceClassSet::GetOffset(AST_INDEX node)
@@ -272,14 +274,15 @@ void AddressEquivalenceClassSet::AddNode(AST_INDEX node)
 
   {
    AddressEquivalenceClass *EquivalenceClass;
-   Boolean uniform = true;
+   Boolean uniform;
    int **nodeH,i,j,Subscripts;
 
      Size++;
      Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(node));
      nodeH = la_matNew(Subscripts,NestingLevel);
-     GetH(node,nodeH,&uniform);
-     if (uniform && (EquivalenceClass = GetAddressEquivalenceClass(node,nodeH)) != NULL)
+     GetH(node,nodeH,uniform);
+     if (uniform && 
+	 (EquivalenceClass = GetAddressEquivalenceClass(node,nodeH)) != NULL)
        EquivalenceClass->AddEntry(node);
      else
        EquivalenceClass = Append(nodeH,node,Subscripts,uniform);
@@ -292,13 +295,13 @@ void AddressEquivalenceClassSet::AddNode(Directive *Dir)
 
   {
    AddressEquivalenceClass *EquivalenceClass;
-   Boolean uniform = true;
+   Boolean uniform;
    int **nodeH,i,j,Subscripts;
 
      Size++;
      Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(Dir->Subscript));
      nodeH = la_matNew(Subscripts,NestingLevel);
-     GetH(Dir->Subscript,nodeH,&uniform);
+     GetH(Dir->Subscript,nodeH,uniform);
      if (uniform && 
 	 (EquivalenceClass = GetAddressEquivalenceClass(Dir->Subscript,nodeH)) != NULL)
        EquivalenceClass->AddEntry(Dir->Subscript);
@@ -310,12 +313,13 @@ void AddressEquivalenceClassSet::AddNode(Directive *Dir)
 
 void AddressEquivalenceClassSet::GetH(AST_INDEX node,
 				      la_matrix nodeH,
-				      Boolean *uniform)
+				      Boolean& uniform)
 
   {
    AST_INDEX sublist,sub,Inode;
    int SubPos = 0;
 
+     uniform = true;
      sublist = gen_SUBSCRIPT_get_rvalue_LIST(node);
      for (sub = list_first(sublist);
 	  sub != AST_NIL;
@@ -329,22 +333,21 @@ void AddressEquivalenceClassSet::GetH(AST_INDEX node,
 
 
 void AddressEquivalenceClassSet::ComputeH(AST_INDEX node,la_matrix nodeH,
-					  Boolean *uniform, AST_INDEX expr,
+					  Boolean& uniform, AST_INDEX expr,
 					  int SubPos)
   {
    Boolean linear;
    int coeff,index;
 
      if (is_identifier(node))
-       {
-	pt_get_coeff(expr,gen_get_text(node),&linear,&coeff);
-	*(uniform) = BOOL(*(uniform) && linear);
-	index = GetIndex(gen_get_text(node));
-	if (*uniform)
-	  nodeH[SubPos][index] = coeff;
-	else
-	  nodeH[SubPos][index] = MININT;
-       }
+       if ((index = GetIndex(gen_get_text(node))) != -1)
+	 {
+	   pt_get_coeff(expr,gen_get_text(node),&linear,&coeff);
+	   if ((uniform = BOOL(uniform && linear)))
+	     nodeH[SubPos][index] = coeff;
+	 }
+       else
+	 uniform = false;
   }
 
 int AddressEquivalenceClassSet::GetIndex(char *ivar)
@@ -360,7 +363,8 @@ int AddressEquivalenceClassSet::GetIndex(char *ivar)
    
 AddressEquivalenceClass* AddressEquivalenceClassSet::Append(la_matrix nodeH,
 							    AST_INDEX node,
-							    int NumSubs, Boolean uniform)
+							    int NumSubs,
+							    Boolean uniform)
 
   {
    AddressEquivalenceClass *Class;
@@ -400,30 +404,26 @@ AddressEquivalenceClass* AddressEquivSetIterator::operator() ()
 AST_INDEX AddressEquivalenceClassSet::GetLeader(AST_INDEX node)
 
 {
-  Boolean uniform = true;
+  Boolean uniform;
 
   int Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(node));
   la_matrix nodeH = la_matNew(Subscripts,NestingLevel);
 
-  GetH(node,nodeH,&uniform);
-  AST_INDEX Leader = GetAddressEquivalenceClass(node,nodeH)->GetLeader();
-//  la_matFree(nodeH,Subscripts,NestingLevel);
-  return Leader;
+  GetH(node,nodeH,uniform);
+  return GetAddressEquivalenceClass(node,nodeH)->GetLeader();
 }
 
 AST_INDEX AddressEquivalenceClassSet::GetFirstInLoop(AST_INDEX node)
 
 {
-  Boolean uniform = true;
+  Boolean uniform;
 
   int Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(node));
   la_matrix nodeH = la_matNew(Subscripts,NestingLevel);
 
-  GetH(node,nodeH,&uniform);
+  GetH(node,nodeH,uniform);
 
-  AST_INDEX FirstReference = GetAddressEquivalenceClass(node,nodeH)->GetFirstInLoop();
-//  la_matFree(nodeH,Subscripts,NestingLevel);
-  return FirstReference;
+  return GetAddressEquivalenceClass(node,nodeH)->GetFirstInLoop();
 }
 
 
@@ -457,8 +457,10 @@ Boolean AddressEquivalenceClass::SameEquivalenceClass(AST_INDEX node,
    int i,j;
    la_vect C,C_Leader;
 
-     if (NOT(Uniform) || strcmp(name,gen_get_text(gen_SUBSCRIPT_get_name(node)))) 
+     if (strcmp(name,gen_get_text(gen_SUBSCRIPT_get_name(node)))) 
        return (false);
+     else if (NOT(Uniform))
+       return BOOL(node == Leader);
 
      for (i = 0; i < Subscripts; i++)
        for (j = 0; j < NestingLevel; j++)
@@ -621,11 +623,11 @@ void AddressEquivalenceClassSet::Dump()
  int i = 0;
  char Text[80];
 
- cout << "\t\tTotal # of equivalence classes = " << Size << endl;
+ cout << "Total # of equivalence classes = " << Size << endl;
  for(AddressEquivSetIterator AESIter(this);
         aecs = AESIter(); )
    {
-     cout << "\t\tEquivalence Class Set #" << i  << endl;
+     cout << "Equivalence Class Set #" << i  << endl;
      aecs->Dump();
      i ++;
    }
@@ -635,22 +637,22 @@ void AddressEquivalenceClass::Dump()
 {
  char Text[80];
 
- cout << "\t\t\t" << "Leader is "; 
+ cout << "\t" << "Leader is "; 
  ut_GetSubscriptText( Leader, Text);
  cout <<  Text << endl;
 
- cout << "\t\t\t" << "First In Loop is "; 
+ cout << "\t" << "First In Loop is "; 
  ut_GetSubscriptText( FirstInLoop, Text);
  cout <<  Text << endl;
 
  if (LeaderIsADirective)
-   cout << "\t\t\tLeader is a Directive" << endl;
+   cout << "\tLeader is a Directive" << endl;
 
  AST_INDEX node;
  for (AddressClassIterator ACIter(this);
       node = ACIter(); )
    {
      ut_GetSubscriptText(node, Text);
-     cout << "\t\t\t" << Text << endl;
+     cout << "\t" << Text << endl;
    }
 }
