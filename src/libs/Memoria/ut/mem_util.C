@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.21 1996/10/15 15:19:19 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.22 1996/12/03 18:42:54 rcrowell Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -533,9 +533,10 @@ static Boolean HasGroupSpatial(AST_INDEX  node,
 
 		//  Record for DEAD instructions.  Need to now how far behind
 		//  to make a cache line dead
-
-		sptr->GroupDistance = MAX(sptr->GroupDistance,
+                
+		sptr->GroupSpatialDistance = MAX(sptr->GroupSpatialDistance,
 					  gen_get_dt_DIS(Edge,Edge->level));
+
 	      return(true);
 	    }
     return(false);
@@ -645,7 +646,7 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
 		   {
 		     // This distance is needed for DEAD instructions
 
-		     sptr->GroupDistance = MAX(sptr->GroupDistance,
+		     sptr->GroupTemporalDistance = MAX(sptr->GroupTemporalDistance,
 					       gen_get_dt_DIS(&dg[edge],dg[edge].level));
 		     return(GROUP_TEMPORAL);
 		   }
@@ -657,7 +658,7 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
 		 {
 		     // This distance is needed for DEAD instructions
 
-		   sptr->GroupDistance = MAX(sptr->GroupDistance,
+		   sptr->GroupTemporalDistance = MAX(sptr->GroupTemporalDistance,
 					     gen_get_dt_DIS(&dg[edge],dg[edge].level));
 		   if (dg[edge].level == LOOP_INDEPENDENT && dg[edge].type == dg_output)
 		     return(GROUP_TEMPORAL);
