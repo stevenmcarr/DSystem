@@ -41,7 +41,7 @@
 #include <dg.h>
 #include <el.h>
 #include <dt.h>
-#include <rsd.h>
+#include <dep/rsd.h>
 #include <list.h>
 #include <walk.h>
 #include <mh_config.h>
