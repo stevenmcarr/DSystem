@@ -355,7 +355,7 @@ static void check_incoming_edges(AST_INDEX     node,
 				sptr->prev_sclr[index] = true;
 			       }
 			     break;  
-	     case dg_anti: if (dg[edge].consistent == consistent_SIV || 
+	     case dg_anti: if (dg[edge].consistent != consistent_SIV || 
 			       dg[edge].symbolic)
 	                     {
 			      sptr = get_subscript_ptr(dg[edge].sink);
@@ -732,7 +732,6 @@ static void get_machine_parms(AST_INDEX node,
      } 
   } 
 
-
 static void get_distances(dep_info_type *dep_info, 
 			  int *dvect,
 			  int *dist1, 
@@ -897,22 +896,46 @@ static void compute_mem_addr_coeffs(dep_info_type *dep_info,
 				    AST_INDEX     node)
 
   {
-   if (gen_get_converted_type(tree_out(node)) == TYPE_COMPLEX ||
-       gen_get_converted_type(tree_out(node)) == TYPE_DOUBLE_PRECISION)
-     dep_info->mem_coeff[0] += 
-	     ((config_type *)PED_MH_CONFIG(dep_info->ped))->double_fetches;
-   else
-     dep_info->mem_coeff[0]++;
-   if (NOT(missing_out_LI_anti_dep(tree_out(node)) && 
-	   NOT(get_subscript_ptr(node)->store)))
-     if (index_in_outer_subscript(node,dep_info->index[0]))
-       if (index_in_outer_subscript(node,dep_info->index[1]))
-         dep_info->addr_coeff[0]++;
+   subscript_info_type *sptr;
+   int regs,refs;
+
+     if (sptr->is_scalar[2])
+       return;
+     get_machine_parms(node,&regs,&refs,dep_info); 
+     sptr = get_subscript_ptr(node);
+     if (sptr->is_scalar[1])
+       if (sptr->is_scalar[0])
+         {
+	  dep_info->mem_coeff[3]++;
+	  dep_info->addr_coeff[3]++;
+	  return;
+	 }
        else
-         dep_info->addr_coeff[1]++;
+         {
+	  dep_info->mem_coeff[1]++;
+	  if (index_in_outer_subscript(node,dep_info->index[0]))
+	    dep_info->addr_coeff[1]++;
+	  return;
+	 }
      else
-       if (index_in_outer_subscript(node,dep_info->index[1]))
-         dep_info->addr_coeff[2]++;
+       if (sptr->is_scalar[0])
+         {
+	  dep_info->mem_coeff[2]++;
+	  if (index_in_outer_subscript(node,dep_info->index[1]))
+	    dep_info->addr_coeff[2]++;
+	  return;
+	 }
+     dep_info->mem_coeff[0] += refs;
+     if (NOT(missing_out_LI_anti_dep(tree_out(node)) && 
+	     NOT(get_subscript_ptr(node)->store)))
+       if (index_in_outer_subscript(node,dep_info->index[0]))
+         if (index_in_outer_subscript(node,dep_info->index[1]))
+           dep_info->addr_coeff[0]++;
+	 else
+           dep_info->addr_coeff[1]++;
+       else
+         if (index_in_outer_subscript(node,dep_info->index[1]))
+           dep_info->addr_coeff[2]++;
   }
 
 static void compute_MIV_coefficients(AST_INDEX     node,

@@ -1,6 +1,6 @@
 #include <mh.h>
 #include <gi.h>
-#include "interchange.h"
+#include <interchange.h>
 #include <analyze.h>
 #include <shape.h>
 #include <mem_util.h>
@@ -910,10 +910,10 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 
 
 void memory_loop_interchange(PedInfo       ped,
-			 AST_INDEX     root,
-			 int           level,
-			 SymDescriptor symtab,
-			 arena_type    *ar)
+			     AST_INDEX     root,
+			     int           level,
+			     SymDescriptor symtab,
+			     arena_type    *ar)
 
   {
    pre_info_type pre_info;
