@@ -1,5 +1,5 @@
 %{
-/* $Id: MemoriaConfig.l,v 1.4 2000/05/16 03:08:23 mjbedy Exp $ */
+/* $Id: MemoriaConfig.l,v 1.5 2001/09/14 16:58:59 carr Exp $ */
 
 /*****************************************************************/
 /*                                                               */
@@ -97,6 +97,16 @@ auto[ ]increment[ \t]+[yn] 	{
 				  config->AutoIncrement=(ctemp == 'y');
 				 }
 
+integer[ ]pipe[ ]length[ \t]+[0-9]+  {
+                                 sscanf(&yytext[20],"%d",
+					&config->IntegerPipeLength);
+				}
+
+float[ ]pipe[ ]length[ \t]+[0-9]+    {
+                                 sscanf(&yytext[18],"%d",
+					&config->FloatPipeLength);
+				}
+
 non[ ]blocking[ ]cache[ \t]+[yn] {
 				  sscanf(&yytext[19],"%c",&ctemp);
 				  config->NonBlockingCache=(ctemp == 'y');
@@ -151,6 +161,8 @@ void mh_get_config(NewConfig,filename)
      NewConfig->write_back= 1;
      NewConfig->write_allocate= 0;
      NewConfig->AutoIncrement= 0;
+     NewConfig->IntegerPipeLength= 0;
+     NewConfig->FloatPipeLength= 0;
      NewConfig->NonBlockingCache= 0;
      NewConfig->instruction_size = 100;
 
