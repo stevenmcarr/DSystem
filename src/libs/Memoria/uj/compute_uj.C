@@ -1,8 +1,16 @@
-/* $Id: compute_uj.C,v 1.9 1992/12/17 14:51:06 carr Exp $ */
+/* $Id: compute_uj.C,v 1.10 1993/07/20 16:34:20 carr Exp $ */
+
 /****************************************************************************/
 /*                                                                          */
+/*    File:    compute_uj.C                                                 */
+/*                                                                          */
+/*    Description:  This file contains the code to compute the unroll       */
+/*                  amounts for one or two loops based upon balance.        */
+/*                  This comes from Carr's thesis.                          */
 /*                                                                          */
 /****************************************************************************/
+
+
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -28,14 +36,27 @@
 
 #include <mem_util.h>
 
-static int determine_uj_prof(AST_INDEX      stmt,
-			     int            level,
-			     comp_info_type *comp_info)
+extern mc_aggressive;
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:     determine_uj_prof                                       */
+/*                                                                          */
+/*    Input:        stmt - AST index of a statement                         */
+/*                  level - nesting level of stmt                           */
+/*                  comp_info - various information                         */
+/*                                                                          */
+/*    Description:  Determine how many edges incident upon a statement can  */
+/*                  be moved to the innermost loop by uj.  Increment a      */
+/*                  counter for the loops that need to be unrolled for this */
+/*                  to occur.                                               */
 /*                                                                          */
 /****************************************************************************/
+
+
+static int determine_uj_prof(AST_INDEX      stmt,
+			     int            level,
+			     comp_info_type *comp_info)
 
   {
    DG_Edge    *dg;
@@ -59,12 +80,21 @@ static int determine_uj_prof(AST_INDEX      stmt,
            if (get_subscript_ptr(dg[edge].src)->surrounding_do ==
 	       get_subscript_ptr(dg[edge].sink)->surrounding_do &&
 	       dg[edge].consistent == consistent_SIV && !dg[edge].symbolic)
+
+	      /* we have a consistent edge, now check whether unrolling one or
+		 two loops can make the edge innermost */
+
 	     {
 	      inner = lvl;
 	      l = lvl+1;
+
+	          /* make sure at most one non-zero distance vector enty besides
+		     the carrier */
+
 	      while (l < gen_get_dt_LVL(&dg[edge]) && inner != -1)
 		{
 		 if (gen_get_dt_DIS(&dg[edge],l) > 0 || 
+		     (gen_get_dt_DIS(&dg[edge],l) != 0 && dg[edge].type == dg_input) || 
 		     gen_get_dt_DIS(&dg[edge],l) == DDATA_ANY)
 		   if (inner == lvl)
 		     inner = l;
@@ -73,8 +103,16 @@ static int determine_uj_prof(AST_INDEX      stmt,
 		 l++;
 		}
 	      if (inner != -1)
+
+	             /* increment the count for the two loops that must be unrolled
+			to make the edge innermost */
+
 	        if (lvl == inner && comp_info->num_loops == 2)
 		  {
+
+		       /* unrolling any with the loop at lvl can make the edge 
+			  innermost */
+
 		   for (l = comp_info->level; l < lvl; l++)
 		     comp_info->count[comp_info->loop_stack[l]]
 		                     [comp_info->loop_stack[lvl]]++;
@@ -88,6 +126,24 @@ static int determine_uj_prof(AST_INDEX      stmt,
 	     }
      return(WALK_CONTINUE);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:      pick_max_loops                                         */
+/*                                                                          */
+/*    Input:         loop_data - loop structure                             */
+/*                   count - array of dependence counts                     */
+/*                   loop_stack - stack of loops surrounding a loop body    */
+/*                   num_loops - number of loops to be unrolled             */
+/*                   outer_level - outermost level of loop nest             */
+/*                   inner_level - innermost level of loop nest             */
+/*                                                                          */
+/*    Description:   Determine which loops have the greatest potential      */
+/*                   for removing memory references by unrolling them.      */
+/*                                                                          */
+/****************************************************************************/
+
 
 static void pick_max_loops(model_loop *loop_data,
 			   int        **count,
@@ -107,6 +163,10 @@ static void pick_max_loops(model_loop *loop_data,
        {
 	if (num_loops == 1)
           upperb = i;
+
+	    /* if we are unrolling two loops, look for the best pair of loops,
+	       otherwise look for the best loop */
+
 	for (j = i; j <= upperb; j++)
 	  if (count[loop_stack[i]][loop_stack[j]] > max_count &&
 	      loop_data[loop_stack[i]].max > 0 &&
@@ -139,14 +199,24 @@ static void pick_max_loops(model_loop *loop_data,
 	 }
   }
 	    
-static void pick_loops_to_unroll(model_loop         *loop_data,
-				 int                loop,
-				 comp_info_type     comp_info)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:     pick_loops_to_unroll                                    */
+/*                                                                          */
+/*    Input:        loop_data - loop structure                              */
+/*                  loop - index of a loop                                  */
+/*                  comp_info - various info                                */
+/*                                                                          */
+/*    Description:  Deterine the best loops to unroll for each possible     */
+/*                  perfect loop nest.                                      */
 /*                                                                          */
 /****************************************************************************/
+
+
+static void pick_loops_to_unroll(model_loop         *loop_data,
+				 int                loop,
+				 comp_info_type     comp_info)
 
   {
    int next;
@@ -164,17 +234,30 @@ static void pick_loops_to_unroll(model_loop         *loop_data,
        pick_loops_to_unroll(loop_data,next,comp_info);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     pick_loops                                              */
+/*                                                                          */
+/*    Input:        loop_data - loop structure                              */
+/*                  size - size of loop_data                                */
+/*                  num_loops - number of loops to unroll                   */
+/*                  ped - dependence graph handle                           */
+/*                  symtab - symbol table                                   */
+/*                  ar - arena for memory allocation                        */
+/*                                                                          */
+/*    Description:  Deterine the best loops to unroll for each possible     */
+/*                  perfect loop nest.                                      */
+/*                                                                          */
+/****************************************************************************/
+
+
 static void pick_loops(model_loop *loop_data,
 		       int        size,
 		       int        num_loops,
 		       PedInfo    ped,
 		       SymDescriptor symtab,
 		       arena_type *ar)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
 
   {
    comp_info_type comp_info;
@@ -194,13 +277,22 @@ static void pick_loops(model_loop *loop_data,
    pick_loops_to_unroll(loop_data,0,comp_info);
   }
 
-static Boolean edge_creates_pressure(DG_Edge       *edge,
-				     dep_info_type *dep_info)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:     edge_creates_pressure                                   */
+/*                                                                          */
+/*    Input:        edge - dependence graph edge                            */
+/*                  dep_info - various info                                 */
+/*                                                                          */
+/*    Description:  Determine if unrolling loops at level1 and level2 can   */
+/*                  make edge innermost.                                    */
 /*                                                                          */
 /****************************************************************************/
+
+
+static Boolean edge_creates_pressure(DG_Edge       *edge,
+				     dep_info_type *dep_info)
 
   {
    int lvl;
@@ -221,16 +313,28 @@ static Boolean edge_creates_pressure(DG_Edge       *edge,
      return(false);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     do_partition                                            */
+/*                                                                          */
+/*    Input:        name - AST index for an array name                      */
+/*                  nlist - list of elements in a partition                 */
+/*                  dg - dependence graph                                   */
+/*                  dinfo - various info                                    */
+/*                                                                          */
+/*    Description:  Put all subscript references that are connected by      */
+/*                  edges that can create register pressure after uj into   */
+/*                  one partition.                                          */
+/*                                                                          */
+/****************************************************************************/
+
+
 static void do_partition(AST_INDEX name,
 			 UtilList  *nlist,
 			 DG_Edge   *dg,
 			 dep_info_type *dinfo)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
- 
 
   {
    subscript_info_type *sptr;
@@ -264,13 +368,23 @@ static void do_partition(AST_INDEX name,
 	 }
   }
 
-static int partition_names(AST_INDEX      node,
-			   dep_info_type *dinfo)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:     partition_names                                         */
+/*                                                                          */
+/*    Input:        node - AST node                                         */
+/*                  dinfo - various info                                    */
+/*                                                                          */
+/*    Description:  Put all subscript references that are connected by      */
+/*                  edges that can create register pressure after uj into   */
+/*                  one partition.                                          */
 /*                                                                          */
 /****************************************************************************/
+
+
+static int partition_names(AST_INDEX      node,
+			   dep_info_type *dinfo)
 
   {
    subscript_info_type *sptr;
@@ -296,13 +410,22 @@ static int partition_names(AST_INDEX      node,
      return(WALK_CONTINUE);
   }
 
-static void check_incoming_edges(AST_INDEX     node,
-				 dep_info_type *dep_info)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:     check_incoming_edges                                    */
+/*                                                                          */
+/*    Input:        node - AST index of the name of a subscript reference   */
+/*                  dep_info - various info                                 */
+/*                                                                          */
+/*    Description:  Examine incoming dependence edges to determine if a     */
+/*                  reference is scalar wrt a loop.                         */
 /*                                                                          */
 /****************************************************************************/
+
+
+static void check_incoming_edges(AST_INDEX     node,
+				 dep_info_type *dep_info)
 
   {
    int 	      vector,i,
@@ -390,14 +513,21 @@ static void check_incoming_edges(AST_INDEX     node,
   }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     survey_edges                                            */
+/*                                                                          */
+/*    Input:        node - AST index of a node                              */
+/*                  dep_info - various info                                 */
+/*                                                                          */
+/*    Description:  Check for scalar array refs and compute the number of   */
+/*                  flops in a loop body.                                   */
+/*                                                                          */
+/****************************************************************************/
+
 
 static int survey_edges(AST_INDEX     node,
 			dep_info_type *dep_info)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
 
   {
    AST_INDEX    name;
@@ -426,19 +556,28 @@ static int survey_edges(AST_INDEX     node,
 	     else
 	       ops = 1;
 	     if (is_binary_times(node))
-	       dep_info->flops += ((config_type *)PED_MH_CONFIG(dep_info->ped))
-	                          ->mul_cycles * ops;
+	       dep_info->flops += 
+	       (((config_type *)PED_MH_CONFIG(dep_info->ped))->mul_cycles /
+		((config_type *)PED_MH_CONFIG(dep_info->ped))->min_flop_cycles)
+	       * ops;
 	     else if (is_binary_plus(node) || is_binary_minus(node))
-	       dep_info->flops += ((config_type *)PED_MH_CONFIG(dep_info->ped))
-	                          ->add_cycles * ops;
+	       dep_info->flops += 
+	       (((config_type *)PED_MH_CONFIG(dep_info->ped))->add_cycles /
+		((config_type *)PED_MH_CONFIG(dep_info->ped))->min_flop_cycles)
+	       * ops;
 	     else if (is_binary_divide(node))
-	       dep_info->flops += ((config_type *)PED_MH_CONFIG(dep_info->ped))
-	                          ->div_cycles * ops;
+	       dep_info->flops += 
+	       (((config_type *)PED_MH_CONFIG(dep_info->ped))->div_cycles /
+		((config_type *)PED_MH_CONFIG(dep_info->ped))->min_flop_cycles)
+	       * ops;
 	     else
                dep_info->flops += ops; 
 	    }
 	  else;
 	else;
+
+           /* determine the number of scalars that take up registers */
+
      else if (is_identifier(node) && 
 	      fst_GetField(dep_info->symtab,gen_get_text(node),
 			   SYMTAB_NUM_DIMS) == 0)
@@ -455,6 +594,19 @@ static int survey_edges(AST_INDEX     node,
 	 }
    return(WALK_CONTINUE);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     get_expr_regs                                           */
+/*                                                                          */
+/*    Input:        node - AST index                                        */
+/*                  reg_info - various info                                 */
+/*                                                                          */
+/*    Description:  Compute the number of registers required by an          */
+/*                  expression using Sethi-Ullman numbering                 */
+/*                                                                          */
+/****************************************************************************/
 
 
 static int get_expr_regs(AST_INDEX     node,
@@ -540,6 +692,20 @@ static int get_expr_regs(AST_INDEX     node,
   }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:      count_regs                                             */
+/*                                                                          */
+/*    Input:         stmt - AST index of a statement                        */
+/*                   level - nesting level of stmt                          */
+/*                   reg_info - various info                                */
+/*                                                                          */
+/*    Description:   Call get_expr_regs to compute the number of registers  */
+/*                   required for each expression, store the max.           */
+/*                                                                          */
+/****************************************************************************/
+
+
 static int count_regs(AST_INDEX     stmt,
 		      int           level,
 		      reg_info_type *reg_info)
@@ -571,6 +737,20 @@ static int count_regs(AST_INDEX     stmt,
      return(WALK_CONTINUE);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:     index_in_outer_subscript                                */
+/*                                                                          */
+/*    Input:        node - AST index for a subscript reference name         */
+/*                  index - induction variable                              */
+/*                                                                          */
+/*    Description:  Determine if index appears in a subscript reference in  */
+/*                  a position other than the first subscript position.     */
+/*                                                                          */
+/****************************************************************************/
+
+
 static Boolean index_in_outer_subscript(AST_INDEX node,
 					char      *index)
 
@@ -588,6 +768,18 @@ static Boolean index_in_outer_subscript(AST_INDEX node,
      return(false);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static Boolean missing_out_LI_anti_dep(AST_INDEX node)
 
   {
@@ -600,6 +792,18 @@ static Boolean missing_out_LI_anti_dep(AST_INDEX node)
          return(true);
      return(false);
   } 
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static AST_INDEX find_oldest_value(UtilList *nlist,
 				   dep_info_type *dinfo)
@@ -646,6 +850,18 @@ static AST_INDEX find_oldest_value(UtilList *nlist,
        }
      return(UTIL_NODE_ATOM(node));
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static void summarize_partition_vector(int *dvec,
 				      AST_INDEX node,
@@ -698,10 +914,23 @@ static void summarize_partition_vector(int *dvec,
   } 
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void summarize_node_vector(int *memory_vec,
 				  int *address_vec,
 				  AST_INDEX node,
 				  UtilList *nlist,
+				  int      *level,
+				  int      *max_level,
 				  dep_info_type *dinfo)
   { 
    DG_Edge *dg;
@@ -720,6 +949,12 @@ static void summarize_node_vector(int *memory_vec,
          if (edge_creates_pressure(&dg[edge],dinfo) &&
 	     util_in_list(get_subscript_ptr(dg[edge].sink)->lnode,nlist))
 	   { 
+	    *max_level = gen_get_dt_LVL(&dg[edge]) > *max_level ?
+		 	 gen_get_dt_LVL(&dg[edge]) :
+			 *max_level;
+	    *level = dg[edge].level < *level ?
+		     dg[edge].level :
+		     *level;
 	    for (i = 1; i <= gen_get_dt_LVL(&dg[edge]); i++)
 	      {
 	       if ((dist1 = gen_get_dt_DIS(&dg[edge],i)) < DDATA_BASE)
@@ -738,6 +973,18 @@ static void summarize_node_vector(int *memory_vec,
 	      }
 	   } 
   } 
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static void remove_nodes(AST_INDEX node,
 			 PedInfo ped,
@@ -761,6 +1008,18 @@ static void remove_nodes(AST_INDEX node,
 	     util_in_list(get_subscript_ptr(dg[edge].sink)->lnode,nlist))
            util_pluck(get_subscript_ptr(dg[edge].sink)->lnode);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static void get_machine_parms(AST_INDEX node,
 			      int *regs,
@@ -789,6 +1048,18 @@ static void get_machine_parms(AST_INDEX node,
       *refs = 0; 
      } 
   } 
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static void get_distances(dep_info_type *dep_info, 
 			  int *dvect,
@@ -819,6 +1090,18 @@ static void get_distances(dep_info_type *dep_info,
        *distn = -(*distn);
   } 
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static int get_coeff_index(int dist)
 
   {
@@ -833,6 +1116,18 @@ static int get_coeff_index(int dist)
        }
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void update_gcoeff(int coeff[3][3],
 			  int index1,
 			  int index2,
@@ -845,6 +1140,18 @@ static void update_gcoeff(int coeff[3][3],
        for (j = 2; j >= index2; j--)
          coeff[i][j] += val;
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static void update_lcoeff(int coeff[3][3],
 			  int index1,
@@ -861,6 +1168,18 @@ static void update_lcoeff(int coeff[3][3],
        for (j = index2-1; j >= 0; j--)
          coeff[i][j] += val;
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static void compute_registers(dep_info_type *dep_info, 
 			      AST_INDEX     node,
@@ -913,6 +1232,17 @@ static void compute_registers(dep_info_type *dep_info,
   }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void compute_extra_regs(dep_info_type *dinfo,
 			       AST_INDEX     node,
 			       AST_INDEX     prevnode,
@@ -959,6 +1289,17 @@ static void compute_extra_regs(dep_info_type *dinfo,
   }
 
 
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 Boolean vector_all_zeros(int *dvect,
 			 int level)
 
@@ -970,6 +1311,384 @@ Boolean vector_all_zeros(int *dvect,
          return false;
      return true;
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static Boolean NotInOtherPositions(AST_INDEX node,
+				   char      *var)
+
+  {
+     for (node = list_next(list_first(node));
+	  node != AST_NIL;
+	  node = list_next(node))
+       if (pt_find_var(node,var))
+         return(false);
+     return(true);
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static Boolean CanMoveToInnermost(int *vector,
+				  int level,
+				  int max_level)
+
+  {
+   int i;
+   
+     if (level == LOOP_INDEPENDENT)
+       return(true);
+     for (i = level+1; i < max_level;i++)
+       if (vector[i] != 0)
+         return(false);
+     return(true);
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static char *FindInductionVar(model_loop *loop_data,
+			      AST_INDEX  node,
+			      int        level)
+
+  {
+   int i;
+
+     i = get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->surrounding_do;
+     while(loop_data[i].level != level)
+       i = loop_data[i].parent;
+     return(gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
+			 loop_data[i].node))));
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static Boolean OnlyInInnermostPosition(model_loop *loop_data,
+				       AST_INDEX  node,
+				       int        level)
+  {
+   AST_INDEX sub_list,sub;
+   char *var;
+   int coeff,words;
+   Boolean lin;
+   
+     sub_list = gen_SUBSCRIPT_get_rvalue_LIST(node);
+     sub = list_first(sub_list);
+     var = FindInductionVar(loop_data,node,level);
+     if (pt_find_var(sub,var) && NotInOtherPositions(sub_list,var))
+       return(true);
+     return(false);
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static Boolean HasGroupSpatial(AST_INDEX  node,
+			       int        *vector,
+			       model_loop *loop_data,
+			       int        words,
+			       int        level,
+			       int        max_level)
+  {
+   if (CanMoveToInnermost(vector,level,max_level))
+     if (OnlyInInnermostPosition(loop_data,node,level))
+       if (vector[level] < words)
+         return(true);
+   return(false);
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static Boolean IsSpatial(AST_INDEX  node,
+			 char       *ivar,
+			 int        words)
+
+  {
+   AST_INDEX sub_list,sub;
+   char      *var;
+   int       coeff;
+   Boolean   lin;
+
+     sub_list = gen_SUBSCRIPT_get_rvalue_LIST(node);
+     if (pt_find_var(sub_list,ivar))
+       {
+	sub = list_first(sub_list);
+	if (pt_find_var(sub,ivar) && NotInOtherPositions(sub_list,ivar))
+	  {
+	   pt_get_coeff(sub,ivar,&lin,&coeff);
+	   if (coeff < words && lin)
+	     return(true);
+	  }
+       }
+     return(false);
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+SpatialLocalityType GetSpatialType(AST_INDEX  node,
+				   dep_info_type *dinfo,
+				   int        *vector,
+				   int        level,
+				   int        max_level)
+
+  {
+   int words;
+  
+     if (gen_get_converted_type(node) == TYPE_DOUBLE_PRECISION ||
+	 gen_get_converted_type(node) == TYPE_COMPLEX)
+       words = (((config_type *)PED_MH_CONFIG(dinfo->ped))->line) >> 3; 
+     else
+       words = (((config_type *)PED_MH_CONFIG(dinfo->ped))->line) >> 2; 
+     if (vector != NULL)
+       if (HasGroupSpatial(node,vector,dinfo->loop_data,words,level,max_level))
+         return(GROUP);
+     if (IsSpatial(node,dinfo->index[3],words))
+       return(SELF);
+     else if (IsSpatial(node,dinfo->index[1],words))
+       return(SELF1);
+     else if (IsSpatial(node,dinfo->index[2],words))
+       return(SELF2);
+     else
+       return(NONE);
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static void UpdatePrefetchCoeffFor_V0(AST_INDEX node,
+				      dep_info_type *dinfo,
+				      int refs)
+  {
+   switch (GetSpatialType(node,dinfo,NULL,0,0))
+     {
+      case SELF:
+        update_gcoeff(dinfo->PrefetchCoeff.V0[0],0,0,refs);
+        break;
+      case SELF1:
+        update_gcoeff(dinfo->PrefetchCoeff.V0[1],0,0,refs);
+        break;
+      case SELF2:
+        update_gcoeff(dinfo->PrefetchCoeff.V0[2],0,0,refs);
+        break;
+      case S_NONE:
+        update_gcoeff(dinfo->PrefetchCoeff.V0[3],0,0,refs);
+        break;
+      default:
+        break;
+     }
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static void UpdatePrefetchCoeffFor_VC(AST_INDEX node,
+				      int *vector,
+				      dep_info_type *dinfo,
+				      int level,
+				      int max_level,
+				      int refs)
+  {
+   int dist1,dist2,distn,cindex1,cindex2,dvect[MAXLOOP];
+
+     get_distances(dinfo,dvect,&dist1,&dist2,&distn);
+     cindex1 = get_coeff_index(dist1);
+     cindex2 = get_coeff_index(dist2);
+     switch (GetSpatialType(node,dinfo,vector,level,max_level))
+       {
+        case SELF:
+	  update_lcoeff(dinfo->PrefetchCoeff.VC[0][0],cindex1,cindex2,refs);
+	  update_gcoeff(dinfo->PrefetchCoeff.VC[0][1],cindex1,cindex2,dist2 * refs);
+	  update_gcoeff(dinfo->PrefetchCoeff.VC[0][2],cindex1,cindex2,dist1 * refs);
+	  update_gcoeff(dinfo->PrefetchCoeff.VC[0][3],cindex1,cindex2,
+			-(dist1 * dist2 * refs));
+          break;
+        case SELF1:
+	  update_lcoeff(dinfo->PrefetchCoeff.VC[1][0],cindex1,cindex2,refs);
+	  update_lcoeff(dinfo->PrefetchCoeff.VC[1][1],cindex1,cindex2,dist2*refs);
+	  update_gcoeff(dinfo->PrefetchCoeff.VC[1][3],cindex1,cindex2,dist1*dist2*refs);
+          break;
+        case SELF2:
+	  update_lcoeff(dinfo->PrefetchCoeff.VC[2][0],cindex1,cindex2,refs);
+	  update_lcoeff(dinfo->PrefetchCoeff.VC[2][2],cindex1,cindex2,dist1 * refs);
+	  update_gcoeff(dinfo->PrefetchCoeff.VC[2][3],cindex1,cindex2,dist1*dist2*refs);
+          break;
+        case S_NONE:
+	  update_lcoeff(dinfo->PrefetchCoeff.VC[3][0],cindex1,cindex2,1);
+	  update_gcoeff(dinfo->PrefetchCoeff.VC[3][1],cindex1,cindex2,dist2 * refs);
+	  update_gcoeff(dinfo->PrefetchCoeff.VC[3][2],cindex1,cindex2,dist1 * refs);
+	  update_gcoeff(dinfo->PrefetchCoeff.VC[3][3],cindex1,cindex2,
+			-(dist1 * dist2 * refs));
+          break;
+        default:
+          break;
+       }
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static void UpdatePrefetchCoeffFor_VI(AST_INDEX node,
+				      int *vector,
+				      dep_info_type *dinfo,
+				      int level,
+				      int max_level,
+				      int refs)
+  {
+   subscript_info_type *sptr;
+   int dist1,dist2,distn,cindex1,cindex2,dvect[MAXLOOP];
+
+     get_distances(dinfo,dvect,&dist1,&dist2,&distn);
+     sptr = get_subscript_ptr(gen_SUBSCRIPT_get_name(node));
+     switch (GetSpatialType(node,dinfo,vector,level,max_level))
+       {
+	case SELF:
+	  if (sptr->is_scalar[1])
+	    if (sptr->is_scalar[0])
+	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
+	        update_gcoeff(dinfo->PrefetchCoeff.VI[0][3],0,0,refs);
+	      else;
+	    else
+	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
+	        update_gcoeff(dinfo->PrefetchCoeff.VI[0][1],0,0,refs);
+	      else;
+	  else
+	    if (sptr->is_scalar[0])
+	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
+	        update_gcoeff(dinfo->PrefetchCoeff.VI[0][2],0,0,refs);
+          break;
+        case SELF1:
+	   if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
+	     update_gcoeff(dinfo->PrefetchCoeff.VI[1][2],0,0,refs);
+          break;
+        case SELF2:
+	   if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
+	     update_gcoeff(dinfo->PrefetchCoeff.VI[2][1],0,0,refs);
+          break;
+        case S_NONE:
+	  if (sptr->is_scalar[1])
+	    if (sptr->is_scalar[0])
+	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
+	        update_gcoeff(dinfo->PrefetchCoeff.VI[3][3],0,0,refs);
+	      else;
+	    else
+	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
+	        update_gcoeff(dinfo->PrefetchCoeff.VI[3][1],0,0,refs);
+	      else;
+	  else
+	    if (sptr->is_scalar[0])
+	      if (NOT(vector_all_zeros(dvect,dinfo->inner_level)))
+	        update_gcoeff(dinfo->PrefetchCoeff.VI[3][2],0,0,refs);
+          break;
+        default:
+          break;
+	 }
+  }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static void update_coeff_for_invariants(AST_INDEX node,
 					subscript_info_type *sptr,
@@ -1012,6 +1731,18 @@ static void update_coeff_for_invariants(AST_INDEX node,
 	 }
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void update_mem_coeff_with_vector(AST_INDEX node,
 					 dep_info_type *dep_info,
 					 int       *dvect,
@@ -1030,6 +1761,18 @@ static void update_mem_coeff_with_vector(AST_INDEX node,
      update_lcoeff(dep_info->mem_coeff[0],cindex1,cindex2,1);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void update_addr_coeff_with_no_dep(AST_INDEX node,
 					  dep_info_type *dep_info)
 
@@ -1047,6 +1790,18 @@ static void update_addr_coeff_with_no_dep(AST_INDEX node,
        else
          update_gcoeff(dep_info->addr_coeff[3],0,0,1);
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static void update_addr_coeff_with_vector(AST_INDEX node,
 					  dep_info_type *dep_info,
@@ -1083,12 +1838,24 @@ static void update_addr_coeff_with_vector(AST_INDEX node,
        update_gcoeff(dep_info->addr_coeff[3],0,0,1);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void compute_mem_addr_coeffs(dep_info_type *dep_info,
 				    UtilList      *nlist)
 
   {
    subscript_info_type *sptr;
-   int refs, regs, dist1, dist2, distn,i; 
+   int refs, regs, dist1, dist2, distn,i, level = MAXINT, max_level = 0; 
    int memory_vec[MAXLOOP], address_vec[MAXLOOP];
    AST_INDEX node;
    UtilNode  *lnode;
@@ -1104,10 +1871,13 @@ static void compute_mem_addr_coeffs(dep_info_type *dep_info,
 	   put_vec_DIS(memory_vec,i,MAXINT);
 	   put_vec_DIS(address_vec,i,MAXINT);
 	  }
-	summarize_node_vector(memory_vec,address_vec,node,nlist,dep_info);
+	summarize_node_vector(memory_vec,address_vec,node,nlist,&level,
+			      &max_level,dep_info);
 	if (get_vec_DIS(memory_vec,1) == MAXINT)/* if no incoming dependence */
 	  {
 	   update_gcoeff(dep_info->mem_coeff[0],0,0,refs);
+	   if (mc_aggressive)
+	     UpdatePrefetchCoeffFor_V0(node,dep_info,refs);
 	   if (get_vec_DIS(address_vec,1) == MAXINT) 
                      /* if no incoming dependence */
 	     update_addr_coeff_with_no_dep(node,dep_info);
@@ -1119,15 +1889,34 @@ static void compute_mem_addr_coeffs(dep_info_type *dep_info,
 	   sptr = get_subscript_ptr(node);
 	   if (!sptr->is_scalar[2])
 	     if (sptr->is_scalar[0] || sptr->is_scalar[1])
-	       update_coeff_for_invariants(node,sptr,dep_info,memory_vec,refs);
+	       {
+		update_coeff_for_invariants(node,sptr,dep_info,memory_vec,
+					    refs);
+		if (mc_aggressive)
+		  UpdatePrefetchCoeffFor_VI(node,memory_vec,dep_info,level,max_level,refs);
+	       }
 	     else
 	       {
+		if (mc_aggressive)
+		  UpdatePrefetchCoeffFor_VC(node,memory_vec,dep_info,level,max_level,refs);
 		update_mem_coeff_with_vector(node,dep_info,memory_vec,refs);
 		update_addr_coeff_with_vector(node,dep_info,address_vec);
 	       }
 	  }
        }
   }
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 static void compute_MIV_coefficients(AST_INDEX     node,
 				     dep_info_type *dinfo)
@@ -1220,6 +2009,18 @@ static void compute_MIV_coefficients(AST_INDEX     node,
 	   update_gcoeff(dinfo->reg_coeff[0],0,0,1);
   }
 				     
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static Boolean node_is_consistent_MIV(AST_INDEX     node,
 				      dep_info_type *dinfo)
   
@@ -1256,6 +2057,18 @@ static Boolean node_is_consistent_MIV(AST_INDEX     node,
        return(false);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void change_MIV_to_inconsistent(AST_INDEX     node,
 			 	       dep_info_type *dinfo)
   
@@ -1273,12 +2086,19 @@ static void change_MIV_to_inconsistent(AST_INDEX     node,
          dg[edge].consistent = inconsistent;
   }
 
-static void compute_coefficients(dep_info_type *dep_info)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
 /*                                                                          */
 /****************************************************************************/
+
+
+static void compute_coefficients(dep_info_type *dep_info)
 
   {
    UtilNode            *lnode;
@@ -1322,20 +2142,29 @@ static void compute_coefficients(dep_info_type *dep_info)
      util_list_free(dep_info->partition);
   }
 
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 int mh_increase_unroll(int   max,
 		       int   denom,
 		       float rhoL_lp)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
   {
+   float v;
    int x;
 
      x = (int)(rhoL_lp / denom);
-     if (x * denom != rhoL_lp)
+     v = rhoL_lp / denom;
+     if (v > (float) x)
        x++;
      if (x <= max+1)
        return(x);
@@ -1343,16 +2172,24 @@ int mh_increase_unroll(int   max,
        return(max+1);
   }
 
-static void compute_two_loops(model_loop    *loop_data,
-			      int           *unroll_vector,
-			      int           *unroll_loops,
-			      dep_info_type *dep_info,
-			      float         rhoL_lp)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
 /*                                                                          */
 /****************************************************************************/
+
+
+static void compute_two_loops(model_loop    *loop_data,
+			      int           *unroll_vector,
+			      int           *unroll_loops,
+			      int           inner_loop,
+			      dep_info_type *dep_info,
+			      float         rhoL_lp)
 
   {
    int   x1,x2,max_x2,min_x1,temp,fp_regs,a_regs,mach_fp,mach_a;
@@ -1370,6 +2207,7 @@ static void compute_two_loops(model_loop    *loop_data,
        {
 	dep_info->x1 = 1;
 	dep_info->x2 = 1;
+	loop_data[inner_loop].NoImprovement = true;
        }
      else
        {
@@ -1449,6 +2287,7 @@ static void compute_two_loops(model_loop    *loop_data,
 	       dep_info->x2 =mh_increase_unroll(loop_data[unroll_loops[1]].max,
 						dep_info->x1 * dep_info->flops,
 						rhoL_lp);
+	     loop_data[inner_loop].InterlockCausedUnroll = true;
 	    }
 	  unroll_vector[loop_data[unroll_loops[0]].level-1] = dep_info->x1 - 1;
 	  unroll_vector[loop_data[unroll_loops[1]].level-1] = dep_info->x2 - 1;
@@ -1460,9 +2299,12 @@ static void compute_two_loops(model_loop    *loop_data,
 	  dep_info->x2 = unroll_vector[loop_data[unroll_loops[1]].level-1] + 1;
 	  if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
 	      dep_info->flops > 0)
-	    dep_info->x1 = mh_increase_unroll(loop_data[unroll_loops[0]].max,
-					      dep_info->x2 * dep_info->flops,
-					      rhoL_lp);
+	    {
+	     dep_info->x1 = mh_increase_unroll(loop_data[unroll_loops[0]].max,
+					       dep_info->x2 * dep_info->flops,
+					       rhoL_lp);
+	     loop_data[inner_loop].InterlockCausedUnroll = true;
+	    }
 	  unroll_vector[loop_data[unroll_loops[0]].level-1] = dep_info->x1 - 1;
 	 }
      else 
@@ -1473,9 +2315,12 @@ static void compute_two_loops(model_loop    *loop_data,
 	  dep_info->x1 = unroll_vector[loop_data[unroll_loops[0]].level-1] + 1;
 	  if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
 	      dep_info->flops > 0)
-	    dep_info->x2 = mh_increase_unroll(loop_data[unroll_loops[1]].max,
-					      dep_info->x1 * dep_info->flops,
-					      rhoL_lp);
+	    {
+	     dep_info->x2 = mh_increase_unroll(loop_data[unroll_loops[1]].max,
+					       dep_info->x1 * dep_info->flops,
+					       rhoL_lp);
+	     loop_data[inner_loop].InterlockCausedUnroll = true;
+	    }
 	  unroll_vector[loop_data[unroll_loops[1]].level-1] = dep_info->x2 - 1;
 	 }
        else
@@ -1484,19 +2329,37 @@ static void compute_two_loops(model_loop    *loop_data,
 	                loop_data[unroll_loops[0]].max;
 	  unroll_vector[loop_data[unroll_loops[1]].level-1] = 
 	                loop_data[unroll_loops[1]].max;
+	  if (loop_data[unroll_loops[0]].max == 0 &&
+	      loop_data[unroll_loops[1]].max == 0)
+	    {
+	     if (NOT(loop_data[unroll_loops[0]].distribute) ||
+		 NOT(loop_data[unroll_loops[1]].distribute))
+	       loop_data[inner_loop].Distribute = true;
+	     if (NOT(loop_data[unroll_loops[0]].interchange) ||
+		 NOT(loop_data[unroll_loops[0]].interchange))
+	       loop_data[inner_loop].Interchange = true;
+	    }
 	 }
   }
   
-static void compute_one_loop(model_loop    *loop_data,
-			     int           *unroll_vector,
-			     int           unroll_loop,
-			     dep_info_type *dep_info,
-			     float           rhoL_lp)
 
 /****************************************************************************/
 /*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
 /*                                                                          */
 /****************************************************************************/
+
+
+static void compute_one_loop(model_loop    *loop_data,
+			     int           *unroll_vector,
+			     int           unroll_loop,
+			     int           inner_loop,
+			     dep_info_type *dep_info,
+			     float           rhoL_lp)
 
   {
    float min_obj,new_obj,abs_obj;
@@ -1508,7 +2371,10 @@ static void compute_one_loop(model_loop    *loop_data,
 	  dep_info->reg_coeff[1][2][2] == 0 &&
 	  dep_info->reg_coeff[2][2][2] == 0 && 
 	  dep_info->scalar_coeff[2] == 0))
-       dep_info->x1 = 1;
+       {
+	dep_info->x1 = 1;
+	loop_data[inner_loop].NoImprovement = true;
+       }
      else
        {
 	mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
@@ -1556,6 +2422,178 @@ static void compute_one_loop(model_loop    *loop_data,
        {
 	if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
 	    dep_info->flops > 0)
+	  {
+	   dep_info->x1 = mh_increase_unroll(loop_data[unroll_loop].max,
+					     dep_info->x2 * dep_info->flops,
+					     rhoL_lp);
+	   loop_data[inner_loop].InterlockCausedUnroll = true;
+	  }
+	unroll_vector[loop_data[unroll_loop].level-1]= dep_info->x1 - 1;
+       }
+     else
+       {
+	unroll_vector[loop_data[unroll_loop].level-1] = 
+                  loop_data[unroll_loop].max;
+	if (loop_data[unroll_loop].max == 0)
+	  {
+	   if (NOT(loop_data[unroll_loop].distribute))
+	     loop_data[inner_loop].Distribute = true;
+	   if (NOT(loop_data[unroll_loop].interchange))
+	     loop_data[inner_loop].Interchange = true;
+	  }
+       }
+  }   
+  
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static void compute_two_cache(model_loop    *loop_data,
+			      int           *unroll_vector,
+			      int           *unroll_loops,
+			      dep_info_type *dep_info,
+			      float         rhoL_lp)
+
+  {
+   int   x1,x2,max_x2,min_x1,temp,fp_regs,a_regs,mach_fp,mach_a;
+   float min_obj,new_obj,abs_obj;
+   
+     mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
+     mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped))->int_regs;
+     min_obj = (float)MAXINT;
+     for (x1 = 1; min_obj > 0.01 && x1 <= mach_fp; x1++)
+       for (x2 = 1; min_obj > 0.01 && x2 <= mach_fp; x2++)
+	 {
+	  new_obj = mh_loop_balance_cache(dep_info->mem_coeff,dep_info->PrefetchCoeff,
+				  ((config_type*)PED_MH_CONFIG(dep_info->ped))->line,
+					  dep_info->flops,x1,x2)
+	               - ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
+	  if (new_obj < 0.0)
+	    abs_obj = -new_obj;
+	  else
+	    abs_obj = new_obj;
+	  fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,dep_info->scalar_coeff,
+					    x1,x2) + dep_info->scalar_regs;
+	  a_regs = mh_addr_register_pressure(dep_info->addr_coeff,x1,x2);
+	  if (abs_obj < min_obj && fp_regs <= mach_fp && a_regs <= mach_a)
+	    {
+	     min_obj = abs_obj;
+	     dep_info->x1 = x1;
+	     dep_info->x2 = x2;
+	    }
+	  if (fp_regs > mach_fp || a_regs > mach_a)
+	    x2 = mach_fp + 1;
+	 }
+
+     if (dep_info->x1 <= loop_data[unroll_loops[0]].max)
+       if (dep_info->x2 <= loop_data[unroll_loops[1]].max)
+	 {
+	  if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
+	      dep_info->flops > 0)
+	    {
+	     dep_info->x1 = mh_increase_unroll(loop_data[unroll_loops[0]].max,
+					       dep_info->x2 * dep_info->flops,
+					       rhoL_lp);
+	     if (rhoL_lp > dep_info->x1 * dep_info->x2 * dep_info->flops)
+	       dep_info->x2 =mh_increase_unroll(loop_data[unroll_loops[1]].max,
+						dep_info->x1 * dep_info->flops,
+						rhoL_lp);
+	    }
+	  unroll_vector[loop_data[unroll_loops[0]].level-1] = dep_info->x1 - 1;
+	  unroll_vector[loop_data[unroll_loops[1]].level-1] = dep_info->x2 - 1;
+	 }
+       else
+	 {
+	  unroll_vector[loop_data[unroll_loops[1]].level-1] = 
+                          loop_data[unroll_loops[1]].max;
+	  dep_info->x2 = unroll_vector[loop_data[unroll_loops[1]].level-1] + 1;
+	  if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
+	      dep_info->flops > 0)
+	    dep_info->x1 = mh_increase_unroll(loop_data[unroll_loops[0]].max,
+					      dep_info->x2 * dep_info->flops,
+					      rhoL_lp);
+	  unroll_vector[loop_data[unroll_loops[0]].level-1] = dep_info->x1 - 1;
+	 }
+     else 
+       if (dep_info->x2 <= loop_data[unroll_loops[1]].max)
+	 {
+	  unroll_vector[loop_data[unroll_loops[0]].level-1] = 
+	             loop_data[unroll_loops[0]].max;
+	  dep_info->x1 = unroll_vector[loop_data[unroll_loops[0]].level-1] + 1;
+	  if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
+	      dep_info->flops > 0)
+	    dep_info->x2 = mh_increase_unroll(loop_data[unroll_loops[1]].max,
+					      dep_info->x1 * dep_info->flops,
+					      rhoL_lp);
+	  unroll_vector[loop_data[unroll_loops[1]].level-1] = dep_info->x2 - 1;
+	 }
+       else
+	 {
+	  unroll_vector[loop_data[unroll_loops[0]].level-1] = 
+	                loop_data[unroll_loops[0]].max;
+	  unroll_vector[loop_data[unroll_loops[1]].level-1] = 
+	                loop_data[unroll_loops[1]].max;
+	 }
+  }
+  
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
+static void compute_one_cache(model_loop    *loop_data,
+			      int           *unroll_vector,
+			      int           unroll_loop,
+			      dep_info_type *dep_info,
+			      float           rhoL_lp)
+
+  {
+   float min_obj,new_obj,abs_obj;
+   int   x,min_x,max_x,fp_regs,a_regs,mach_fp,mach_a;
+
+     mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
+     mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped))->int_regs;
+     min_obj = (float)MAXINT;
+     for (x = 1; x <= mach_fp && min_obj > 0.01; x++)
+       {
+	new_obj = mh_loop_balance_cache(dep_info->mem_coeff,dep_info->PrefetchCoeff,
+				((config_type*)PED_MH_CONFIG(dep_info->ped))->line,
+					dep_info->flops,x,1) -
+			 ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
+	if (new_obj < 0.0)
+	  abs_obj = -new_obj;
+	else
+	  abs_obj = new_obj;
+	fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,dep_info->scalar_coeff,x,
+					  1) + dep_info->scalar_regs;
+	a_regs = mh_addr_register_pressure(dep_info->addr_coeff,x,1);
+	if (abs_obj < min_obj && a_regs <= mach_a && fp_regs <= mach_fp)
+	  {
+	   min_obj = abs_obj;
+	   dep_info->x1 = x;
+	  }
+	if (a_regs > mach_a || fp_regs > mach_fp)
+	  x = mach_fp + 1;
+       }
+     if (dep_info->x1 <= loop_data[unroll_loop].max)
+       {
+	if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
+	    dep_info->flops > 0)
 	  dep_info->x1 = mh_increase_unroll(loop_data[unroll_loop].max,
 					    dep_info->x2 * dep_info->flops,
 					    rhoL_lp);
@@ -1566,6 +2604,18 @@ static void compute_one_loop(model_loop    *loop_data,
                   loop_data[unroll_loop].max;
   }   
   
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void do_computation(model_loop    *loop_data,
 			   int           loop,
 			   int           *unroll_vector,
@@ -1575,11 +2625,6 @@ static void do_computation(model_loop    *loop_data,
 			   SymDescriptor symtab,
 			   arena_type    *ar)
 
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
   {
    int           i,j,k,regs;
    float         rhoL_lp,bal;
@@ -1588,6 +2633,7 @@ static void do_computation(model_loop    *loop_data,
    AST_INDEX     step;
 
      dep_info.ar = ar;
+     dep_info.loop_data = loop_data;
      if (count == 2)
        {
 	dep_info.level1 = loop_data[unroll_loops[0]].level;
@@ -1675,41 +2721,80 @@ static void do_computation(model_loop    *loop_data,
      walk_expression(loop_data[loop].node,partition_names,NOFUNC,
 		     (Generic)&dep_info);
      compute_coefficients(&dep_info);
-     if ((bal = mh_loop_balance(dep_info.mem_coeff,dep_info.flops,dep_info.x1,
-			 dep_info.x2) -
+     loop_data[loop].ibalance = mh_loop_balance(dep_info.mem_coeff,
+						dep_info.flops,1,1);
+     rhoL_lp = loop_data[loop].rho * 
+	          ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
+     if ((loop_data[loop].ibalance -
 	  ((config_type *)PED_MH_CONFIG(ped))->beta_m) <= 0.0)
        {
-        if (bal < 0.0)
+	if (count == 2)
+	  unroll_vector[loop_data[unroll_loops[1]].level-1] = 0;
+	if (rhoL_lp > (float)(dep_info.flops) && dep_info.flops > 0)
 	  {
-	   unroll_vector[loop_data[unroll_loops[0]].level-1] = 0;
-	   if (count == 2)
-	     unroll_vector[loop_data[unroll_loops[1]].level-1] = 0;
+	   unroll_vector[loop_data[unroll_loops[0]].level-1] = 
+	      mh_increase_unroll(loop_data[unroll_loops[0]].max,dep_info.flops,rhoL_lp);
+	   loop_data[loop].fbalance = mh_loop_balance(dep_info.mem_coeff,dep_info.flops,
+				    unroll_vector[loop_data[unroll_loops[0]].level-1]+1,
+						      1);
+	   loop_data[loop].registers = mh_fp_register_pressure(dep_info.reg_coeff,
+							       dep_info.scalar_coeff,
+				     unroll_vector[loop_data[unroll_loops[0]].level-1]+1,
+							       1) + dep_info.scalar_regs;
+	   loop_data[loop].InterlockCausedUnroll = true;
 	  }
 	else
 	  {
-	   unroll_vector[loop_data[unroll_loops[0]].level-1] = dep_info.x1-1;
-	   if (count == 2)
-	     unroll_vector[loop_data[unroll_loops[1]].level-1] = dep_info.x2-1;
+	   unroll_vector[loop_data[unroll_loops[0]].level-1] = 0;
+	   loop_data[loop].fbalance = loop_data[loop].ibalance;
+	   loop_data[loop].registers = mh_fp_register_pressure(dep_info.reg_coeff,
+							       dep_info.scalar_coeff,1,
+							       1) + dep_info.scalar_regs;
 	  }
        }
      else
        {
-	rhoL_lp = loop_data[loop].rho * 
-	     ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
 	if (count == 2)
-	  compute_two_loops(loop_data,unroll_vector,unroll_loops,&dep_info,
+	 if (mc_aggressive)
+	  compute_two_cache(loop_data,unroll_vector,unroll_loops,&dep_info,
+			    rhoL_lp);
+	 else
+	  compute_two_loops(loop_data,unroll_vector,unroll_loops,loop,&dep_info,
 			    rhoL_lp);
 	else if (count == 1)
-	  compute_one_loop(loop_data,unroll_vector,unroll_loops[0],&dep_info,
+	 if (mc_aggressive)
+	  compute_one_cache(loop_data,unroll_vector,unroll_loops[0],&dep_info,
+			    rhoL_lp);
+	 else
+	  compute_one_loop(loop_data,unroll_vector,unroll_loops[0],loop,&dep_info,
 			   rhoL_lp);
 	else if ((regs = dep_info.reg_coeff[0][2][2] + 
 		  dep_info.scalar_coeff[0]) > 0)
 	  loop_data[unroll_loops[0]].max = (((config_type *)PED_MH_CONFIG(ped))
 	                                  ->max_regs - dep_info.scalar_regs) /
 					  regs - 1;
+	loop_data[loop].fbalance = mh_loop_balance(dep_info.mem_coeff,
+						   dep_info.flops,dep_info.x1,
+						   dep_info.x2);
+	loop_data[loop].registers = 
+	      mh_fp_register_pressure(dep_info.reg_coeff,dep_info.scalar_coeff,
+				      dep_info.x1,dep_info.x2) +
+				      dep_info.scalar_regs;
        }
   }
       
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
+
 static void compute_values(model_loop    *loop_data,
 			   int           loop,
 			   int           *unroll_vector,
@@ -1718,11 +2803,6 @@ static void compute_values(model_loop    *loop_data,
 			   PedInfo       ped,
 			   SymDescriptor symtab,
 			   arena_type    *ar)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
 
   {
    int i;
@@ -1759,7 +2839,18 @@ static void compute_values(model_loop    *loop_data,
 	  }
        }
   }
-   
+
+
+/****************************************************************************/
+/*                                                                          */
+/*    Function:
+/*                                                                          */
+/*    Input:
+/*                                                                          */
+/*    Description:
+/*                                                                          */
+/****************************************************************************/
+
 
 void mh_compute_unroll_amounts(model_loop    *loop_data,
 			       int           size,
@@ -1768,11 +2859,6 @@ void mh_compute_unroll_amounts(model_loop    *loop_data,
 			       SymDescriptor symtab,
 			       arena_type    *ar)
 			       
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-
   {
    int unroll_loops[2];
 
