@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.36 2001/09/14 16:58:26 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.37 2001/10/12 19:21:29 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -69,7 +69,7 @@ Boolean IsConstantStride(AST_INDEX Node,char *IVar)
 
 static Boolean IsValidDependence(AST_INDEX PrefetchNode,
 				 AST_INDEX RefNode,
-				 char      *InnerIvar = NULL)
+				 char      *InnerIvar = (char *)NULL)
 
 {
   AST_INDEX SubList1,SubList2;

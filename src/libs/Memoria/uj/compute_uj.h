@@ -1,4 +1,4 @@
-/* $Id: compute_uj.h,v 1.13 1997/03/27 20:28:01 carr Exp $ */
+/* $Id: compute_uj.h,v 1.14 2001/10/12 19:22:16 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -92,6 +92,10 @@ typedef struct vectorinfotype {
   AST_INDEX src;
   int       vector[MAXLOOP];
  } vector_info_type;
+
+#ifdef SOLARIS
+#undef S_NONE
+#endif
 
 typedef enum {S_NONE,SELF,SELF1,SELF2,GROUP} SpatialLocalityType;
 typedef enum {UNIT,CEIL_FRACTION,FRACTION,CEIL_MIN_FRACTION_X,

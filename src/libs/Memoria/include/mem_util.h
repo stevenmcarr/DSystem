@@ -1,4 +1,4 @@
-/* $Id: mem_util.h,v 1.18 1997/10/30 15:12:13 carr Exp $ */
+/* $Id: mem_util.h,v 1.19 2001/10/12 19:21:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -124,7 +124,7 @@ EXTERN(LocalityType, ut_GetReferenceType, (AST_INDEX  node,
 					   PedInfo    ped,
 					   UniformlyGeneratedSets *UGS));
 EXTERN(void, ut_GetSubscriptText, (AST_INDEX Node, char *Text,
-	                           SymDescriptor symtab = NULL));
+	                           SymDescriptor symtab = (SymDescriptor) NULL));
 
 EXTERN(int,ut_change_logical_to_block_if, (AST_INDEX stmt,
 					   int       level,
