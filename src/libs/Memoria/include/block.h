@@ -1,4 +1,5 @@
-/* $Id: block.h,v 1.5 1993/06/21 13:47:56 carr Exp $ */
+/* $Id: block.h,v 1.6 1994/07/08 11:31:33 yguan Exp $ */
+
 
 #ifndef block_h
 #define block_h
@@ -18,6 +19,8 @@
 #ifndef fortsym_h
 #include <fort/fortsym.h>  /* for SymDescriptor */
 #endif
+
+#include <LoopStats.h>
 
 typedef struct block_struct block_type;
 
@@ -86,7 +89,8 @@ typedef struct {
 EXTERN(void, sr_build_flow_graph,(flow_graph_type *flow_graph,
 				  AST_INDEX stmt_list,
 				  SymDescriptor symtab,
-				  arena_type *ar));
+				  arena_type *ar,
+				  LoopStatsType *loopstat));
 EXTERN(block_type *, sr_insert_block_on_edge,(arena_type *ar,
 					      edge_type *edge,
 					      SymDescriptor symtab));

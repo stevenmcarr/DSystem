@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.6 1994/06/13 16:13:39 carr Exp $ */
+/* $Id: LoopStats.h,v 1.7 1994/07/08 11:31:19 yguan Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -78,6 +78,21 @@ typedef struct loopstatstype {
           InterlockCausedUnroll;
 
 	  /* ADD FIELDS FOR SR STATS HERE */
+
+  int     NumLoop_badexit,     /* number of loops having bad exit */
+          NumLoop_backjump,    /* number of loops having back jump */
+	  NumLoop_illjump,     /* number of loops having illegal jump */
+	  Numbadflow,          /* number of loops having bad flow */
+          FPRegisterPressure,  /* float point register pressure */
+	  NumLoopReplaced,     /* number of loops replaced */
+	  NumLoopSpilled,      /* number of loops spilled  */
+          NumRefRep,           /* number of references replaced */
+          NumBasicBlock,       /* number of basic blocks */
+	  NumZeroFPLoop,       /* number of loops w/ free FP pressure */ 
+          NumInnermostLoop;    /* number of innermost loops */
+
+  float   LoopBal;             /* Loop Balance */
+  
  } LoopStatsType;
 
 #endif

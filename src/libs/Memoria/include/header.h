@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.10 1994/06/13 10:32:56 carr Exp $ */
+/* $Id: header.h,v 1.11 1994/07/08 11:31:49 yguan Exp $ */
 
 #ifndef header_h
 #define header_h
@@ -63,6 +63,10 @@ EXTERN (void, ApplyMemoryCompiler, (int selection, PedInfo ped, AST_INDEX root,
 EXTERN(void, memory_stats_total, (char *program));
 
 EXTERN(void, memory_UnrollStatsTotal, (char *program));
+
+EXTERN(void, memory_SRStatsTotal, (char *program));
+
+EXTERN(void, SRStatsDump, (FILE *logfile, LoopStatsType *LoopStats));
 
 EXTERN(void, memory_PerformCacheAnalysis, (PedInfo      ped,
 					   SymDescriptor symtab,

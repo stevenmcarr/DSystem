@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.16 1994/06/30 14:36:04 carr Exp $ */
+/* $Id: scalar.C,v 1.17 1994/07/08 11:32:14 yguan Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -604,7 +604,7 @@ static void perform_scalar_replacement(do_info_type  *do_info,
            else if (prelim_info.backjump == true)
 	      ++ do_info->LoopStats->NumLoop_backjump;
 	   else if (prelim_info.illegal_jump)
-	      printf("ILLEGAL JUMP\n");
+	      ++ do_info->LoopStats->NumLoop_illjump;
 	   else printf("What kind bad flow !!\n");
 
 	   if (logfile != NULL)
@@ -698,8 +698,12 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 	util_free_nodes(name_info.glist);
        }
      else if (logfile != NULL)
-         /* INCREMENT FP COUNTER HERE */
-       fprintf(logfile,"No FP Register Pressure\n");
+       {
+           /* INCREMENT FP COUNTER HERE */
+         fprintf(logfile,"No FP Register Pressure\n");
+         ++ do_info->LoopStats->NumZeroFPLoop;
+       }
+
      util_list_free(name_info.glist);
      walk_expression(root,remove_dependences,NOFUNC,(Generic)do_info->ped);
      walk_statements(root,level,NOFUNC,cleanup_gotos,
