@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.32 2000/05/09 20:14:48 mjbedy Exp $ */
+/* $Id: CacheAnalysis.C,v 1.33 2000/05/16 03:13:19 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -767,7 +767,8 @@ void CalcPrefetchingLoadDistance(AST_INDEX Node,
                                  char* IVar,
                                  int LogMaxBytesPerWord,
                                  AST_INDEX& ASTDistance,
-                                 int& ConstVal)
+                                 int& ConstVal,
+                                 Boolean& FirstSub)
 {
     // LOTS of variables for the PFLD stuff.
     AST_INDEX ArrayNameAST,
@@ -785,6 +786,8 @@ void CalcPrefetchingLoadDistance(AST_INDEX Node,
     ArrayBoundEnum UpperBoundType,
         LowerBoundType;
     char *ArrayName;
+    
+    FirstSub = true;
     
     ASTDistance = AST_NIL;
     ConstVal = 1;
@@ -820,6 +823,9 @@ void CalcPrefetchingLoadDistance(AST_INDEX Node,
         }
         else
         {
+            // It is not the first subscript.
+            FirstSub = false;
+            
             // Find the bounds. I hope that the list and the number are the same...
             GetArrayBound(Symtab, ArrayName, Which, UpperBoundType, LowerBoundType,
                           UpperBoundConst, LowerBoundConst, UpperBoundAST, 
@@ -900,6 +906,7 @@ static int SetDistance(AST_INDEX Node,
 {
     AST_INDEX ASTDistance;
     int ConstVal;
+    Boolean FirstSub;
     
     if (is_subscript(Node))
     {
@@ -928,21 +935,48 @@ static int SetDistance(AST_INDEX Node,
             }
             else if (DepInfoPtr(Node)->Locality == NONE)
             {
+
+
+                // Oops.. Keep in mind that this function calculates the distance
+                // between array(...,IVar,...) and array(...,IVar+1,...). MJB.
                 CalcPrefetchingLoadDistance(Node, PrefetchData->symtab,
                                             PrefetchData->IVar,
                                             PrefetchData->LogMaxBytesPerWord,
                                             ASTDistance,
-                                            ConstVal);
+                                            ConstVal,
+                                            FirstSub);
                 
+                // the value we have now needs to be multiplied by the number of
+                // iterations till we need the data. I don't fiddle with rounding
+                // to the size of a cache line, because we want EXACTLY the location.
+                // We are most likely jumping through memory with a large stride.
+                // The exception is when FirstSub is true, which means the first 
+                // subscript was the IVar. Probably it is non Uniformly Generated, so
+                // it ended being Locality=NONE. Assume that it is constant stride if
+                // we got here.
                 if (ASTDistance != AST_NIL)
                 {
-                    DepInfoPtr(Node)->PrefetchOffsetAST = ASTDistance;
+                    DepInfoPtr(Node)->PrefetchOffsetAST = 
+                        MakeMul(ASTDistance, 
+                                MakeIntConstant((ceil_ab(PrefetchData->PrefetchLatency, 
+                                                         PrefetchData->LoopCycles))));
                     DepInfoPtr(Node)->PrefetchDistance = -1;
                 }
                 else
                 {
                     DepInfoPtr(Node)->PrefetchOffsetAST = AST_NIL;
-                    DepInfoPtr(Node)->PrefetchDistance = ConstVal;
+                    DepInfoPtr(Node)->PrefetchDistance = ConstVal * 
+                        (ceil_ab(PrefetchData->PrefetchLatency, PrefetchData->LoopCycles));
+                    
+                    if (FirstSub == true)
+                    {
+                        // Round to the next cache line.
+                        DepInfoPtr(Node)->PrefetchDistance = ceil_ab(DepInfoPtr(Node)->PrefetchDistance,
+                                                                     PrefetchData->LineSize) *
+                            PrefetchData->LineSize;
+                    }
+                    
+                        
                 }    
             }
              
