@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.15 2001/09/14 17:31:00 carr Exp $ */
+/* $Id: f2i_options.C,v 1.16 2001/09/17 13:47:16 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -25,8 +25,10 @@ Boolean f2i_ComputeInterproceduralInfo = false;
 /* these decls are to allow linking with the memory compiler for cache
 	analysis */
 
+int  selection;
 char *mc_program = NULL;
 char *mc_module_list = NULL;
+char *mc_module = NULL;
 Boolean mc_unroll_cache = false;
 Boolean mc_allow_expansion = false;
 Boolean mc_extended_cache = false;
@@ -37,6 +39,7 @@ Boolean Memoria_ConservativeSelfSpatial = false;
 int PartitionUnrollAmount = 0;
 int ReplaceLevel = 0;
 int DependenceLevel = 3;
+int StatsLevel = 0;
 int blue_color = 0;
 Boolean ReuseModelDebugFlag = false;
 Boolean DDGDebugFlag = false;
