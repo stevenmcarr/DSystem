@@ -1,4 +1,4 @@
-/* $Id: f2i.C,v 1.2 1997/03/27 20:15:16 carr Exp $ */
+/* $Id: f2i.C,v 1.3 1997/04/10 19:12:49 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -89,7 +89,7 @@ int f2iMain(int argc, char **argv)
   if (f2i_module)
     {
       module = new FortranModule;
-      if (module->Open(f2i_module) != 0)
+      if (module->Open(f2i_module) == 0)
 	f2iFile(module,NULL);
       else
 	errorMsgHandler.HandleMsg("Module %s not found.\n", f2i_module);
