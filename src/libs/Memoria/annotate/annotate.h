@@ -3,12 +3,14 @@
 
 #include <fort/ast.h>
 #include <fort/FortTextTree.h>
+#include <DirectivesInclude.h>
 
 typedef struct CallInfoTypeStruct {
   AST_INDEX Stmt;
   char      *routine;
   FortTextTree ftt;
   char         CacheRoutine[15];
+  SymDescriptor symtab;
  }  CallInfoType;
 
 #define PutLineNumber(n,v) \
@@ -16,5 +18,6 @@ typedef struct CallInfoTypeStruct {
 
 #define GetLineNumber(n) \
   ((int)ast_get_scratch(n))
+
 
 #endif
