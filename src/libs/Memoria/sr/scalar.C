@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.27 1995/08/21 15:10:13 carr Exp $ */
+/* $Id: scalar.C,v 1.28 1995/12/27 16:13:40 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -721,6 +721,15 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      gen_info.ped = do_info->ped;
      gen_info.array_table = prelim_info.array_table;
      sr_prune_graph(loop_body,level,&gen_info);
+     if (ReplaceLevel > 4 && ReplaceLevel < 8)
+       {
+
+	/* if we have removed some partially available generators, we must redo
+	   avail and antic analysis */
+	sr_redo_gen_avail(flow_graph,prelim_info.array_refs,do_info->ped,do_info->ar);
+	sr_perform_antic_analysis(flow_graph,prelim_info.array_refs,do_info->ped,
+				  do_info->ar);
+       }
      name_info.ped = do_info->ped;
      name_info.dg = dg_get_edge_structure( PED_DG(do_info->ped));
      name_info.glist = util_list_alloc((Generic)NULL,"generator-list");
