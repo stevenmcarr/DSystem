@@ -1,4 +1,4 @@
-/* $Id: yaccDirectives.y,v 1.8 1999/09/20 14:29:55 carr Exp $ */
+/* $Id: yaccDirectives.y,v 1.9 2000/01/27 19:20:47 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -57,6 +57,7 @@ directive : CDIR command
              {
 	      a2i_Directive = $2;
 	     }
+          ;
 
 command : PREFETCH constexpr COMMA subvar 
             {
@@ -81,22 +82,24 @@ subvar : id LPAR subscript_list RPAR
   {
    $$ = gen_SUBSCRIPT($1,$3);
   }
+          ;
 
-subscript_list: subscript
+subscript_list: subscript_list COMMA subscript
+                  {
+		   $$ = list_insert_last($1,$3);
+		  }
+              | subscript
                   {
 		   $$ = list_create($1);
 		  }
 
-              | subscript_list COMMA subscript
-                  {
-		   $$ = list_insert_last($1,$3);
-		  }
               ;
 
 subscript : subvar
               {$$ = $1;}
           | expr
               {$$ = $1;}
+          ;
 
 expr : expr PLUS expr
          {
@@ -199,7 +202,10 @@ Boolean a2i_string_parse (str,Dir,symtab)
   SymDescriptor symtab;
 
   {
-   a2i_DirectiveString = str;
+   // tell flex to scan the string rather than
+   // a file
+
+   a2i__scan_string(str); 
    a2i_IsDirective = true;
    a2i_parse();
    if (a2i_IsDirective)

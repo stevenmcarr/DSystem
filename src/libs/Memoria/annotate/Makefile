@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 1999/09/20 14:29:19 carr Exp $
+# $Id: Makefile,v 1.10 2000/01/27 19:20:47 carr Exp $
 HERE = libs/Memoria/annotate
 ARCHIVE		= ../Memoria-$(DSYSTEM_OS)-g.a
 SRCS		= annotate.C CacheAnalysis.C ldst.C lexDirectives.c \
@@ -14,5 +14,3 @@ $(DSYSTEM_PVT)/obj/$(DSYSTEM_OS)/$(HERE)/yaccDirectives.c: yaccDirectives.y
 
 $(DSYSTEM_PVT)/obj/$(DSYSTEM_OS)/$(HERE)/lexDirectives.c: lexDirectives.l
 	$(FLEX) -Pa2i_ -o$@ $< 
-	sed -e 's/getc([ ]*yyin[ ]*)/*(a2i_DirectiveString++)/g' -e 's/EOF/EOS/g' $@ > tempflex.c
-	$(MV) tempflex.c $@
