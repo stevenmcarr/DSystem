@@ -1,14 +1,13 @@
-# $Id: Makefile,v 1.3 1997/04/10 14:21:41 carr Exp $
+# $Id: Makefile,v 1.4 1997/04/24 14:11:33 carr Exp $
 
 HERE = libs/f2i
-SRCS   = ai.c addr.c do.c goto.c map.c  runtime.c idfa.c memos.c \
-	  static.c assign.c expr.c if.c params.c stmts.c assignment.c \
-	  expr2.c initials.c  postmap.c string2.c calls.c expr3.c intrins.c \
-	  prepass.c strings.c chars.c exps.c io.c procs.c sym.c common.c \
-	  gen.c  label.c regs.c utility.c data.c get.c  routine.c \
-	  mnemonics.c equiv.c directives.c AliasQuery.C
+SRCS   = ai.ansi.c addr.ansi.c do.ansi.c goto.ansi.c map.ansi.c  runtime.ansi.c idfa.ansi.c memos.ansi.c \
+	  static.ansi.c assign.ansi.c expr.ansi.c if.ansi.c params.ansi.c stmts.ansi.c assignment.ansi.c \
+	  expr2.ansi.c initials.ansi.c  postmap.ansi.c string2.ansi.c calls.ansi.c expr3.ansi.c intrins.ansi.c \
+	  prepass.ansi.c strings.ansi.c chars.ansi.c exps.ansi.c io.ansi.c procs.ansi.c sym.ansi.c common.ansi.c \
+	  gen.ansi.c  label.ansi.c regs.ansi.c utility.ansi.c data.ansi.c get.ansi.c  routine.ansi.c \
+	  mnemonics.ansi.c equiv.ansi.c directives.ansi.c AliasQuery.C
 
-#INCLUDEDIRS = libs/ipanalysis/include libs/mc_lib/include libs/mc_lib/annotate
 ARCHIVE	= F2i-$(DSYSTEM_OS)-g.a
 
 include Makeinclude

@@ -1,4 +1,4 @@
-/* $Id: f2i_label.h,v 1.1 1997/03/27 20:30:00 carr Exp $ */
+/* $Id: f2i_label.h,v 1.2 1997/04/24 14:11:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -25,9 +25,3 @@ struct label_element   		/*  element of the label table  */
 
 struct label_element *label_table;  /*  name table  */
 
-/* exported names */
-extern LabelCreateTable ();
-extern LabelGet();
-extern LabelInAssign();
-extern LabelDestroyTable ();
-extern LabelDumpTable ();
