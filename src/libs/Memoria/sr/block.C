@@ -1,4 +1,4 @@
-/* $Id: block.C,v 1.7 1994/07/22 14:58:40 yguan Exp $ */
+/* $Id: block.C,v 1.8 1995/08/21 15:09:51 carr Exp $ */
 /****************************************************************************/
 /*  block.c                                                                 */
 /*                                                                          */
@@ -256,8 +256,8 @@ static void link_basic_blocks(flow_graph_type *flow_graph,
                             fst_GetFieldByIndex(symtab,get_label_sym_index(
 						label),LBL_STMT))->block,
 			    label,ar);
-	  if (list_next(stmt) != AST_NIL)
-	    make_block_edge(block,get_stmt_info_ptr(list_next(stmt))->block,
+	  if (list_next(block->last) != AST_NIL)
+	    make_block_edge(block,get_stmt_info_ptr(list_next(block->last))->block,
 			    AST_NIL,ar);
 	  else
 	    if (block->join != AST_NIL)
