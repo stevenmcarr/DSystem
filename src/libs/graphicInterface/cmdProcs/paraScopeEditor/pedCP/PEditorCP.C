@@ -1,4 +1,4 @@
-/* $Id: PEditorCP.C,v 1.43 1997/03/11 14:32:03 carr Exp $ */
+/* $Id: PEditorCP.C,v 1.44 1997/04/08 16:02:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,7 +39,7 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/symtab.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/perf.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/ped_ipperf.h>
-#include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/mh_config.h>
+#include <libs/Memoria/include/mh_config.h>
 #include <libs/support/file/UnixFile.h>
 
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/pedCP/PEditorCP_opt.i>
