@@ -1,4 +1,4 @@
-/* $Id: ScalarModRefAnnot.h,v 1.4 1997/03/11 14:35:08 carr Exp $ */
+/* $Id: ScalarModRefAnnot.h,v 1.5 1999/06/11 15:03:54 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -68,6 +68,8 @@ public:
 				      int length = INFINITE_INTERVAL_LENGTH); 
 friend class ScalarModRefAnnotIterator;
 };
+
+struct ScalarModRefAnnotIteratorS;
 
 class ScalarModRefAnnotIterator {
   struct ScalarModRefAnnotIteratorS *hidden;

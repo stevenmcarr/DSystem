@@ -1,4 +1,4 @@
-/* $Id: bstring.h,v 1.5 1997/06/24 17:29:56 carr Exp $ */
+/* $Id: bstring.h,v 1.6 1999/06/11 15:03:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -17,12 +17,13 @@
 #include <libs/support/misc/general.h>
 #endif
 
-#ifdef BSD
+#ifdef _BSD
 
 #ifndef OSF1
 EXTERN(void, bcopy, (const void* src_addr, void* dest_addr, int nbytes));
 EXTERN(void, bzero, (void* src_addr, int nbytes));
 EXTERN(int, bcmp, (const void* src_addr, const void* dest_addr, int nbytes));
+EXTERN(int,atoi,(const char *str));
 #endif
 
 #else

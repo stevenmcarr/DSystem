@@ -1,4 +1,4 @@
-/* $Id: FileTimeStamp.C,v 1.2 1997/03/27 20:31:09 carr Exp $ */
+/* $Id: FileTimeStamp.C,v 1.3 1999/06/11 15:03:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -120,20 +120,22 @@ int FileTimeStamp::Write(File &fp)
 int FileTimeStamp::Read(File &fp)
 {
   time_t lmtime;
-  ino_t  inode;
+  ino_t  *inode = new ino_t;;
   char   str[STAMP_SIZE + 1];
 
   int code = fp.Read(str, STAMP_SIZE);
   if (code) return EOF;
   str[STAMP_SIZE]  = '\0';
   
-  if (sscanf(str, STAMP_FORMAT, &lmtime, &inode) != 2) {
+  if (sscanf(str, STAMP_FORMAT, &lmtime, inode) != 2) {
     InitNullStamp();
+    delete inode;
     return EOF;
   }
   else {
     hidden->lmtime = lmtime;
-    hidden->inode = inode;
+    hidden->inode = *inode;
+    delete inode;
     return 0;
   }
 }
