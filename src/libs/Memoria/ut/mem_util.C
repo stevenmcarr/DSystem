@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.27 2002/01/30 18:52:22 carr Exp $ */
+/* $Id: mem_util.C,v 1.28 2002/05/07 15:26:24 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1102,4 +1102,94 @@ void ut_PrintDependences(AST_INDEX Loop,
   delete SinkText;
   
 }
+
+
+static AST_INDEX GetSurroundingDo(AST_INDEX node)
+
+  {
+   while(!is_do(node) && node != AST_NIL)
+     node = tree_out(node);
+   assert(node != AST_NIL);
+   return(node);
+  }
+
+static int GetConstant(AST_INDEX node1)
+ 
+  {
+   AST_INDEX sublist;
+   int d;
+ 
+     sublist = gen_SUBSCRIPT_get_rvalue_LIST(node1);
+     if (list_length(sublist) > 1)
+       return DDATA_ANY;
+     else
+       {
+	 pt_get_constant(list_first(sublist),&d);
+	 return d;
+       }
+  }
+
+static int GetCoefficient(AST_INDEX node,
+			  AST_INDEX IVar)
+{
+   AST_INDEX sublist;
+   int coeff;
+   Boolean linear;
+ 
+     sublist = gen_SUBSCRIPT_get_rvalue_LIST(node);
+     if (list_length(sublist) > 1)
+       return DDATA_ANY;
+     else
+       {
+	 pt_get_coeff(list_first(sublist),gen_get_text(IVar),&linear,&coeff);
+	 if (NOT(linear))
+	   coeff = DDATA_ANY;
+	 return coeff;
+       }
+}
+
+//
+// HACK Alert!!!
+// This is here for the common case and will not work in general
+// The dependence analyzer is wrong for MIV references.
+// This is a hack to try to get it to work for the common case.
+//
+
+int ut_GetMIVDependenceDistance(DG_Edge& Edge)
+{
+  AST_INDEX Inductive = gen_DO_get_control(GetSurroundingDo(Edge.src)); 
+  AST_INDEX InductionVariable = gen_INDUCTIVE_get_name(Inductive);
+  AST_INDEX Step = gen_INDUCTIVE_get_rvalue3(Inductive);
+   
+
+  
+  int d1 = GetConstant(tree_out(Edge.src));
+  int d2 = GetConstant(tree_out(Edge.sink));
+  int coeff = GetCoefficient(tree_out(Edge.src),InductionVariable);
+  int step_val;
+
+  if (Step == AST_NIL)
+    step_val = 1;
+  else
+    (void)pt_eval(Step,&step_val);
+  
+
+  if (d1 == DDATA_ANY || d2 == DDATA_ANY)
+    return DDATA_ANY;
+  else
+    {
+      int dist = (d1 - d2)/(step_val*coeff);
+      if ((d1 - d2) != (dist*step_val*coeff))
+	return DDATA_ANY;
+      else if (dist < 0)
+	return DDATA_ANY;
+      else if (dist == 0 && Edge.level != LOOP_INDEPENDENT)
+	return DDATA_ANY;
+      else if (dist != 0 && Edge.level == LOOP_INDEPENDENT)
+	return DDATA_ANY;
+      else 
+	return dist;
+    }
+}
+  
 
