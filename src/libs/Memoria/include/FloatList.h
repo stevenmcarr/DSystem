@@ -1,4 +1,4 @@
-/* $Id: FloatList.h,v 1.2 1992/12/11 11:19:38 carr Exp $ */
+/* $Id: FloatList.h,v 1.3 1993/06/30 19:46:02 johnmc Exp $ */
 #ifndef FloatList_h
 #define FloatList_h
 
@@ -24,14 +24,14 @@ public:
   void append_entry(float f) 
     {
      FloatListEntry *e = new FloatListEntry(f);
-     SinglyLinkedList::append_entry(e);
+     SinglyLinkedList::Append(e);
     };
   FloatListEntry *first_entry()
-    {return (FloatListEntry *) SinglyLinkedList::first_entry();};
+    {return (FloatListEntry *) SinglyLinkedList::First();};
   FloatListEntry *last_entry()
-    {return (FloatListEntry *) SinglyLinkedList::last_entry();};
+    {return (FloatListEntry *) SinglyLinkedList::Last();};
   void free_head()
-    { delete_entry(SinglyLinkedList::first_entry());};
+    { Delete(SinglyLinkedList::First());};
  };
 
 #endif FloatList_h
