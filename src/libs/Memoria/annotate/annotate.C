@@ -98,7 +98,8 @@ static int InsertCacheCalls(AST_INDEX     stmt,
        walk_expression(gen_DO_get_control(stmt),NOFUNC,(WK_EXPR_CLBACK)AddCall,
 		       (Generic)CallInfo);
      else if (is_if(stmt) || is_continue(stmt) || is_goto(stmt) ||
-	      is_computed_goto(stmt) || is_call(stmt));
+	      is_computed_goto(stmt) || is_call(stmt) || 
+	      is_format(stmt) || is_stop(stmt));
      else if (executable_stmt(stmt))
        { 
 	char errmsg[30];
