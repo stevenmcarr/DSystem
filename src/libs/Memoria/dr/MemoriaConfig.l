@@ -1,5 +1,5 @@
 %{
-/* $Id: MemoriaConfig.l,v 1.3 1999/09/10 14:42:44 carr Exp $ */
+/* $Id: MemoriaConfig.l,v 1.4 2000/05/16 03:08:23 mjbedy Exp $ */
 
 /*****************************************************************/
 /*                                                               */
@@ -94,12 +94,12 @@ write[ ]allocate[ \t]+[yn] 	{
 
 auto[ ]increment[ \t]+[yn] 	{
 				  sscanf(&yytext[15],"%c",&ctemp);
-				  config->write_allocate=(ctemp == 'y');
+				  config->AutoIncrement=(ctemp == 'y');
 				 }
 
 non[ ]blocking[ ]cache[ \t]+[yn] {
 				  sscanf(&yytext[19],"%c",&ctemp);
-				  config->write_allocate=(ctemp == 'y');
+				  config->NonBlockingCache=(ctemp == 'y');
 				 }
 
 [\n]		|
