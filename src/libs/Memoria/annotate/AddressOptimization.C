@@ -1,4 +1,4 @@
-/* $Id: AddressOptimization.C,v 1.3 1999/06/11 17:44:02 carr Exp $ */
+/* $Id: AddressOptimization.C,v 1.4 2000/01/12 15:57:45 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -78,14 +78,15 @@ static int StoreAddressInfo(AST_INDEX     node,
 	 DepInfoPtr(node)->Offset = CacheInfo->AECS->GetOffset(node);
        }
      else if (is_comment(node))
-       {
-	 DirectiveInfoPtr(node)->AddressLeader = 
-	   CacheInfo->AECS->GetLeader(DirectiveInfoPtr(node)->Subscript);
-	 DirectiveInfoPtr(node)->FirstInLoop = 
-	   CacheInfo->AECS->GetFirstInLoop(DirectiveInfoPtr(node)->Subscript);
-	 DirectiveInfoPtr(node)->Offset = 
-	   CacheInfo->AECS->GetOffset(DirectiveInfoPtr(node)->Subscript);
-       }
+       if (DirectiveInfoPtr(node) != NULL)
+	 {
+	   DirectiveInfoPtr(node)->AddressLeader = 
+	     CacheInfo->AECS->GetLeader(DirectiveInfoPtr(node)->Subscript);
+	   DirectiveInfoPtr(node)->FirstInLoop = 
+	     CacheInfo->AECS->GetFirstInLoop(DirectiveInfoPtr(node)->Subscript);
+	   DirectiveInfoPtr(node)->Offset = 
+	     CacheInfo->AECS->GetOffset(DirectiveInfoPtr(node)->Subscript);
+	 }
      return(WALK_CONTINUE);
   }
 
