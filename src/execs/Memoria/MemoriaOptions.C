@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.13 2000/01/27 20:44:44 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.14 2000/04/09 20:22:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,6 +30,8 @@ int aiCache = -1;
 int aiSpecialCache = 0;
 int aiOptimizeAddressCode = 0;
 int aiParseComments = 0;
+int aiLongIntegers = 0;
+int aiDoubleReals = 0;
 int blue_color = 0;
 
 Boolean Memoria_LetRocketSchedulePrefetches = false;
@@ -48,7 +50,7 @@ Boolean CheckRecurrencesForPrefetching = false;
 
 void MemoriaOptionsUsage(char *pgm_name)
 {
-   printf("Usage: %s [-s] [-e] [-i] [-p] [-q] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-R] [-X#] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
+   printf("Usage: %s [-s] [-e] [-i] [-p] [-q] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-I] [-R] [-X#] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
   puts(" ");
   puts("         -c  annontate with calls to cache simulator");
   puts("         -d#  set dependence analysis level at 0 or 1 (default)");
@@ -62,7 +64,8 @@ void MemoriaOptionsUsage(char *pgm_name)
   puts("         -s  do statistics");
   puts("         -u  do unroll-and-jam without cache model");
   puts("         -w#  do unroll-and-jam for partitioned register files");
-  puts("         -D  issue DEAD instructions for dead cache lines");
+  puts("         -D  assume all REALS are 64-bits (for Rocket)");
+  puts("         -I  assume 64-bit integers");
   puts("         -R  let Rocket schedule prefetches");
   puts("         -S  do depencence statistics");
   puts("         -U  do unroll-and-jam with cache model");
@@ -101,6 +104,16 @@ static void mc_set_partition_unroll_amount(void *state,char* amount)
     selection = PARTITION_UNROLL;
     PartitionUnrollAmount = atoi(amount); 
     RestrictedUnrolling = true;
+  }
+
+static void mc_set_long_integers(void *state)
+  {
+   aiLongIntegers = 1;
+  }
+
+static void mc_set_double_reals(void *state)
+  {
+   aiDoubleReals = 1;
   }
 
 
@@ -190,20 +203,20 @@ void mc_opt_rocket_schedule(void *state)
   Memoria_LetRocketSchedulePrefetches = true;
 }
 
-void mc_opt_dead(void *state)
+// void mc_opt_dead(void *state)
 
-  {
-   switch(selection)
-     {
-      case NO_SELECT:
-        selection = DEAD;
-	select_char = 'D';
-        Memoria_IssueDead = true;
-	break;
-      default:
-	MemoriaOptionsUsage("Memoria");
-     }
-  }
+//   {
+//    switch(selection)
+//      {
+//       case NO_SELECT:
+//         selection = DEAD;
+// 	select_char = 'D';
+//         Memoria_IssueDead = true;
+// 	break;
+//       default:
+// 	MemoriaOptionsUsage("Memoria");
+//      }
+//   }
 
 static void mc_opt_statistics(void *state)
 {
@@ -339,11 +352,11 @@ static struct flag_	prefetch_rec_f = {
   "recurrences in software prefetching",
 };
 
-static struct flag_	dead_f = {
-  mc_opt_dead,
-  "dead cache lines", 
-  "insert dead cache line directives",
-};
+// static struct flag_	dead_f = {
+//   mc_opt_dead,
+//   "dead cache lines", 
+//   "insert dead cache line directives",
+// };
 
 static struct flag_	rocket_schedule_f = {
   mc_opt_rocket_schedule,
@@ -401,6 +414,18 @@ static struct choice_entry_ debug_choices[1] = {
      "0",
      "debug flags",
      "debug data reuse model"}
+};
+
+static struct flag_	longint_f = {
+  mc_set_long_integers,
+  "64-bit integers",
+  "assume integers are 64-bits"
+};
+
+static struct flag_	doublereal_f = {
+  mc_set_double_reals,
+  "64-bit reals",
+  "assume all reals are 64-bits for Rocket"
 };
 
 static struct flag_	cache_f = {
@@ -571,9 +596,13 @@ int MemoriaInitOptions(int argc, char **argv)
 			      (Generic)&prefetch_f),
     *mc_pre_rec_flag = InitOption(flag,MC_PREFETCH_REC_FLAG,(Generic)false,true, 
 			      (Generic)&prefetch_rec_f),
-    *mc_dead_flag = InitOption(flag,MC_DEAD_FLAG,(Generic)false,true,(Generic)&dead_f),
+//     *mc_dead_flag = InitOption(flag,MC_DEAD_FLAG,(Generic)false,true,(Generic)&dead_f),
     *mc_rocket_schedule_flag = InitOption(flag,MC_ROCKET_SCHEDULE_FLAG,(Generic)false,
 					  true,(Generic)&rocket_schedule_f),
+    *mc_long_int_flag = InitOption(flag,MC_LONG_INT_FLAG,(Generic)false,true,
+				     (Generic)&longint_f),
+    *mc_double_real_flag = InitOption(flag,MC_DOUBLE_REAL_FLAG,(Generic)false,true,
+				     (Generic)&doublereal_f),
     *mc_cache_anal_flag = InitOption(flag,MC_CACHE_ANAL_FLAG,(Generic)false,true,
 				     (Generic)&cache_f),
     *mc_ldst_anal_flag = InitOption(flag,MC_LDST_ANAL_FLAG,(Generic)false,true,
@@ -607,9 +636,11 @@ int MemoriaInitOptions(int argc, char **argv)
   MemoriaOptions.Add(mc_int_flag);
   MemoriaOptions.Add(mc_pre_flag);
   MemoriaOptions.Add(mc_pre_rec_flag);
-  MemoriaOptions.Add(mc_dead_flag);
+//   MemoriaOptions.Add(mc_dead_flag);
   MemoriaOptions.Add(mc_rocket_schedule_flag);
   MemoriaOptions.Add(mc_repl_choice);
+  MemoriaOptions.Add(mc_long_int_flag);
+  MemoriaOptions.Add(mc_double_real_flag);
   MemoriaOptions.Add(mc_cache_anal_flag);
   MemoriaOptions.Add(mc_ldst_anal_flag);
   MemoriaOptions.Add(mc_dep_choice);

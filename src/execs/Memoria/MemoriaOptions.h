@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.h,v 1.7 2000/01/27 20:44:44 carr Exp $ */
+/* $Id: MemoriaOptions.h,v 1.8 2000/04/09 20:22:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -32,7 +32,8 @@
 #define MC_DEPENDENCE_CHOICE  'd'
 #define MC_CACHE_ANAL_FLAG    'h'
 #define MC_LDST_ANAL_FLAG     'l'
-#define MC_DEAD_FLAG          'D'
+#define MC_DOUBLE_REAL_FLAG          'D'
+#define MC_LONG_INT_FLAG          'I'
 #define MC_DEPENDENCE_STATS_FLAG 'S'
 #define MC_ROCKET_SCHEDULE_FLAG  'R'
 #define MC_DEBUG_CHOICE       'X'
