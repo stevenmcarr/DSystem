@@ -1,4 +1,4 @@
-/* $Id: expr.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: expr.C,v 1.2 1998/04/29 21:43:45 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -477,7 +477,7 @@ int getConstantInRegFromIndex( int Index, int converted_type )
   {
     if (strncmp((char *) fst_my_GetFieldByIndex(ft_SymTable, Index, SYMTAB_NAME),
 		 ".true.", 6) == 0)
-       generate(0, iLDI, -1, Index, GEN_NUMBER, ".true.");
+       generate(0, iLDI, 1, Index, GEN_NUMBER, ".true.");
     else
        generate(0, iLDI, 0, Index, GEN_NUMBER, ".false.");
 

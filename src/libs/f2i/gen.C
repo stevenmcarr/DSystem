@@ -1,4 +1,4 @@
-/* $Id: gen.C,v 1.3 1997/11/19 14:46:10 carr Exp $ */
+/* $Id: gen.C,v 1.4 1998/04/29 21:43:45 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -944,7 +944,7 @@ void PrintData(int opcode, int data, int repeat, int type)
 
     case DATA_LOGICAL:
 	if (strcmp(p, ".true.") == 0)
-	   (void) fprintf(stdout, "\t%-8.8s\t-1\t%d\t\t", MNEM(iDATA), repeat);
+	   (void) fprintf(stdout, "\t%-8.8s\t1\t%d\t\t", MNEM(iDATA), repeat);
 	else
 	   (void) fprintf(stdout, "\t%-8.8s\t0\t%d\t\t", MNEM(iDATA), repeat);
 	break;
