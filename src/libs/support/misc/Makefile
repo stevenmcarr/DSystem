@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.2 1997/03/27 20:50:40 carr Exp $
+# $Id: Makefile,v 1.3 1997/03/27 21:08:33 carr Exp $
 
 HERE = libs/support/misc
 
-	   #dict.C 
 SRCS = \
+	   dict.C \
 	   IdGenerator.C \
 	   general.ansi.c \
 	   port.C \

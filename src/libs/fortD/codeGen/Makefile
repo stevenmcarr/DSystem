@@ -1,8 +1,7 @@
-# $Id: Makefile,v 1.2 1997/03/27 20:32:26 carr Exp $
+# $Id: Makefile,v 1.3 1997/03/27 21:02:33 carr Exp $
 
 HERE = libs/fortD/codeGen
 
-#FortDInterface.C 
 SRCS	= \
 	  bc.ansi.c \
 	  bounds.ansi.c \
@@ -18,6 +17,7 @@ SRCS	= \
 	  msg2.ansi.c \
 	  rout.ansi.c \
 	  rsd_sec.ansi.c \
+	  FortDInterface.C \
 	  FortDInterfaceStr.C \
 	  FortDInterfaceTest.C
 
