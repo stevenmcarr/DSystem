@@ -1,4 +1,4 @@
-/* $Id: assignment.C,v 1.3 1998/07/07 20:25:53 carr Exp $ */
+/* $Id: assignment.C,v 1.4 1998/08/05 20:38:15 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -128,21 +128,24 @@ static void NonCharacterAssignment(AST_INDEX	node)
      comment = GenDepComment(lhs);
 
      if (aiOptimizeAddressCode)
-       if (DepInfoPtr(lhs)->AddressLeader == lhs)
-	 {
-	   lhs_index = getSubscriptLValue(lhs);
-	   ASTRegMap->MapAddEntry(lhs,lhs_index);
-	 }
+       if (DepInfoPtr(lhs)->AddressLeader != AST_NIL)
+	 if (DepInfoPtr(lhs)->AddressLeader == lhs)
+	   {
+	     lhs_index = getSubscriptLValue(lhs);
+	     ASTRegMap->MapAddEntry(lhs,lhs_index);
+	   }
+	 else
+	   {
+	     lhs_index = ASTRegMap->MapToValue(DepInfoPtr(lhs)->AddressLeader);
+	     Offset = DepInfoPtr(node)->Offset*GetDataSize(TYPE_INTEGER);
+	     int OffsetReg = getConstantInRegFromInt(Offset);
+	     int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
+	     int TempIndex = TempReg(lhs_index, OffsetReg, op, TYPE_INTEGER);
+	     generate(0, op, lhs_index, OffsetReg, TempIndex, NOCOMMENT);
+	     lhs_index = TempIndex;
+	   }
        else
-         {
-	   lhs_index = ASTRegMap->MapToValue(DepInfoPtr(lhs)->AddressLeader);
-	   Offset = DepInfoPtr(node)->Offset*GetDataSize(TYPE_INTEGER);
-	   int OffsetReg = getConstantInRegFromInt(Offset);
-	   int op = ArithOp(GEN_BINARY_PLUS,TYPE_INTEGER);
-	   int TempIndex = TempReg(lhs_index, OffsetReg, op, TYPE_INTEGER);
-	   generate(0, op, lhs_index, OffsetReg, TempIndex, NOCOMMENT);
-	   lhs_index = TempIndex;
-	 }
+	 lhs_index = getSubscriptLValue(lhs);
      else
        lhs_index = getSubscriptLValue(lhs);
        
