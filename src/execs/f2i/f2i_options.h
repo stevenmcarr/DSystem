@@ -1,4 +1,4 @@
-/* $Id: f2i_options.h,v 1.7 2000/03/28 20:08:23 carr Exp $ */
+/* $Id: f2i_options.h,v 1.8 2000/06/15 14:16:26 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -36,6 +36,7 @@
 #define F2I_DOUBLEREALS_FLAG  'D'
 #define F2I_DEBUG_CHOICE      'X'
 #define F2I_ADDRESSOPT_FLAG   'o'
+#define F2I_CONSERVATIVE_SPATIAL_FLAG 'N'
 
 EXTERN(int,f2i_init_options,(int,char**));
 EXTERN(void,f2i_options_usage,(char *pgm_name));

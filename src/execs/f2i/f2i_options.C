@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.13 2000/03/28 20:08:23 carr Exp $ */
+/* $Id: f2i_options.C,v 1.14 2000/06/15 14:16:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -33,6 +33,7 @@ Boolean mc_extended_cache = false;
 Boolean RestrictedUnrolling = false;
 Boolean Memoria_LetRocketSchedulePrefetches = false;
 Boolean Memoria_IssueDead = false;
+Boolean Memoria_ConservativeSelfSpatial = false;
 int PartitionUnrollAmount = 0;
 int ReplaceLevel = 0;
 int DependenceLevel = 3;
@@ -260,6 +261,11 @@ static void f2i_opt_module(void *state, char *str)
 }
 
 
+static void f2i_opt_ConservativeSelfSpatial(void *state)
+{
+ Memoria_ConservativeSelfSpatial++;
+}
+
 static void f2i_opt_debug_choice(void *state,Generic flag)
 {
   switch(flag)
@@ -427,6 +433,11 @@ static struct string_	module_s = {
   ".*"
 };
 
+static struct flag_	ConservativeSelfSpatial_f = {
+  f2i_opt_ConservativeSelfSpatial,
+  "Conservative Self-Spatial flag",	
+  " ",
+};
 
 static struct choice_entry_ debug_choices[1] = {
     {0,
@@ -486,6 +497,9 @@ Option f2i_pgm_opt = {string, F2I_PGM_OPT,(Generic) "", true,(Generic)&program_s
        f2i_Rocket_flag = {flag, F2I_ROCKET_FLAG, (Generic)false, true, 
 			  (Generic)&Rocket_f},
        f2i_Rt_flag = {flag, F2I_RT_FLAG, (Generic)false, true, (Generic)&Rt_f},
+       f2i_ConservativeSelfSpatial_flag = {flag, F2I_CONSERVATIVE_SPATIAL_FLAG,
+					   (Generic)false, true, 
+					  (Generic)&ConservativeSelfSpatial_f},
        f2i_debug_choice = {choice,F2I_DEBUG_CHOICE,(Generic)false,true, 
 			      (Generic)&debug_c};
 
@@ -542,6 +556,7 @@ int f2i_init_options(int argc, char **argv)
   f2iOptions.Add(&f2i_Sparc_flag);
   f2iOptions.Add(&f2i_Rocket_flag);
   f2iOptions.Add(&f2i_Rt_flag);
+  f2iOptions.Add(&f2i_ConservativeSelfSpatial_flag);
   f2iOptions.Add(&f2i_debug_choice);
 
   if (opt_parse_argv(&f2iOptions,0,argc,argv)) 
