@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.18 1996/02/14 11:02:49 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.19 1996/09/30 14:21:18 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -527,15 +527,26 @@ static Boolean HasGroupSpatial(AST_INDEX  node,
 			       int        words,
 			       UniformlyGeneratedSets *UGS)
   {
-   if (UGS != NULL)
-     return(UGS->NodeHasGroupSpatialReuse(node));
-   if (Edge->src != Edge->sink)
-     if (CanMoveToInnermost(Edge))
-       if (OnlyInInnermostPosition(loop_data,node,Edge->level))
-         if (gen_get_dt_DIS(Edge,Edge->level) < words &&
-	     gen_get_dt_DIS(Edge,Edge->level) > DDATA_BASE)
-           return(true);
-   return(false);
+    subscript_info_type *sptr;
+
+    if (UGS != NULL)
+      return(UGS->NodeHasGroupSpatialReuse(node));
+    if (Edge->src != Edge->sink)
+      if (CanMoveToInnermost(Edge))
+	if (OnlyInInnermostPosition(loop_data,node,Edge->level))
+	  if (gen_get_dt_DIS(Edge,Edge->level) < words &&
+	      gen_get_dt_DIS(Edge,Edge->level) > DDATA_BASE)
+	    {
+	      if ((sptr = get_subscript_ptr(Edge->src)) != NULL)
+
+		//  Record for DEAD instructions.  Need to now how far behind
+		//  to make a cache line dead
+
+		sptr->GroupSpatialDistance = MAX(sptr->GroupSpatialDistance,
+						 gen_get_dt_DIS(Edge,Edge->level));
+	      return(true);
+	    }
+    return(false);
   }
 
 
