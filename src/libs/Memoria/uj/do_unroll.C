@@ -1,4 +1,4 @@
-/* $Id: do_unroll.C,v 1.14 1995/08/18 10:25:04 trsuchyt Exp $ */
+/* $Id: do_unroll.C,v 1.15 1995/08/22 14:34:38 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -38,7 +38,7 @@
 #include <header.h>
 #endif
 
-Boolean RestrictedUnrolling;
+extern Boolean RestrictedUnrolling;
 
 static void walk_loops_to_unroll(model_loop    *loop_data,
 				 int           loop,
