@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.15 1998/06/01 15:40:39 carr Exp $ */
+/* $Id: prune.C,v 1.16 1998/09/01 17:34:53 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -105,10 +105,10 @@ static void prune_dependence_edges(AST_INDEX     node,
 		       edge_dist = 0;
 		     src_stmt = ut_get_stmt(dg[edge].src);
 		     sink_stmt = ut_get_stmt(node);
-		     if (((src_stmt == sink_stmt && dg[edge].type == dg_true)
-			  || get_stmt_info_ptr(src_stmt)->stmt_num >
-			  get_stmt_info_ptr(sink_stmt)->stmt_num) &&
-			  edge_dist == 1 && !scalar_sink->prevent_rec &&
+		     if (((src_stmt == sink_stmt && dg[edge].type == dg_true) || 
+			  (get_stmt_info_ptr(src_stmt)->stmt_num >
+			   get_stmt_info_ptr(sink_stmt)->stmt_num)) &&
+			 edge_dist == 1 && !scalar_sink->prevent_rec &&
 			 !scalar_src->prevent_rec)
 		       scalar_src->recurrence = true;
 		     else if (edge_dist != 0)
