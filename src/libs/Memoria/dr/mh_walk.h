@@ -10,6 +10,9 @@ typedef struct {
   FortTree ft;
   SymDescriptor symtab;
   arena_type    *ar;
+  int nests,
+      total_loops,
+      imperfect;
  } walk_info_type;
 
 typedef struct {

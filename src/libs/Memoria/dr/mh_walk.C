@@ -4,8 +4,8 @@
 /****************************************************************************/
 #include <mh.h>
 #include <Arena.h>
-#include "memory_menu.h"
-#include "mh_walk.h"
+#include <memory_menu.h>
+#include <mh_walk.h>
 #include <gi.h>
 #include <header.h>
 
@@ -72,13 +72,27 @@ static int post_walk(AST_INDEX      stmt,
    AST_INDEX new_stmt;
    int       logval;
    FILE      *logfile;
+   Boolean   perfect = true;
 
    if (is_do(stmt) && level == LEVEL1)
      {
+      walk_info->nests++;
       walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
       logval = ((config_type *)PED_MH_CONFIG(walk_info->ped))->logging;
       logfile = ((config_type *)PED_MH_CONFIG(walk_info->ped))->logfile;
       switch(walk_info->selection) {
+	case INTERSTATS:     memory_interchange_stats(walk_info->ped,stmt,
+						     LEVEL1,
+						     &perfect,
+						     &walk_info->total_loops,
+						     walk_info->symtab,
+						     walk_info->ar);
+			     walk_expression(stmt,set_scratch,NOFUNC,
+					     (Generic)NULL);
+	                     walk_info->ar->arena_deallocate(LOOP_ARENA);
+			     if (NOT(perfect))
+			       walk_info->imperfect++;
+	                     break;
 	case INTERCHANGE:    memory_loop_interchange(walk_info->ped,stmt,
 						     LEVEL1,walk_info->symtab,
 						     walk_info->ar);
@@ -373,7 +387,8 @@ void mh_walk_ast(int          selection,
    static int file = 0;
    char fn[80];
    
-     if (((config_type *)PED_MH_CONFIG(ped))->logging > 0)
+     if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
+	 selection == INTERSTATS)
        {
 	sprintf(fn,"%s/logfile%d",getenv("HOME"),file);
 	((config_type *)PED_MH_CONFIG(ped))->logfile = fopen(fn,"w");
@@ -382,6 +397,9 @@ void mh_walk_ast(int          selection,
      walk_info.ped = ped;
      walk_info.ft = ft;
      walk_info.ar = ar;
+     walk_info.imperfect = 0;
+     walk_info.total_loops = 0;
+     walk_info.nests = 0;
      walk_statements(root,LEVEL1,remove_do_labels,NOFUNC,(Generic)NULL);
      walk_statements(root,LEVEL1,build_label_symtab,check_labels,
 		     (Generic)&walk_info);
@@ -391,7 +409,17 @@ void mh_walk_ast(int          selection,
 		     (Generic)&walk_info);
      walk_statements(root,LEVEL1,get_symtab_for_decls,NOFUNC,
 		     (Generic)ft);
-     if (((config_type *)PED_MH_CONFIG(ped))->logging > 0)
+     if (selection == INTERSTATS)
+       {
+	fprintf(((config_type *)PED_MH_CONFIG(ped))->logfile,
+		"\n\nTotal Loops: %d\n",walk_info.total_loops);
+	fprintf(((config_type *)PED_MH_CONFIG(ped))->logfile,
+		"Loop Nests: %d\n",walk_info.nests);
+	fprintf(((config_type *)PED_MH_CONFIG(ped))->logfile,
+		"Imperfect Nests: %d\n",walk_info.imperfect);
+       }
+     if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
+	 selection == INTERSTATS)
        fclose(((config_type *)PED_MH_CONFIG(ped))->logfile);
   }
 
