@@ -1,7 +1,6 @@
 HERE		= ped_cp/memory
 DIRS		= dr li sr uj ut
-
-archive: subarchive
+ARCHIVE		= ped-$(RN_ARCH)$(ENV_FLAG).a
 
 include Makeinclude
 
