@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.2 1992/12/11 11:19:40 carr Exp $ */
+/* $Id: LoopStats.h,v 1.3 1993/07/20 15:28:23 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -49,6 +49,31 @@ typedef struct loopstatstype {
           MemoryOtherSpatialGroups;
   float   FinalRatio[NESTING_DEPTH],
           MemoryRatio[NESTING_DEPTH];
+  float   PredictedFinalBalance,
+          PredictedInitialBalance,
+          InitialBalanceWithInterlock,
+          ActualFinalBalance,
+          FinalBalanceWithInterlock,
+          InitialInterlock,
+          FinalInterlock;
+  int     PredictedFPRegisterPressure,
+          ActualFPRegisterPressure,
+          UnrolledLoops,
+          NotUnrolled,
+          SingleDepth;
+  float   NotUnrolledBalance,
+          NotUnrolledBalanceWithInterlock,
+          NotUnrolledInterlock;
+  int     NotUnrolledFPRegisterPressure;
+  float   SingleDepthBalance,
+          SingleDepthBalanceWithInterlock,
+          SingleDepthInterlock;
+  int     SingleDepthFPRegisterPressure;
+  int     Distribute,
+          Interchange,
+          NoImprovement,
+          AlreadyBalanced,
+          InterlockCausedUnroll;
  } LoopStatsType;
 
 #endif

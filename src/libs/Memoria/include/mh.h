@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.9 1993/06/15 14:07:25 carr Exp $ */
+/* $Id: mh.h,v 1.10 1993/07/20 15:29:23 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -95,10 +95,14 @@ struct loop_struct {
                   NoneCostList;
   UtilList        *GroupList;
   Set             PreventLvl[MAX_LEVEL];
+  Boolean         NoImprovement,
+                  Distribute,
+                  Interchange;
+  Boolean         InterlockCausedUnroll;
  };
 
 typedef enum {UNDEFINED,NONE,SELF_TEMPORAL,GROUP_TEMPORAL,SELF_SPATIAL,
-	      GROUP_SPATIAL} LocalityType;
+	      GROUP_SPATIAL,SELF_TEMPORAL_CACHE,GROUP_TEMPORAL_CACHE} LocalityType;
 
 typedef struct subscriptinfotype {
   int       surrounding_do;
