@@ -1,4 +1,4 @@
-/* $Id: AttributedFile.C,v 1.3 1997/06/24 17:37:32 carr Exp $ */
+/* $Id: AttributedFile.C,v 1.4 1999/01/07 20:34:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -20,10 +20,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sys/param.h>
-
-#ifdef OSF1
-#include <include/realpath.h>
-#endif
 
 #include <libs/support/msgHandlers/Changes.h>
 

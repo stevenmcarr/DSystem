@@ -1,4 +1,4 @@
-/* $Id: Analysis.C,v 1.5 1997/11/04 21:10:32 carr Exp $ */
+/* $Id: Analysis.C,v 1.6 1999/01/07 20:32:16 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -191,8 +191,8 @@ void GroupSpatialSet::DoAnalysis()
    for ( i=1; i<Subs; ++i)
      {
 	int done = False;
-      for(GSSetIter gsiter(this); 
-           e = gsiter() ;)
+        GSSetIter gsiter(this); 
+        while( e = gsiter())
          {
 	      if( !e->Marked ) 
 		{
