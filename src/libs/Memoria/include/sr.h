@@ -11,8 +11,8 @@
 #include <database.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <kb.h>					/* keyboard constants and functions	*/
-#include <point.h>				/* coordinate utilities			*/
+#include <kb.h>
+#include <point.h>
 #include <rect.h>
 #include <rect_list.h>
 #include <gfx.h>
@@ -90,7 +90,7 @@ typedef struct {
   ((scalar_info_type *)ast_get_scratch(n))
 
 #define create_NULL_stmt_info_ptr(n) \
-  ast_put_scratch(n,NULL)
+  ast_put_scratch(n,(Generic)NULL)
 
 #define create_stmt_info_ptr(n,ar) \
   ast_put_scratch(n,(int) ar->arena_alloc_mem_clear(LOOP_ARENA,sizeof(stmt_info_type)))
@@ -99,7 +99,7 @@ typedef struct {
   ((stmt_info_type *)ast_get_scratch(n))
 
 #define set_scratch_to_NULL(n)\
-  ast_put_scratch(n,NULL)
+  ast_put_scratch(n,(Generic)NULL)
 
 #define set_label_sym_index(n,i) \
   ast_put_scratch(n,i)

@@ -11,8 +11,8 @@
 #include <database.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <kb.h>					/* keyboard constants and functions	*/
-#include <point.h>				/* coordinate utilities			*/
+#include <kb.h>
+#include <point.h>
 #include <rect.h>
 #include <rect_list.h>
 #include <gfx.h>
@@ -30,7 +30,6 @@
 #include <astsel.h>
 #include <asttree.h>
 #include <astrec.h>
-/* #include "/rn/usr/johnmc/src/ned_cp/FortTree.h" */
 #include <FortTree.h>
 #include <TextTree.h>
 #include <FortTextTree.h>
@@ -51,7 +50,7 @@
 
 #define  MAX_LEVEL  20
 
-typedef enum {COMPLEX,RECT,TRI_UL,TRI_LL,TRI_UR,TRI_LR,TRAP,MULT} 
+typedef enum {COMPLEX,RECT,TRI_UL,TRI_LL,TRI_UR,TRI_LR,TRAP,RHOM,MULT} 
              loop_shape_type;
 
 typedef enum {FN_MIN,FN_MAX,FN_BOTH} trap_fn_type;
@@ -64,6 +63,8 @@ typedef struct {
 typedef struct loop_struct model_loop;
 struct loop_struct {
   AST_INDEX       node,
+                  surround_node,
+                  rhom_const,
                   tri_const;
   int             parent,
                   inner_loop,
@@ -98,9 +99,11 @@ struct loop_struct {
 
 typedef struct {
   int       surrounding_do;
+  AST_INDEX surround_node;
   Boolean   is_scalar[3],
             prev_sclr[3],
             uses_regs,
+            MIV,
             visited,
             eliminated;
   AST_INDEX *copies;
@@ -113,6 +116,7 @@ typedef struct {
   int  stmt_num;
   int  loop_num;
   int  surrounding_do;
+  AST_INDEX surround_node;
   int  level;
   Boolean pre_loop;
  } stmt_info_type;
@@ -121,6 +125,7 @@ typedef struct {
   int     stmt_num,
           loop_num,
           surrounding_do;
+  AST_INDEX surround_node;
   Boolean abort;  
   PedInfo ped;
   SymDescriptor symtab;
@@ -128,7 +133,7 @@ typedef struct {
  } pre_info_type;
 
 #define set_scratch_to_NULL(n) \
-  ast_put_scratch(n,NULL)
+  ast_put_scratch(n,(Generic)NULL)
 
 #define create_stmt_info_ptr(n,ar) \
   ast_put_scratch(n,(Generic)ar->arena_alloc_mem_clear(LOOP_ARENA,sizeof(stmt_info_type)))

@@ -8,7 +8,7 @@
 #ifndef set_h
 #define set_h
 
-#include "Arena.h" 
+#include <Arena.h> 
 
 #define NBITS	32
 #define LOGBITS	 5
