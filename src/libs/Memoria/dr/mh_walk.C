@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.13 1994/05/31 15:03:35 carr Exp $ */
+/* $Id: mh_walk.C,v 1.14 1994/06/13 10:29:33 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -766,18 +766,22 @@ static void make_decls(SymDescriptor symtab,
   {
    decl_list_type decl_lists;
    AST_INDEX      type_stmt;
+   AST_INDEX      stmt;
    
      decl_lists.dbl_prec_list = list_create(AST_NIL);
      decl_lists.real_list = list_create(AST_NIL);
      decl_lists.cmplx_list = list_create(AST_NIL);
      fst_ForAll(symtab,(fst_ForAllCallback)check_decl,(Generic)&decl_lists);
+     for (stmt = list_first(stmt_list);
+          !is_executable_stmt(stmt);
+	  stmt = list_next(stmt));
      if (!list_empty(decl_lists.dbl_prec_list))
        {
 	type_stmt = gen_TYPE_STATEMENT(AST_NIL,gen_TYPE_LEN(gen_REAL(),
                                        pt_gen_int(SIZE_PER_DB_PREC)),
 				       decl_lists.dbl_prec_list);
 	ft_SetComma(type_stmt,false);
-	list_insert_first(stmt_list,type_stmt);
+	list_insert_before(stmt,type_stmt);
        }
      else
        tree_free(decl_lists.dbl_prec_list);
@@ -787,7 +791,7 @@ static void make_decls(SymDescriptor symtab,
                                        pt_gen_int(SIZE_PER_REAL)),
 				       decl_lists.real_list);
 	ft_SetComma(type_stmt,false);
-	list_insert_first(stmt_list,type_stmt);
+	list_insert_before(stmt,type_stmt);
        }
      else
        tree_free(decl_lists.real_list);
@@ -797,7 +801,7 @@ static void make_decls(SymDescriptor symtab,
 					       pt_gen_int(SIZE_PER_COMPLEX)),
 				       decl_lists.cmplx_list);
 	ft_SetComma(type_stmt,false);
-	list_insert_first(stmt_list,type_stmt);
+	list_insert_before(stmt,type_stmt);
        }
      else
        tree_free(decl_lists.cmplx_list);
