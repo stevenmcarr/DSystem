@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.12 1994/07/27 18:54:42 yguan Exp $ */
+/* $Id: moderate.C,v 1.13 1994/11/21 14:55:55 qwu Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -577,6 +577,10 @@ static void complete_temp_names(UtilList *glist,
 static void build_cost_info(UtilList *glist,
 			    int      *NumPartitions,
 			    int      *NumReferences,
+			    int      *NumLIAV,
+			    int      *NumLCAV,
+			    int      *NumLIPAV,
+			    int      *NumLCPAV,
 			    int      *regs,
 			    PedInfo  ped)
 
@@ -600,6 +604,24 @@ static void build_cost_info(UtilList *glist,
 	   /* GET LIAV and LCAV info here */
 
 	   sptr = get_scalar_info_ptr(UTIL_NODE_ATOM(node));
+
+	   /* QUNYAN 0003*/
+	   /* calculate LIAV, LCAV .. */
+	   switch (sptr->gen_type)
+	     {
+              case LIAV:  (*NumLIAV)++;
+	                  break;
+	      case LCAV:  (*NumLCAV)++;
+			  break;
+	      case LIPAV: (*NumLIPAV)++;
+			  break;
+	      case LCPAV: (*NumLCPAV)++;
+			  break;
+	      default:
+		      break;
+	     }
+	   /* QUNYAN 0003*/
+	  
 	   if (sptr->generator != -1)
 	     {
 	      if (sptr->gen_type == LIAV || sptr->gen_type == LCAV)
@@ -669,13 +691,21 @@ void sr_moderate_pressure(PedInfo  ped,
   {
    int      NumPartitions = 0,
             NumReferences = 0,
+	    /* QUNYAN 0001 */
+	    /* add in new variable to calculate LIAV, LCAV .. */
+	    NumLIAV = 0,
+	    NumLCAV = 0,
+	    NumLIPAV = 0,
+	    NumLCPAV = 0 ,
+	    /* QUNYAN 0001 */
             regs = 0,
             loads;
    Set      allocate,
             opt_allocate;
    heap_type *heap;
 
-     build_cost_info(glist,&NumPartitions,&NumReferences,&regs,ped);
+     build_cost_info(glist,&NumPartitions,&NumReferences,&NumLIAV,
+	             &NumLCAV,&NumLIPAV,&NumLCPAV,&regs,ped);
      if (regs > free_regs)
        {
 
@@ -696,8 +726,16 @@ void sr_moderate_pressure(PedInfo  ped,
         do_allocation(glist,allocate,opt_allocate,&free_regs,heap,NumPartitions,ped,ar);
         NumPartitions = 0;
         NumReferences = 0;
+	/* QUNYAN 0002 */
+	/* reset variable value back to 0  before calculate cost again */
+	NumLIAV = 0;
+	NumLCAV = 0;
+	NumLIPAV = 0; 
+	NumLCPAV = 0;
+	/* QUNYAN 0002*/
         regs = 0;
-        build_cost_info(glist,&NumPartitions,&NumReferences,&regs,ped);
+        build_cost_info(glist,&NumPartitions,&NumReferences,&NumLIAV,
+		    &NumLCAV,&NumLIPAV,&NumLCPAV,&regs,ped);
        }
 
      if (logfile != NULL)
@@ -722,5 +760,12 @@ void sr_moderate_pressure(PedInfo  ped,
 
    *redo = false;
    LoopStats->NumRefRep += NumReferences;
+   /*QUNYAN 0004*/
+   /*acculate LIAV,LCAV..   */ 
+   LoopStats->NumLIAV += NumLIAV;
+   LoopStats->NumLCAV += NumLCAV;
+   LoopStats->NumLIPAV += NumLIPAV;
+   LoopStats->NumLCPAV += NumLCPAV;
+   /* QUNYAN 0004*/
    complete_temp_names(glist,redo,array_table);
   }
