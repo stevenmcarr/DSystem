@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.21 1996/10/14 14:48:52 carr Exp $ */
+/* $Id: mh.h,v 1.22 1996/10/15 15:19:42 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -132,7 +132,7 @@ typedef struct subscriptinfotype {
   UtilNode  *lnode;
   Boolean   store;
   LocalityType Locality;
-  int          GroupSpatialDistance;
+  int          GroupDistance;
  } subscript_info_type;
 
 typedef struct stmtinfotype {
