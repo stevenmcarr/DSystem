@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.9 1994/07/20 11:31:51 carr Exp $ */
+/* $Id: LoopStats.h,v 1.10 1994/07/27 18:56:25 yguan Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -88,6 +88,7 @@ typedef struct loopstatstype {
 	  NumLoop_illjump,     /* number of loops having illegal jump */
 	  Numbadflow,          /* number of loops having bad flow */
           FPRegisterPressure,  /* float point register pressure */
+	  SRRegisterPressure,  /* number of registers used for scalar replacement */
 	  NumLoopReplaced,     /* number of loops replaced */
 	  NumLoopSpilled,      /* number of loops spilled  */
           NumRefRep,           /* number of references replaced */
