@@ -1,4 +1,4 @@
-/* $Id: log.C,v 1.12 1995/08/22 14:35:56 carr Exp $ */
+/* $Id: log.C,v 1.13 1996/02/14 11:01:05 carr Exp $ */
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
@@ -67,8 +67,6 @@ static void print_predicted_info(model_loop *loop_data,
      LoopStats->PredictedInitialBalance += loop_data[loop].ibalance;
      fprintf(logfile,"Final Loop Balance   = %.4f\n",loop_data[loop].fbalance);
      LoopStats->PredictedFinalBalance += loop_data[loop].fbalance;
-     fprintf(logfile,"Final Prefetch Requirements = %.4f\n",loop_data[loop].P_L);
-     LoopStats->PredictedP_L += loop_data[loop].P_L;
      fprintf(logfile,"FP Register Pressure = %d\n",
 	     loop_data[loop].registers);
      LoopStats->PredictedFPRegisterPressure += loop_data[loop].registers;
@@ -86,6 +84,17 @@ static void print_predicted_info(model_loop *loop_data,
 		   unroll_vector[loop_data[UnrolledLoops[1]].level-1]);
 	  }
        }
+     fprintf(logfile,"Initial Prefetches/Iteration = %.4f\n",
+	     loop_data[loop].initial_P_L);
+     fprintf(logfile,"Initial Cycles/Iteration = %.4f\n",
+	     loop_data[loop].initial_L_L);
+     fprintf(logfile,"Initial Prefetch Bandwidth Requirement = %.4f\n",
+	     loop_data[loop].initial_P_L/loop_data[loop].initial_L_L);
+     fprintf(logfile,"Final Prefetches/Iteration = %.4f\n",loop_data[loop].P_L);
+     fprintf(logfile,"Final Cycles/Iteration = %.4f\n",loop_data[loop].L_L);
+     fprintf(logfile,"Final Prefetch Bandwidth Requirement = %.4f\n",
+	     loop_data[loop].P_L/loop_data[loop].L_L);
+     LoopStats->PredictedP_L += loop_data[loop].P_L;
      fprintf(logfile,"\n\n\n");
   }
 
@@ -379,9 +388,9 @@ static void walk_loops(model_loop *loop_data,
 	      LoopStats->UnrolledLoops++;
 	      print_predicted_info(loop_data,loop,logfile,ped,UnrollCount,
 				   UnrolledLoops,unroll_vector,LoopStats,IVar);
-	      print_actual_info(loop_data,loop,logfile,UnrollCount,
-				UnrolledLoops,unroll_vector,ped,symtab,ar,
-				LoopStats,IVar);
+	      // print_actual_info(loop_data,loop,logfile,UnrollCount,
+			// 	UnrolledLoops,unroll_vector,ped,symtab,ar,
+				// LoopStats,IVar);
 	     }
 	   else
 	     {

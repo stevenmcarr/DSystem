@@ -1,4 +1,4 @@
-/* $Id: compute_uj.h,v 1.10 1995/06/07 16:04:48 carr Exp $ */
+/* $Id: compute_uj.h,v 1.11 1996/02/14 11:02:10 carr Exp $ */
 
 #ifndef compute_uj_h
 #define compute_uj_h
@@ -46,8 +46,10 @@ typedef struct compinfotype {
  } comp_info_type;
 
 typedef struct prefectcomponent {
-  int    unit,
+  float  unit,
          ceil_fraction,
+         ceil_min_fraction_x,
+         ceil_min_fraction_d,
          fraction;
  } PrefetchCoeffComponentType;
 
@@ -86,7 +88,8 @@ typedef struct vectorinfotype {
  } vector_info_type;
 
 typedef enum {S_NONE,SELF,SELF1,SELF2,GROUP} SpatialLocalityType;
-typedef enum {UNIT,CEIL_FRACTION,FRACTION} ComponentType;
+typedef enum {UNIT,CEIL_FRACTION,FRACTION,CEIL_MIN_FRACTION_X,
+	     CEIL_MIN_FRACTION_D} ComponentType;
 
 #define get_vec_DIS(vec,lvl)		(vec[(lvl)-1])
 #define put_vec_DIS(vec,lvl,d)		(vec[(lvl)-1] = d)

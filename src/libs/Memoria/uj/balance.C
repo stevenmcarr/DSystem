@@ -1,4 +1,4 @@
-/* $Id: balance.C,v 1.8 1995/08/24 14:12:11 yguan Exp $ */
+/* $Id: balance.C,v 1.9 1996/02/14 11:00:48 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -180,28 +180,30 @@ float mh_PrefetchRequirements(float     PrefetchCoeff[4][3][3],
      cindex1 = get_coeff_index(x1);
      cindex2 = get_coeff_index(x2);
 
-     return(
-	    (float)(ceil_ab(x1*x2,LineSize) *
-		    Comp[0][cindex1][cindex2].ceil_fraction) +
-	    (float)(x1*x2*(Comp[0][cindex1][cindex2].unit + 
-			   (float)Comp[0][cindex1][cindex2].fraction/(float)LineSize)) +
-	    (float)(ceil_ab(x1,LineSize) *
-		    Comp[1][cindex1][cindex2].ceil_fraction) +
-	    (float)(x1*(Comp[1][cindex1][cindex2].unit + 
-			(float)Comp[1][cindex1][cindex2].fraction/(float)LineSize)) +
-	    (float)(ceil_ab(x2,LineSize) *
-		    Comp[2][cindex1][cindex2].ceil_fraction) +
-	    (float)(x2*(Comp[2][cindex1][cindex2].unit + 
-			(float)Comp[2][cindex1][cindex2].fraction/(float)LineSize)) +
-	    (float)(Comp[3][cindex1][cindex2].ceil_fraction + 
-		    Comp[3][cindex1][cindex2].unit + 
-		    (float)Comp[3][cindex1][cindex2].fraction/(float)LineSize));
+     return(x1*x2*(Comp[0][cindex1][cindex2].unit + 
+		   Comp[0][cindex1][cindex2].fraction/(float)LineSize) +
+	    ceil_ab(x1*x2,LineSize) * (Comp[0][cindex1][cindex2].ceil_fraction +
+				       Comp[0][cindex1][cindex2].ceil_min_fraction_x) +
+	    
+	    x1*(Comp[1][cindex1][cindex2].unit + 
+		Comp[1][cindex1][cindex2].fraction/(float)LineSize +
+		Comp[1][cindex1][cindex2].ceil_min_fraction_d) +
+	    ceil_ab(x1,LineSize) * (Comp[1][cindex1][cindex2].ceil_fraction +
+				    Comp[1][cindex1][cindex2].ceil_min_fraction_x) +
 
-//     return(PrefetchCoeff[0][cindex1][cindex2] * x1 * x2 +
-//	    PrefetchCoeff[1][cindex1][cindex2] * x1 +
-//	    PrefetchCoeff[2][cindex1][cindex2] * x2 +
-//	    PrefetchCoeff[3][cindex1][cindex2]);
+	    x2*(Comp[2][cindex1][cindex2].unit + 
+		Comp[2][cindex1][cindex2].fraction/(float)LineSize +
+		Comp[2][cindex1][cindex2].ceil_min_fraction_d) +
+	    ceil_ab(x2,LineSize) * (Comp[2][cindex1][cindex2].ceil_fraction +
+				    Comp[2][cindex1][cindex2].ceil_min_fraction_x) +
+
+	    Comp[3][cindex1][cindex2].ceil_fraction + 
+	    Comp[3][cindex1][cindex2].unit + 
+	    Comp[3][cindex1][cindex2].fraction/(float)LineSize +
+	    Comp[3][cindex1][cindex2].ceil_min_fraction_d);
+
   }
+
     
 float mh_CacheBalance(int       mem_coeff[4][3][3],
 		      float     PrefetchCoeff[4][3][3],
@@ -210,17 +212,19 @@ float mh_CacheBalance(int       mem_coeff[4][3][3],
 		      int       x2,
 		      float       MissCost,
 		      PrefetchCoeffComponentType Comp[4][3][3],
-		      int       LineSize)
+		      int       LineSize,
+		      float     IM)
 
   {
-   float PL,FL,MemBal;
+   float PL,FL,MemBal,LL;
 
      MemBal = mh_loop_balance(mem_coeff,flops,x1,x2);
      PL = mh_PrefetchRequirements(PrefetchCoeff,flops,x1,x2,Comp,LineSize);
      FL = (float)(flops * x1 * x2);
+     LL = MemBal >= 1.0 ? MemBal*FL : FL;
      if (FL == 0)
        return(0.0);
      else
-       return((PL*MissCost)/FL + MemBal);
+       return(((PL - IM*LL)*MissCost)/FL + MemBal);
   }
      

@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.24 1995/12/06 19:15:26 yguan Exp $ */
+/* $Id: compute_uj.C,v 1.25 1996/02/14 11:01:00 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -1208,8 +1208,7 @@ static void update_lcoeff(int coeff[3][3],
 /****************************************************************************/
 
 
-static void update_GGCoeff(float coeff[3][3],
-			   int index1,
+static void update_GGCoeff(int index1,
 			   int index2,
 			   float val,
 			   PrefetchCoeffComponentType Comp[3][3],
@@ -1221,12 +1220,13 @@ static void update_GGCoeff(float coeff[3][3],
      for (i = 2; i >= index1; i--)
        for (j = 2; j >= index2; j--)
 	 {
-	  coeff[i][j] += val;
 	  switch(Type)
 	    {
-	     case UNIT:          Comp[i][j].unit++; break;
-	     case CEIL_FRACTION: Comp[i][j].ceil_fraction++; break;
-	     case FRACTION:      Comp[i][j].fraction++; break;
+	     case UNIT:                Comp[i][j].unit += val; break;
+	     case CEIL_FRACTION:       Comp[i][j].ceil_fraction += val; break;
+	     case FRACTION:            Comp[i][j].fraction += val; break;
+	     case CEIL_MIN_FRACTION_X: Comp[i][j].ceil_min_fraction_x += val; break;
+	     case CEIL_MIN_FRACTION_D: Comp[i][j].ceil_min_fraction_d += val; break;
 	    }
 	 }
   }
@@ -1243,8 +1243,7 @@ static void update_GGCoeff(float coeff[3][3],
 /****************************************************************************/
 
 
-static void update_LLCoeff(float coeff[3][3],
-			   int index1,
+static void update_LLCoeff(int index1,
 			   int index2,
 			   float val,
 			   PrefetchCoeffComponentType Comp[3][3],
@@ -1256,12 +1255,13 @@ static void update_LLCoeff(float coeff[3][3],
      for (i = index1-1; i >= 0; i--)
        for (j = index2-1; j >= 0; j--)
 	 {
-	  coeff[i][j] += val;
 	  switch(Type)
 	    {
-	     case UNIT:          Comp[i][j].unit++; break;
-	     case CEIL_FRACTION: Comp[i][j].ceil_fraction++; break;
-	     case FRACTION:      Comp[i][j].fraction++; break;
+	     case UNIT:                Comp[i][j].unit += val; break;
+	     case CEIL_FRACTION:       Comp[i][j].ceil_fraction += val; break;
+	     case FRACTION:            Comp[i][j].fraction += val; break;
+	     case CEIL_MIN_FRACTION_X: Comp[i][j].ceil_min_fraction_x += val; break;
+	     case CEIL_MIN_FRACTION_D: Comp[i][j].ceil_min_fraction_d += val; break;
 	    }
 	 }
   }
@@ -1278,8 +1278,7 @@ static void update_LLCoeff(float coeff[3][3],
 /****************************************************************************/
 
 
-static void update_LGCoeff(float coeff[3][3],
-			   int index1,
+static void update_LGCoeff(int index1,
 			   int index2,
 			   float val,
 			   PrefetchCoeffComponentType Comp[3][3],
@@ -1291,12 +1290,13 @@ static void update_LGCoeff(float coeff[3][3],
      for (i = index1-1; i >= 0; i--)
        for (j = 2; j >= index2; j--)
 	 {
-	  coeff[i][j] += val;
 	  switch(Type)
 	    {
-	     case UNIT:          Comp[i][j].unit++; break;
-	     case CEIL_FRACTION: Comp[i][j].ceil_fraction++; break;
-	     case FRACTION:      Comp[i][j].fraction++; break;
+	     case UNIT:                Comp[i][j].unit += val; break;
+	     case CEIL_FRACTION:       Comp[i][j].ceil_fraction += val; break;
+	     case FRACTION:            Comp[i][j].fraction += val; break;
+	     case CEIL_MIN_FRACTION_X: Comp[i][j].ceil_min_fraction_x += val; break;
+	     case CEIL_MIN_FRACTION_D: Comp[i][j].ceil_min_fraction_d += val; break;
 	    }
 	 }
   }
@@ -1313,8 +1313,7 @@ static void update_LGCoeff(float coeff[3][3],
 /****************************************************************************/
 
 
-static void update_GLCoeff(float coeff[3][3],
-			   int index1,
+static void update_GLCoeff(int index1,
 			   int index2,
 			   float val,
 			   PrefetchCoeffComponentType Comp[3][3],
@@ -1326,12 +1325,13 @@ static void update_GLCoeff(float coeff[3][3],
      for (i = 2; i >= index1; i--)
        for (j = index2-1; j >= 0; j--)
 	 {
-	  coeff[i][j] += val;
 	  switch(Type)
 	    {
-	     case UNIT:          Comp[i][j].unit++; break;
-	     case CEIL_FRACTION: Comp[i][j].ceil_fraction++; break;
-	     case FRACTION:      Comp[i][j].fraction++; break;
+	     case UNIT:                Comp[i][j].unit += val; break;
+	     case CEIL_FRACTION:       Comp[i][j].ceil_fraction += val; break;
+	     case FRACTION:            Comp[i][j].fraction += val; break;
+	     case CEIL_MIN_FRACTION_X: Comp[i][j].ceil_min_fraction_x += val; break;
+	     case CEIL_MIN_FRACTION_D: Comp[i][j].ceil_min_fraction_d += val; break;
 	    }
 	 }
   }
@@ -1718,38 +1718,20 @@ static void UpdatePrefetchCoeffFor_V0(AST_INDEX node,
 				      dep_info_type *dinfo,
 				      int refs)
   {
-   int stride,CacheLineSize;
-   float denom,f_refs;
-
    node = tree_out(node);
-   f_refs = (float)refs;
-   if (gen_get_converted_type(node) == TYPE_REAL)
-     CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 2;
-   else
-     CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 3;
    switch (GetSpatialType(node,dinfo,NULL,0,0))
      {
       case SELF:
-        stride = GetStride(node,dinfo->index[2],dinfo->step[2]);
-        denom = (float)floor_ab(CacheLineSize,stride);
-        update_GGCoeff(dinfo->PrefetchCoeff[0],0,0,f_refs/denom,
-		       dinfo->PrefetchComponent[0],FRACTION);
+        update_GGCoeff(0,0,1,dinfo->PrefetchComponent[0],FRACTION);
         break;
       case SELF1:
-        stride = GetStride(node,dinfo->index[0],dinfo->step[0]);
-        denom = (float)floor_ab(CacheLineSize,stride);
-        update_GGCoeff(dinfo->PrefetchCoeff[1],0,0,f_refs/denom,
-		       dinfo->PrefetchComponent[1],CEIL_FRACTION);
+        update_GGCoeff(0,0,1,dinfo->PrefetchComponent[1],CEIL_FRACTION);
         break;
       case SELF2:
-        stride = GetStride(node,dinfo->index[1],dinfo->step[1]);
-        denom = (float)floor_ab(CacheLineSize,stride);
-        update_GGCoeff(dinfo->PrefetchCoeff[2],0,0,f_refs/denom,
-		       dinfo->PrefetchComponent[2],CEIL_FRACTION);
+        update_GGCoeff(0,0,1,dinfo->PrefetchComponent[2],CEIL_FRACTION);
         break;
       case S_NONE:
-        update_GGCoeff(dinfo->PrefetchCoeff[3],0,0,f_refs,
-		       dinfo->PrefetchComponent[3],UNIT);
+        update_GGCoeff(0,0,1,dinfo->PrefetchComponent[3],UNIT);
         break;
       default:
         break;
@@ -1777,7 +1759,7 @@ static void UpdatePrefetchCoeffFor_VC(AST_INDEX node,
   {
    int dist1,dist2,distn,cindex1,cindex2;
    int stride;
-   float denom,f_refs;
+   int denom;
    int CacheLineSize;
 
      node = tree_out(node);
@@ -1788,104 +1770,69 @@ static void UpdatePrefetchCoeffFor_VC(AST_INDEX node,
        CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 2;
      else
        CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 3;
-     f_refs = (float)refs;
      switch (GetSpatialType(node,dinfo,vector,level,max_level))
        {
         case SELF:
-          stride = GetStride(node,dinfo->index[2],dinfo->step[2]);
-          denom=(float)floor_ab(CacheLineSize,stride);
-	  update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
-			 f_refs/denom,dinfo->PrefetchComponent[0],FRACTION);
-	  update_LGCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
-			 f_refs/denom,dinfo->PrefetchComponent[0],FRACTION);
-	  update_GLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
-			 f_refs/denom,dinfo->PrefetchComponent[0],FRACTION);
-	  update_GGCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
-			 (dist2 * f_refs)/denom,dinfo->PrefetchComponent[1],FRACTION);
-	  update_GGCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
-			 (dist1 * f_refs)/denom,dinfo->PrefetchComponent[2],FRACTION);
-	  update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
-			 -(dist1 * dist2 * f_refs)/denom,dinfo->PrefetchComponent[3],
+	  update_LLCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[0],FRACTION);
+	  update_LGCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[0],FRACTION);
+	  update_GLCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[0],FRACTION);
+	  update_GGCoeff(cindex1,cindex2,dist2,dinfo->PrefetchComponent[1],FRACTION);
+	  update_GGCoeff(cindex1,cindex2,dist1,dinfo->PrefetchComponent[2],FRACTION);
+	  update_GGCoeff(cindex1,cindex2, -(dist1 * dist2),dinfo->PrefetchComponent[3],
 			 FRACTION);
           break;
         case SELF1:
-	  stride = GetStride(node,dinfo->index[0],dinfo->step[0]);
-          denom=(float)floor_ab(CacheLineSize,stride);
-	  if (distn == 0)
+	  update_LLCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[2],CEIL_FRACTION);
+	  update_GLCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[2],CEIL_FRACTION);
+	  update_LGCoeff(cindex1,cindex2,dist2,dinfo->PrefetchComponent[3],
+			 CEIL_FRACTION);
+	  update_GGCoeff(cindex1,cindex2,dist2,dinfo->PrefetchComponent[3],
+			 CEIL_FRACTION);
+	  if (distn != 0)
 	    {
-	     update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,f_refs/denom,
-			    dinfo->PrefetchComponent[0],CEIL_FRACTION);
-	     update_LGCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
-			    (dist1-CacheLineSize+1)*f_refs/denom,
-			    dinfo->PrefetchComponent[2],CEIL_FRACTION);
-	     update_GLCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
-			    dist2*f_refs/denom,
-			    dinfo->PrefetchComponent[1],CEIL_FRACTION);
-	     update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
-			    (dist2*(dist1-CacheLineSize+1))*f_refs/denom,
-			    dinfo->PrefetchComponent[3],CEIL_FRACTION);
-	    }
-	  else
-	    {
-	     update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,f_refs/denom,
-			    dinfo->PrefetchComponent[0],CEIL_FRACTION);
-	     update_LGCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
-			    dist1*f_refs/denom,
-			    dinfo->PrefetchComponent[2],CEIL_FRACTION);
-	     update_GLCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
-			    dist2*f_refs/denom,
-			    dinfo->PrefetchComponent[1],CEIL_FRACTION);
-	     update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
-			    dist2*dist1*f_refs/denom,
-			    dinfo->PrefetchComponent[3],CEIL_FRACTION);
+	     update_LGCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[0],
+			    CEIL_MIN_FRACTION_X);
+	     update_LGCoeff(cindex1,cindex2,-dist2,dinfo->PrefetchComponent[1],
+			    CEIL_MIN_FRACTION_X);
+	     stride = GetStride(node,dinfo->index[0],dinfo->step[0]);
+	     denom = floor_ab(CacheLineSize,stride);
+	     update_GGCoeff(cindex1,cindex2,ceil_ab(dist1,denom),
+			    dinfo->PrefetchComponent[2],CEIL_MIN_FRACTION_D);
+	     update_GGCoeff(cindex1,cindex2,-dist2*ceil_ab(dist1,denom),
+			    dinfo->PrefetchComponent[3],CEIL_MIN_FRACTION_D);
 	    }
 	  break;
         case SELF2:
           stride = GetStride(node,dinfo->index[1],dinfo->step[1]);
-          denom=(float)floor_ab(CacheLineSize,stride);
-	  if (distn == 0)
+          denom = floor_ab(CacheLineSize,stride);
+	  update_LLCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[1],CEIL_FRACTION);
+	  update_GLCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[1],CEIL_FRACTION);
+	  update_LGCoeff(cindex1,cindex2,dist1,dinfo->PrefetchComponent[3],
+			 CEIL_FRACTION);
+	  update_GGCoeff(cindex1,cindex2,dist1,dinfo->PrefetchComponent[3],
+			 CEIL_FRACTION);
+	  if (distn != 0)
 	    {
-	     update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,f_refs/denom,
-			    dinfo->PrefetchComponent[0],CEIL_FRACTION);
-	     update_LGCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
-			    (dist2-CacheLineSize+1)*f_refs/denom,
-			    dinfo->PrefetchComponent[1],CEIL_FRACTION);
-	     update_GLCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
-			    dist1*f_refs/denom,
-			    dinfo->PrefetchComponent[2],CEIL_FRACTION);
-	     update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
-			    (dist1*(dist2-CacheLineSize+1))*f_refs/denom,
-			    dinfo->PrefetchComponent[3],CEIL_FRACTION);
-	    }
-	  else
-	    {
-	     update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,f_refs/denom,
-			    dinfo->PrefetchComponent[0],CEIL_FRACTION);
-	     update_LGCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
-			    dist2*f_refs/denom,
-			    dinfo->PrefetchComponent[1],CEIL_FRACTION);
-	     update_GLCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
-			    dist1*f_refs/denom,
-			    dinfo->PrefetchComponent[2],CEIL_FRACTION);
-	     update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
-			    dist1*dist2*f_refs/denom,
-			    dinfo->PrefetchComponent[3],CEIL_FRACTION);
+	     update_LGCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[0],
+			    CEIL_MIN_FRACTION_X);
+	     update_LGCoeff(cindex1,cindex2,-dist1,dinfo->PrefetchComponent[2],
+			    CEIL_MIN_FRACTION_X);
+	     stride = GetStride(node,dinfo->index[1],dinfo->step[1]);
+	     denom = floor_ab(CacheLineSize,stride);
+	     update_GGCoeff(cindex1,cindex2,ceil_ab(dist2,denom),
+			    dinfo->PrefetchComponent[1],CEIL_MIN_FRACTION_D);
+	     update_GGCoeff(cindex1,cindex2,-dist1*ceil_ab(dist2,denom),
+			    dinfo->PrefetchComponent[3],CEIL_MIN_FRACTION_D);
 	    }
           break;
         case S_NONE:
-	  update_LLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
-			 f_refs,dinfo->PrefetchComponent[0],UNIT);
-	  update_LGCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
-			 f_refs,dinfo->PrefetchComponent[0],UNIT);
-	  update_GLCoeff(dinfo->PrefetchCoeff[0],cindex1,cindex2,
-			 f_refs,dinfo->PrefetchComponent[0],UNIT);
-	  update_GGCoeff(dinfo->PrefetchCoeff[1],cindex1,cindex2,
-			 (dist2 * f_refs),dinfo->PrefetchComponent[1],UNIT);
-	  update_GGCoeff(dinfo->PrefetchCoeff[2],cindex1,cindex2,
-			 (dist1 * f_refs),dinfo->PrefetchComponent[2],UNIT);
-	  update_GGCoeff(dinfo->PrefetchCoeff[3],cindex1,cindex2,
-			 -(dist1 * dist2 * f_refs),dinfo->PrefetchComponent[3],UNIT);
-          break;
+	  update_LLCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[0],UNIT);
+	  update_LGCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[0],UNIT);
+	  update_GLCoeff(cindex1,cindex2,1,dinfo->PrefetchComponent[0],UNIT);
+	  update_GGCoeff(cindex1,cindex2,dist2,dinfo->PrefetchComponent[1],UNIT);
+	  update_GGCoeff(cindex1,cindex2,dist1,dinfo->PrefetchComponent[2],UNIT);
+	  update_GGCoeff(cindex1,cindex2,-(dist1*dist2),dinfo->PrefetchComponent[3],
+			 UNIT);
           break;
         default:
           break;
@@ -1913,58 +1860,37 @@ static void UpdatePrefetchCoeffFor_VI(AST_INDEX node,
   {
    subscript_info_type *sptr;
    int dist1,dist2,distn,cindex1,cindex2;
-   int stride,CacheLineSize;
-   float denom,f_refs;
 
      node = tree_out(node);
-     if (gen_get_converted_type(node) == TYPE_REAL)
-       CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 2;
-     else
-       CacheLineSize = ((config_type *)PED_MH_CONFIG(dinfo->ped))->line >> 3;
-     f_refs = (float)refs;
      get_distances(dinfo,vector,&dist1,&dist2,&distn);
      sptr = get_subscript_ptr(gen_SUBSCRIPT_get_name(node));
      switch (GetSpatialType(node,dinfo,vector,level,max_level))
        {
 	case SELF:
-          stride = GetStride(node,dinfo->index[2],dinfo->step[2]);
-          denom=(float)floor_ab(CacheLineSize,stride);
 	  if (sptr->is_scalar[1])
 	    if (sptr->is_scalar[0])
-	      update_GGCoeff(dinfo->PrefetchCoeff[3],0,0,f_refs/denom,
-			     dinfo->PrefetchComponent[3],FRACTION);
+	      update_GGCoeff(0,0,1,dinfo->PrefetchComponent[3],FRACTION);
 	    else
-	      update_GGCoeff(dinfo->PrefetchCoeff[1],0,0,f_refs/denom,
-			     dinfo->PrefetchComponent[1],FRACTION);
+	      update_GGCoeff(0,0,1,dinfo->PrefetchComponent[1],FRACTION);
 	  else
 	    if (sptr->is_scalar[0])
-	      update_GGCoeff(dinfo->PrefetchCoeff[2],0,0,f_refs/denom,
-			     dinfo->PrefetchComponent[2],FRACTION);
+	      update_GGCoeff(0,0,1,dinfo->PrefetchComponent[2],FRACTION);
           break;
         case SELF1:
-          stride = GetStride(node,dinfo->index[0],dinfo->step[0]);
-          denom=(float)floor_ab(CacheLineSize,stride);
-	  update_GGCoeff(dinfo->PrefetchCoeff[1],0,0,f_refs/denom,
-			     dinfo->PrefetchComponent[1],CEIL_FRACTION);
+	  update_GGCoeff(0,0,1,dinfo->PrefetchComponent[1],CEIL_FRACTION);
           break;
         case SELF2:
-          stride = GetStride(node,dinfo->index[1],dinfo->step[1]);
-          denom=(float)floor_ab(CacheLineSize,stride);
-	  update_GGCoeff(dinfo->PrefetchCoeff[2],0,0,f_refs/denom,
-			     dinfo->PrefetchComponent[2],CEIL_FRACTION);
+	  update_GGCoeff(0,0,1,dinfo->PrefetchComponent[2],CEIL_FRACTION);
           break;
         case S_NONE:
 	  if (sptr->is_scalar[1])
 	    if (sptr->is_scalar[0])
-	      update_GGCoeff(dinfo->PrefetchCoeff[3],0,0,f_refs,
-			     dinfo->PrefetchComponent[3],FRACTION);
+	      update_GGCoeff(0,0,1,dinfo->PrefetchComponent[3],FRACTION);
 	    else
-	      update_GGCoeff(dinfo->PrefetchCoeff[1],0,0,f_refs,
-			     dinfo->PrefetchComponent[1],FRACTION);
+	      update_GGCoeff(0,0,1,dinfo->PrefetchComponent[1],FRACTION);
 	  else
 	    if (sptr->is_scalar[0])
-	      update_GGCoeff(dinfo->PrefetchCoeff[2],0,0,f_refs,
-			     dinfo->PrefetchComponent[2],FRACTION);
+	      update_GGCoeff(0,0,1,dinfo->PrefetchComponent[2],FRACTION);
           break;
         default:
           break;
@@ -2526,7 +2452,8 @@ static float LA_InitBalance(DataReuseModel *drmodel,
  Pref_Latency = ((config_type *)PED_MH_CONFIG(dep_info->ped))->prefetch_latency;
  Pref_Buffer = ((config_type *)PED_MH_CONFIG(dep_info->ped))->prefetch_buffer;
  Im = (float)Pref_Buffer/(float)Pref_Latency; 
- CyclesPerIteration = (float)ut_CyclesPerIteration(loop_data[loop].node, dep_info->ped);
+ CyclesPerIteration = (float)ut_CyclesPerIteration(loop_data[loop].node,loop_data,
+						   loop,NULL,dep_info->ped);
  Beta_m = ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
  MissCost =
       (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->miss_cycles /
@@ -2672,7 +2599,8 @@ static void ComputeUsingLinearAlgebra(DataReuseModel *drmodel,
  
    cout << "Do Estimating " << endl;
 
-   CyclesPerIteration = (float)ut_CyclesPerIteration(loop_data[loop].node, dep_info->ped);
+   CyclesPerIteration = (float)ut_CyclesPerIteration(loop_data[loop].node, 
+						     loop_data,loop,NULL,dep_info->ped);
    OriginalLoopSize = ut_LoopSize(loop_data[loop].node, dep_info->ped);
      // cout << "CyclesPerIteration = " << CyclesPerIteration << endl;
      // cout << "OriginalLoopSize = " << OriginalLoopSize << endl;
@@ -2956,7 +2884,7 @@ static void ComputeTwoCache(model_loop    *loop_data,
 
   {
    int   x1,x2,max_x2,min_x1,temp,fp_regs,a_regs,mach_fp,mach_a,LineSize;
-   float min_obj,new_obj,abs_obj,MissCost;
+   float min_obj,new_obj,abs_obj,MissCost,IM,memcost,floatcost;
    
      mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
      mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped))->int_regs;
@@ -2964,11 +2892,19 @@ static void ComputeTwoCache(model_loop    *loop_data,
      MissCost =
          (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->miss_cycles /
 	 (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->hit_cycles;
+     IM = (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->prefetch_buffer/
+	 (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->prefetch_latency;
      fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,
 				       dep_info->scalar_coeff,1,1) + 
 				       dep_info->scalar_regs;
      a_regs = mh_addr_register_pressure(dep_info->addr_coeff,1,1);
      min_obj = 100000000.0;
+     memcost = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,1,1)/dep_info->flops;
+     loop_data[inner_loop].initial_L_L = memcost > dep_info->flops ? memcost :
+                                                                     dep_info->flops;
+     loop_data[inner_loop].initial_P_L =
+	           mh_PrefetchRequirements(dep_info->PrefetchCoeff,dep_info->flops,
+					   1,1,dep_info->PrefetchComponent,LineSize);
      x1 = 1;
      do
        {	
@@ -2978,7 +2914,7 @@ static void ComputeTwoCache(model_loop    *loop_data,
 	   new_obj = mh_CacheBalance(dep_info->mem_coeff,
 				     dep_info->PrefetchCoeff,
 				     dep_info->flops,x1,x2,MissCost,
-				     dep_info->PrefetchComponent,LineSize)
+				     dep_info->PrefetchComponent,LineSize,IM)
 	               - ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
 	   if (new_obj < 0.0)
 	     abs_obj = -new_obj;
@@ -2993,15 +2929,20 @@ static void ComputeTwoCache(model_loop    *loop_data,
 	      min_obj = abs_obj;
 	      dep_info->x1 = x1;
 	      dep_info->x2 = x2;
+	      loop_data[inner_loop].P_L =
+	           mh_PrefetchRequirements(dep_info->PrefetchCoeff,dep_info->flops,
+					   dep_info->x1,dep_info->x2,
+					   dep_info->PrefetchComponent,LineSize);
+	      floatcost = (dep_info->flops*x1*x2);
+	      memcost = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,x1,x2) /
+	                floatcost;
+	      loop_data[inner_loop].L_L = memcost > floatcost ? memcost : floatcost;
 	     }
 	   x2++;
 	  } while (fp_regs <= mach_fp && a_regs <= mach_a && x2 <= mach_fp);
 	x1++;
        } while (x1 <= mach_fp);
 
-     cout << "X1 = " << dep_info->x1 << " X2 = " << dep_info->x2 << endl;
-     cout << "Minimum OBJ = " << min_obj << endl;
-     cout << "OBJ = " << abs_obj << endl;
      if (dep_info->x1 <= loop_data[unroll_loops[0]].max)
        if (dep_info->x2 <= loop_data[unroll_loops[1]].max)
 	 {
@@ -3090,7 +3031,7 @@ static void ComputeOneCache(model_loop    *loop_data,
 			    float           rhoL_lp)
 
   {
-   float min_obj,new_obj,abs_obj,MissCost;
+   float min_obj,new_obj,abs_obj,MissCost,IM,memcost,floatcost;
    int   x,min_x,max_x,fp_regs,a_regs,mach_fp,mach_a,LineSize;
 
      mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
@@ -3099,14 +3040,22 @@ static void ComputeOneCache(model_loop    *loop_data,
      MissCost =
           (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->miss_cycles /
 	  (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->hit_cycles;
+     IM = (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->prefetch_buffer/
+	 (float)((config_type *)PED_MH_CONFIG(dep_info->ped))->prefetch_latency;
      min_obj = 100000000.0;
+     memcost = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,1,1)/dep_info->flops;
+     loop_data[inner_loop].initial_L_L = memcost > dep_info->flops ? memcost :
+                                                                     dep_info->flops;
+     loop_data[inner_loop].initial_P_L =
+	           mh_PrefetchRequirements(dep_info->PrefetchCoeff,dep_info->flops,
+					   1,1,dep_info->PrefetchComponent,LineSize);
      x = 1;
      do
        {
 	new_obj = mh_CacheBalance(dep_info->mem_coeff,
 				  dep_info->PrefetchCoeff,
 				  dep_info->flops,x,1,MissCost,
-				  dep_info->PrefetchComponent,LineSize) -
+				  dep_info->PrefetchComponent,LineSize,IM) -
 			 ((config_type *)PED_MH_CONFIG(dep_info->ped))->beta_m;
 	if (new_obj < 0.0)
 	  abs_obj = -new_obj;
@@ -3120,13 +3069,18 @@ static void ComputeOneCache(model_loop    *loop_data,
 	  {
 	   min_obj = abs_obj;
 	   dep_info->x1 = x;
+	   loop_data[inner_loop].P_L =
+	           mh_PrefetchRequirements(dep_info->PrefetchCoeff,dep_info->flops,
+					   dep_info->x1,1,
+					   dep_info->PrefetchComponent,LineSize);
+	      floatcost = (dep_info->flops*x);
+	      memcost = mh_loop_balance(dep_info->mem_coeff,dep_info->flops,x,1) /
+	                floatcost;
+	      loop_data[inner_loop].L_L = memcost > floatcost ? memcost : floatcost;
 	  }
 	x++;
        } while (x <= mach_fp && a_regs <= mach_a && fp_regs <= mach_fp);
 
-     cout <<"X = " << dep_info->x1 << endl;
-     cout << "Minimum OBJ = " << min_obj << endl;
-     cout << "OBJ = " << abs_obj << endl;
      if (dep_info->x1 <= loop_data[unroll_loop].max)
        {
 	if (rhoL_lp > (float)(dep_info->x1*dep_info->x2*dep_info->flops) &&
@@ -3452,7 +3406,8 @@ static void do_computation(model_loop    *loop_data,
 			   UtilList      *loop_list)
 
   {
-   int           i,j,k,regs,LineSize; float         rhoL_lp,bal,MissCost;
+   int           i,j,k,regs,LineSize; 
+   float         rhoL_lp,bal,MissCost,IM;
    dep_info_type dep_info;
    reg_info_type reg_info;
    AST_INDEX     step;
@@ -3519,6 +3474,8 @@ static void do_computation(model_loop    *loop_data,
 	     dep_info.PrefetchCoeff[i][j][k] = 0.0;
 	     dep_info.PrefetchComponent[i][j][k].fraction = 0;
 	     dep_info.PrefetchComponent[i][j][k].ceil_fraction = 0;
+	     dep_info.PrefetchComponent[i][j][k].ceil_min_fraction_x = 0;
+	     dep_info.PrefetchComponent[i][j][k].ceil_min_fraction_d = 0;
 	     dep_info.PrefetchComponent[i][j][k].unit = 0;
 	    }
 	if (i < 3)
@@ -3552,9 +3509,10 @@ static void do_computation(model_loop    *loop_data,
      walk_expression(loop_data[loop].node,(WK_EXPR_CLBACK)partition_names,(WK_EXPR_CLBACK)NOFUNC,
 		     (Generic)&dep_info);
      compute_coefficients(&dep_info);
-     MissCost =
-        (float)((config_type *)PED_MH_CONFIG(dep_info.ped))->miss_cycles /
-	(float)((config_type *)PED_MH_CONFIG(dep_info.ped))->hit_cycles;
+     MissCost = (float)((config_type *)PED_MH_CONFIG(dep_info.ped))->miss_cycles /
+                (float)((config_type *)PED_MH_CONFIG(dep_info.ped))->hit_cycles;
+     IM = (float)((config_type *)PED_MH_CONFIG(dep_info.ped))->prefetch_buffer/
+	  (float)((config_type *)PED_MH_CONFIG(dep_info.ped))->prefetch_latency;
      LineSize = ((config_type *)PED_MH_CONFIG(dep_info.ped))->line >> 3;
      if (mc_unroll_cache && NOT(mc_extended_cache))
        loop_data[loop].ibalance = mh_CacheBalance(dep_info.mem_coeff,
@@ -3562,7 +3520,7 @@ static void do_computation(model_loop    *loop_data,
 						  dep_info.flops,1,1,
 						  MissCost,
 						  dep_info.PrefetchComponent,
-						  LineSize);
+						  LineSize,IM);
      else if( mc_extended_cache )
        {
         char *IVar[80];
@@ -3614,7 +3572,7 @@ static void do_computation(model_loop    *loop_data,
 				    unroll_vector[loop_data[unroll_loops[0]].level-1]+1,
 							 1,MissCost,
 							 dep_info.PrefetchComponent,
-							 LineSize);
+							 LineSize,IM);
 	      loop_data[loop].P_L = mh_PrefetchRequirements(dep_info.PrefetchCoeff,
 							    dep_info.flops,
 				    unroll_vector[loop_data[unroll_loops[0]].level-1]+1,
@@ -3676,7 +3634,7 @@ static void do_computation(model_loop    *loop_data,
 						      dep_info.flops,dep_info.x1,
 						      dep_info.x2,MissCost,
 						      dep_info.PrefetchComponent,
-						      LineSize);
+						      LineSize,IM);
 	   loop_data[loop].P_L = mh_PrefetchRequirements(dep_info.PrefetchCoeff,
 							 dep_info.flops,dep_info.x1,
 							 dep_info.x2,
@@ -3780,7 +3738,6 @@ void mh_compute_unroll_amounts(model_loop    *loop_data,
    int unroll_loops[2];
    UtilList      *loop_list;
 
-   cout <<"Compute Unroll Amount!"<<endl;
      loop_list = util_list_alloc((Generic)NULL,"loop-list");
      pick_loops(loop_data,size,num_loops,ped,symtab,ar);
      loop_data[0].unroll_vector = (int *)ar->arena_alloc_mem_clear(LOOP_ARENA,
