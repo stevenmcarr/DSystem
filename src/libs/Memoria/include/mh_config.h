@@ -1,4 +1,4 @@
-/* $Id: mh_config.h,v 1.2 1994/07/11 13:34:35 carr Exp $ */
+/* $Id: mh_config.h,v 1.3 1995/08/22 16:11:00 yguan Exp $ */
 
 /*************************************************************************
 
@@ -32,6 +32,7 @@ typedef struct {
           aggressive,
           prefetch_latency,
 	  prefetch_buffer,
+	  instruction_size,
           write_allocate;
   float   beta_m;
   FILE    *logfile;
