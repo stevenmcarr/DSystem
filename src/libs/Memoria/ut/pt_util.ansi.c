@@ -1,4 +1,4 @@
-/* $Id: pt_util.ansi.c,v 1.1 1994/04/13 14:27:22 carr Exp $ */
+/* $Id: pt_util.ansi.c,v 1.2 1994/07/20 11:33:31 carr Exp $ */
 /*-----------------------------------------------------------------------
 
 	pt_util.c		Utility routines for pt
@@ -56,6 +56,7 @@
 	char			*ast2str()	
 
 */
+#include <general.h>
 
 #include <assert.h>
 #include <private_pt.h>

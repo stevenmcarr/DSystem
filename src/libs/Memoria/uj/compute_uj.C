@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.14 1994/07/11 13:43:29 carr Exp $ */
+/* $Id: compute_uj.C,v 1.15 1994/07/20 11:33:04 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -272,7 +272,7 @@ static void pick_loops(model_loop *loop_data,
    comp_info.num_loops = num_loops;
    comp_info.level = loop_data[0].level;
    comp_info.symtab = symtab;
-   walk_statements(loop_data[0].node,loop_data[0].level,determine_uj_prof,
+   walk_statements(loop_data[0].node,loop_data[0].level,(WK_STMT_CLBACK)determine_uj_prof,(WK_STMT_CLBACK)
 		   NOFUNC,(Generic)&comp_info);
    pick_loops_to_unroll(loop_data,0,comp_info);
   }
@@ -583,7 +583,7 @@ static int survey_edges(AST_INDEX     node,
 			   SYMTAB_NUM_DIMS) == 0)
        if (fst_GetField(dep_info->symtab,gen_get_text(node),FIRST))
 	 {
-	  fst_PutField(dep_info->symtab,gen_get_text(node),FIRST,false);
+	  fst_PutField(dep_info->symtab,(int)gen_get_text(node),FIRST,false);
 	  if (gen_get_converted_type(node) == TYPE_REAL)
 	    dep_info->scalar_regs++;
 	  else if (gen_get_converted_type(node) == TYPE_DOUBLE_PRECISION)
@@ -715,22 +715,22 @@ static int count_regs(AST_INDEX     stmt,
 
      stmt_regs = reg_info->expr_regs;
      if (is_assignment(stmt))
-       walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,get_expr_regs,
+       walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)get_expr_regs,
 		       (Generic)reg_info);
      else if (is_guard(stmt))
-       walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,get_expr_regs,
+       walk_expression(gen_GUARD_get_rvalue(stmt),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)get_expr_regs,
 		       (Generic)reg_info);
      else if (is_arithmetic_if(stmt))
-       walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,get_expr_regs,
+       walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)get_expr_regs,
 		       (Generic)reg_info);
      else if (is_logical_if(stmt))
-       walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,get_expr_regs,
+       walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)get_expr_regs,
 		       (Generic)reg_info);
      else if (is_read_short(stmt))
-       walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
+       walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
 		       get_expr_regs,(Generic)reg_info);
      else if (is_write(stmt))
-       walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,get_expr_regs,
+       walk_expression(gen_WRITE_get_data_vars_LIST(stmt),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)get_expr_regs,
 		       (Generic)reg_info);
      if (stmt_regs > reg_info->expr_regs)
        reg_info->expr_regs = stmt_regs;
@@ -1620,7 +1620,7 @@ SpatialLocalityType GetSpatialType(AST_INDEX  node,
      else if (IsSpatial(node,dinfo->index[1],words))
        return(SELF2);
      else
-       return(NONE);
+       return(S_NONE);
   }
 
 static int GetStride(AST_INDEX node,
@@ -2765,7 +2765,7 @@ static void do_computation(model_loop    *loop_data,
      reg_info.expr_regs = 0;
      reg_info.config = (config_type *)PED_MH_CONFIG(ped);
      reg_info.symtab = symtab;
-     walk_statements(loop_data[loop].node,loop_data[loop].level,count_regs,
+     walk_statements(loop_data[loop].node,loop_data[loop].level,(WK_STMT_CLBACK)count_regs,(WK_STMT_CLBACK)
 		     NOFUNC,(Generic)&reg_info);
      if (((config_type *)PED_MH_CONFIG(ped))->chow_alloc && 
 	 reg_info.expr_regs < 4)
@@ -2777,10 +2777,10 @@ static void do_computation(model_loop    *loop_data,
      else
        dep_info.scalar_regs += reg_info.expr_regs;
      fst_KillField(symtab,FIRST);
-     walk_expression(loop_data[loop].node,survey_edges,NOFUNC,
+     walk_expression(loop_data[loop].node,(WK_EXPR_CLBACK)survey_edges,(WK_EXPR_CLBACK)NOFUNC,
 		     (Generic)&dep_info);
      dep_info.partition = util_list_alloc((Generic)NULL,(char *)NULL);
-     walk_expression(loop_data[loop].node,partition_names,NOFUNC,
+     walk_expression(loop_data[loop].node,(WK_EXPR_CLBACK)partition_names,(WK_EXPR_CLBACK)NOFUNC,
 		     (Generic)&dep_info);
      compute_coefficients(&dep_info);
      loop_data[loop].ibalance = mh_loop_balance(dep_info.mem_coeff,

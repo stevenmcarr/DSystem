@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.3 1993/07/20 16:31:32 carr Exp $ */
+/* $Id: prefetch.C,v 1.4 1994/07/20 11:32:30 carr Exp $ */
 
 #include <mh.h>
 #include <fort/gi.h>
@@ -14,6 +14,7 @@
 #include <mh_config.h>
 #include <misc/sllist.h>
 #include <label.h>
+#include <strings.h>
 
 #include	<dg.h>
 
@@ -145,10 +146,11 @@ static void CheckRefsForPrefetch(model_loop    *loop_data,
      locality_info.SPLinePrefetches = SPLinePrefetches;
      locality_info.DPLinePrefetches = DPLinePrefetches;
      locality_info.WordPrefetches = WordPrefetches;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),CheckLocality,
-		     NOFUNC,(Generic)&locality_info);
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		     BuildPrefetchList,NOFUNC,(Generic)&locality_info);
+		     (WK_EXPR_CLBACK)CheckLocality,NOFUNC,(Generic)&locality_info);
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
+		     (WK_EXPR_CLBACK)BuildPrefetchList,NOFUNC,
+		     (Generic)&locality_info);
   }
    
 
@@ -228,7 +230,7 @@ static int CyclesPerIteration(AST_INDEX Node,
      CycleInfo.MemCycles = 0;
      CycleInfo.FlopCycles = 0;
      CycleInfo.ped = ped;
-     walk_expression(gen_DO_get_stmt_LIST(Node),CountCycles,NOFUNC,
+     walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountCycles,NOFUNC,
 		     (Generic)&CycleInfo);
      if (CycleInfo.MemCycles >= CycleInfo.FlopCycles)
        return(CycleInfo.MemCycles);
@@ -756,7 +758,8 @@ static void walk_loops(model_loop    *loop_data,
 	SchedulePrefetches(loop_data,loop,&SPLinePrefetches,&DPLinePrefetches,
 			   &WordPrefetches,ped,symtab,ar);
 	walk_statements(tree_out(loop_data[loop].node),loop_data[loop].level,NOFUNC,
-			ConvertPrefetchCallsToDirectives,(Generic)NULL);
+			(WK_STMT_CLBACK)ConvertPrefetchCallsToDirectives,
+			(Generic)NULL);
        }
      else
        {
@@ -786,11 +789,11 @@ void memory_software_prefetch(PedInfo       ped,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
-     walk_statements(root,level,ut_mark_do_pre,ut_mark_do_post,
-		     (Generic)&pre_info);
+     walk_statements(root,level,(WK_STMT_CLBACK)ut_mark_do_pre,
+		     (WK_STMT_CLBACK)ut_mark_do_post,(Generic)&pre_info);
      if (pre_info.abort)
        return;
-     walk_statements(root,level,remove_edges,NOFUNC,(Generic)ped);
+     walk_statements(root,level,(WK_STMT_CLBACK)remove_edges,NOFUNC,(Generic)ped);
      loop_data = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 					 pre_info.loop_num*sizeof(model_loop));
      ut_analyze_loop(root,loop_data,level,ped,symtab);

@@ -1,4 +1,4 @@
-/* $Id: PrefetchList.h,v 1.5 1993/07/20 15:28:33 carr Exp $ */
+/* $Id: PrefetchList.h,v 1.6 1994/07/20 11:31:52 carr Exp $ */
 #ifndef PrefetchList_h
 #define PrefetchList_h
 
@@ -35,13 +35,16 @@ public:
   void free_head()
     { Delete(SinglyLinkedList::First());};
   Boolean NullList()
-    {return first_entry() == NULL;}
+    {return BOOL(first_entry() == NULL);}
  };
 
 class PrefetchListIterator : public SinglyLinkedListIterator {
 public:
+        PrefetchListIterator(PrefetchList *P) : SinglyLinkedListIterator(P)
+	  {
+	  }
 	PrefetchListEntry *current()
 	 {return (PrefetchListEntry *)SinglyLinkedListIterator::Current();};
 
 };
-#endif PrefetchList_h
+#endif

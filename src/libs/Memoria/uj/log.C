@@ -1,10 +1,9 @@
-/* $Id: log.C,v 1.6 1994/01/18 14:26:25 carr Exp $ */
+/* $Id: log.C,v 1.7 1994/07/20 11:33:13 carr Exp $ */
 #include <general.h>
 #include <mh.h>
 #include <mh_ast.h>
 #include <fort/walk.h>
 #include <log.h>
-#include <std.h>
 #include <header.h>
 #include <do_unroll.h>
 #include <mem_util.h>
@@ -40,8 +39,8 @@ static void print_predicted_info(model_loop *loop_data,
      Stats.UseCache = false;
      Stats.loop_data = loop_data;
      Stats.loop = loop;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		     ut_ComputeBalance,NOFUNC,(Generic)&Stats);
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
+		     ut_ComputeBalance,(WK_EXPR_CLBACK)NOFUNC,(Generic)&Stats);
      rhoL_lp = loop_data[loop].rho * ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
      if (Stats.flops < rhoL_lp)
        {
@@ -100,7 +99,7 @@ static void print_actual_info(model_loop *loop_data,
      copy_info.val = unroll_vector[loop_data[UnrolledLoops[0]].level-1];
      copy_info.ar = ar;
      copy_info.symtab = symtab;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_init_copies,
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)ut_init_copies,(WK_EXPR_CLBACK)
 		     NOFUNC,(Generic)&copy_info);
      val1 = unroll_vector[loop_data[UnrolledLoops[0]].level-1];
      mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),val1,
@@ -116,8 +115,8 @@ static void print_actual_info(model_loop *loop_data,
      if (UnrollCount > 1)
        {
 	copy_info.val = unroll_vector[loop_data[UnrolledLoops[1]].level-1];
-	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-			ut_init_copies,NOFUNC,(Generic)&copy_info);
+	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
+			ut_init_copies,(WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
 	val2 = unroll_vector[loop_data[UnrolledLoops[1]].level-1];
 	mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),val2,
 			  loop_data[UnrolledLoops[1]].level,
@@ -137,8 +136,8 @@ static void print_actual_info(model_loop *loop_data,
      Stats.UseCache = false;
      Stats.loop_data = loop_data;
      Stats.loop = loop;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		     ut_ComputeBalance,NOFUNC,(Generic)&Stats);
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
+		     ut_ComputeBalance,(WK_EXPR_CLBACK)NOFUNC,(Generic)&Stats);
      fprintf(logfile,"Actual Unroll-and-Jam Statistics for Perfect Nest %d\n",
 	     LoopNumber++);
      fprintf(logfile,"========================================================\n\n");
@@ -201,8 +200,8 @@ static void print_NotUnrolledInfo(model_loop *loop_data,
      Stats.UseCache = false;
      Stats.loop_data = loop_data;
      Stats.loop = loop;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		     ut_ComputeBalance,NOFUNC,(Generic)&Stats);
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
+		     ut_ComputeBalance,(WK_EXPR_CLBACK)NOFUNC,(Generic)&Stats);
      rhoL_lp =  loop_data[loop].rho * ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
      if (Stats.flops < rhoL_lp)
        {
@@ -276,8 +275,8 @@ static void print_SingleDepthInfo(model_loop *loop_data,
      Stats.UseCache = false;
      Stats.loop_data = loop_data;
      Stats.loop = loop;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		     ut_ComputeBalance,NOFUNC,(Generic)&Stats);
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)
+		     ut_ComputeBalance,(WK_EXPR_CLBACK)NOFUNC,(Generic)&Stats);
      rhoL_lp = loop_data[loop].rho * ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
      if (Stats.flops < rhoL_lp)
        {

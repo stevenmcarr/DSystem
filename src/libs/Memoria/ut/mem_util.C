@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.8 1994/04/13 14:27:48 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.9 1994/07/20 11:33:29 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -13,9 +13,10 @@
 #include <mh_ast.h>
 #include <fort/walk.h>
 #include <mem_util.h>
-#include <std.h>
 #include <mh_config.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <strings.h>
 
 #ifndef gi_h
 #include <fort/gi.h>

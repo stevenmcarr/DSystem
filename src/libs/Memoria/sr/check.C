@@ -1,4 +1,4 @@
-/* $Id: check.C,v 1.5 1992/12/11 11:22:06 carr Exp $ */
+/* $Id: check.C,v 1.6 1994/07/20 11:32:41 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -108,10 +108,12 @@ static int check_stmt(AST_INDEX stmt,
 
   {
    if (is_assignment(stmt))
-     walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,check_def,
+     walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)check_def,
 		     (Generic)check_info);
    else if (is_read_short(stmt))
-     walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,check_def,
+     walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)check_def,
 		     (Generic)check_info);
    return(WALK_CONTINUE);
   }
@@ -125,6 +127,6 @@ void sr_check_inconsistent_edges(AST_INDEX root,
 
 
   {
-   walk_statements(root,check_info->level,check_stmt,NOFUNC,
+   walk_statements(root,check_info->level,(WK_STMT_CLBACK)check_stmt,(WK_STMT_CLBACK)NOFUNC,
 		   (Generic)check_info);
   }

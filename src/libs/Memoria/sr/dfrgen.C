@@ -1,4 +1,4 @@
-/* $Id: dfrgen.C,v 1.6 1993/09/06 14:54:37 carr Exp $ */
+/* $Id: dfrgen.C,v 1.7 1994/07/20 11:32:49 carr Exp $ */
 #include <general.h>
 #include <sr.h>
 #include <mh_ast.h>
@@ -123,13 +123,15 @@ static void calc_gen_set(rgen_info_type   *rgen_info)
          stmt = list_first(gen_IF_get_guard_LIST(stmt));
        else if (is_guard(stmt))
 	 {
-	  walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,add_gens,
+	  walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,
+			  (WK_EXPR_CLBACK)add_gens,
 			  (Generic)rgen_info);
 	  stmt = list_first(gen_GUARD_get_stmt_LIST(stmt));
 	 }
        else if (is_logical_if(stmt))
 	 {
-	  walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,add_gens,
+	  walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,
+			  (WK_EXPR_CLBACK)add_gens,
 			  (Generic)rgen_info);
 	  stmt = list_first(gen_LOGICAL_IF_get_stmt_LIST(stmt));
 	 }
@@ -139,16 +141,16 @@ static void calc_gen_set(rgen_info_type   *rgen_info)
 	    {
 	     if (((config_type *)PED_MH_CONFIG(rgen_info->ped))->soft_div)
 	       walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-			       ut_check_div,(Generic)&contains_div);
+			       (WK_EXPR_CLBACK)ut_check_div,(Generic)&contains_div);
 	     if (!contains_div)
 	       {
 		walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-				add_gens,(Generic)rgen_info);
+				(WK_EXPR_CLBACK)add_gens,(Generic)rgen_info);
 		walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,
-				add_defs,(Generic)rgen_info);
+				(WK_EXPR_CLBACK)add_defs,(Generic)rgen_info);
 		rgen_info->lhs = gen_ASSIGNMENT_get_lvalue(stmt);
 		walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-				kill_rhs,(Generic)rgen_info);
+				(WK_EXPR_CLBACK)kill_rhs,(Generic)rgen_info);
 	       }
 	     else
 	       {		
@@ -162,13 +164,15 @@ static void calc_gen_set(rgen_info_type   *rgen_info)
 	       }
 	    }
 	  else if (is_write(stmt))
-	    walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,add_gens,
+	    walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
+			    (WK_EXPR_CLBACK)add_gens,
 			    (Generic)rgen_info);
 	  else if (is_read_short(stmt))
             walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
-			    add_gens,(Generic)rgen_info); 
+			    (WK_EXPR_CLBACK)add_gens,(Generic)rgen_info); 
 	  else if (is_arithmetic_if(stmt))
-	    walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,add_gens,
+	    walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,
+			    (WK_EXPR_CLBACK)add_gens,
 			    (Generic)rgen_info);
 	  else if (is_call(stmt))
 	    {

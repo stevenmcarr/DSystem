@@ -1,4 +1,4 @@
-/* $Id: set.C,v 1.5 1993/06/15 14:05:32 carr Exp $ */
+/* $Id: set.C,v 1.6 1994/07/20 11:33:30 carr Exp $ */
 /*
  *  An implementation of sets as bit-vectors
  *	(part of the Rn Module Compiler code generator)
@@ -9,6 +9,7 @@
 #include <cgen_set.h>
 #include <memory.h>
 #include <stdio.h>
+#include <strings.h>
 
 
 /****************************************************************************/
@@ -247,7 +248,7 @@ if (n > s->words*32) fprintf(stderr, "MemberNumber: large argument");
 
 
 void ut_clear_set(Set s)
-    {	bzero(&s->word[0], s->words*BYTES);
+    {	bzero((char *)&s->word[0], s->words*BYTES);
     }
 
 
@@ -264,7 +265,7 @@ void ut_clear_set(Set s)
 
 void ut_copy12(Set s1, 
 	       Set s2)
-    {	bcopy(&s2->word[0], &s1->word[0], s1->words*BYTES);
+    {	bcopy((const char *)&s2->word[0], (char *)&s1->word[0], s1->words*BYTES);
     }
 
 
@@ -281,7 +282,7 @@ void ut_copy12(Set s1,
 
 Bool ut_sets_differ(Set s1, 
 		    Set s2)
-    {	return bcmp(&s1->word[0], &s2->word[0], s1->words*BYTES) ? tr : fa;
+    {	return bcmp((const char *)&s1->word[0], (const char *)&s2->word[0], s1->words*BYTES) ? tr : fa;
     }
 
 #endif

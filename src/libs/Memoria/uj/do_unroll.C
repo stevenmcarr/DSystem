@@ -1,4 +1,4 @@
-/* $Id: do_unroll.C,v 1.9 1993/07/20 16:34:38 carr Exp $ */
+/* $Id: do_unroll.C,v 1.10 1994/07/20 11:33:12 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -166,7 +166,7 @@ static void replicate_statements(AST_INDEX     stmt_list,
 	     for (cnode = last_node;
 		  cnode != list_prev(start_node);
 		  cnode = list_prev(cnode))
-	       walk_expression(cnode,ut_init_copies,NOFUNC,
+	       walk_expression(cnode,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,
 			       (Generic)&copy_info);
 	     for (i = val; i >= 1; i--)
 	       {
@@ -176,7 +176,7 @@ static void replicate_statements(AST_INDEX     stmt_list,
 		     cnode = list_prev(cnode))
 		  {
 		   new_node = ut_tree_copy_with_type(cnode,i-1,ar);
-		   walk_expression(new_node,update_refs,NOFUNC,
+		   walk_expression(new_node,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)update_refs,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,
 				   (Generic)&ref_info);
 		   /* set_scratch_to_NULL(new_node); */
 		   pt_var_add(new_node,ivar,step_v*i);
@@ -252,7 +252,7 @@ void set_level_vectors(AST_INDEX old_list,
 	   vector = dg_alloc_level_vector( PED_DG(ped),v_size);
 	   create_info(PED_INFO(ped),newa);
 	   put_info(ped,newa,type_levelv,vector);
-	   walk_expression(newa,create_ref_lists,NOFUNC,(Generic)ped);
+	   walk_expression(newa,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)create_ref_lists,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)ped);
 	  }
        }
   }
@@ -333,7 +333,7 @@ static int update_rdx_var(AST_INDEX     stmt,
 				       tree_copy_with_type(copy)));
 		rep_info.array = tree_copy_with_type(copy);
 		rep_info.ped = upd_info->ped;
-		walk_expression(stmt,NOFUNC,replace_array,(Generic)&rep_info);
+		walk_expression(stmt,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)replace_array,(Generic)&rep_info);
 		tree_free(rep_info.array);
 		tree_free(copy);
 	       }
@@ -765,7 +765,7 @@ void mh_replicate_body(AST_INDEX     stmt_list,
        {
 	new_code[i] = ut_tree_copy_with_type(stmt_list,i,ar);
 	ref_info.val  = i;
-	walk_expression(new_code[i],update_refs,NOFUNC,(Generic)&ref_info);
+	walk_expression(new_code[i],(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)update_refs,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&ref_info);
 	/* set_stmt_ptrs_to_NULL(new_code[i]); */
 	pt_var_add(new_code[i],ivar,step_v*(i+1));
 	set_level_vectors(stmt_list,new_code[i],ped);
@@ -773,7 +773,7 @@ void mh_replicate_body(AST_INDEX     stmt_list,
        }
      new_code[val-1] = ut_tree_copy_with_type(stmt_list,val-1,ar);
      ref_info.val = val-1;
-     walk_expression(new_code[val-1],update_refs,NOFUNC,(Generic)&ref_info);
+     walk_expression(new_code[val-1],(WK_EXPR_CLBACK)update_refs,(WK_EXPR_CLBACK)NOFUNC,(Generic)&ref_info);
      /* set_stmt_ptrs_to_NULL(new_code[val-1]); */
      pt_var_add(new_code[val-1],ivar,step_v*val);
      set_level_vectors(stmt_list,new_code[val-1],ped);
@@ -784,12 +784,12 @@ void mh_replicate_body(AST_INDEX     stmt_list,
      upd_info.val = val;
      upd_info.ivar = inner_ivar;
      upd_info.inner_level = inner_level;
-     walk_expression(stmt_list,update_graph,NOFUNC,(Generic)&upd_info);
+     walk_expression(stmt_list,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)update_graph,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&upd_info);
      if (inner_rdx)
        for (i = 0; i < val; i++)
 	 {
 	  upd_info.val = i;
-	  walk_statements(new_code[i],level,update_rdx_var,NOFUNC,
+	  walk_statements(new_code[i],level,(WK_STMT_CLBACK)(WK_STMT_CLBACK)update_rdx_var,(WK_STMT_CLBACK)(WK_STMT_CLBACK)NOFUNC,
 			  (Generic)&upd_info);
 	 } 
      for (i = 0; i < val; i++)
@@ -935,7 +935,7 @@ static void unroll_rhomboid(model_loop    *loop_data,
        
            /* create first loop */
 
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_init_copies,
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
 		     NOFUNC,(Generic)&copy_info);
      loop_copy = ut_tree_copy_with_type(loop_data[loop].node,0,ar);
      ut_update_labels(loop_copy,symtab);
@@ -978,10 +978,10 @@ static void unroll_rhomboid(model_loop    *loop_data,
      (void)list_insert_before(loop_data[loop].node,new_do);
      set_level_vectors(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		       gen_DO_get_stmt_LIST(loop_copy),ped);
-     walk_expression(loop_data[loop].node,mh_copy_edges,NOFUNC,(Generic)ped);
+     walk_expression(loop_data[loop].node,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)mh_copy_edges,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)ped);
      edge_info.ped = ped;
      edge_info.level = loop_data[uloop].level;
-     walk_expression(loop_copy,add_level_to_edges,NOFUNC,(Generic)&edge_info);
+     walk_expression(loop_copy,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)add_level_to_edges,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&edge_info);
      size = count_loops(loop_data,loop) + 1;
      split_loop = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 						  size*sizeof(model_loop));
@@ -992,7 +992,7 @@ static void unroll_rhomboid(model_loop    *loop_data,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
-     walk_statements(new_do,loop_data[loop].level,ut_mark_do_pre,
+     walk_statements(new_do,loop_data[loop].level,(WK_STMT_CLBACK)(WK_STMT_CLBACK)ut_mark_do_pre,(WK_STMT_CLBACK)(WK_STMT_CLBACK)
 		     ut_mark_do_post,(Generic)&pre_info);
      ut_analyze_loop(new_do,split_loop,loop_data[loop].level,ped,symtab);
      split_loop[0].max = 0;
@@ -1007,7 +1007,7 @@ static void unroll_rhomboid(model_loop    *loop_data,
      copy_info.val = 1;
      copy_info.ar = ar;
      copy_info.symtab = symtab;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_init_copies,
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
 		     NOFUNC,(Generic)&copy_info);
      loop_copy = ut_tree_copy_with_type(loop_data[loop].node,0,ar);
      ut_update_labels(loop_copy,symtab);
@@ -1051,10 +1051,10 @@ static void unroll_rhomboid(model_loop    *loop_data,
      (void)list_insert_after(loop_data[loop].node,new_do);
      set_level_vectors(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		       gen_DO_get_stmt_LIST(loop_copy),ped);
-     walk_expression(loop_data[loop].node,mh_copy_edges,NOFUNC,(Generic)ped);
+     walk_expression(loop_data[loop].node,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)mh_copy_edges,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)ped);
      edge_info.ped = ped;
      edge_info.level = loop_data[uloop].level;
-     walk_expression(loop_copy,add_level_to_edges,NOFUNC,(Generic)&edge_info);
+     walk_expression(loop_copy,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)add_level_to_edges,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&edge_info);
      size = count_loops(loop_data,loop) + 1;
      split_loop = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 						  size*sizeof(model_loop));
@@ -1065,7 +1065,7 @@ static void unroll_rhomboid(model_loop    *loop_data,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
-     walk_statements(new_do,loop_data[loop].level,ut_mark_do_pre,
+     walk_statements(new_do,loop_data[loop].level,(WK_STMT_CLBACK)(WK_STMT_CLBACK)ut_mark_do_pre,(WK_STMT_CLBACK)(WK_STMT_CLBACK)
 		     ut_mark_do_post,(Generic)&pre_info);
      ut_analyze_loop(new_do,split_loop,loop_data[loop].level,ped,symtab);
      split_loop[0].max = 0;
@@ -1091,8 +1091,8 @@ static void unroll_rhomboid(model_loop    *loop_data,
      if (loop_data[loop].inner_loop == -1)
       {
        copy_info.val = loop_data[uloop].val;
-       walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		       ut_init_copies,NOFUNC,(Generic)&copy_info);
+       walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
+		       ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
        mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
 	              loop_data[uloop].val,loop_data[uloop].level,
 		      gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
@@ -1142,7 +1142,7 @@ static void unroll_triangular(model_loop    *loop_data,
      copy_info.val = 1;
      copy_info.ar = ar;
      copy_info.symtab = symtab;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_init_copies,
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
 		     NOFUNC,(Generic)&copy_info);
      loop_copy = ut_tree_copy_with_type(loop_data[loop].node,0,ar);
      ut_update_labels(loop_copy,symtab);
@@ -1271,10 +1271,10 @@ static void unroll_triangular(model_loop    *loop_data,
       }
      set_level_vectors(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		       gen_DO_get_stmt_LIST(loop_copy),ped);
-     walk_expression(loop_data[loop].node,mh_copy_edges,NOFUNC,(Generic)ped);
+     walk_expression(loop_data[loop].node,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)mh_copy_edges,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)ped);
      edge_info.ped = ped;
      edge_info.level = loop_data[uloop].level;
-     walk_expression(loop_copy,add_level_to_edges,NOFUNC,(Generic)&edge_info);
+     walk_expression(loop_copy,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)add_level_to_edges,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&edge_info);
      size = count_loops(loop_data,loop) + 1;
      split_loop = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 						  size*sizeof(model_loop));
@@ -1285,7 +1285,7 @@ static void unroll_triangular(model_loop    *loop_data,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
-     walk_statements(new_do,loop_data[loop].level,ut_mark_do_pre,
+     walk_statements(new_do,loop_data[loop].level,(WK_STMT_CLBACK)(WK_STMT_CLBACK)ut_mark_do_pre,(WK_STMT_CLBACK)(WK_STMT_CLBACK)
 		     ut_mark_do_post,(Generic)&pre_info);
      ut_analyze_loop(new_do,split_loop,loop_data[loop].level,ped,symtab);
      split_loop[0].max = 0;
@@ -1297,8 +1297,8 @@ static void unroll_triangular(model_loop    *loop_data,
      if (loop_data[loop].inner_loop == -1)
       {
        copy_info.val = loop_data[uloop].val;
-       walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		       ut_init_copies,NOFUNC,(Generic)&copy_info);
+       walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
+		       ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
        mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
 	              loop_data[uloop].val,loop_data[uloop].level,
 		      gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
@@ -1355,8 +1355,8 @@ static void walk_loops_to_unroll(model_loop    *loop_data,
        copy_info.val = loop_data[unroll_loop].val;
        copy_info.ar = ar;
        copy_info.symtab = symtab;
-       walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		       ut_init_copies,NOFUNC,(Generic)&copy_info);
+       walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
+		       ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
        mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
 	              loop_data[unroll_loop].val,loop_data[unroll_loop].level,
 		      gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
@@ -1408,8 +1408,8 @@ static model_loop *split_trap_upb(model_loop    *loop_data,
      copy_info.val = 1;
      copy_info.ar = ar;
      copy_info.symtab = symtab;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[uloop].node),
-		     ut_init_copies,NOFUNC,(Generic)&copy_info);
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[uloop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
+		     ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
      control1 = gen_DO_get_control(loop_data[loop].node);
      ivar = gen_INDUCTIVE_get_name(gen_DO_get_control(loop_data[uloop].node));
      lwb = gen_INDUCTIVE_get_rvalue1(control1);
@@ -1455,7 +1455,7 @@ static model_loop *split_trap_upb(model_loop    *loop_data,
      tree_free(upb);
      set_level_vectors(gen_DO_get_stmt_LIST(loop_data[uloop].node),
 		       gen_DO_get_stmt_LIST(loop_copy),ped);
-     walk_expression(loop_data[uloop].node,mh_copy_edges,NOFUNC,(Generic)ped);
+     walk_expression(loop_data[uloop].node,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)mh_copy_edges,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)ped);
      size = count_loops(loop_data,uloop) + 1;
      split_loop = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 						  size*sizeof(model_loop));
@@ -1466,7 +1466,7 @@ static model_loop *split_trap_upb(model_loop    *loop_data,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
-     walk_statements(loop_copy,loop_data[uloop].level,ut_mark_do_pre,
+     walk_statements(loop_copy,loop_data[uloop].level,(WK_STMT_CLBACK)(WK_STMT_CLBACK)ut_mark_do_pre,(WK_STMT_CLBACK)(WK_STMT_CLBACK)
 		     ut_mark_do_post,(Generic)&pre_info);
      ut_analyze_loop(loop_copy,split_loop,loop_data[uloop].level,ped,
 		     symtab);
@@ -1503,8 +1503,8 @@ static model_loop *split_trap_lwb(model_loop    *loop_data,
      copy_info.val = 1;
      copy_info.ar = ar;
      copy_info.symtab = symtab;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[uloop].node),
-		     ut_init_copies,NOFUNC,(Generic)&copy_info);
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[uloop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
+		     ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
      control1 = gen_DO_get_control(loop_data[loop].node);
      ivar = gen_INDUCTIVE_get_name(gen_DO_get_control(loop_data[uloop].node));
      upb = gen_INDUCTIVE_get_rvalue2(control1);
@@ -1550,7 +1550,7 @@ static model_loop *split_trap_lwb(model_loop    *loop_data,
      tree_free(lwb);
      set_level_vectors(gen_DO_get_stmt_LIST(loop_data[uloop].node),
 		       gen_DO_get_stmt_LIST(loop_copy),ped);
-     walk_expression(loop_data[uloop].node,mh_copy_edges,NOFUNC,(Generic)ped);
+     walk_expression(loop_data[uloop].node,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)mh_copy_edges,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)ped);
      size = count_loops(loop_data,uloop) + 1;
      split_loop = (model_loop *)ar->arena_alloc_mem_clear(LOOP_ARENA,
 						  size*sizeof(model_loop));
@@ -1561,7 +1561,7 @@ static model_loop *split_trap_lwb(model_loop    *loop_data,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
-     walk_statements(loop_copy,loop_data[uloop].level,ut_mark_do_pre,
+     walk_statements(loop_copy,loop_data[uloop].level,(WK_STMT_CLBACK)(WK_STMT_CLBACK)ut_mark_do_pre,(WK_STMT_CLBACK)(WK_STMT_CLBACK)
 		     ut_mark_do_post,(Generic)&pre_info);
      ut_analyze_loop(loop_copy,split_loop,loop_data[uloop].level,ped,
 		     symtab);
@@ -1644,12 +1644,12 @@ static void create_pre_loop(model_loop    *loop_data,
 	copy_info.ar = ar;
 	copy_info.val = 1;
 	copy_info.symtab = symtab;
-	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-			ut_init_copies,NOFUNC,(Generic)&copy_info);
+	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
+			ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
 	new_loop = ut_tree_copy_with_type(loop_data[loop].node,0,ar);
 	set_level_vectors(gen_DO_get_stmt_LIST(loop_data[loop].node),
 			  gen_DO_get_stmt_LIST(new_loop),ped);
-        walk_expression(loop_data[loop].node,mh_copy_edges,NOFUNC,
+        walk_expression(loop_data[loop].node,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)mh_copy_edges,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)NOFUNC,
 			(Generic)ped);
 	ut_update_labels(new_loop,symtab);
 	ut_update_bounds(loop_data[loop].node,new_loop,loop_data[loop].val);
@@ -1761,11 +1761,11 @@ static void unroll_reduction(model_loop      *loop_data,
    float           rhoL_lp;
    copy_info_type  copy_info;
    
-     walk_statements_reverse(loop_data[loop].node,loop_data[loop].level,
-			     NOFUNC,check_labels,(Generic)label_info);
+     walk_statements_reverse(loop_data[loop].node,loop_data[loop].level,(WK_STMT_CLBACK)
+			     NOFUNC,(WK_STMT_CLBACK)check_labels,(Generic)label_info);
      flop_info.ped = ped;
      flop_info.flops = 0;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),count_flops,
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)count_flops,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
 		     NOFUNC,(Generic)&flop_info);
      rhoL_lp = loop_data[loop].rho * 
                ((config_type *)PED_MH_CONFIG(ped))->pipe_length;
@@ -1783,9 +1783,9 @@ static void unroll_reduction(model_loop      *loop_data,
      copy_info.val = loop_data[loop].val;
      copy_info.ar = ar;
      copy_info.symtab = symtab;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_init_copies,
+     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)ut_init_copies,(WK_EXPR_CLBACK)(WK_EXPR_CLBACK)
 		     NOFUNC,(Generic)&copy_info);
-     fst_InitField(symtab,RDX_VAR,AST_NIL,cleanup_rdx_var);
+     fst_InitField(symtab,RDX_VAR,AST_NIL,(void (*)(Generic))cleanup_rdx_var);
      mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		    loop_data[loop].val,loop_data[loop].level,
 		    gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
@@ -1797,7 +1797,7 @@ static void unroll_reduction(model_loop      *loop_data,
 		    loop_data[loop].level,ar);
      rdx_stmts.prev = list_create(AST_NIL);
      rdx_stmts.post = list_create(AST_NIL);
-     fst_ForAll(symtab,insert_stmts,(Generic)&rdx_stmts);
+     fst_ForAll(symtab,(fst_ForAllCallback)insert_stmts,(Generic)&rdx_stmts);
      if (!list_empty(rdx_stmts.prev))
        {
 	for (node = list_remove_first(rdx_stmts.prev);
@@ -1863,15 +1863,15 @@ static void walk_loops(model_loop    *loop_data,
 	    split_loop2 = split_trap_lwb(loop_data,loop,
 					 loop_data[loop].trap_loop,ped,symtab,
 					 ar);
-	    walk_statements_reverse(split_loop2[0].node,loop_data[loop].level,
-				    NOFUNC,check_labels,(Generic)&label_info);
+	    walk_statements_reverse(split_loop2[0].node,loop_data[loop].level,(WK_STMT_CLBACK)
+				    NOFUNC,(WK_STMT_CLBACK)check_labels,(Generic)&label_info);
 	    util_append(loop_data[loop].split_list,
 			util_node_alloc((Generic)split_loop2,"split-list"));
 	    split_loop1 = split_trap_upb(split_loop2,0,
 					 split_loop2[0].trap_loop,ped,symtab,
 					 ar);
-	    walk_statements_reverse(split_loop1[0].node,loop_data[loop].level,
-				    NOFUNC,check_labels,(Generic)&label_info);
+	    walk_statements_reverse(split_loop1[0].node,loop_data[loop].level,(WK_STMT_CLBACK)
+				    NOFUNC,(WK_STMT_CLBACK)check_labels,(Generic)&label_info);
 	    util_append(split_loop2[0].split_list,
 			util_node_alloc((Generic)split_loop1,"split-list"));
 	    split_loop = split_trap_upb(loop_data,loop,
@@ -1883,8 +1883,8 @@ static void walk_loops(model_loop    *loop_data,
 	      create_pre_loop(split_loop2,0,0,loops_unrolled,ped,symtab,ar,LoopStats);
 	    break;
 	   }
-	walk_statements_reverse(split_loop[0].node,loop_data[loop].level,
-				NOFUNC,check_labels,(Generic)&label_info);
+	walk_statements_reverse(split_loop[0].node,loop_data[loop].level,(WK_STMT_CLBACK)
+				NOFUNC,(WK_STMT_CLBACK)check_labels,(Generic)&label_info);
 	if (split_loop[0].val > 0)
 	  create_pre_loop(split_loop,0,0,loops_unrolled,ped,symtab,ar,LoopStats);
 	util_append(loop_data[loop].split_list,
@@ -1896,8 +1896,8 @@ static void walk_loops(model_loop    *loop_data,
 	  zero; therefore, it is checked again */
 
        {
-	walk_statements_reverse(loop_data[loop].node,loop_data[loop].level,
-				NOFUNC,check_labels,(Generic)&label_info);
+	walk_statements_reverse(loop_data[loop].node,loop_data[loop].level,(WK_STMT_CLBACK)
+				NOFUNC,(WK_STMT_CLBACK)check_labels,(Generic)&label_info);
 	step = tree_copy_with_type(gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
                          loop_data[loop].node)));
 	create_pre_loop(loop_data,loop,num_loops-loops_unrolled,loops_unrolled,

@@ -1,4 +1,4 @@
-/* $Id: table.C,v 1.7 1993/06/21 13:46:45 carr Exp $ */
+/* $Id: table.C,v 1.8 1994/07/20 11:32:55 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -9,7 +9,6 @@
 #include <mh_ast.h>
 #include <fort/walk.h>
 #include <table.h>
-#include <std.h>
 
 #ifndef Arena_h
 #include <misc/Arena.h>
@@ -62,7 +61,7 @@ static int array_hash(array_table_type *array_table,
 
      index = atoi(gen_get_text(gen_SUBSCRIPT_get_name(node)));
      walk_expression(gen_SUBSCRIPT_get_rvalue_LIST(node),
-		     get_value,NOFUNC,(Generic)&index);
+		     (WK_EXPR_CLBACK)get_value,NOFUNC,(Generic)&index);
      index = index % size;
      while (!is_null_node(array_table[index].node) && 
             !pt_expr_equal(node,array_table[index].node))
@@ -114,28 +113,35 @@ int sr_build_table(AST_INDEX         stmt,
   {
    if (is_assignment(stmt))
      {
-      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,add_elements,
+      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,
+		      (WK_EXPR_CLBACK)add_elements,
 		      prelim_info);
-      walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,add_elements,
+      walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
+		      (WK_EXPR_CLBACK)add_elements,
 		      prelim_info);
      }
    else if (is_guard(stmt))
-     walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,add_elements,
+     walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)add_elements,
 		     prelim_info);
    else if (is_logical_if(stmt))
-     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,add_elements,
+     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)add_elements,
 		     prelim_info);
    else if (is_write(stmt))
-     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,add_elements,
+     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)add_elements,
 		     prelim_info);
    else if (is_read_short(stmt))
      walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
-		     add_elements,prelim_info);
+		     (WK_EXPR_CLBACK)add_elements,prelim_info);
    else if (is_arithmetic_if(stmt))
-     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,add_elements,
+     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)add_elements,
 		     prelim_info);
    else if (is_call(stmt))
-     walk_expression(gen_CALL_get_invocation(stmt),NOFUNC,add_elements,
+     walk_expression(gen_CALL_get_invocation(stmt),NOFUNC,
+		     (WK_EXPR_CLBACK)add_elements,
 		     prelim_info);
    return(WALK_CONTINUE);
   }

@@ -1,4 +1,4 @@
-/* $Id: codegen.C,v 1.7 1992/12/16 12:25:15 carr Exp $ */
+/* $Id: codegen.C,v 1.8 1994/07/20 11:32:46 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -54,7 +54,7 @@ static void insert_load(block_type *block,
      new_stmt = gen_ASSIGNMENT(AST_NIL,ut_gen_ident(symtab,reg,
 			       gen_get_converted_type(table_entry.node)),
 			       array_ref);
-     fst_PutField(symtab,reg,NUM_REGS,table_entry.regs-1);
+     fst_PutField(symtab,(int)reg,NUM_REGS,table_entry.regs-1);
      if (NOT(top))
        if (block->last != (Generic)NULL)
          if (is_guard(block->last))
@@ -375,27 +375,33 @@ static int replace_references(AST_INDEX stmt,
    if (is_assignment(stmt))
      { 
       if (!get_stmt_info_ptr(stmt)->generated)
-        walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,check_use,
+        walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
+			(WK_EXPR_CLBACK)check_use,
 			(Generic)code_info);
-      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,check_def,
+      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,
+		      (WK_EXPR_CLBACK)check_def,
 		      (Generic)code_info);
       return(WALK_FROM_OLD_NEXT);
      }
    else if (is_guard(stmt))
-     walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,check_use,
+     walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,(WK_EXPR_CLBACK)check_use,
 		     (Generic)code_info);
    else if (is_logical_if(stmt))
-     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,check_use,
+     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,
+		      (WK_EXPR_CLBACK)check_use,
 		     (Generic)code_info);
    else if (is_arithmetic_if(stmt))
-     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,check_use,
+     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,
+		      (WK_EXPR_CLBACK)check_use,
 		     (Generic)code_info);
    else if (is_write(stmt))
-     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,check_use,
+     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
+		      (WK_EXPR_CLBACK)check_use,
 		     (Generic)code_info);
    else if (is_read_short(stmt))
      {
-      walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,check_def,
+      walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
+		      (WK_EXPR_CLBACK)check_def,
 		      (Generic)code_info);
       return(WALK_FROM_OLD_NEXT);
      }
@@ -480,7 +486,7 @@ static void peel_iterations(AST_INDEX root,
        {
 	newa = tree_copy_with_type(stmts);
 	code_info->iteration = i;
-	walk_statements(newa,level,replace_references,NOFUNC,
+	walk_statements(newa,level,(WK_STMT_CLBACK)replace_references,NOFUNC,
 			(Generic)code_info);
 	iteration = pt_simplify_expr(pt_gen_add(tree_copy_with_type(lwb),
 						pt_gen_mul(pt_gen_int(i),
@@ -501,7 +507,6 @@ static void peel_iterations(AST_INDEX root,
 	go_to = gen_GOTO(AST_NIL,pt_gen_label_ref(target));
 	log_if = gen_LOGICAL_IF(AST_NIL,condition,go_to);
 	(void) list_insert_before(list_first(newa),log_if);
-	/* walk_expression(newa,null_scratch,NOFUNC,NULL); */
 	for (node = list_first(newa);
 	     node != AST_NIL;
 	     node = next_node)
@@ -574,9 +579,8 @@ static int create_pre_loop(AST_INDEX  root,
      if (need_pre_loop)
        {
 	new_loop = tree_copy_with_type(root);
-	walk_statements(new_loop,level,replace_references,NOFUNC,
+	walk_statements(new_loop,level,(WK_STMT_CLBACK)replace_references,NOFUNC,
 			(Generic)code_info);
-	/* walk_expression(new_loop,null_scratch,NOFUNC,NULL); */
 	insert_transfers(gen_DO_get_stmt_LIST(new_loop),code_info->glist,
 			 code_info->iteration,code_info->symtab);
 	ut_update_bounds(root,new_loop,val);
@@ -639,25 +643,23 @@ void sr_generate_code(AST_INDEX        root,
 	  {
 	   new_body = tree_copy_with_type(stmt_list);
 	   code_info.copy = i;
-	   walk_statements(new_body,level,replace_references,NOFUNC,
+	   walk_statements(new_body,level,(WK_STMT_CLBACK)replace_references,NOFUNC,
 			   (Generic)&code_info);
 	   pt_var_add(new_body,ivar,i*step_v);
-	   /* walk_expression(new_body,null_scratch,NOFUNC,NULL); */
 	   ut_update_labels(new_body,symtab);
 	   new_list = list_append(new_list,new_body);
 	  }
 	new_body = tree_copy_with_type(stmt_list);
 	code_info.copy = unroll_amt;
-	walk_statements(new_body,level,replace_references,NOFUNC,
+	walk_statements(new_body,level,(WK_STMT_CLBACK)replace_references,NOFUNC,
 			(Generic)&code_info);
 	pt_var_add(new_body,ivar,unroll_amt*step_v);
-	/* walk_expression(new_body,null_scratch,NOFUNC,NULL); */
 	new_list = list_append(new_list,new_body);
 	ut_update_labels(stmt_list,symtab);
        }
      code_info.copy = 0;
      code_info.do_stmt = root;
-     walk_statements(stmt_list,level,replace_references,NOFUNC,
+     walk_statements(stmt_list,level,(WK_STMT_CLBACK)replace_references,NOFUNC,
 		     (Generic)&code_info);
      stmt_list = list_append(stmt_list,new_list);
      if (code_info.target != NULL)

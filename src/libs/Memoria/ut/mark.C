@@ -1,4 +1,4 @@
-/* $Id: mark.C,v 1.6 1993/06/15 14:05:14 carr Exp $ */
+/* $Id: mark.C,v 1.7 1994/07/20 11:33:28 carr Exp $ */
 
 
 /****************************************************************************/
@@ -80,7 +80,7 @@ int ut_mark_do_pre(AST_INDEX       stmt,
    get_stmt_info_ptr(stmt)->level = level;
    if (is_do(stmt))
      {
-      walk_expression(gen_DO_get_control(stmt),set_surrounding_do,NOFUNC,
+      walk_expression(gen_DO_get_control(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,
 		      pre_info);
       get_stmt_info_ptr(stmt)->loop_num =((pre_info_type *)pre_info)->loop_num;
       ((pre_info_type *)pre_info)->surrounding_do = 
@@ -89,34 +89,34 @@ int ut_mark_do_pre(AST_INDEX       stmt,
      }
    else if (is_assignment(stmt))
      {
-      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),set_surrounding_do,
+      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)
 		      NOFUNC,pre_info);
-      walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),set_surrounding_do,
+      walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)
 		      NOFUNC,pre_info);
      }
    else if (is_guard(stmt))
-     walk_expression(gen_GUARD_get_rvalue(stmt),set_surrounding_do,NOFUNC,
+     walk_expression(gen_GUARD_get_rvalue(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,
 		     pre_info);
    else if (is_write(stmt))
-     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),set_surrounding_do,
+     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)
 		     NOFUNC,pre_info);
    else if (is_read_short(stmt))
-     walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),
-		     set_surrounding_do,NOFUNC,pre_info);
+     walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),(WK_EXPR_CLBACK)
+		     set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,pre_info);
    else if (is_logical_if(stmt))
-     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),set_surrounding_do,NOFUNC,
+     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,
 		     pre_info);
    else if (is_arithmetic_if(stmt))
-     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),set_surrounding_do,
+     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)
 		     NOFUNC,pre_info);
    else if (is_computed_goto(stmt))
-     walk_expression(gen_COMPUTED_GOTO_get_rvalue(stmt),set_surrounding_do,
+     walk_expression(gen_COMPUTED_GOTO_get_rvalue(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)
 		     NOFUNC,pre_info);
    else if (is_call(stmt))
-     walk_expression(gen_CALL_get_invocation(stmt),set_surrounding_do,NOFUNC,
+     walk_expression(gen_CALL_get_invocation(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,
 		     pre_info);
    else if (is_return(stmt))
-     walk_expression(gen_RETURN_get_rvalue(stmt),set_surrounding_do,NOFUNC,
+     walk_expression(gen_RETURN_get_rvalue(stmt),(WK_EXPR_CLBACK)set_surrounding_do,(WK_EXPR_CLBACK)NOFUNC,
 		     pre_info);
    else if (is_if(stmt) || is_continue(stmt) || is_goto(stmt) ||
             is_assigned_goto(stmt));

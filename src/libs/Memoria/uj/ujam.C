@@ -1,4 +1,4 @@
-/* $Id: ujam.C,v 1.6 1993/07/20 16:34:56 carr Exp $ */
+/* $Id: ujam.C,v 1.7 1994/07/20 11:33:14 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -184,9 +184,9 @@ static int check_unroll(AST_INDEX      stmt,
 	pre_info.ped = loop_info->ped;
 	pre_info.symtab = loop_info->symtab;
 	pre_info.ar = loop_info->ar;
-	walk_statements(stmt,level,ut_mark_do_pre,ut_mark_do_post,
+	walk_statements(stmt,level,(WK_STMT_CLBACK)ut_mark_do_pre,(WK_STMT_CLBACK)ut_mark_do_post,
 			(Generic)&pre_info);
-	walk_statements(stmt,level,remove_edges,NOFUNC,(Generic)loop_info);
+	walk_statements(stmt,level,(WK_STMT_CLBACK)remove_edges,(WK_STMT_CLBACK)NOFUNC,(Generic)loop_info);
 	if (pre_info.abort)
 	  return(WALK_ABORT);
 	loop_data = (model_loop *)loop_info->ar->arena_alloc_mem_clear
@@ -242,7 +242,7 @@ AST_INDEX memory_unroll_and_jam(PedInfo       ped,
      loop_info.symtab = symtab;
      loop_info.ar = ar;
      loop_info.LoopStats = LoopStats;
-     walk_statements(root,level,check_loop,check_unroll,(Generic)&loop_info);
+     walk_statements(root,level,(WK_STMT_CLBACK)check_loop,(WK_STMT_CLBACK)check_unroll,(Generic)&loop_info);
      while (list_prev(root) != prev)
        root = list_prev(root);
      return(root);

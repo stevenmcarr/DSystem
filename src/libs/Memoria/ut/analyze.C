@@ -1,4 +1,4 @@
-/* $Id: analyze.C,v 1.12 1994/07/11 13:43:55 carr Exp $ */
+/* $Id: analyze.C,v 1.13 1994/07/20 11:33:19 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -225,7 +225,7 @@ static int build_pre(AST_INDEX       stmt, int             level,
      if (is_do(stmt))
        {
 	fst_PutField(build_info->symtab,
-		     gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(stmt))),
+		     (int)gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(stmt))),
 		     IVAR,true);
 	loop_num = get_stmt_info_ptr(stmt)->loop_num;
 	build_info->loop_data[loop_num].inner_loop = -1;
@@ -305,8 +305,8 @@ static int build_pre(AST_INDEX       stmt, int             level,
 
 	CheckInfo.ped = build_info->ped;
 	CheckInfo.illegal = false;
-	walk_statements(gen_DO_get_stmt_LIST(stmt),level,
-			(WK_STMT_CLBACK)CheckForEdgesNotHandled,NOFUNC,
+	walk_statements(gen_DO_get_stmt_LIST(stmt),level,(WK_STMT_CLBACK)
+			(WK_STMT_CLBACK)CheckForEdgesNotHandled,(WK_STMT_CLBACK)NOFUNC,
 			(Generic)&CheckInfo);
 	if (CheckInfo.illegal)
 	  {
@@ -476,7 +476,7 @@ static Boolean containsIVAR(AST_INDEX stmt,
   {
    Boolean contains = false;
 
-     walkIDsInStmt(stmt,CheckIvar,symtab,&contains,stmt);
+     walkIDsInStmt(stmt,(WK_IDS_CLBACK_V)CheckIvar,symtab,&contains,stmt);
      return(contains);
   }
 
@@ -603,7 +603,7 @@ static void check_crossing_dep(model_loop *loop_data,
 				   sptr2->surrounding_do);
 	      if (fst_GetField(symtab,gen_get_text(dg[edge].src),EXPAND_LVL) <
 		  loop_data[loop].level)
-	        fst_PutField(symtab,gen_get_text(dg[edge].src),EXPAND_LVL,
+	        fst_PutField(symtab,(int)gen_get_text(dg[edge].src),EXPAND_LVL,
 			     loop_data[loop].level);
 	      if (loop_data[loop].distribute && mc_allow_expansion)
 	        loop_data[loop].expand = true;
@@ -868,11 +868,11 @@ void ut_analyze_loop(AST_INDEX  root,
 
              /* initialize loop structure and link together entries */
 
-     walk_statements(root,level,build_pre,build_post,(Generic)&build_info);
+     walk_statements(root,level,(WK_STMT_CLBACK)build_pre,(WK_STMT_CLBACK)build_post,(Generic)&build_info);
             
              /* examine dependence graph and check legality */
 
-     walk_statements(root,level,build_edge_pre,build_edge_post,
+     walk_statements(root,level,(WK_STMT_CLBACK)build_edge_pre,(WK_STMT_CLBACK)build_edge_post,
 		     (Generic)&build_info);
      if (loop_data[0].inner_loop != -1)
        loop_data[0].transform = propogate_transform(loop_data,

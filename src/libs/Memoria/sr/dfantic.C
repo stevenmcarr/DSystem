@@ -1,4 +1,4 @@
-/* $Id: dfantic.C,v 1.5 1992/12/11 11:22:10 carr Exp $ */
+/* $Id: dfantic.C,v 1.6 1994/07/20 11:32:48 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -89,13 +89,15 @@ void sr_calc_local_antic(block_type  *block,
          stmt = list_first(gen_IF_get_guard_LIST(stmt));
        else if (is_guard(stmt))
 	 {
-	  walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,add_LI_gens,
+	  walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,
+			  (WK_EXPR_CLBACK)add_LI_gens,
 			  (Generic)block);
 	  stmt = list_first(gen_GUARD_get_stmt_LIST(stmt));
 	 }
        else if (is_logical_if(stmt))
 	 {
-	  walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,add_LI_gens,
+	  walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,
+			  (WK_EXPR_CLBACK)add_LI_gens,
 			  (Generic)block);
 	  stmt = list_first(gen_LOGICAL_IF_get_stmt_LIST(stmt));
 	 }
@@ -105,13 +107,13 @@ void sr_calc_local_antic(block_type  *block,
 	    {
 	     if (((config_type *)PED_MH_CONFIG(ped))->soft_div)
 	       walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-			       ut_check_div,(Generic)&contains_div);
+			       (WK_EXPR_CLBACK)ut_check_div,(Generic)&contains_div);
 	     if (!contains_div)
 	       {
 		walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-				add_LI_gens,(Generic)block);
+				(WK_EXPR_CLBACK)add_LI_gens,(Generic)block);
 		walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,
-				mark_def,(Generic)block->kill);
+				(WK_EXPR_CLBACK)mark_def,(Generic)block->kill);
 	       }
 	     else
 	       {
@@ -124,13 +126,13 @@ void sr_calc_local_antic(block_type  *block,
 	    }
 	  else if (is_write(stmt))
 	    walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
-			    add_LI_gens,(Generic)block);
+			    (WK_EXPR_CLBACK)add_LI_gens,(Generic)block);
 	  else if (is_read_short(stmt))
 	    walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
-			    mark_def,(Generic)block->kill);
+			    (WK_EXPR_CLBACK)mark_def,(Generic)block->kill);
 	  else if (is_arithmetic_if(stmt))
 	    walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,
-			    add_LI_gens,(Generic)block);
+			    (WK_EXPR_CLBACK)add_LI_gens,(Generic)block);
 	  else if (is_call(stmt))
 	    {
 	     ut_clear_set(block->gen);

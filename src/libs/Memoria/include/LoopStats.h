@@ -1,4 +1,4 @@
-/* $Id: LoopStats.h,v 1.8 1994/07/11 13:38:12 carr Exp $ */
+/* $Id: LoopStats.h,v 1.9 1994/07/20 11:31:51 carr Exp $ */
 /* $Id: */
 #ifndef LoopStats_h
 #define LoopStats_h
@@ -22,8 +22,8 @@ typedef struct localitystruct {
  } LocalityMatrixType;
 
 typedef struct loopstatstype {
-  Boolean Perfect,
-	  ContainsExit,
+  Boolean Perfect;
+  int     ContainsExit,
 	  ContainsIO,
 	  ContainsCall,
 	  ContainsConditionalDO;

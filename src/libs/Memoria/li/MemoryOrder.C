@@ -1058,8 +1058,7 @@ static Boolean LegalPosition(UtilList *EdgeList,
 	  case DDATA_GE:
 	  case DDATA_GT: 
 	  case DDATA_NE:  return(false);
-	                  break;
-
+	                  
 	  case DDATA_LT:
 	  case DDATA_LE:  break;
 
@@ -1071,7 +1070,6 @@ static Boolean LegalPosition(UtilList *EdgeList,
 			  break;
 
 	  case DDATA_ERROR: return(false);
-			    break;
 
 	  default:
 	          if (dist < 0)
@@ -1270,7 +1268,7 @@ static void CheckInterchange(model_loop    *loop_data,
 	      /* compute RefGroups */
 
 	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-			PartitionNames, NOFUNC,(Generic)&RefInfo);
+			(WK_EXPR_CLBACK)PartitionNames, NOFUNC,(Generic)&RefInfo);
 
 	RefInfo.InvariantCost= 0.0;
 	RefInfo.TemporalCost= 0.0;
@@ -1309,7 +1307,7 @@ static void CheckInterchange(model_loop    *loop_data,
 	    /* build list of edges that can prevent memory order */
 
 	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-			GenerateEdgeList,NOFUNC,(Generic)&EdgeInfo);
+			(WK_EXPR_CLBACK)GenerateEdgeList,NOFUNC,(Generic)&EdgeInfo);
 	for (i = 0; i < num_loops; i++)
 	  loop_data[loop].PreventLvl[i] = ut_create_set(ar,LOOP_ARENA,
 							   num_loops);

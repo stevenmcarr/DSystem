@@ -1,4 +1,4 @@
-/* $Id: pick.C,v 1.7 1994/07/07 16:00:13 carr Exp $ */
+/* $Id: pick.C,v 1.8 1994/07/20 11:32:52 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -209,9 +209,9 @@ static int get_gen(AST_INDEX         node,
 			 psink->generator = psrc->table_index;
 			 psink->gen_distance = dist;
 			 psink->gen_type = LCAV;
-			 psink->constant = !pick_info->dg[edge].symbolic;
+			 psink->constant = NOT(pick_info->dg[edge].symbolic);
 			 psink->is_consistent = 
-			   (pick_info->dg[edge].consistent != inconsistent);
+			   BOOL(pick_info->dg[edge].consistent != inconsistent);
 			}
 		      else if (psink->gen_type == LCAV)
 		        if (dist < psink->gen_distance ||
@@ -225,9 +225,9 @@ static int get_gen(AST_INDEX         node,
 			   psink->generator = psrc->table_index;
 			   psink->gen_distance = dist;
 			   psink->gen_type = LCAV;
-			   psink->constant = !pick_info->dg[edge].symbolic;
+			   psink->constant = NOT(pick_info->dg[edge].symbolic);
 			   psink->is_consistent =
-			    (pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 			  }
 			else;
 		      else if (pick_info->dg[edge].consistent != 
@@ -239,9 +239,9 @@ static int get_gen(AST_INDEX         node,
 			 psink->generator = psrc->table_index;
 			 psink->gen_distance = dist;
 			 psink->gen_type = LCAV;
-			 psink->constant = !pick_info->dg[edge].symbolic;
+			 psink->constant = NOT(pick_info->dg[edge].symbolic);
 			 psink->is_consistent = 
-			    (pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 			}
 		      else;
 		    else if (ut_member_number(pick_info->exit_block->
@@ -261,9 +261,9 @@ static int get_gen(AST_INDEX         node,
 			 psink->generator = psrc->table_index;
 			 psink->gen_distance = dist;
 			 psink->gen_type = LCPAV;
-			 psink->constant = !pick_info->dg[edge].symbolic;
+			 psink->constant = NOT(pick_info->dg[edge].symbolic);
 			 psink->is_consistent = 
-			    (pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 			}
 		      else if (psink->gen_type == LCPAV)
 		      
@@ -280,9 +280,9 @@ static int get_gen(AST_INDEX         node,
 			   psink->generator = psrc->table_index;
 			   psink->gen_distance = dist;
 			   psink->gen_type = LCPAV;
-			   psink->constant = !pick_info->dg[edge].symbolic;
+			   psink->constant = NOT(pick_info->dg[edge].symbolic);
 			   psink->is_consistent=
-			    (pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 			  }
 			else;
 		      else if ((!psink->is_consistent || !psink->constant) && 
@@ -294,9 +294,9 @@ static int get_gen(AST_INDEX         node,
 			 psink->generator = psrc->table_index;
 			 psink->gen_distance = dist;
 			 psink->gen_type = LCPAV;
-			 psink->constant = !pick_info->dg[edge].symbolic;
+			 psink->constant = NOT(pick_info->dg[edge].symbolic);
 			 psink->is_consistent = 
-			    (pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 			}
 		   }
 		}
@@ -325,9 +325,9 @@ static int get_gen(AST_INDEX         node,
 		      psink->generator = psrc->table_index;
 		      psink->gen_distance = 0;
 		      psink->gen_type = LIAV;
-		      psink->constant = !pick_info->dg[edge].symbolic;
+		      psink->constant = NOT(pick_info->dg[edge].symbolic);
 		      psink->is_consistent = 
-			    (pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 		     }
 		   else;
 		 else if (ut_member_number(pick_info->LI_pavail,
@@ -348,9 +348,9 @@ static int get_gen(AST_INDEX         node,
 		      psink->generator = psrc->table_index;
 		      psink->gen_distance = 0;
 		      psink->gen_type = LIPAV;
-		      psink->constant = !pick_info->dg[edge].symbolic;
+		      psink->constant = NOT(pick_info->dg[edge].symbolic);
 		      psink->is_consistent = 
-			    (pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 		     }
 		   else if (pick_info->dg[edge].consistent != inconsistent &&
 			    !pick_info->dg[edge].symbolic &&
@@ -365,9 +365,9 @@ static int get_gen(AST_INDEX         node,
 		      psink->generator = psrc->table_index;
 		      psink->gen_distance = 0;
 		      psink->gen_type = LIPAV;
-		      psink->constant = !pick_info->dg[edge].symbolic;
+		      psink->constant = NOT(pick_info->dg[edge].symbolic);
 		      psink->is_consistent =
-			    (pick_info->dg[edge].consistent != inconsistent);
+			    BOOL(pick_info->dg[edge].consistent != inconsistent);
 		     }
 		}
 	     }
@@ -413,14 +413,16 @@ static void look_for_gens(pick_info_type   *pick_info)
        else if (is_guard(stmt))
 	 {
 	  pick_info->def = false;
-	  walk_expression(gen_GUARD_get_rvalue(stmt),get_gen,update_avail,
+	  walk_expression(gen_GUARD_get_rvalue(stmt),(WK_EXPR_CLBACK)get_gen,
+			  (WK_EXPR_CLBACK)update_avail,
 			  (Generic)pick_info);
 	  stmt = list_first(gen_GUARD_get_stmt_LIST(stmt));
 	 }
        else if (is_logical_if(stmt))
 	 {
 	  pick_info->def = false;
-	  walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),get_gen,update_avail,
+	  walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),(WK_EXPR_CLBACK)get_gen,
+			  (WK_EXPR_CLBACK)update_avail,
 			  (Generic)pick_info);
 	  stmt = list_first(gen_LOGICAL_IF_get_stmt_LIST(stmt));
 	 }
@@ -430,18 +432,20 @@ static void look_for_gens(pick_info_type   *pick_info)
 	    {
 	     if (((config_type *)PED_MH_CONFIG(pick_info->ped))->soft_div)
 	       walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-			       ut_check_div,(Generic)&contains_div);
+			       (WK_EXPR_CLBACK)ut_check_div,(Generic)&contains_div);
 	     if (!contains_div)
 	       {
 		pick_info->def = false;
-		walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),get_gen,
-				update_avail,(Generic)pick_info);
+		walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),
+				(WK_EXPR_CLBACK)get_gen,
+				(WK_EXPR_CLBACK)update_avail,(Generic)pick_info);
 		pick_info->def = true;
-		walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),chk_store,
-				update_avail,(Generic)pick_info);
+		walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),
+				(WK_EXPR_CLBACK)chk_store,
+				(WK_EXPR_CLBACK)update_avail,(Generic)pick_info);
 		pick_info->lhs = gen_ASSIGNMENT_get_lvalue(stmt);
 		walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-				kill_rhs,(Generic)pick_info);
+				(WK_EXPR_CLBACK)kill_rhs,(Generic)pick_info);
 	       }
 	     else
 	       {
@@ -457,22 +461,25 @@ static void look_for_gens(pick_info_type   *pick_info)
 	  else if (is_write(stmt))
 	    {
 	     pick_info->def = false;
-	     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,get_gen,
+	     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
+			     (WK_EXPR_CLBACK)get_gen,
 			     (Generic)pick_info);
 	     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
-			     update_avail,(Generic)pick_info);
+			     (WK_EXPR_CLBACK)update_avail,(Generic)pick_info);
 	    }
 	  else if (is_read_short(stmt))
 	    {
 	     pick_info->def = true;
-	     walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),chk_store,
-			     update_avail,(Generic)pick_info);
+	     walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),
+			     (WK_EXPR_CLBACK)chk_store,
+			     (WK_EXPR_CLBACK)update_avail,(Generic)pick_info);
 	    }
 	  else if (is_arithmetic_if(stmt))
 	    {
 	     pick_info->def = false;
-	     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),get_gen,
-			     update_avail,(Generic)pick_info);
+	     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),
+			     (WK_EXPR_CLBACK)get_gen,
+			     (WK_EXPR_CLBACK)update_avail,(Generic)pick_info);
 	    }
 	  else if (is_call(stmt))
 	    {

@@ -1,4 +1,4 @@
-/* $Id: gavail.C,v 1.3 1992/12/11 11:22:15 carr Exp $ */
+/* $Id: gavail.C,v 1.4 1994/07/20 11:32:50 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -93,18 +93,21 @@ static void update_gavail(gavail_info_type   *gavail_info)
          stmt = list_first(gen_IF_get_guard_LIST(stmt));
        else if (is_guard(stmt))
 	 {
-	  walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,chk_avail,
+	  walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,
+			  (WK_EXPR_CLBACK)chk_avail,
 			  (Generic)gavail_info);
-	  walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,update_LI_avail,
+	  walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,
+			  (WK_EXPR_CLBACK)update_LI_avail,
 			  (Generic)gavail_info);
 	  stmt = list_first(gen_GUARD_get_stmt_LIST(stmt));
 	 }
        else if (is_logical_if(stmt))
 	 {
-	  walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,chk_avail,
+	  walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,
+			  (WK_EXPR_CLBACK)chk_avail,
 			  (Generic)gavail_info);
 	  walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,
-			  update_LI_avail,(Generic)gavail_info);
+			  (WK_EXPR_CLBACK)update_LI_avail,(Generic)gavail_info);
 	  stmt = list_first(gen_LOGICAL_IF_get_stmt_LIST(stmt));
 	 }
        else
@@ -113,15 +116,17 @@ static void update_gavail(gavail_info_type   *gavail_info)
 	    {
 	     if (((config_type *)PED_MH_CONFIG(gavail_info->ped))->soft_div)
 	       walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-			       ut_check_div,(Generic)&contains_div);
+			       (WK_EXPR_CLBACK)ut_check_div,(Generic)&contains_div);
 	     if (!contains_div)
 	       {
 		walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-				chk_avail,(Generic)gavail_info);
+				(WK_EXPR_CLBACK)chk_avail,(Generic)gavail_info);
 		walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
-				update_LI_avail,(Generic)gavail_info);
+				(WK_EXPR_CLBACK)update_LI_avail,
+				(Generic)gavail_info);
 		walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,
-				update_LI_avail,(Generic)gavail_info);
+				(WK_EXPR_CLBACK)update_LI_avail,
+				(Generic)gavail_info);
 	       }
 	     else
 	       {
@@ -135,19 +140,19 @@ static void update_gavail(gavail_info_type   *gavail_info)
 	  else if (is_write(stmt))
 	    {
 	     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
-			     chk_avail,(Generic)gavail_info);
+			     (WK_EXPR_CLBACK)chk_avail,(Generic)gavail_info);
 	     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
-			     update_LI_avail,(Generic)gavail_info);
+			     (WK_EXPR_CLBACK)update_LI_avail,(Generic)gavail_info);
 	    }
 	  else if (is_read_short(stmt))
 	   walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
-			   update_LI_avail,(Generic)gavail_info);
+			   (WK_EXPR_CLBACK)update_LI_avail,(Generic)gavail_info);
 	  else if (is_arithmetic_if(stmt))
 	    {
 	     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,
-			     chk_avail,(Generic)gavail_info);
+			     (WK_EXPR_CLBACK)chk_avail,(Generic)gavail_info);
 	     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,
-			     update_LI_avail,(Generic)gavail_info);
+			     (WK_EXPR_CLBACK)update_LI_avail,(Generic)gavail_info);
 	    }
 	  else if (is_call(stmt))
 	    {

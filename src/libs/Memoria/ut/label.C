@@ -1,4 +1,4 @@
-/* $Id: label.C,v 1.4 1993/06/15 14:05:13 carr Exp $ */
+/* $Id: label.C,v 1.5 1994/07/20 11:33:25 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -13,11 +13,11 @@
 #include <sr.h>
 #include <mh_ast.h>
 #include <fort/walk.h>
-#include <std.h>
 #include <label.h>
 
 #include <mem_util.h>
 #include <pt_util.h>
+#include <malloc.h>
 
 
 /****************************************************************************/
@@ -85,7 +85,7 @@ static int chk_labels(AST_INDEX     stmt,
 	index = fst_QueryIndex(symtab,new_label_str);
 	set_label_sym_index(new_label,index);
 	fst_PutFieldByIndex(symtab,index,LBL_STMT,stmt);
-	fst_PutField(symtab,gen_get_text(label),NEW_LBL_INDEX,index);
+	fst_PutField(symtab,(int)gen_get_text(label),NEW_LBL_INDEX,index);
 	fst_PutFieldByIndex(symtab,index,REFS,
 			    (int)fst_GetField(symtab,gen_get_text(label),
 					      REFS));
@@ -159,5 +159,5 @@ void ut_update_labels(AST_INDEX     stmt,
      will guarantee that label defs are seen before label refs.
    */
 
-   walk_statements_reverse(stmt,LEVEL1,NOFUNC,chk_labels,(Generic)symtab);
+   walk_statements_reverse(stmt,LEVEL1,(WK_STMT_CLBACK)NOFUNC,(WK_STMT_CLBACK)chk_labels,(Generic)symtab);
   }

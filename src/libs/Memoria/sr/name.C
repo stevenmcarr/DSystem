@@ -1,4 +1,4 @@
-/* $Id: name.C,v 1.8 1994/07/07 16:00:49 carr Exp $ */
+/* $Id: name.C,v 1.9 1994/07/20 11:32:51 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -274,8 +274,8 @@ void sr_generate_names(AST_INDEX        root,
   {
    UtilNode         *lnode;
    
-     walk_expression(gen_DO_get_stmt_LIST(root),partition_names,NOFUNC,
-		     (Generic)name_info);
+     walk_expression(gen_DO_get_stmt_LIST(root),(WK_EXPR_CLBACK)partition_names,
+		     NOFUNC,(Generic)name_info);
      for (lnode = UTIL_HEAD(name_info->glist);
 	  lnode != NULLNODE;
 	  lnode = UTIL_NEXT(lnode))

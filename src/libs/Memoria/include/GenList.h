@@ -34,7 +34,7 @@ public:
   void FreeHead()
     { Delete(SinglyLinkedList::First());};
   Boolean NullList()
-    {return First() == NULL;}
+    {return BOOL(First() == NULL);}
   void Clear()
     {
      while(NOT(NullList()))
@@ -44,7 +44,10 @@ public:
 
 class GenListIterator : public SinglyLinkedListIterator {
 public:
+        GenListIterator(GenList *G) : SinglyLinkedListIterator(G)
+	  {
+	  }
 	GenListEntry *Current()
 	 {return (GenListEntry *)SinglyLinkedListIterator::Current();};
 };
-#endif GenList_h
+#endif 

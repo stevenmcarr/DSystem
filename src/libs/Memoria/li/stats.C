@@ -1,4 +1,4 @@
-/* $Id: stats.C,v 1.8 1994/07/11 13:39:50 carr Exp $ */
+/* $Id: stats.C,v 1.9 1994/07/20 11:32:08 carr Exp $ */
 
 /****************************************************************/
 /*                                                              */
@@ -194,7 +194,7 @@ static void DumpLoopStats(model_loop *loop_data,
      BalanceStats.UseCache = true;
      BalanceStats.loop_data = loop_data;
      BalanceStats.loop = loop;
-     walk_expression(InnerLoop,ut_ComputeBalance,NOFUNC,
+     walk_expression(InnerLoop,(WK_EXPR_CLBACK)ut_ComputeBalance,NOFUNC,
 		     (Generic)&BalanceStats);
      loop_data[loop].fbalance = ((float)BalanceStats.mops) /
                                 ((float)BalanceStats.flops);
@@ -327,9 +327,9 @@ static void DumpPermutationStats(model_loop *loop_data,
          FinalRatio,
          MemoryCost;
    LocalityMatrixType  
-      OriginalLocalityMatrix = {{0,0,0},{0,0,0},{0,0,0}},
-      FinalLocalityMatrix = {{0,0,0},{0,0,0},{0,0,0}},
-      MemoryLocalityMatrix = {{0,0,0},{0,0,0},{0,0,0}};
+      OriginalLocalityMatrix,
+      FinalLocalityMatrix,
+      MemoryLocalityMatrix;
    Boolean memory_order = true,
            interchanged = false,
            TimeStep     = false,
@@ -340,6 +340,34 @@ static void DumpPermutationStats(model_loop *loop_data,
    UtilNode *GroupNode;
    RefGroupType *RefGroup;
 
+     OriginalLocalityMatrix.SingleGroups.Invariant = 0;
+     OriginalLocalityMatrix.SingleGroups.Spatial = 0;
+     OriginalLocalityMatrix.SingleGroups.None = 0;
+     OriginalLocalityMatrix.MultiGroups.Invariant = 0;
+     OriginalLocalityMatrix.MultiGroups.Spatial = 0;
+     OriginalLocalityMatrix.MultiGroups.None = 0;
+     OriginalLocalityMatrix.MultiRefs.Invariant = 0;
+     OriginalLocalityMatrix.MultiRefs.Spatial = 0;
+     OriginalLocalityMatrix.MultiRefs.None = 0;
+     FinalLocalityMatrix.SingleGroups.Invariant = 0;
+     FinalLocalityMatrix.SingleGroups.Spatial = 0;
+     FinalLocalityMatrix.SingleGroups.None = 0;
+     FinalLocalityMatrix.MultiGroups.Invariant = 0;
+     FinalLocalityMatrix.MultiGroups.Spatial = 0;
+     FinalLocalityMatrix.MultiGroups.None = 0;
+     FinalLocalityMatrix.MultiRefs.Invariant = 0;
+     FinalLocalityMatrix.MultiRefs.Spatial = 0;
+     FinalLocalityMatrix.MultiRefs.None = 0;
+     MemoryLocalityMatrix.SingleGroups.Invariant = 0;
+     MemoryLocalityMatrix.SingleGroups.Spatial = 0;
+     MemoryLocalityMatrix.SingleGroups.None = 0;
+     MemoryLocalityMatrix.MultiGroups.Invariant = 0;
+     MemoryLocalityMatrix.MultiGroups.Spatial = 0;
+     MemoryLocalityMatrix.MultiGroups.None = 0;
+     MemoryLocalityMatrix.MultiRefs.Invariant = 0;
+     MemoryLocalityMatrix.MultiRefs.Spatial = 0;
+     MemoryLocalityMatrix.MultiRefs.None = 0;
+   
      fprintf(logfile,"Permutation Statistic for Perfect Loop Nest %d\n\n",
 	     *inner_loops);
 
@@ -691,8 +719,8 @@ static void WalkLoopsForStats(model_loop *loop_data,
      else
        {
 	next = loop_data[loop].inner_loop;
-	LoopStats->Perfect = (LoopStats->Perfect && 
-			      loop_data[next].next_loop == -1);
+	LoopStats->Perfect = (Boolean)(LoopStats->Perfect && 
+				       loop_data[next].next_loop == -1);
 	while (next != -1)
 	  {
 	   WalkLoopsForStats(loop_data,next,num_loops+1,inner_loops,ped,

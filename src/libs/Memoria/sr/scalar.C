@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.17 1994/07/08 11:32:14 yguan Exp $ */
+/* $Id: scalar.C,v 1.18 1994/07/20 11:32:54 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -170,35 +170,35 @@ static int get_prelim_info(AST_INDEX          stmt,
        }
      if (is_assignment(stmt))
        {
-	walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),count_arrays,NOFUNC,
-			(Generic)prelim_info);
-	walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),count_arrays,NOFUNC,
-			(Generic)prelim_info);
+	walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),
+			(WK_EXPR_CLBACK)count_arrays,NOFUNC,(Generic)prelim_info);
+	walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),
+			(WK_EXPR_CLBACK)count_arrays,NOFUNC,(Generic)prelim_info);
        }
      else if (is_guard(stmt))
        {
 	prelim_info->contains_cf = true;
-	walk_expression(gen_GUARD_get_rvalue(stmt),count_arrays,NOFUNC,
-			(Generic)prelim_info);
+	walk_expression(gen_GUARD_get_rvalue(stmt),(WK_EXPR_CLBACK)count_arrays,
+			NOFUNC,(Generic)prelim_info);
        }
      else if (is_logical_if(stmt))
        {
 	prelim_info->contains_cf = true;
-	walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),count_arrays,NOFUNC,
-			(Generic)prelim_info);
+	walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),
+			(WK_EXPR_CLBACK)count_arrays,NOFUNC,(Generic)prelim_info);
        }
      else if (is_write(stmt))
-       walk_expression(gen_WRITE_get_data_vars_LIST(stmt),count_arrays,NOFUNC,
-		       (Generic)prelim_info);
+       walk_expression(gen_WRITE_get_data_vars_LIST(stmt),
+		       (WK_EXPR_CLBACK)count_arrays,NOFUNC,(Generic)prelim_info);
      else if (is_read_short(stmt))
-       walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),count_arrays,
-		       NOFUNC,(Generic)prelim_info);
+       walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),
+		       (WK_EXPR_CLBACK)count_arrays,NOFUNC,(Generic)prelim_info);
      else if (is_arithmetic_if(stmt))
        {
 	prelim_info->contains_cf = true;
 	prelim_info->contains_goto_or_label = true;
-	walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),count_arrays,NOFUNC,
-			(Generic)prelim_info);
+	walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),
+			(WK_EXPR_CLBACK)count_arrays,NOFUNC,(Generic)prelim_info);
        }
      else if (is_if(stmt))
        prelim_info->contains_cf = true; 
@@ -208,8 +208,8 @@ static int get_prelim_info(AST_INDEX          stmt,
 	prelim_info->contains_goto_or_label = true;
        }
      else if (is_call(stmt))
-       walk_expression(gen_CALL_get_invocation(stmt),count_arrays,NOFUNC,
-		       (Generic)prelim_info);
+       walk_expression(gen_CALL_get_invocation(stmt),(WK_EXPR_CLBACK)count_arrays,
+		       NOFUNC,(Generic)prelim_info);
      return(WALK_CONTINUE);
   }
 
@@ -449,26 +449,26 @@ static int count_regs(AST_INDEX     stmt,
      stmt_regs = reg_info->expr_regs;
      if (is_assignment(stmt))
        {
-	walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,get_expr_regs,
-			(Generic)reg_info);
+	walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
+			(WK_EXPR_CLBACK)get_expr_regs,(Generic)reg_info);
        }    
      else if (is_guard(stmt))
        if (gen_GUARD_get_rvalue(stmt) != AST_NIL)
-         walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,get_expr_regs,
-			 (Generic)reg_info);
+         walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,
+			 (WK_EXPR_CLBACK)get_expr_regs,(Generic)reg_info);
        else;
      else if (is_arithmetic_if(stmt))
-       walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,get_expr_regs,
-		       (Generic)reg_info);
+       walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,
+		       (WK_EXPR_CLBACK)get_expr_regs,(Generic)reg_info);
      else if (is_logical_if(stmt))
-       walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,get_expr_regs,
-		       (Generic)reg_info);
+       walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,
+		       (WK_EXPR_CLBACK)get_expr_regs,(Generic)reg_info);
      else if (is_read_short(stmt))
        walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
-		       get_expr_regs,(Generic)reg_info);
+		       (WK_EXPR_CLBACK)get_expr_regs,(Generic)reg_info);
      else if (is_write(stmt))
-       walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,get_expr_regs,
-		       (Generic)reg_info);
+       walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
+		       (WK_EXPR_CLBACK)get_expr_regs,(Generic)reg_info);
      if (stmt_regs > reg_info->expr_regs)
        reg_info->expr_regs = stmt_regs;
      return(WALK_CONTINUE);
@@ -587,12 +587,13 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      fst_InitField(do_info->symtab,REFS,0,0);
      fst_InitField(do_info->symtab,NEW_LBL_INDEX,SYM_INVALID_INDEX,0);
      prelim_info.symtab = do_info->symtab;
-     walk_statements(root,level,get_prelim_info,NOFUNC,(Generic)&prelim_info);
+     walk_statements(root,level,(WK_STMT_CLBACK)get_prelim_info,NOFUNC,
+		     (Generic)&prelim_info);
      if (prelim_info.contains_goto_or_label)
        {
-	walk_statements(loop_body,level,check_gotos,NOFUNC,
+	walk_statements(loop_body,level,(WK_STMT_CLBACK)check_gotos,NOFUNC,
 			(Generic)&prelim_info);
-	walk_statements(loop_body,level,check_illegal_jumps,NOFUNC,
+	walk_statements(loop_body,level,(WK_STMT_CLBACK)check_illegal_jumps,NOFUNC,
 			(Generic)&prelim_info);
 	if (!prelim_info.jumps_ok)
 	  {
@@ -617,7 +618,7 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      prelim_info.array_table = (array_table_type *)
        do_info->ar->arena_alloc_mem_clear(LOOP_ARENA,prelim_info.array_refs*
 					  sizeof(array_table_type));
-     walk_statements(loop_body,level,sr_build_table,NOFUNC,
+     walk_statements(loop_body,level,(WK_STMT_CLBACK)sr_build_table,NOFUNC,
 		     (Generic)&prelim_info);
      if (prelim_info.array_refs == 0)
        return;
@@ -653,7 +654,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
        {
 	reg_info.expr_regs = 0;
 	reg_info.config = (config_type *)PED_MH_CONFIG(do_info->ped);
-	walk_statements(loop_body,level,NOFUNC,count_regs,(Generic)&reg_info);
+	walk_statements(loop_body,level,NOFUNC,(WK_STMT_CLBACK)count_regs,
+			(Generic)&reg_info);
 	if (((config_type *)PED_MH_CONFIG(do_info->ped))->chow_alloc && 
 	    reg_info.expr_regs < 4)
 
@@ -705,8 +707,9 @@ static void perform_scalar_replacement(do_info_type  *do_info,
        }
 
      util_list_free(name_info.glist);
-     walk_expression(root,remove_dependences,NOFUNC,(Generic)do_info->ped);
-     walk_statements(root,level,NOFUNC,cleanup_gotos,
+     walk_expression(root,(WK_EXPR_CLBACK)remove_dependences,NOFUNC,
+		     (Generic)do_info->ped);
+     walk_statements(root,level,NOFUNC,(WK_STMT_CLBACK)cleanup_gotos,
 		     (Generic)prelim_info.symtab);
      if (logfile != NULL)
        {
@@ -716,7 +719,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 	bal_info.mem = 0;
 	bal_info.flops = 0;
 	bal_info.ped = do_info->ped;
-	walk_expression(root,compute_balance,NOFUNC,(Generic)&bal_info);
+	walk_expression(root,(WK_EXPR_CLBACK)compute_balance,NOFUNC,
+			(Generic)&bal_info);
 	if (bal_info.flops > 0)
          {
 	  fprintf(logfile,"Final Loop Balance = %.4f\n",
@@ -768,34 +772,43 @@ static int pre_scalar(AST_INDEX     stmt,
    create_NULL_stmt_info_ptr(stmt);
    if (is_assignment(stmt))
      {
-      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),set_surrounding_do,
-		      NOFUNC,(Generic)do_info->ar);
-      walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),set_surrounding_do,
+      walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),
+		      (WK_EXPR_CLBACK)set_surrounding_do,NOFUNC,
+		      (Generic)do_info->ar);
+      walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),
+		      (WK_EXPR_CLBACK)set_surrounding_do,
 		      NOFUNC,(Generic)do_info->ar);
      }
    else if (is_guard(stmt))
-     walk_expression(gen_GUARD_get_rvalue(stmt),set_surrounding_do,NOFUNC,
+     walk_expression(gen_GUARD_get_rvalue(stmt),
+		     (WK_EXPR_CLBACK)set_surrounding_do,NOFUNC,
 		     (Generic)do_info->ar);
    else if (is_write(stmt))
-     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),set_surrounding_do,
+     walk_expression(gen_WRITE_get_data_vars_LIST(stmt),
+		     (WK_EXPR_CLBACK)set_surrounding_do,
 		     NOFUNC,(Generic)do_info->ar);
    else if (is_read_short(stmt))
      walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),
-		     set_surrounding_do,NOFUNC,(Generic)do_info->ar);
+		     (WK_EXPR_CLBACK)set_surrounding_do,NOFUNC,
+		     (Generic)do_info->ar);
    else if (is_logical_if(stmt))
-     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),set_surrounding_do,NOFUNC,
+     walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),
+		     (WK_EXPR_CLBACK)set_surrounding_do,NOFUNC,
 		     (Generic)do_info->ar);
    else if (is_arithmetic_if(stmt))
-     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),set_surrounding_do,
+     walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),
+		     (WK_EXPR_CLBACK)set_surrounding_do,
 		     NOFUNC,(Generic)do_info->ar);
    else if (is_do(stmt))
      {
-      walk_expression(gen_DO_get_control(stmt),remove_dependences,NOFUNC,
+      walk_expression(gen_DO_get_control(stmt),
+		      (WK_EXPR_CLBACK)remove_dependences,NOFUNC,
 		      (Generic)do_info->ped);
       do_info->inner_do = 0;
      }
    else if (is_call(stmt))
-     walk_expression(gen_CALL_get_invocation(stmt),set_surrounding_do,NOFUNC,
+     walk_expression(gen_CALL_get_invocation(stmt),
+		     (WK_EXPR_CLBACK)set_surrounding_do,NOFUNC,
 		     (Generic)do_info->ar);
    else if (is_if(stmt) || is_continue(stmt) || is_goto(stmt) ||
 	    is_computed_goto(stmt));
@@ -863,5 +876,6 @@ void memory_scalar_replacement(PedInfo      ped,
      do_info.symtab = symtab;
      do_info.ar = ar;
      do_info.LoopStats = LoopStats;
-     walk_statements(root,level,pre_scalar,post_scalar,(Generic)&do_info);
+     walk_statements(root,level,(WK_STMT_CLBACK)pre_scalar,
+		     (WK_STMT_CLBACK)post_scalar,(Generic)&do_info);
   }
