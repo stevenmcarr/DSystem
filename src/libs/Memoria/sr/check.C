@@ -1,4 +1,4 @@
-/* $Id: check.C,v 1.8 2002/03/06 16:43:00 carr Exp $ */
+/* $Id: check.C,v 1.9 2002/05/07 14:58:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,6 +30,8 @@
 #include <libs/Memoria/include/mem_util.h>
 #endif
 
+extern Boolean ReplaceMIVReferences;
+
 static int check_def(AST_INDEX node,
 		     check_info_type *check_info)
 
@@ -55,7 +57,9 @@ static int check_def(AST_INDEX node,
 	     edge != END_OF_LIST;
 	     edge = dg_next_sink_ref( PED_DG(check_info->ped),edge))
 	  if (dg[edge].type == dg_output || dg[edge].type == dg_anti)
-	    if (dg[edge].consistent != consistent_SIV || dg[edge].symbolic)
+	    if ((dg[edge].consistent == inconsistent ||
+		(dg[edge].consistent == consistent_MIV &&
+		 NOT(ReplaceMIVReferences)))|| dg[edge].symbolic)
 	      {
 	       sptr2 = get_scalar_info_ptr(dg[edge].src);
 	       if (dg[edge].level == LOOP_INDEPENDENT &&
@@ -75,7 +79,9 @@ static int check_def(AST_INDEX node,
 	     edge != END_OF_LIST;
 	     edge = dg_next_src_ref( PED_DG(check_info->ped),edge))
 	  if (dg[edge].type == dg_output || dg[edge].type == dg_true)
-	    if (dg[edge].consistent != consistent_SIV || dg[edge].symbolic) 
+	    if ((dg[edge].consistent == inconsistent ||
+		 (dg[edge].consistent == consistent_MIV &&
+		  NOT(ReplaceMIVReferences))) || dg[edge].symbolic) 
 	      {
 	       sptr2 = get_scalar_info_ptr(dg[edge].sink);
 	       if ((dg[edge].level == LOOP_INDEPENDENT &&

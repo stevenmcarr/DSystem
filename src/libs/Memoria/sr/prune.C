@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.18 2002/03/06 16:42:59 carr Exp $ */
+/* $Id: prune.C,v 1.19 2002/05/07 15:03:15 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,7 +13,7 @@
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/frontEnd/include/walk.h>
 #include <libs/Memoria/sr/prune.h>
-
+#include <libs/moduleAnalysis/dependence/dependenceTest/dep_dt.h>
 #ifndef Arena_h
 #include <libs/support/memMgmt/Arena.h>
 #endif
@@ -31,6 +31,8 @@
 #endif
 
 #include <libs/Memoria/include/mem_util.h>
+
+extern Boolean ReplaceMIVReferences;
 
 static void MarkAllSinksAsNotScalar(PedInfo ped,
 				    AST_INDEX node)
@@ -93,16 +95,32 @@ static void prune_dependence_edges(AST_INDEX     node,
 	       {
 		case dg_input:
 		case dg_true: 
-		  if (dg[edge].consistent == consistent_SIV && 
+		  if (dg[edge].consistent != inconsistent && 
 		      !dg[edge].symbolic)
 		    {
-		     if (dg[edge].level != LOOP_INDEPENDENT)
-		       if ((edge_dist = 
-			    gen_get_dt_DIS(&dg[edge],dg[edge].level)) < 0)
-		         edge_dist = 1;
-		       else;
-		     else
-		       edge_dist = 0;
+		      if (dg[edge].consistent == consistent_MIV)
+			{
+
+			  // the dependence analyzer is incorrect 
+			  // we will figure out the real dependence 
+			  // distance here.  smc 4/02
+
+			
+			  edge_dist = ut_GetMIVDependenceDistance(dg[edge]);
+			  if (edge_dist == DDATA_ANY ||
+			      NOT(ReplaceMIVReferences))
+			    {
+			      dg_delete_free_edge(PED_DG(gen_info->ped),edge);
+			      break;
+			    }
+			}  
+		      else if (dg[edge].level != LOOP_INDEPENDENT)
+			if ((edge_dist = 
+			     gen_get_dt_DIS(&dg[edge],dg[edge].level)) < 0)
+			  edge_dist = 1;
+			else;
+		      else
+			edge_dist = 0;
 		     src_stmt = ut_get_stmt(dg[edge].src);
 		     sink_stmt = ut_get_stmt(node);
 		     if (((src_stmt == sink_stmt && dg[edge].type == dg_true) || 
@@ -128,7 +146,7 @@ static void prune_dependence_edges(AST_INDEX     node,
 		case dg_output: 
 		  break;
 		case dg_anti:
-		  if (dg[edge].consistent == consistent_SIV &&
+		  if (dg[edge].consistent != inconsistent &&
 		      dg[edge].level == LOOP_INDEPENDENT)
 		    {
 		     scalar_src->recurrence = false;
