@@ -48,6 +48,7 @@ public:
   void AddNode(AST_INDEX node);
   void AddNode(Directive *Dir);
   int GetSize() {return Size;};
+  void Dump();
 
 };
 
@@ -115,6 +116,7 @@ public:
 			      la_matrix nodeH);
   void GetConstants(AST_INDEX node1,la_vect C);
   int GetSubscripts() {return Subscripts;}
+  void Dump();
 };
 
 class AddressClassIterator : public GenericListIter {

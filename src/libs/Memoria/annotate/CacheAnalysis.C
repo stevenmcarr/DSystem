@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.28 2000/02/08 19:56:21 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.29 2000/03/28 20:07:00 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -30,6 +30,7 @@
 
 extern int aiCache;
 extern int aiOptimizeAddressCode;
+extern int aiParseComments;
 
 static int RefCount = 0;
 
@@ -206,7 +207,8 @@ static int CreateDepInfo(AST_INDEX node,
      if (is_comment(node))
        {
 	 Dir = new Directive;
-	 if (a2i_string_parse(gen_get_text(gen_COMMENT_get_text(node)),Dir,Symtab))
+	 if (aiParseComments &&
+	     a2i_string_parse(gen_get_text(gen_COMMENT_get_text(node)),Dir,Symtab))
 	   {
 	     Dir->DependenceList = util_list_alloc((int)NULL,NULL);
 	     Dir->StmtNumber = get_stmt_info_ptr(node)->stmt_num;

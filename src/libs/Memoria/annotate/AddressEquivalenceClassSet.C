@@ -1,9 +1,12 @@
+#include <stream.h>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/Memoria/annotate/AddressEquivalenceClassSet.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #include <libs/Memoria/annotate/DirectivesInclude.h>
+
+extern int aiParseComments;
 
 static int CheckNodes(AST_INDEX node,
 		      StmtOrderInfoType *StmtOrderInfo)
@@ -196,7 +199,7 @@ static int BuildEquivalenceClasses(AST_INDEX node,
 {
   if (is_subscript(node))
     AECS->AddNode(node);
-  else if (is_comment(node) && DirectiveInfoPtr(node) != NULL)
+  else if (aiParseComments && is_comment(node) && DirectiveInfoPtr(node) != NULL)
     {
       Directive *Dir = DirectiveInfoPtr(node);
       if (Dir->Instr == PrefetchInstruction ||
@@ -230,6 +233,7 @@ AddressEquivalenceClassSet::AddressEquivalenceClassSet(AST_INDEX loop,
 		     (WK_EXPR_CLBACK)BuildEquivalenceClasses,
 		     (WK_EXPR_CLBACK)NOFUNC,(Generic)this);
      ComputeAddressOffsets();
+     Dump();
   }
 
 void AddressEquivalenceClassSet::ComputeAddressOffsets()
@@ -402,7 +406,6 @@ AST_INDEX AddressEquivalenceClassSet::GetLeader(AST_INDEX node)
   la_matrix nodeH = la_matNew(Subscripts,NestingLevel);
 
   GetH(node,nodeH,&uniform);
-
   AST_INDEX Leader = GetAddressEquivalenceClass(node,nodeH)->GetLeader();
 //  la_matFree(nodeH,Subscripts,NestingLevel);
   return Leader;
@@ -610,4 +613,44 @@ GenericListEntry *e;
      if( e != NULL )
          return (AST_INDEX)( e->GetValue());
      else return AST_NIL;
+}
+
+void AddressEquivalenceClassSet::Dump()
+{
+ AddressEquivalenceClass *aecs;
+ int i = 0;
+ char Text[80];
+
+ cout << "\t\tTotal # of equivalence classes = " << Size << endl;
+ for(AddressEquivSetIterator AESIter(this);
+        aecs = AESIter(); )
+   {
+     cout << "\t\tEquivalence Class Set #" << i  << endl;
+     aecs->Dump();
+     i ++;
+   }
+}
+
+void AddressEquivalenceClass::Dump()
+{
+ char Text[80];
+
+ cout << "\t\t\t" << "Leader is "; 
+ ut_GetSubscriptText( Leader, Text);
+ cout <<  Text << endl;
+
+ cout << "\t\t\t" << "First In Loop is "; 
+ ut_GetSubscriptText( FirstInLoop, Text);
+ cout <<  Text << endl;
+
+ if (LeaderIsADirective)
+   cout << "\t\t\tLeader is a Directive" << endl;
+
+ AST_INDEX node;
+ for (AddressClassIterator ACIter(this);
+      node = ACIter(); )
+   {
+     ut_GetSubscriptText(node, Text);
+     cout << "\t\t\t" << Text << endl;
+   }
 }
