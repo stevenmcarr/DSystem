@@ -60,632 +60,7 @@
 #include	<dg.h>		/* dg_add_edge()		*/
 #endif 
 	      
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   UnsetVisitedMark                               */
-/*                                                              */
-/*   Input:      node - node in the AST                         */
-/*               dummy - anything                               */
-/*                                                              */
-/*   Description: set the visited mark for depth-first search   */
-/*                to false for each subscript.                  */
-/*                                                              */
-/****************************************************************/
-
-static int UnsetVisitedMark(AST_INDEX node,
-			    int       dummy)
-
-  {
-   AST_INDEX name;
-
-     if (is_subscript(node))
-       {
-	name = gen_SUBSCRIPT_get_name(node);
-	get_subscript_ptr(name)->visited = false;
-       }
-     return(WALK_CONTINUE);
-    }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   NotInOtherPositions                            */
-/*                                                              */
-/*   Input:      node - subscript list                          */
-/*               var - induction variable search for            */
-/*                                                              */
-/*   Description: search list of subscripts of an array         */
-/*                to determine if var appears in any subscript  */
-/*                position other than the first.                */
-/*                                                              */
-/****************************************************************/
-
-static Boolean NotInOtherPositions(AST_INDEX node,
-				   char      *var)
-
-  {
-     for (node = list_next(list_first(node));
-	  node != AST_NIL;
-	  node = list_next(node))
-       if (pt_find_var(node,var))
-         return(false);
-     return(true);
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   FindInductionVar                               */
-/*                                                              */
-/*   Input:      loop_data - loop structure                     */
-/*               node - node in AST                             */
-/*               level - nesting level of induction var         */
-/*                                                              */
-/*   Description:  Search loops surrounding node for the        */
-/*                 induction variable at nesting level "level"  */
-/*                                                              */
-/****************************************************************/
-
-static char *FindInductionVar(model_loop *loop_data,
-			      AST_INDEX  node,
-			      int        level)
-
-  {
-   int i;
-
-     i = get_subscript_ptr(node)->surrounding_do;
-     while(loop_data[i].level != level)
-       i = loop_data[i].parent;
-     return(gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
-			 loop_data[i].node))));
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   OnlyInInnermostPostion                         */
-/*                                                              */
-/*   Input:      loop_data - loop structure                     */
-/*               node - subscript node in AST                   */
-/*               level - nesting level of induction var         */
-/*                                                              */
-/*   Description: Determines if the induction var at nesting    */
-/*                level "level" only appears in the first       */
-/*                subscript position of node.                   */
-/*                                                              */
-/****************************************************************/
-
-static Boolean OnlyInInnermostPosition(model_loop *loop_data,
-				       AST_INDEX  node,
-				       int        level)
-  {
-   AST_INDEX sub_list,sub;
-   char *var;
-   int coeff;
-   Boolean lin;
-   
-     if (level == LOOP_INDEPENDENT)
-       return(false);
-     sub_list = gen_SUBSCRIPT_get_rvalue_LIST(tree_out(node));
-     sub = list_first(sub_list);
-     var = FindInductionVar(loop_data,node,level);
-     if (pt_find_var(sub,var) && NotInOtherPositions(sub_list,var))
-       return(true);
-     return(false);
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   CanMoveToInnermost                             */
-/*                                                              */
-/*   Input:      edge - dependence edge                         */
-/*                                                              */
-/*   Description: Determines if edge can become carried by the  */
-/*                innermost loop through loop interchange.      */
-/*                                                              */
-/****************************************************************/
-
-static Boolean CanMoveToInnermost(DG_Edge *edge)
-
-  {
-   int i;
-   
-     if (edge->level == LOOP_INDEPENDENT)
-       return(true);
-     for (i = edge->level+1; i < gen_get_dt_LVL(edge);i++)
-       if (gen_get_dt_DIS(edge,i) != 0)
-         return(false);
-     return(true);
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   DoPartition                                    */
-/*                                                              */
-/*   Input:      name - array name node in ast                  */
-/*               RefGroup - reference group structure           */
-/*               dg - dependence graph                          */
-/*               ped - graph and ast information                */
-/*               level - nesting level of loop on which to      */
-/*                       to compute RefGroups                   */
-/*               VisitedMark - for DFS                          */
-/*               loop_data - loop structure information         */
-/*                                                              */
-/*   Description: Partitions the references in the innermost    */
-/*                loop body into RefGroups based on the         */
-/*                dependences carried by the loop at nesting    */
-/*                level "level".  This loop is being considered */
-/*                as if it were in the innermost position.      */
-/*                                                              */
-/****************************************************************/
-
-static void DoPartition(AST_INDEX name,
-			RefGroupType *RefGroup,
-			DG_Edge   *dg,
-			PedInfo   ped,
-			int       level,
-			int       MinLevel,
-			Boolean   VisitedMark,
-			model_loop *loop_data)
-
-  {
-   subscript_info_type *sptr1,*sptr2;
-   int              refl;
-   EDGE_INDEX       edge;
-
-     sptr1 = get_subscript_ptr(name);
-     sptr1->visited = VisitedMark;
-     sptr1->lnode = util_node_alloc(name,NULL);
-
-              /* add reference to RefGroup */
-
-     util_append(RefGroup->RefList,sptr1->lnode);
-     RefGroup->number++;
-     refl = get_info(ped,name,type_levelv);
-
-              /* look at all outgoing edges for references that belong
-		 in the same RefGroup.  Only consider loop-independent 
-		 edges and edges carried by the the loop at "level" or
-		 edges that give rise to group-spatial locality.  
-		 Additionally, each edge must be able to move into
-		 the innermost position with interchange.   */
-
-     for (edge = dg_first_src_ref( PED_DG(ped),refl);
-	  edge != END_OF_LIST;
-	  edge = dg_next_src_ref( PED_DG(ped),edge))
-
-       if (dg[edge].level >= MinLevel ||
-	   dg[edge].level == LOOP_INDEPENDENT)
-         if ((dg[edge].consistent == consistent_SIV ||   /* check consistency */
-	      (dg[edge].consistent == consistent_MIV && 
-	       (dg[edge].level == LOOP_INDEPENDENT ||
-		dg[edge].src == dg[edge].sink))) &&
-	     NOT(dg[edge].symbolic) &&
-	     (CanMoveToInnermost(&dg[edge]) &&          /* innermost edge? */
-	      (dg[edge].level == level || 
-	       dg[edge].level == LOOP_INDEPENDENT ||
-	       OnlyInInnermostPosition(loop_data,dg[edge].src,dg[edge].level))))
-	   {
-	    sptr2 = get_subscript_ptr(dg[edge].sink);
-	    if(sptr2->visited != VisitedMark &&
-	       sptr1->surrounding_do == sptr2->surrounding_do &&
-	       !is_call(ut_get_stmt(dg[edge].sink)))
-	      DoPartition(dg[edge].sink,RefGroup,dg,ped,level,MinLevel,VisitedMark,
-			  loop_data);
-	   }
-
-   /* look at all incoming edges for references fitting the
-      same criteria. */
-
-     for (edge = dg_first_sink_ref( PED_DG(ped),refl);
-	  edge != END_OF_LIST;
-	  edge = dg_next_sink_ref( PED_DG(ped),edge))
-       if (dg[edge].level >= MinLevel ||
-	   dg[edge].level == LOOP_INDEPENDENT)
-         if ((dg[edge].consistent == consistent_SIV ||   /* check consistency */
-	      (dg[edge].consistent == consistent_MIV && 
-	       dg[edge].level == LOOP_INDEPENDENT ||
-	       dg[edge].src == dg[edge].sink)) &&
-	     NOT(dg[edge].symbolic) &&
-	     (CanMoveToInnermost(&dg[edge]) &&          /* innermost edge? */
-	      (dg[edge].level == level || 
-	       dg[edge].level == LOOP_INDEPENDENT ||
-	       OnlyInInnermostPosition(loop_data,dg[edge].src,dg[edge].level))))
-	   {
-	    sptr2 = get_subscript_ptr(dg[edge].src);
-	    if(sptr2->visited != VisitedMark &&
-	       sptr1->surrounding_do == sptr2->surrounding_do &&
-	       !is_call(ut_get_stmt(dg[edge].sink)))
-	      DoPartition(dg[edge].src,RefGroup,dg,ped,level,MinLevel,VisitedMark,
-			loop_data);
-	   }
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   PartitionNames                                 */
-/*                                                              */
-/*   Input:      node - node in the AST                         */
-/*               RefInfo - various information                  */
-/*                                                              */
-/*   Description: Search AST for references that are not in a   */
-/*                RefGroup and call DoPartition on those        */
-/*                references.                                   */
-/*                                                              */
-/****************************************************************/
-
-static int PartitionNames(AST_INDEX   node,
-			   RefInfoType *RefInfo)
-
-
-  {
-   subscript_info_type *sptr;
-   AST_INDEX            name;
-   RefGroupType        *RefGroup;
-
-     if (is_subscript(node) &&
-	 !is_call(ut_get_stmt(node)))
-       {
-	name = gen_SUBSCRIPT_get_name(node);
-	sptr = get_subscript_ptr(name);
-	if (sptr->visited != RefInfo->VisitedMark)
-	  {
-	   RefGroup = (RefGroupType *)RefInfo->
-	                  ar->arena_alloc_mem_clear(LOOP_ARENA,
-						    sizeof(RefGroupType));
-	   RefGroup->number = 0;
-	   util_append(RefInfo->GroupList,util_node_alloc((Generic)RefGroup,
-							"reference"));
-	   RefGroup->RefList = util_list_alloc((Generic)NULL,"ref-list");
-	   DoPartition(name,RefGroup,RefInfo->dg,RefInfo->ped,
-		       RefInfo->level,RefInfo->loop_data[0].level,
-		       RefInfo->VisitedMark,RefInfo->loop_data);
-	  }
-       }
-    return(WALK_CONTINUE);
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   FindOldestValue                                */
-/*                                                              */
-/*   Input:      RefGroup - reference group                     */
-/*               ped - various loop information                 */
-/*                                                              */
-/*   Description: Search through RefGroup for the array         */
-/*                reference that is first to reference the      */
-/*                value that flows through out the group.       */
-/*                That reference will have no incoming          */
-/*                dependence from a another member of the       */
-/*                group or will only have dependences that      */
-/*                are carried by a loop that the reference is   */
-/*                invariant with respect to.                    */
-/*                                                              */
-/****************************************************************/
-
-static AST_INDEX FindOldestValue(RefGroupType *RefGroup,
-				 PedInfo      ped)
-
-  {
-   UtilNode *RefNode;
-   int      refl;
-   AST_INDEX node;
-   Boolean  found;
-   DG_Edge  *dg;
-   EDGE_INDEX edge;
-
-     for (RefNode = UTIL_HEAD(RefGroup->RefList);
-	  RefNode != NULLNODE;
-	  RefNode = UTIL_NEXT(RefNode))
-       {
-        refl = get_info(ped,(AST_INDEX)UTIL_NODE_ATOM(RefNode),
-                        type_levelv);
-	dg = dg_get_edge_structure( PED_DG(ped));
-        found = true;
-
-	    /*  Assume reference is the oldest value.  Search incoming
-		edges for an edge that disproves the assertion. */
-
-        for (edge = dg_first_sink_ref( PED_DG(ped),refl);
-             edge != END_OF_LIST;
-             edge = dg_next_sink_ref( PED_DG(ped),edge))
-
-          if (dg[edge].src != dg[edge].sink &&  /* edge not from self */
-	      ((!pt_expr_equal(tree_out(dg[edge].src),tree_out(dg[edge].sink)) 
-		&& gen_get_dt_DIS(&dg[edge],dg[edge].level) != DDATA_ANY) || 
-	       dg[edge].level == LOOP_INDEPENDENT) && /* make sure edge not
-							 carried by 
-							 src-invariant loop */
-
-	      get_subscript_ptr(dg[edge].src)->surrounding_do ==
-	      get_subscript_ptr(dg[edge].sink)->surrounding_do && /* source
-								     and sink
-								     in same
-								     loop */
-
-	      (dg[edge].consistent == consistent_SIV ||
-	       (dg[edge].consistent == consistent_MIV && /* consistent edge */
-		dg[edge].level == LOOP_INDEPENDENT)) &&
-	      NOT(dg[edge].symbolic))
-
-            if (util_in_list(get_subscript_ptr(dg[edge].src)->lnode,
-			     RefGroup->RefList))  /* in same ref group */
-              {
-               found = false;
-               break;
-              }
-        if (found)
-          break;
-       }
-     return(UTIL_NODE_ATOM(RefNode));
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   CheckTemporal                                  */
-/*                                                              */
-/*   Input:      node - oldest value in a RefGroup              */
-/*               ped - dependence graph, etc.                   */
-/*               loop_data - loop structure                     */
-/*               loop - loop being considered as innermost      */
-/*               TemporalCost - lines/iteration required for    */
-/*                              groups with temporal reuse      */
-/*               RefGroup - reference group                     */
-/*                                                              */
-/*   Description: Determines if ref group with "node" as        */
-/*                oldest value has temporal reuse               */
-/*                                                              */
-/****************************************************************/
-
-static void CheckTemporal(AST_INDEX  node,
-			  PedInfo    ped,
-			  model_loop *loop_data,
-			  int        loop,
-			  float      *TemporalCost,
-			  RefGroupType *RefGroup)
-
-  {
-   int refl;
-   DG_Edge *dg;
-   EDGE_INDEX edge;
-
-     refl = get_info(ped,node,type_levelv);
-     dg = dg_get_edge_structure( PED_DG(ped));
-     for (edge = dg_first_src_ref( PED_DG(ped),refl);
-	  edge != END_OF_LIST && NOT(RefGroup->Temporal);
-	  edge = dg_next_src_ref( PED_DG(ped),edge))
-
-           /* look for outgoing consistent edge that would be 
-	      loop independent or carried by the innermost loop
-              if "loop" were innermost */
-
-       if ((dg[edge].level == loop_data[loop].level  ||
-	    dg[edge].level == LOOP_INDEPENDENT) && 
-	   CanMoveToInnermost(&dg[edge]))
-	 {
-	  RefGroup->Temporal = true;
-
-	           /* make sure cost not counted elsewhere */
-
-	  if (NOT(RefGroup->Spatial) && NOT(RefGroup->Invariant))
-	    (*TemporalCost) += 1.0;
-	 }
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   CheckOtherSpatial                              */
-/*                                                              */
-/*   Input:      node - oldest value in a RefGroup              */
-/*               ped - dependence graph, etc.                   */
-/*               loop_data - loop structure                     */
-/*               loop - loop being considered as innermost      */
-/*               OtherSpatialCost - lines/iteration required for*/
-/*                              groups with group-spatial reuse */
-/*               RefGroup - reference group                     */
-/*               words - number of words in a cache line        */
-/*                                                              */
-/*   Description: Check if ref group with "node" as oldest      */
-/*                value has group-spatial reuse.                */
-/*                                                              */
-/****************************************************************/
-
-static void CheckOtherSpatial(AST_INDEX  node,
-			      PedInfo    ped,
-			      model_loop *loop_data,
-			      int        loop,
-			      float      *OtherSpatialCost,
-			      RefGroupType *RefGroup,
-			      int        words)
-
-  {
-   int refl,coeff;
-   DG_Edge *dg;
-   EDGE_INDEX edge;
-   AST_INDEX sub_list,sub;
-   char *var;
-   Boolean lin;
-
-     refl = get_info(ped,node,type_levelv);
-     dg = dg_get_edge_structure( PED_DG(ped));
-
-               /* look for an outgoing edge that is carried by the
-		  loop with its induction variable in the first
-		  subscript position and has no other non-zero 
-		  distance vector entries */
-
-     for (edge = dg_first_src_ref( PED_DG(ped),refl);
-	  edge != END_OF_LIST && NOT(RefGroup->OtherSpatial);
-	  edge = dg_next_src_ref( PED_DG(ped),edge))
-       if (dg[edge].level != loop_data[loop].level && 
-	   dg[edge].level != LOOP_INDEPENDENT &&
-	   CanMoveToInnermost(&dg[edge]))  /* check distance vector */
-	 {
-	  if (OnlyInInnermostPosition(loop_data,node,dg[edge].level) &&
-	      gen_get_dt_DIS(&dg[edge],dg[edge].level) < words)
-
-	           /* make sure index in first subscript position and
-		      the dependence distance is less than the number
-		      of words in a line */
-	    {
-	     RefGroup->OtherSpatial = true;
-
-	          /* make sure cost not counted elsewhere */
-
-	     if (NOT(RefGroup->Temporal) && NOT(RefGroup->Invariant))
-	      (*OtherSpatialCost) += 1.0;
-	    }
-	 }
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:  CheckInvariant                                  */
-/*                                                              */
-/*   Input:      node - oldest value in a RefGroup              */
-/*               ped - dependence graph, etc.                   */
-/*               loop_data - loop structure                     */
-/*               loop - loop being considered as innermost      */
-/*               InvariantCost - lines/iteration required for   */
-/*                              groups with self-temporal reuse */
-/*               RefGroup - reference group                     */
-/*                                                              */
-/*   Description:
-/*                                                              */
-/****************************************************************/
-
-static void CheckInvariant(AST_INDEX  node,
-			   PedInfo    ped,
-			   model_loop *loop_data,
-			   int        loop,
-			   float      *InvariantCost,
-			   RefGroupType *RefGroup)
-
-  {
-   int refl;
-   DG_Edge *dg;
-   EDGE_INDEX edge;
-
-     refl = get_info(ped,node,type_levelv);
-     dg = dg_get_edge_structure( PED_DG(ped));
-
-                 /* look for consisitent dependence from a reference to
-		    itself */
-
-     for (edge = dg_first_src_ref( PED_DG(ped),refl);
-	  edge != END_OF_LIST && NOT(RefGroup->Invariant);
-	  edge = dg_next_src_ref( PED_DG(ped),edge))
-       if (dg[edge].level == loop_data[loop].level &&
-	   dg[edge].src == dg[edge].sink &&
-	   dg[edge].consistent != inconsistent &&
-	   NOT(dg[edge].symbolic))
-	 {
-	  RefGroup->Invariant = true;
-	  (*InvariantCost) += 1.0;
-	 }
-  }
-
-
-/****************************************************************/
-/*                                                              */
-/*   Function:   CheckRefGroups                                 */
-/*                                                              */
-/*   Input:      loop_data - loop structure                     */
-/*               loop - loop considered as innermost            */
-/*               RefInfo - miscellaneous data                   */
-/*                                                              */
-/*   Description: Go through list of ref groups and determine   */
-/*                locality properties.                          */
-/*                                                              */
-/****************************************************************/
-
-static void CheckRefGroups(model_loop    *loop_data,
-			   int           loop,
-			   RefInfoType   *RefInfo)
-
-  {
-   AST_INDEX sub_list,
-             sub,node;
-   Boolean   lin;
-   int       coeff,words;
-   int       level_val,dims;
-   char      *var;
-   UtilNode  *GroupNode;
-   RefGroupType  *RefGroup;
-
-     for (GroupNode = UTIL_HEAD(RefInfo->GroupList);
-	  GroupNode != NULLNODE;
-	  GroupNode = UTIL_NEXT(GroupNode))
-       {
-	RefGroup = (RefGroupType *)UTIL_NODE_ATOM(GroupNode);
-	var = gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
-			   loop_data[loop].node)));
-	node = tree_out(UTIL_NODE_ATOM(UTIL_HEAD(RefGroup->RefList)));
-	sub_list = gen_SUBSCRIPT_get_rvalue_LIST(node);
-	if (gen_get_converted_type(node) == TYPE_DOUBLE_PRECISION ||
-	    gen_get_converted_type(node) == TYPE_COMPLEX)
-	  words = (((config_type *)PED_MH_CONFIG(RefInfo->ped))->
-		   line) >> 3; 
-	else
-	  words = (((config_type *)PED_MH_CONFIG(RefInfo->ped))->
-		   line) >> 2; 
- 
-	        /* check for self-spatial reuse, induction var
-		   appears in first subscript position only */
-
-	if (pt_find_var(sub_list,var))
-	  {
-	   sub = list_first(sub_list);
-	   if (pt_find_var(sub,var) && NotInOtherPositions(sub_list,var))
-	     {
-	      pt_get_coeff(sub,var,&lin,&coeff);	
-	      if (coeff < 0)
-	        coeff = -coeff;
-
-	                /* make sure step size less than line size */
-
-	      if (coeff < words && lin)
-		{
-		 RefGroup->Spatial = true;
-		 RefInfo->SpatialCost += (1.0/((float)(words)/(float)coeff));
-		}
-	     }
-	  }
-	else 
-
-	         /* check for invariant reuse */
-	  {
-	   node = FindOldestValue(RefGroup,RefInfo->ped);
-	   CheckInvariant(node,RefInfo->ped,loop_data,loop,
-			  &RefInfo->InvariantCost,RefGroup);
-	  }
-
-	        /* check for group reuse */
-
-	if (UTIL_HEAD(RefGroup->RefList) != UTIL_TAIL(RefGroup->RefList))
-	  {
-	   node = FindOldestValue(RefGroup,RefInfo->ped);
-	   CheckTemporal(node,RefInfo->ped,loop_data,loop,
-			 &RefInfo->TemporalCost,RefGroup);
-	   CheckOtherSpatial(node,RefInfo->ped,loop_data,loop,
-			     &RefInfo->OtherSpatialCost,RefGroup,words);
-	  }
-
-	       /* check if no reuse found */
-
-	if (NOT(RefGroup->Invariant) && NOT(RefGroup->Spatial) &&
-	    NOT(RefGroup->OtherSpatial) && NOT(RefGroup->Temporal))
-	   RefInfo->NoneCost += 1.0;
-       }
-  }
+#include <RefGroups.h>
 
 
 /****************************************************************/
@@ -1244,46 +619,50 @@ static void CheckInterchange(model_loop    *loop_data,
    RefInfoType RefInfo;
    EdgeInfoType EdgeInfo;
    UtilNode    *lnode;
-   int         i,loop1;
+   int         i,n,loop1;
+   char        *temp;
+   RefGroupSet *RefGroups;
 
      RefInfo.loop_data = loop_data;
      RefInfo.ped = ped;
      RefInfo.dg = dg_get_edge_structure(PED_DG(ped));
      RefInfo.ar = ar;
      RefInfo.num_loops = num_loops;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		     UnsetVisitedMark,NOFUNC,(Generic)NULL);
-     RefInfo.VisitedMark = true;
+     RefInfo.IVar = new char*[loop_data[loop].level];
      loop_data[loop].OutermostLvl = outermost_lvl;
 
            /* for each loop in the perfect nest, compute RefGroups and
 	      RefCost */
-
+     for (lnode = UTIL_HEAD(loop_list),n = 0;
+	  lnode != NULLNODE;
+	  lnode = UTIL_NEXT(lnode), n++)
+       {
+	loop1 = UTIL_NODE_ATOM(lnode);
+	RefInfo.IVar[n] = gen_get_text(
+			    gen_INDUCTIVE_get_name(
+			      gen_DO_get_control(loop_data[loop1].node)));
+       }
+     n--;
      for (lnode = UTIL_HEAD(loop_list);
 	  lnode != NULLNODE;
 	  lnode = UTIL_NEXT(lnode))
        {
-	RefInfo.GroupList = util_list_alloc((Generic)NULL,"group-list");
 	loop1 = UTIL_NODE_ATOM(lnode);
+	RefInfo.loop = loop1;
 	RefInfo.level = loop_data[loop1].level;
-
-	      /* compute RefGroups */
-
-	walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-			(WK_EXPR_CLBACK)PartitionNames, NOFUNC,(Generic)&RefInfo);
-
 	RefInfo.InvariantCost= 0.0;
 	RefInfo.TemporalCost= 0.0;
 	RefInfo.SpatialCost= 0.0;
-	RefInfo.OtherSpatialCost= 0.0;
+	RefInfo.GroupSpatialCost= 0.0;
 	RefInfo.NoneCost= 0.0;
 
-	   /* compute costs */
+	      /* compute RefGroups */
+	RefGroups = new RefGroupSet(loop_data[loop].node,loop_data[loop].level,
+				    RefInfo,mc_extended_cache);
 
-	CheckRefGroups(loop_data,loop1,&RefInfo);
 
 	util_append(loop_data[loop1].GroupList,
-		    util_node_alloc((Generic)RefInfo.GroupList,NULL));
+		    util_node_alloc((Generic)RefGroups,NULL));
 
 	  /* need a list of costs because a loop may be in more than
 	     one perfect nest */
@@ -1292,9 +671,10 @@ static void CheckInterchange(model_loop    *loop_data,
 	loop_data[loop1].TemporalCostList.append_entry(RefInfo.TemporalCost);
 	loop_data[loop1].SpatialCostList.append_entry(RefInfo.SpatialCost);
 	loop_data[loop1].OtherSpatialCostList.append_entry(RefInfo.
-							   OtherSpatialCost);
+							   GroupSpatialCost);
+
 	loop_data[loop1].NoneCostList.append_entry(RefInfo.NoneCost);
-	RefInfo.VisitedMark = NOT(RefInfo.VisitedMark);
+
        }
 
             /* compute memory order */
@@ -1325,6 +705,7 @@ static void CheckInterchange(model_loop    *loop_data,
 	  loop_data[loop].FinalOrder[i] = loop_data[heap[i].index].level; 
 	  loop_data[loop].MemoryOrder[i] = loop_data[heap[i].index].level; 
 	 }
+     delete RefInfo.IVar;
   }
 
 static void CountDistribution(model_loop *loop_data,

@@ -1,4 +1,4 @@
-/* $Id: stats.h,v 1.7 1994/07/11 13:40:21 carr Exp $ */
+/* $Id: stats.h,v 1.8 1995/03/13 15:10:23 carr Exp $ */
 #ifndef stats_h
 #define stats_h
 
@@ -27,33 +27,9 @@
 #endif
 
 #include <LoopStats.h>
+#include <UniformlyGeneratedSets.h>
 
 /* #define STATSDEBUG  */
-
-typedef struct refinfotype {
-  PedInfo       ped;
-  DG_Edge       *dg;
-  arena_type    *ar;
-  int           num_loops;
-  UtilList      *GroupList;
-  int           level;
-  model_loop    *loop_data;
-  Boolean       VisitedMark;
-  float         InvariantCost,
-                SpatialCost,
-                OtherSpatialCost,
-                NoneCost,
-                TemporalCost;
- } RefInfoType;
-
-typedef struct refgrouptype {
-  int          number;
-  Boolean      Invariant,
-               Spatial,
-               OtherSpatial,
-               Temporal;
-  UtilList     *RefList;
- }RefGroupType;
 
 typedef struct edgeinfotype {
   PedInfo      ped;
