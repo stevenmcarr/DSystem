@@ -1,4 +1,4 @@
-/* $Id: IntegerList.h,v 1.1 1995/03/13 15:07:06 carr Exp $ */
+/* $Id: IntegerList.h,v 1.2 1996/11/18 13:01:42 carr Exp $ */
 #ifndef IntegerList_h
 #define IntegerList_h
 
@@ -55,7 +55,7 @@ public:
      IntegerListEntry *e = 
        (IntegerListEntry *) SinglyLinkedListIterator::Current();
 
-       (*this)++;
+       ++(*this);
        return e;
     } 
 
