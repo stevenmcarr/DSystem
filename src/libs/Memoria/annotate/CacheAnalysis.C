@@ -15,8 +15,9 @@
 #include <analyze.h>
 #include <mem_util.h>
 #include <CacheAnalysis.h>
-#include <UniformlyGeneratedSets.h>
-#include <../uj/do_unroll.h>
+#include <DirectivesInclude.h>
+
+static int RefCount = 0;
 
 static int remove_edges(AST_INDEX      stmt,
 			int            level,
@@ -91,147 +92,6 @@ static int remove_edges(AST_INDEX      stmt,
      return(WALK_CONTINUE);
   }
 
-static void UpdateCopies(AST_INDEX *copies,
-			 int       NumCopies,
-			 LocalityType Locality)
-
-  {
-   int i;
-
-     for (i = 0; i < NumCopies; i++)
-       {
-	CreateDepInfoPtr(tree_out(copies[i]));
-	DepInfoPtr(tree_out(copies[i]))->Locality = Locality;
-       }
-  }
-
-
-static int InitializeDepInfo(AST_INDEX Node,
-			     Generic NumCopies)
-
- {
-  AST_INDEX name;
-
-    if (is_subscript(Node))
-      {
-       name = gen_SUBSCRIPT_get_name(Node);
-       UpdateCopies(get_subscript_ptr(name)->copies,NumCopies,
-		    DepInfoPtr(Node)->Locality);
-       if (DepInfoPtr(Node)->Locality == SELF_SPATIAL)
-	 DepInfoPtr(Node)->Locality = NONE;
-      }
-    return(WALK_CONTINUE);
- }
-
-static void UpdateReferences(AST_INDEX List,
-			     AST_INDEX Last,
-			     int       NumCopies)
-
-  {
-   AST_INDEX Stmt;
-
-     for (Stmt = list_first(List);
-	  Stmt != list_next(Last);
-	  Stmt = list_next(Stmt))
-	walk_expression(Stmt,(WK_EXPR_CLBACK)InitializeDepInfo,NOFUNC,NumCopies);
-  }
-  
-static void CreatePostLoop(model_loop    *loop_data,
-			   int           loop,
-			   int           UnrollVal,
-			   PedInfo       ped,
-			   SymDescriptor Symtab,
-			   arena_type    *ar)
-
-/****************************************************************************/
-/*                                                                          */
-/*                                                                          */
-/****************************************************************************/
-  
-
-  {
-   AST_INDEX control,new_loop,next,
-             lwb,upb,step;
-   Boolean   need_pre_loop = false;
-   int       lwb_v,upb_v,step_v;
-   copy_info_type copy_info;
-
-     control = gen_DO_get_control(loop_data[loop].node);
-     lwb = gen_INDUCTIVE_get_rvalue1(control);
-     if (pt_eval(lwb,&lwb_v))
-       need_pre_loop = true;
-     else
-       {
-	upb = gen_INDUCTIVE_get_rvalue2(control);
-	if (pt_eval(upb,&upb_v))
-	  need_pre_loop = true;
-	else
-	  {
-	   step = gen_INDUCTIVE_get_rvalue3(control);
-	   if (step == AST_NIL)
-	     step_v = 1;
-	   else if (pt_eval(step,&step_v))
-	     need_pre_loop = true;
-	   if (!need_pre_loop)
-	     if (mod((upb_v - lwb_v + 1)/step_v, loop_data[loop].val + 1)
-	           != 0)
-	       need_pre_loop = true;
-	  }
-       }
-     if (need_pre_loop)
-       {
-        copy_info.ar = ar;
-        copy_info.val = 1;
-        copy_info.symtab = Symtab;
-        walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-                        (WK_EXPR_CLBACK) ut_init_copies,
-                        (WK_EXPR_CLBACK)NOFUNC,(Generic)&copy_info);
-	new_loop = ut_tree_copy_with_type(loop_data[loop].node,0,ar);
-        set_level_vectors(gen_DO_get_stmt_LIST(loop_data[loop].node),
-                          gen_DO_get_stmt_LIST(new_loop),ped);
-        walk_expression(loop_data[loop].node,(WK_EXPR_CLBACK)mh_copy_edges,
-                        (WK_EXPR_CLBACK)NOFUNC, (Generic)ped);
-	ut_update_labels(new_loop,Symtab);
-	ut_update_bounds_post(loop_data[loop].node,new_loop,UnrollVal);
-	UpdateReferences(list_first(gen_DO_get_stmt_LIST(loop_data[loop].node)),
-			 list_last(gen_DO_get_stmt_LIST(loop_data[loop].node)),1);
-	list_insert_after(loop_data[loop].node,new_loop);
-       }
-     else 
-       ut_update_bounds_post(loop_data[loop].node,AST_NIL,UnrollVal);
-  }
-
-static void UnrollLoop(model_loop   *loop_data,
-		       int           loop,
-		       int           LineDistance,
-		       AST_INDEX     Var,
-		       PedInfo	     ped,
-		       SymDescriptor Symtab,
-		       arena_type    *ar)
-  {
-   AST_INDEX Stmt,LastStmt,Step;
-   int       i;
-   copy_info_type copy_info;
-
-     Step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(loop_data[loop].node));
-     CreatePostLoop(loop_data,loop,LineDistance-1,ped,Symtab,ar);
-     LastStmt = list_last(gen_DO_get_stmt_LIST(loop_data[loop].node));
-     copy_info.val = LineDistance-1;
-     copy_info.symtab = Symtab;
-     copy_info.ar = ar;
-     walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		     (WK_EXPR_CLBACK) ut_init_copies,(WK_EXPR_CLBACK)NOFUNC,
-		     (Generic)&copy_info);
-     mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
-		       LineDistance-1,loop_data[loop].level, gen_get_text(Var),
-		       Step,ped,Symtab,false,
-		       get_stmt_info_ptr(loop_data[loop].node)->loop_num,
-		       loop_data[loop].node,gen_get_text(Var),
-		       loop_data[loop].level,ar);
-     UpdateReferences(gen_DO_get_stmt_LIST(loop_data[loop].node),LastStmt,
-		      LineDistance-1);      
-  }
-
 static int BuildDependenceList(AST_INDEX node,CacheInfoType *CacheInfo)
 
   {
@@ -241,14 +101,11 @@ static int BuildDependenceList(AST_INDEX node,CacheInfoType *CacheInfo)
    AST_INDEX  name;
    DepStruct  *Dep;
    int        InnerLevel;
+   DepInfoType *Dptr;
 
      if (is_subscript(node))
        {
 	name = gen_SUBSCRIPT_get_name(node);
-	DepInfoPtr(node)->DependenceList = util_list_alloc(NULL,NULL);
-	if (CacheInfo->loop_data[get_subscript_ptr(name)->surrounding_do].inner_loop 
-	    != -1)
-	  return(WALK_CONTINUE);
 	InnerLevel = CacheInfo->loop_data[get_subscript_ptr(name)->surrounding_do].level;
 	dg = dg_get_edge_structure( PED_DG(CacheInfo->ped));
 	vector = get_info(CacheInfo->ped,name,type_levelv);
@@ -260,53 +117,76 @@ static int BuildDependenceList(AST_INDEX node,CacheInfoType *CacheInfo)
 		dg[edge].type == dg_output) && 
 	       (dg[edge].level == LOOP_INDEPENDENT || 
 		dg[edge].level == InnerLevel))
-	     {
-	      Dep = new DepStruct;
-	      Dep->ReferenceNumber =DepInfoPtr(tree_out(dg[edge].sink))->ReferenceNumber;
-	      if (dg[edge].type == dg_true) 
-	        Dep->DType = 't';
-	      else if (dg[edge].type == dg_anti) 
-	        Dep->DType = 'a';
-	      else
-	        Dep->DType = 'o';
-	      if (dg[edge].level == LOOP_INDEPENDENT)
-	        Dep->Distance = 0;
-	      else
-		{
-		 Dep->Distance = gen_get_dt_DIS(&dg[edge],dg[edge].level);
-		 if (Dep->Distance < DDATA_BASE)
-		   Dep->Distance = 1;
-		}
-	      util_append(DepInfoPtr(node)->DependenceList,
-			  util_node_alloc((int)Dep,NULL));
-	     }
+	     if ((Dptr = DepInfoPtr(tree_out(dg[edge].sink))) != NULL)
+	       {
+		 Dep = new DepStruct;
+		 Dep->ReferenceNumber = Dptr->ReferenceNumber;
+		 if (dg[edge].type == dg_true) 
+		   Dep->DType = 't';
+		 else if (dg[edge].type == dg_anti) 
+		   Dep->DType = 'a';
+		 else
+		   Dep->DType = 'o';
+		 if (dg[edge].level == LOOP_INDEPENDENT)
+		   Dep->Distance = 0;
+		 else
+		   {
+		     Dep->Distance = gen_get_dt_DIS(&dg[edge],dg[edge].level);
+		     if (Dep->Distance < DDATA_BASE)
+		       Dep->Distance = 1;
+		   }
+		 util_append(DepInfoPtr(node)->DependenceList,
+			     util_node_alloc((int)Dep,NULL));
+	       }
 	  }
        }
      return(WALK_CONTINUE);
   }
 
+static void CreateDepInfoSubscript(AST_INDEX Id,
+				   ReferenceAccessType aType,
+				   va_list args)
+{
+  AST_INDEX node;
+  SymDescriptor Symtab;
+
+  Symtab = va_arg(args,SymDescriptor);
+  if (fst_GetField(Symtab,gen_get_text(Id),SYMTAB_NUM_DIMS) > 0 && 
+      (aType == at_ref || aType == at_mod))
+    {
+      node = tree_out(Id);
+      CreateDepInfoPtr(node);
+      DepInfoPtr(node)->DependenceList = util_list_alloc(NULL,NULL);
+      DepInfoPtr(node)->ReferenceNumber = RefCount++;
+    }
+}
+
+
 static int CreateDepInfo(AST_INDEX node,
-		         Generic dummy)
+			 int       level,
+		         SymDescriptor Symtab)
 
   {
    AST_INDEX name;
+   Directive *Dir;
 
-     if (is_subscript(node))
-       CreateDepInfoPtr(node);
+     if (is_comment(node))
+       {
+	 Dir = new Directive;
+	 if (a2i_string_parse(gen_get_text(gen_COMMENT_get_text(node)),Dir,Symtab))
+	   {
+	     Dir->DirectiveNumber = RefCount++;
+	     Dir->DependenceList = util_list_alloc(NULL,NULL);
+	     PutDirectiveInfoPtr(node,Dir);
+	   }
+	 else
+	   delete Dir;
+       }
+     else
+       walkIDsInStmt(node,(WK_IDS_CLBACK_V)CreateDepInfoSubscript,Symtab);
      return(WALK_CONTINUE);
   }
 
-
-static int SetReferenceNumber(AST_INDEX node,
-			      CacheInfoType *CacheInfo)
-
-  {
-   AST_INDEX name;
-
-     if (is_subscript(node))
-       DepInfoPtr(node)->ReferenceNumber = CacheInfo->RefNum++;
-     return(WALK_CONTINUE);
-  }
 
 static int StoreCacheInfo(AST_INDEX     node,
 			  CacheInfoType *CacheInfo)
@@ -316,12 +196,158 @@ static int StoreCacheInfo(AST_INDEX     node,
       {
        DepInfoPtr(node)->Locality = 
          ut_GetReferenceType(node,CacheInfo->loop_data,CacheInfo->loop,
-			     CacheInfo->ped,CacheInfo->UGS);
+			     CacheInfo->ped,NULL);
        if (DepInfoPtr(node)->Locality == SELF_SPATIAL)
 	 CacheInfo->HasSelfSpatial = true;
       }
      return(WALK_CONTINUE);
   }
+
+static Boolean IsPrefetch(AST_INDEX Stmt)
+
+{
+  if (is_comment(Stmt))
+    if (DirectiveInfoPtr(Stmt) != NULL)
+      return (DirectiveInfoPtr(Stmt)->Instr == PrefetchInstruction);
+  return false;
+}
+
+static Boolean IsDead(AST_INDEX Stmt)
+
+{
+  if (is_comment(Stmt))
+    if (DirectiveInfoPtr(Stmt) != NULL)
+      return (DirectiveInfoPtr(Stmt)->Instr == FlushInstruction);
+  return false;
+}
+
+static Boolean IsValidDependence(AST_INDEX PrefetchNode,
+				 AST_INDEX RefNode,
+				 char      *InnerIvar)
+
+{
+  AST_INDEX SubList1,SubList2;
+  AST_INDEX Sub1, Sub2;
+
+  if (strcmp(gen_get_text(gen_SUBSCRIPT_get_name(PrefetchNode)),
+	     gen_get_text(gen_SUBSCRIPT_get_name(RefNode))) == 0)
+    {
+      SubList1 = gen_SUBSCRIPT_get_rvalue_LIST(PrefetchNode);
+      SubList2 = gen_SUBSCRIPT_get_rvalue_LIST(RefNode);
+      for (Sub1 = list_first(SubList1), Sub2 = list_first(SubList2);
+	   Sub1 != AST_NIL && Sub2 != AST_NIL;
+	   Sub1 = list_next(Sub1), Sub2 = list_next(Sub2))
+	if (NOT(pt_find_var(Sub1,InnerIvar)) && NOT(pt_find_var(Sub2,InnerIvar)))
+	  if (NOT(pt_expr_equal(Sub1,Sub2)))
+	    return false;
+    }
+  return true;
+}
+
+static void AddDependencesToDirective(Directive *Dir,
+				      UtilList  *RefList,
+				      char      *InnerIvar)
+{
+  UtilNode *Ref;
+  DepStruct *Dep;
+
+  for (Ref = UTIL_HEAD(RefList);
+       Ref != NULLNODE;
+       Ref = UTIL_NEXT(Ref))
+    if (IsValidDependence(Dir->Subscript,(AST_INDEX)UTIL_NODE_ATOM(Ref),InnerIvar))
+      {
+	Dep = new DepStruct;
+	Dep->ReferenceNumber = DepInfoPtr(UTIL_NODE_ATOM(Ref))->ReferenceNumber;
+	Dep->DType = 'c';
+	Dep->Distance = 0;
+	util_append(Dir->DependenceList,util_node_alloc((int)Dep,NULL));
+      }
+}
+
+static void AddDependencesToReferences(Directive *Dir,
+				       UtilList  *RefList,
+				       char      *InnerIvar)
+{
+  UtilNode *Ref;
+  DepStruct *Dep;
+
+  for (Ref = UTIL_HEAD(RefList);
+       Ref != NULLNODE;
+       Ref = UTIL_NEXT(Ref))
+    if (IsValidDependence(Dir->Subscript,(AST_INDEX)UTIL_NODE_ATOM(Ref),InnerIvar))
+      {
+	Dep = new DepStruct;
+	Dep->ReferenceNumber = Dir->DirectiveNumber; 
+	Dep->DType = 'c';
+	Dep->Distance = 0;
+	util_append(DepInfoPtr((AST_INDEX)UTIL_NODE_ATOM(Ref))->DependenceList,
+		    util_node_alloc((int)Dep,NULL));
+      }
+}
+
+
+static int AddRefsToList(AST_INDEX  node,
+			 UtilList   *List)
+
+{
+  if (is_subscript(node))
+    util_append(List,util_node_alloc(node,NULL));
+  return(WALK_CONTINUE);
+}
+
+static int RemoveRefsFromList(AST_INDEX  Node,
+			      UtilList   *List)
+
+{
+  UtilNode *ListNode;
+  Boolean Found = false;
+
+  if (is_subscript(Node))
+    for (ListNode = UTIL_HEAD(List);
+	 ListNode != NULLNODE && NOT(Found);
+	 ListNode = UTIL_NEXT(ListNode))
+      if (UTIL_NODE_ATOM(ListNode) == Node)
+	{
+	  util_pluck(ListNode);
+	  Found = true;
+	}
+  return(WALK_CONTINUE);
+}
+
+static void BuildPrefetchDependenceList(CacheInfoType *CacheInfo)
+
+{
+  AST_INDEX Stmt,StmtList;
+  UtilList *BeforeList,*AfterList;
+  char *InnerIvar;
+
+  BeforeList = util_list_alloc(NULL,NULL);
+  AfterList = util_list_alloc(NULL,NULL);
+  StmtList = gen_DO_get_stmt_LIST(CacheInfo->loop_data[CacheInfo->loop].node);
+  InnerIvar = CacheInfo->IVar[CacheInfo->loop_data[CacheInfo->loop].level-1]; 
+
+  for (Stmt = list_first(StmtList);
+       Stmt != AST_NIL;
+       Stmt = list_next(Stmt))
+    walk_expression(Stmt,(WK_EXPR_CLBACK)AddRefsToList,NOFUNC,(Generic)AfterList);
+
+  for (Stmt = list_first(StmtList);
+       Stmt != AST_NIL;
+       Stmt = list_next(Stmt))
+    {
+      if (IsPrefetch(Stmt))
+	AddDependencesToDirective(DirectiveInfoPtr(Stmt),AfterList,InnerIvar);
+      else if (IsDead(Stmt))
+	AddDependencesToReferences(DirectiveInfoPtr(Stmt),BeforeList,InnerIvar);
+      walk_expression(Stmt,(WK_EXPR_CLBACK)AddRefsToList,NOFUNC,(Generic)BeforeList);
+      walk_expression(Stmt,(WK_EXPR_CLBACK)RemoveRefsFromList,NOFUNC,(Generic)AfterList);
+    }
+  util_free_nodes(BeforeList);
+  util_free_nodes(AfterList);
+  util_list_free(BeforeList);
+  util_list_free(AfterList);
+}
+      
 
 static void walk_loops(CacheInfoType  *CacheInfo,
 		       int            loop)
@@ -336,24 +362,11 @@ static void walk_loops(CacheInfoType  *CacheInfo,
      if (CacheInfo->loop_data[loop].inner_loop == -1)
        {
 	CacheInfo->loop = loop;
-	if (mc_extended_cache)
-	  CacheInfo->UGS=
-	      new UniformlyGeneratedSets(CacheInfo->loop_data[loop].node,
-					 CacheInfo->loop_data[loop].level,
-					 CacheInfo->IVar);
-	else
-	  CacheInfo->UGS = NULL;
-	CacheInfo->HasSelfSpatial = false;
+	walk_expression(CacheInfo->loop_data[loop].node,(WK_EXPR_CLBACK)StoreCacheInfo,
+			NOFUNC,(Generic)CacheInfo);
 	walk_expression(CacheInfo->loop_data[loop].node,
-			(WK_EXPR_CLBACK)StoreCacheInfo,NOFUNC,
-			(Generic)CacheInfo);
-	if (aiCache > 1 && CacheInfo->HasSelfSpatial)
-	  UnrollLoop(CacheInfo->loop_data,loop,
-		     ((config_type *)PED_MH_CONFIG(CacheInfo->ped))->line >> 3,
-		     gen_INDUCTIVE_get_name(
-		        gen_DO_get_control(CacheInfo->loop_data[loop].node)),
-		     CacheInfo->ped,CacheInfo->symtab,CacheInfo->ar);
-	  
+			(WK_EXPR_CLBACK)BuildDependenceList,NOFUNC,(Generic)CacheInfo);
+	BuildPrefetchDependenceList(CacheInfo);
        }
      else
        {
@@ -365,6 +378,7 @@ static void walk_loops(CacheInfoType  *CacheInfo,
 	  }
        }
   }
+
 
 void memory_PerformCacheAnalysis(PedInfo      ped,
 				 SymDescriptor symtab,
@@ -380,7 +394,6 @@ void memory_PerformCacheAnalysis(PedInfo      ped,
   {
    pre_info_type  pre_info;
    CacheInfoType  CacheInfo;
-   static int RefCount = 0;
 
      pre_info.stmt_num = 0;
      pre_info.loop_num = 0;
@@ -397,18 +410,11 @@ void memory_PerformCacheAnalysis(PedInfo      ped,
                   (LOOP_ARENA,pre_info.loop_num*sizeof(model_loop)*4);
      ut_analyze_loop(root,CacheInfo.loop_data,level,ped,symtab);
 
+     walk_statements(root,level,(WK_STMT_CLBACK)CreateDepInfo,NOFUNC,(Generic)symtab);
      CacheInfo.ped = ped;
-     CacheInfo.RefNum = RefCount;
-     walk_expression(root,(WK_EXPR_CLBACK)CreateDepInfo,NOFUNC,
-		     (Generic)NULL);
-     RefCount = CacheInfo.RefNum;
      CacheInfo.IVar = new char*[pre_info.loop_num];
      CacheInfo.symtab = symtab;
      CacheInfo.ar = ar;
      walk_loops(&CacheInfo,0);
      delete CacheInfo.IVar;
-     walk_expression(root,(WK_EXPR_CLBACK)SetReferenceNumber,NOFUNC,
-		     (Generic)&CacheInfo);
-     walk_expression(root,(WK_EXPR_CLBACK)BuildDependenceList,NOFUNC,
-		     (Generic)&CacheInfo);
   }

@@ -7,7 +7,6 @@
 #include <dg.h>
 #include <misc/list.h>
 #include <malloc.h>
-#include <UniformlyGeneratedSets.h>
 
 typedef struct CacheInfoStruct {
   model_loop *loop_data;
@@ -16,7 +15,6 @@ typedef struct CacheInfoStruct {
   PedInfo    ped;
   SymDescriptor symtab;
   arena_type *ar;
-  UniformlyGeneratedSets *UGS;
   char       **IVar;
   Boolean    HasSelfSpatial;
  } CacheInfoType;
