@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.11 1994/01/18 14:25:39 carr Exp $ */
+/* $Id: scalar.C,v 1.12 1994/04/13 14:26:40 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -77,30 +77,6 @@
 
 int dummy = 0; /* this decl keeps Rn from dying in get_mem (why?) */
 
-int change_logical_to_block_if(AST_INDEX stmt,
-			       int       level,
-			       int       dummy)
-  
-  {
-   AST_INDEX  guard,
-              block_if,
-              rvalue,
-              stmt_list;
-   block_type *block;
-
-     if (is_logical_if(stmt))
-       {
-	rvalue = gen_LOGICAL_IF_get_rvalue(stmt);
-	tree_replace(rvalue,AST_NIL);
-	stmt_list = gen_LOGICAL_IF_get_stmt_LIST(stmt);
-	tree_replace(stmt_list,AST_NIL);
-	guard = gen_GUARD(AST_NIL,rvalue,stmt_list);
-	block_if = gen_IF(tree_copy_with_type(gen_get_label(stmt)),AST_NIL,
-			  list_create(guard));
-	pt_tree_replace(stmt,block_if);
-       }
-     return(WALK_FROM_OLD_NEXT);
-  }
 
 static int count_arrays(AST_INDEX          node,
 			prelim_info_type   *prelim_info)
@@ -789,8 +765,6 @@ static int post_scalar(AST_INDEX     stmt,
         if (!do_info->abort)
 	  {
 	   do_info->do_num++;
-	   walk_statements(stmt,level,NOFUNC,change_logical_to_block_if,
-			   (Generic)NULL);
 	   perform_scalar_replacement(do_info,stmt,level);
 	  }
 	else
