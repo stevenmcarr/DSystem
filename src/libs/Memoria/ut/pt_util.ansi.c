@@ -1,4 +1,4 @@
-/* $Id: pt_util.ansi.c,v 1.5 1995/08/22 15:55:08 yguan Exp $ */
+/* $Id: pt_util.ansi.c,v 1.6 1996/10/18 09:26:23 carr Exp $ */
 /*-----------------------------------------------------------------------
 
 	pt_util.c		Utility routines for pt
@@ -91,6 +91,18 @@ STATIC(int, pt_walk_clear_info,(AST_INDEX expr, Generic info_side_array));
 STATIC(int, pt_stmt_refs,(AST_INDEX stmt, int lvl, Pt_ref_params *refs));
 STATIC(int, pt_expr_uses,(AST_INDEX expr, Pt_ref_params *refs));
 
+char*
+pt_get_stmt_text(PedInfo ped, AST_INDEX num)
+{
+	static char 	text[512];
+	char		*p;
+
+	if (num == 0)
+		return ("");
+	strcpy(text, (ped->GetLine) (PED_ED_HANDLE(ped), num));
+	for (p = text; (*p == ' ') || (*p == '\t'); p++);
+	return (p);
+}
 
 /*-------------------------------------------------------------------------
     pt_get_loop_bounds -- return the AST_INDEXes of the loop induction
