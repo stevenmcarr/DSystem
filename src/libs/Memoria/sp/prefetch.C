@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.10 1996/10/15 15:21:15 carr Exp $ */
+/* $Id: prefetch.C,v 1.11 1996/10/17 16:59:45 carr Exp $ */
 
 //  
 //  File:  prefetch.C
@@ -153,10 +153,6 @@ static int CheckLocality(AST_INDEX          node,
 					     locality_info->loop,
 					     locality_info->ped,
 					     locality_info->UGS);
-	char Text[80];
-
-	ut_GetSubscriptText(node,Text);
-	printf("Group Distance for %s = %d\n",Text,sptr->GroupDistance);
 	return(WALK_SKIP_CHILDREN);
        }
      return(WALK_CONTINUE);

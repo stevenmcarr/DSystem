@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.26 1996/10/14 14:47:18 carr Exp $ */
+/* $Id: compute_uj.C,v 1.27 1996/10/17 16:59:13 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -3584,7 +3584,7 @@ static void do_computation(model_loop    *loop_data,
 						  LineSize,IM);
      else if( mc_extended_cache )
        {
-        char *IVar[80];
+        char **IVar;
         UtilNode *lnode;
 	int n;
 
