@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.7 1993/06/21 13:47:59 carr Exp $ */
+/* $Id: header.h,v 1.8 1993/07/20 15:28:59 carr Exp $ */
 
 #ifndef header_h
 #define header_h
@@ -38,13 +38,15 @@ EXTERN(void, memory_loop_interchange,(PedInfo ped,AST_INDEX root,
 					      arena_type *ar));
 
 EXTERN(AST_INDEX, memory_unroll_and_jam,(PedInfo ped,AST_INDEX root,
-					     int level,int num_loops,
-					     SymDescriptor symtab,
-					     arena_type *ar));
+					 int level,int num_loops,
+					 SymDescriptor symtab,
+					 arena_type *ar,
+					 LoopStatsType *LoopStats));
 
 EXTERN(void, memory_scalar_replacement,(PedInfo ped,AST_INDEX root,
 					int level,SymDescriptor symtab,
-					arena_type *ar));
+					arena_type *ar,
+					LoopStatsType *LoopStats));
 
 EXTERN(void, memory_software_prefetch,(PedInfo ped,AST_INDEX root,
 				       int level,SymDescriptor symtab,
@@ -54,5 +56,13 @@ EXTERN(void, memory_AnnotateWithCacheCalls,(AST_INDEX root, int level,
 					    char *routine,
 					    TableInfoType *TableInfo,
 					    FortTextTree ftt));
+
+EXTERN (void, ApplyMemoryCompiler, (int selection, PedInfo ped, AST_INDEX root,
+				    FortTree ft, Context contxt, 
+				    char *mc_config_file));
+
+EXTERN(void, memory_stats_total, (char *program));
+
+EXTERN(void, memory_UnrollStatsTotal, (char *program));
 
 #endif
