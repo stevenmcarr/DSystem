@@ -1,4 +1,4 @@
-/* $Id: la.h,v 1.5 1997/11/10 21:21:42 carr Exp $ */
+/* $Id: la.h,v 1.6 1998/06/08 15:25:21 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -29,6 +29,7 @@
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 #include <libs/Memoria/uj/compute_uj.h>
 #include <libs/Memoria/include/GenericList.h>
+#include <libs/Memoria/include/mem_util.h>
 
 
 #define True  1
@@ -90,6 +91,7 @@ class GroupTemporalEntry:
                 la_vect leader_v;
 		AST_INDEX leader_n;
 		VectList *vectlst;
+		GenericList *NodeList;
 	 public:
 		GroupTemporalEntry(la_vect, int, int, la_matrix, AST_INDEX, la_vect );
 		~GroupTemporalEntry(){};
@@ -101,8 +103,11 @@ class GroupTemporalEntry:
 		int Distanceof() { return distance; };
 		int SizeofGT() { return size; };
 		la_vect getleader() { return leader_v; };
+		AST_INDEX LeaderNode() { return leader_n; };
 		void PrintOut();
 		void computedist();  // compute distance
+		Boolean Member(AST_INDEX node);
+		GenericList *GetNodeList() {return NodeList;};
 	};
 
 class GroupTemporalSet:
@@ -141,7 +146,7 @@ class GTSetIter:
           };
 
 class GroupSpatialEntry: 
-	public GenericList, public SinglyLinkedListEntry
+	public SinglyLinkedListEntry
         {
          private:
 		GroupTemporalSet *gts; 
@@ -158,6 +163,7 @@ class GroupSpatialEntry:
 		la_vect ZeroSpace;
 		la_matrix H;
                 int Nestl, Subs;
+		GenericList *NodeList;
 
 	 public:
 		GroupSpatialEntry(la_vect loc, 
@@ -183,19 +189,9 @@ class GroupSpatialEntry:
 		AST_INDEX TrailerNode() { return trailer_n; };
 		void PrintOut();
 		void AddSpatialDependences(AST_INDEX node);
-	};
-
-class GSEntryIter:
-	 public GenericListIter
-	{
-	 public:
-		GSEntryIter(GroupSpatialEntry *l):
-		 GenericListIter(l)
-		 { };
-		GSEntryIter(GroupSpatialEntry &l):
-		GenericListIter(l)
-		{ };
-		AST_INDEX operator () ();
+		Boolean Member(AST_INDEX node);
+		Boolean HasGroupTemporalReuse(AST_INDEX node);
+		GenericList *GetNodeList() {return NodeList;};
 	};
 
 class GroupSpatialSet :
@@ -228,6 +224,8 @@ class GroupSpatialSet :
 		void DoAnalysis();   
 		float ComputePrefetch(int, int, int, int);
 		float ComputePrefetch(int, int);
+		Boolean HasSelfSpatial() {return BOOL(IsSelfSpatial);};
+		Boolean HasSelfTemporal() {return BOOL(IsSelfTemporal);};
 	};
 
 class GSSetIter:
@@ -259,6 +257,10 @@ class DataReuseModelEntry:
 		Boolean IsGroupSpatialLeader(AST_INDEX node);
 		Boolean IsGroupSpatialTrailer(AST_INDEX node);
 		Boolean AddSpatialDependences(AST_INDEX node);
+		Boolean HasGroupSpatialReuse(AST_INDEX node);
+		Boolean HasSelfSpatialReuse(AST_INDEX node);
+		Boolean HasGroupTemporalReuse(AST_INDEX node);
+		Boolean HasSelfTemporalReuse(AST_INDEX node);
 	};
 
 class DataReuseModel:
@@ -277,6 +279,11 @@ class DataReuseModel:
 		Boolean IsGroupSpatialLeader(AST_INDEX node);
 		Boolean IsGroupSpatialTrailer(AST_INDEX node);
 		void AddSpatialDependences(AST_INDEX node);
+		LocalityType GetNodeReuseType(AST_INDEX node);
+		Boolean HasGroupSpatialReuse(AST_INDEX node);
+		Boolean HasSelfSpatialReuse(AST_INDEX node);
+		Boolean HasGroupTemporalReuse(AST_INDEX node);
+		Boolean HasSelfTemporalReuse(AST_INDEX node);
 	};
 
 class DRIter:
@@ -291,5 +298,10 @@ class DRIter:
 		    { };
    	        DataReuseModelEntry* operator () ();
  	};	
+
+typedef struct StmtOrderType {
+    AST_INDEX Old;
+    AST_INDEX New;
+    int Found; } StmtOrderInfoType;
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: la.C,v 1.5 1997/11/10 21:21:31 carr Exp $ */
+/* $Id: la.C,v 1.6 1998/06/08 15:23:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -25,8 +25,10 @@
 #define sign(x) (((x)>0) ? 1: -1)
 
 int Solve(la_matrix, la_vect, int, int, la_matrix*, int*);
-int ChangeLeader(la_vect, la_vect, int);
-int ChangeTrailer(la_vect, la_vect, int);
+int ChangeLeader(la_vect, la_vect, int,AST_INDEX,AST_INDEX);
+int ChangeTrailer(la_vect, la_vect, int, AST_INDEX, AST_INDEX);
+
+extern Boolean ReuseModelDebugFlag;
 
 DataReuseModel::DataReuseModel(UniformlyGeneratedSets *UGS) : SinglyLinkedList()
 {
@@ -41,7 +43,11 @@ DataReuseModel::DataReuseModel(UniformlyGeneratedSets *UGS) : SinglyLinkedList()
     DataReuseModelEntry * e = new DataReuseModelEntry(UGSEntry);
     SinglyLinkedList::Append(e); 
    }
-  //cout << "Total # of UGS is " << size << endl; 
+ if (ReuseModelDebugFlag)
+   {
+     cout << "Total # of UGS is " << size << endl; 
+     PrintOut();
+   }
 }
 
 DataReuseModelEntry* DRIter::operator () ()
@@ -60,7 +66,7 @@ void DataReuseModel::PrintOut()
  for ( DRIter driter(this);
         e = driter(); )
  {
-  //cout << "UGS #" << i << endl;
+  cout << "UGS #" << i << endl;
   e->PrintOut();
   ++ i;
  }
@@ -88,6 +94,122 @@ Boolean DataReuseModel::IsGroupSpatialTrailer(AST_INDEX node)
   while ((ReuseEntry = ReuseIter()) != NULL && NOT(IsTrailer))
     IsTrailer = ReuseEntry->IsGroupSpatialTrailer(node);
   return IsTrailer;
+}
+
+LocalityType DataReuseModel::GetNodeReuseType(AST_INDEX node)
+
+{
+  if (HasSelfTemporalReuse(node))
+    return SELF_TEMPORAL;
+  else if (HasGroupTemporalReuse(node))
+    return GROUP_TEMPORAL;
+  else if (HasGroupSpatialReuse(node))
+    return GROUP_SPATIAL;
+  else if (HasSelfSpatialReuse(node))
+    return SELF_SPATIAL;
+  else
+    return NONE;
+}
+
+Boolean DataReuseModel::HasGroupSpatialReuse(AST_INDEX node)
+
+{
+  DRIter ReuseIter(*this);
+  Boolean IsGroupSpatial = false;
+  DataReuseModelEntry *ReuseEntry;
+
+  while ((ReuseEntry = ReuseIter()) != NULL && NOT(IsGroupSpatial))
+    IsGroupSpatial = ReuseEntry->HasGroupSpatialReuse(node);
+
+  return IsGroupSpatial;
+}
+
+
+Boolean DataReuseModel::HasSelfSpatialReuse(AST_INDEX node)
+
+{
+  DRIter ReuseIter(*this);
+  Boolean IsSelfSpatial = false;
+  DataReuseModelEntry *ReuseEntry;
+
+  while ((ReuseEntry = ReuseIter()) != NULL && NOT(IsSelfSpatial))
+    IsSelfSpatial = ReuseEntry->HasSelfSpatialReuse(node);
+
+  return IsSelfSpatial;
+}
+
+Boolean DataReuseModel::HasSelfTemporalReuse(AST_INDEX node)
+
+{
+  DRIter ReuseIter(*this);
+  Boolean IsSelfTemporal = false;
+  DataReuseModelEntry *ReuseEntry;
+
+  while ((ReuseEntry = ReuseIter()) != NULL && NOT(IsSelfTemporal))
+    IsSelfTemporal = ReuseEntry->HasSelfTemporalReuse(node);
+
+  return IsSelfTemporal;
+}
+
+Boolean DataReuseModel::HasGroupTemporalReuse(AST_INDEX node)
+
+{
+  DRIter ReuseIter(*this);
+  Boolean IsGroupTemporal = false;
+  DataReuseModelEntry *ReuseEntry;
+
+  while ((ReuseEntry = ReuseIter()) != NULL && NOT(IsGroupTemporal))
+    IsGroupTemporal = ReuseEntry->HasGroupTemporalReuse(node);
+
+  return IsGroupTemporal;
+}
+
+Boolean DataReuseModelEntry::HasGroupSpatialReuse(AST_INDEX node)
+{
+  GSSetIter GSIter(*gsset);
+  Boolean IsGroupSpatial = false;
+  GroupSpatialEntry *GSEntry;
+
+  while ((GSEntry = GSIter()) != NULL && NOT(IsGroupSpatial))
+    IsGroupSpatial = BOOL(GSEntry->GetNodeList()->Count() > 1 &&
+			  GSEntry->Member(node) &&
+			  GSEntry->LeaderNode() != node);
+  return IsGroupSpatial;
+}
+
+Boolean DataReuseModelEntry::HasSelfSpatialReuse(AST_INDEX node)
+{
+  GSSetIter GSIter(*gsset);
+  Boolean IsSelfSpatial = false;
+  GroupSpatialEntry *GSEntry;
+
+  while ((GSEntry = GSIter()) != NULL && NOT(IsSelfSpatial))
+    IsSelfSpatial = GSEntry->Member(node);
+  return BOOL(IsSelfSpatial && gsset->HasSelfSpatial());
+}
+
+Boolean DataReuseModelEntry::HasGroupTemporalReuse(AST_INDEX node)
+
+{
+  GSSetIter GSIter(*gsset);
+  Boolean IsGroupTemporal = false;
+  GroupSpatialEntry *GSEntry;
+
+  while ((GSEntry = GSIter()) != NULL && NOT(IsGroupTemporal))
+    if (GSEntry->Member(node))
+      IsGroupTemporal = GSEntry->HasGroupTemporalReuse(node);
+  return IsGroupTemporal;
+} 
+
+Boolean DataReuseModelEntry::HasSelfTemporalReuse(AST_INDEX node)
+{
+  GSSetIter GSIter(*gsset);
+  Boolean IsSelfTemporal = false;
+  GroupSpatialEntry *GSEntry;
+
+  while ((GSEntry = GSIter()) != NULL && NOT(IsSelfTemporal))
+    IsSelfTemporal = GSEntry->Member(node);
+  return BOOL(IsSelfTemporal && gsset->HasSelfTemporal());
 }
 
 Boolean DataReuseModelEntry::IsGroupSpatialLeader(AST_INDEX node)
@@ -132,9 +254,12 @@ DataReuseModelEntry::DataReuseModelEntry(UniformlyGeneratedSetsEntry *ugse) :
 			     (la_matrix)ugse->getH() );
  while((node = (AST_INDEX)ugseiter()) && node)
    {
-   //  char Text[80];
-   //  ut_GetSubscriptText( node, Text);
-   //  //cout << "Put " << Text << " " << node << endl;
+     if (ReuseModelDebugFlag)
+       {
+	 char Text[80];
+	 ut_GetSubscriptText( node, Text);
+	 cout << "Put " << Text << " " << node << endl;
+       }
  
     ugse->GetConstants( node, const_vect);
     gsset->PutintoGSEntry(node, const_vect); 
@@ -148,9 +273,11 @@ GroupSpatialSet::GroupSpatialSet(la_vect lisp,
 {
  size = 0;
  (void)strcpy(Name, name_in);
- // //cout<<"Nestl = "<< nestl << endl;
+ if (ReuseModelDebugFlag)
+   cout<<"Nestl = "<< nestl << endl;
  Nestl = nestl;
- // //cout<<"Subs = " << subscript << endl;
+ if (ReuseModelDebugFlag)
+   cout<<"Subs = " << subscript << endl;
  Subs = subscript;
  LocIterSpace = la_vecNew(Nestl);
  la_vecCopy(lisp, LocIterSpace, Nestl);
@@ -176,93 +303,142 @@ void GroupSpatialSet::FindSelfReuse()
  for (j = 0; j<Nestl; ++j)
      H_S[0][j] = 0;
 
+ if (ReuseModelDebugFlag)
+   cout << "Testing for Self Spatial Reuse" << endl;
  if (Solve(H_S, zerovect, Subs, Nestl, &X, &numSol))
    {
-   //  	//cout << "Print Solution" << endl;
-   //   	 for( i = 0; i < numSol; i++)
-   //   	  {
-   //    	   //cout << "Solution " << i << ": " ;
-   //   	   for ( j = 0; j < Nestl; j++)
-   //   	      //cout <<"\t"<< X[i][j];
-   //   	   //cout << endl << endl;
-   //             }
+     if (ReuseModelDebugFlag)
+       {
+	 cout << "Print Solution" << endl;
+      	 for( i = 0; i < numSol; i++)
+	   {
+	     cout << "Solution " << i << ": " ;
+	     for ( j = 0; j < Nestl; j++)
+      	      cout <<"\t"<< X[i][j];
+	     cout << endl << endl;
+	   }
+       }
 
-   if (NullSpaceIsZero(X, numSol, Nestl))
-       IsSelfSpatial = False;
-   else
-       IsSelfSpatial = IsSolutionInLIS(X, numSol);
+     IsSelfSpatial = IsSolutionInLIS(X, numSol);
    }
  else
    IsSelfSpatial = False;
 
- if(IsSelfSpatial) //cout <<"\nIs Self Spatial" << endl;
+ if (ReuseModelDebugFlag)
+   if(IsSelfSpatial)
+     cout <<"\nIs Self Spatial" << endl;
+   else
+     cout <<"\nIs Not Self Spatial" << endl;
+ if (ReuseModelDebugFlag)
+   cout << "Testing for Self Temporal Reuse" << endl;
  if(IsSelfSpatial)
    {
     if ( Solve(H, zerovect, Subs, Nestl, &X, &numSol))
       {
-     //    //cout << "Print Solution" << endl;
-     //      for( i = 0; i < numSol; i++)
-     //       {
-     //        //cout << "Solution " << i << ": " ;
-     //        for ( j = 0; j < Nestl; j++)
-     //           //cout <<"\t"<< X[i][j];
-     //        //cout << endl << endl;
-     //       }
-       if ( NullSpaceIsZero(X, numSol, Nestl))
-	  IsSelfTemporal = False;
-       else
-          IsSelfTemporal = IsSolutionInLIS(X, numSol);
+	if (ReuseModelDebugFlag)
+	  {
+	      {
+		cout << "Solution " << i << ": " ;
+		for ( j = 0; j < Nestl; j++)
+		  cout <<"\t"<< X[i][j];
+		cout << endl << endl;
+	      }
+	  }
+	IsSelfTemporal = IsSolutionInLIS(X, numSol);
       }
     else
       IsSelfTemporal = False; 
    }
- //if(IsSelfTemporal) //cout <<"\nIs Self Temporal" << endl;
+ if (ReuseModelDebugFlag)
+   if (IsSelfTemporal) 
+     cout <<"\nIs Self Temporal" << endl;
+   else
+     cout <<"\nIs Not Self Temporal" << endl;
  
-}
-
-int GroupSpatialSet::NullSpaceIsZero(la_matrix X, int row, int col)
-{
- int i;
-
- if ( row == 1) return True;    // There is no Null Space
-
- for ( i = 0; i < row-1; ++ i)
-      if(!la_vecIsZero(X[i], col))
-	return(False);
- return(True);
 }
 
 int GroupSpatialSet::IsSolutionInLIS(la_matrix sol, int num)
 {
  int i, j;
- int interesect = False, cord;
+ int intersect = False, cord;
 
- for( i = 0; i<num-1 && !interesect; ++ i)
+ if (ReuseModelDebugFlag)
    {
-    cord = True;
-    for( j = 0; j<Nestl && cord; j++)
-      {
-	if(LocIterSpace[j] == 0 && sol[i][j] + sol[num-1][j] != 0)
-		cord = False;
-        else if ( LocIterSpace[j] != 0 && sol[i][j] + sol[num-1][j] == 0) 
-		cord = False;   
-      } 
-     interesect = cord;
+     cout << "Self Reuse LIS: " ;
+     for ( j = 0; j < Nestl; j++)
+       cout <<"\t"<< LocIterSpace[j];
+     cout << endl << endl;
    }
 
-  if ( interesect ) return interesect;
+
+ //
+ // For self reuse a solution of all zeroes is not valid because
+ // the reuse must be carried across a loop iteration.
+ //
+ // We aren't concerned about actual distances here (although we may
+ // want to be in the future (cache line size)). We are looking for 
+ // a solution that is in the vector space that is not all 0's
+ 
+
+ for( i = 0; i<num-1 && !intersect; ++ i)
+   {
+
+     Boolean AllZero = true;
+     for (j = 0;j < Nestl && AllZero; j++)
+       if (sol[i][j] + sol[num-1][j] != 0)
+	 AllZero = false;
+
+     if (NOT(AllZero))
+       {
+	 cord = True;
+	 for( j = 0; j<Nestl && cord; j++)
+	   {
+	     if(LocIterSpace[j] == 0 && sol[i][j] + sol[num-1][j] != 0)
+	       cord = False;
+	     else if ( LocIterSpace[j] != 0 && 
+		       (sol[i][j] + sol[num-1][j] == 0))  // don't need to check % here
+	       cord = False;
+	   } 
+	 
+	 
+	 if (ReuseModelDebugFlag)
+	   {
+	     cout << "Solution " << i << ": " ;
+	     for ( j = 0; j < Nestl; j++)
+	       cout <<"\t"<< sol[i][j] + sol[num-1][j];
+	     cout << endl << endl;
+	   }
+	     
+	 intersect = cord;
+       }
+     else
+       intersect = False;
+   }
+
+  if ( intersect ) return intersect;
   else
    {
-    cord = True;
-    for ( j = 0 ; j < Nestl && cord ; j++ )
+     Boolean AllZero = true;
+     for (j = 0;j < Nestl && AllZero; j++)
+       if (sol[num-1][j] != 0)
+	 AllZero = false;
+
+     if (NOT(AllZero))
        {
-        if ( LocIterSpace[j] == 0 && sol[num-1][j] != 0 )
-            cord = False;
-        else if ( LocIterSpace[j] != 0 && sol[num-1][j] == 0) 
-            cord = False; 
+	 cord = True;
+	 for ( j = 0 ; j < Nestl && cord ; j++ )
+	   {
+	     if ( LocIterSpace[j] == 0 && sol[num-1][j] != 0 )
+	       cord = False;
+	     else if ( LocIterSpace[j] != 0 && sol[num-1][j] == 0)  // no % needed
+	       cord = False; 
+	   }
+	 intersect = cord;
        }
-     interesect = cord;
-     return interesect;
+     else
+       intersect = False;
+
+     return intersect;
    }
  
 }
@@ -310,20 +486,20 @@ void GroupSpatialSet::PrintGSSet()
  int i = 0;
  char Text[80];
 
- //cout << "\tReference Name " << Name << endl;
- //cout << "\tTotal # of GS Sets = " << size << endl;
- //cout << "\tH is " << endl;
+ cout << "\tReference Name " << Name << endl;
+ cout << "\tTotal # of GS Sets = " << size << endl;
+ cout << "\tH is " << endl;
  PrintH();
- //cout << "\tLIS is " << endl;
+ cout << "\tLIS is " << endl;
  PrintLIS();
- //if( IsSelfTemporal ) //cout << "\tHas Self Temporal!!!" << endl;
- //else if ( IsSelfSpatial ) //cout << "\tHas Self Spatial!!!" << endl;
+ if( IsSelfTemporal ) cout << "\tHas Self Temporal!!!" << endl;
+ else if ( IsSelfSpatial ) cout << "\tHas Self Spatial!!!" << endl;
  
  if( !IsSelfTemporal )
       for( GSSetIter gsiter(this);
     	    e = gsiter(); )
     	{
-	     //cout << "\tGS Set #" << i <<  endl;
+	     cout << "\tGS Set #" << i <<  endl;
 	     e->PrintOut();
 	     i ++;
 	}
@@ -356,7 +532,7 @@ void GroupSpatialSet::PrintLIS()
 GroupSpatialEntry::GroupSpatialEntry(la_vect loc, int nestl, 
 				     int sub, la_matrix h, 
 				     AST_INDEX node,
-				     la_vect c_vect) : GenericList(), SinglyLinkedListEntry()
+				     la_vect c_vect) : SinglyLinkedListEntry()
 {
  Nestl = nestl;
  Subs = sub;
@@ -374,32 +550,64 @@ GroupSpatialEntry::GroupSpatialEntry(la_vect loc, int nestl,
  trailer_n = node;
  gts = new GroupTemporalSet(loc, nestl, sub, h); 
  gts->PutintoGTEntry(node, c_vect);
- Append((Generic)node);
+ NodeList = new GenericList;
+ NodeList->Append((Generic)node);
  NumGap = 0;
  Marked = 0;
 }
 
+Boolean GroupSpatialEntry::Member(AST_INDEX node)
+
+{
+  GenericListIter GSEIter(*NodeList);
+  GenericListEntry *GLEntry;
+  Boolean Found = false;
+
+  while((GLEntry = GSEIter()) != NULL && NOT(Found))
+    Found = BOOL(node == GLEntry->GetValue());
+
+  return Found;
+}
+
+Boolean GroupSpatialEntry::HasGroupTemporalReuse(AST_INDEX node)
+
+{
+  GTSetIter GTIter(this->gts);
+  AST_INDEX node1;
+  GroupTemporalEntry *GTEntry;
+  Boolean IsGroupTemporal = false;
+
+  while((GTEntry = GTIter()) != NULL && NOT(IsGroupTemporal))
+    IsGroupTemporal = BOOL(GTEntry->GetNodeList()->Count() > 1 &&
+			   GTEntry->LeaderNode() != node &&
+			   GTEntry->Member(node));
+
+  return IsGroupTemporal;
+}
 
 int GroupSpatialEntry::take(AST_INDEX n, la_vect in_c)
 {
  int Accept = False;
  int i;
  
- // //cout <<endl << " Leader is " << endl;
-//  for ( i = 0; i<Subs; ++ i)
-  // //cout <<"\t" << leader_v[i] <<endl;
-
-//  //cout <<endl << " In_C is " << endl;
-//  for ( i = 0; i<Subs; ++ i)
-//   //cout <<"\t" << in_c[i] <<endl;
+     if (ReuseModelDebugFlag)
+       {
+	 cout <<endl << " Leader is " << endl;
+	 for ( i = 0; i<Subs; ++ i)
+	   cout <<"\t" << leader_v[i] <<endl;
+	 
+	 cout <<endl << " In_C is " << endl;
+	 for ( i = 0; i<Subs; ++ i)
+	   cout <<"\t" << in_c[i] <<endl;
+       }
 
  if( NodeshasGS(leader_v, in_c))
    {
     gts->PutintoGTEntry(n, in_c );
-    Append((Generic)n);
-    if(ChangeLeader(leader_v, in_c, Subs))
+    NodeList->Append((Generic)n);
+    if(ChangeLeader(leader_v, in_c, Subs,leader_n,n))
        leader_n = n;
-    if(ChangeTrailer(trailer_v, in_c, Subs))
+    if(ChangeTrailer(trailer_v, in_c, Subs,trailer_n,n))
        trailer_n = n;
     Accept = True;
    } 
@@ -423,10 +631,14 @@ int GroupSpatialEntry::NodeshasGS(la_vect vect1, la_vect vect2)
        b[i] = vect1[i] - vect2[i];
   b[0] = 0;
 
-  // //cout << endl << "b is" << endl;
-  // for ( i = 0; i < Subs; ++ i)
-  //     //cout <<"\t" << b[i] << endl;
-  // //cout << endl;
+  if (ReuseModelDebugFlag)
+    {
+      cout << endl << "b is" << endl;
+      for ( i = 0; i < Subs; ++ i)
+	cout <<"\t" << b[i] << endl;
+      cout << endl << endl;
+      cout << "Test for GroupSpatial Reuse" << endl;
+    }
 
   if (Solve(H_S, b, Subs, Nestl, &X, &numSol))
     { 
@@ -439,9 +651,15 @@ int GroupSpatialEntry::NodeshasGS(la_vect vect1, la_vect vect2)
     }
   else
        HasGroupSpatial = False;
-     la_vecFree(b);
-     la_matFree(H_S,Subs,Nestl);
-     return(HasGroupSpatial);
+  la_vecFree(b);
+  la_matFree(H_S,Subs,Nestl);
+  if (ReuseModelDebugFlag)
+    if (HasGroupSpatial)
+      cout << "Is Group Spatial" << endl;
+    else
+      cout << "Is Not Group Spatial" << endl;
+  
+  return(HasGroupSpatial);
 
 }
 
@@ -464,11 +682,18 @@ int GroupSpatialEntry::CheckIntersect(la_vect X1,
   int Intersect = True;
   int j;
 
+  if (ReuseModelDebugFlag)
+    {
+      cout << "Solution: " ;
+      for ( j = 0; j < n; j++)
+	cout <<"\t"<< X1[j] + X2[j];
+      cout << endl << endl;
+    }
   for (j = 0; j < n-1 && Intersect; j++)
     if (LocIterSpace[j] == 0)
       Intersect = (int)(Intersect && (X1[j] + X2[j] == 0));
     else 
-      Intersect = (int)(Intersect && (X1[j] + X2[j] != 0)); 
+      Intersect = (int)(Intersect && ((X1[j] + X2[j]) % LocIterSpace[j] == 0)); 
   return(Intersect);
 }
 
@@ -483,15 +708,17 @@ int GroupSpatialEntry::IsSolutionInLIS(la_matrix X,
  double ratio;
  int i, j;
 
- // //cout << "Print Solution" << endl;
- // for( i = 0; i < row; i++)
- //  {
- //   //cout << "Solution " << i << ": " ;
- //   for ( j = 0; j < column; j++)
- //      //cout <<"\t"<< X[i][j];
- //   //cout << endl << endl;
- //  }
-
+   if (ReuseModelDebugFlag)
+     {
+       cout << "Group Spatial Entry LIS: " ;
+       for ( j = 0; j < column; j++)
+	 cout <<"\t"<< LocIterSpace[j];
+       cout << endl << endl;
+       cout << "r_p is: ";
+       for (i = 0; i < column; i++)
+	 cout << r_p[i] << "  ";
+       cout << endl << endl;
+     }
    for (i = 0; i < row-1 && !(Intersect); i++)
      Intersect = CheckIntersect(X[i],r_p,column);
    if (TestSol && !(Intersect))
@@ -503,13 +730,16 @@ int GroupSpatialEntry::IsSolutionInLIS(la_matrix X,
 void GroupSpatialEntry::PrintOut()
 {
  char Text[80];
+
  ut_GetSubscriptText( leader_n, Text);
- int i;
- 
- //cout<< "\t\tLeader is " << Text << endl;
+ cout<< "\t\tLeader is " << Text << endl;
+
+ ut_GetSubscriptText( trailer_n, Text);
+ cout<< "\t\tTrailer is " << Text << endl;
+
  gts->PrintOut();
 }
-
+ 
 GroupTemporalSet::GroupTemporalSet(la_vect loc, int nestl, int sub, 
 				   la_matrix h) : SinglyLinkedList()
 {
@@ -556,15 +786,16 @@ void GroupTemporalSet::PrintOut()
  int i = 0;
  char Text[80];
 
- //cout << "\t\tTotal # of GT = " << size << endl;
+ cout << "\t\tTotal # of GT = " << size << endl;
  for( GTSetIter gtiter(this);
         e = gtiter(); )
    {
-    //cout << "\t\tGT Set #" << i  << endl;
+     cout << "\t\tGT Set #" << i  << endl;
      e->PrintOut();
      i ++;
    }
 }
+
 
 void GroupTemporalSet::FillArray(int* array, int start)
 {
@@ -597,6 +828,21 @@ GroupTemporalEntry::GroupTemporalEntry(la_vect loc, int nestl, int sub,
  leader_n = n;
  vectlst = new VectList(Subs); 
  vectlst->AddVect(n, in_c); 
+ NodeList = new GenericList;
+ NodeList->Append((Generic)n);
+}
+
+Boolean GroupTemporalEntry::Member(AST_INDEX node)
+
+{
+  GenericListIter GTEIter(*NodeList);
+  GenericListEntry *GLEntry;
+  Boolean Found = false;
+
+  while((GLEntry = GTEIter()) != NULL && NOT(Found))
+    Found = BOOL(node == GLEntry->GetValue());
+
+  return Found;
 }
 
 int GroupTemporalEntry::take(AST_INDEX n, la_vect c_vect)
@@ -606,8 +852,9 @@ int GroupTemporalEntry::take(AST_INDEX n, la_vect c_vect)
  if( NodeshasGT(leader_v, c_vect) )
   {
    vectlst->AddVect(n, c_vect);
+   NodeList->Append((Generic)n);
    Accept = True;
-   if(ChangeLeader(leader_v, c_vect, Subs))
+   if(ChangeLeader(leader_v, c_vect, Subs,leader_n,n))
      leader_n = n;
   }
 
@@ -636,6 +883,11 @@ int GroupTemporalEntry::NodeshasGT(la_vect vect1, la_vect vect2)
  else
    HasGroupTemporal = False;
  la_vecFree(b);
+ if (ReuseModelDebugFlag)
+   if (HasGroupTemporal)
+     cout << "Is Group Temporal" << endl;
+   else
+     cout << "Is Not Group Temporal" << endl;
  return(HasGroupTemporal); 
  
 }
@@ -659,11 +911,19 @@ int GroupTemporalEntry::CheckIntersect(la_vect X1,
   int Intersect = True;
   int j;
 
-  for (j = 0; j < n-1 && Intersect; j++)
+  if (ReuseModelDebugFlag)
+    {
+      cout << "Solution: " ;
+      for ( j = 0; j < n; j++)
+	cout <<"\t"<< X1[j] + X2[j];
+      cout << endl << endl;
+    }
+  for (j = 0; j < n && Intersect; j++)
     if (LocIterSpace[j] == 0)
       Intersect = (int)(Intersect && (X1[j] + X2[j] == 0));
     else
-      Intersect = (int)(Intersect && (X1[j] + X2[j] != 0));
+      Intersect = (int)(Intersect && ((X1[j] + X2[j]) % LocIterSpace[j] == 0));
+  
   return(Intersect);
 }
 
@@ -677,6 +937,17 @@ int GroupTemporalEntry::IsSolutionInLIS(la_matrix X,
  double ratio;
  int i;
 
+   if (ReuseModelDebugFlag)
+     {
+       cout << "Group Temporal Entry LIS: ";
+       for (i = 0; i < column; i++)
+	 cout << LocIterSpace[i] << "  ";
+       cout << endl << endl;
+       cout << "r_p is: ";
+       for (i = 0; i < column; i++)
+	 cout << r_p[i] << "  ";
+       cout << endl << endl;
+     }
    for (i = 0; i < row-1 && !(Intersect); i++)
      Intersect = CheckIntersect(X[i],r_p,column);
    if (TestSol && !(Intersect))
@@ -689,14 +960,14 @@ void GroupTemporalEntry::PrintOut()
 {
  char Text[80];
 
- //cout << "\t\t\t" << "Leader is "; 
+ cout << "\t\t\t" << "Leader is "; 
  ut_GetSubscriptText( leader_n, Text);
- //cout <<  Text << endl;
+ cout <<  Text << endl;
 
  vectlst->PrintOut();
 
 }
-
+ 
 VectListEntry::VectListEntry(AST_INDEX n, la_vect v, int sub) :  SinglyLinkedListEntry()
 {
      const_vect = la_vecNew(sub);
@@ -709,7 +980,7 @@ void VectListEntry::PrintOut()
  char Text[80];
  
  ut_GetSubscriptText(node, Text);
-  //cout << "\t\t\t" << Text << endl;
+ cout << "\t\t\t" << Text << endl;
 }
 
 VectList::VectList(int sub) :  SinglyLinkedList()
@@ -929,23 +1200,129 @@ int Solve(la_matrix B,
   return 1;
 }
 
-int ChangeLeader(la_vect leader, la_vect new_v, int size)
+static int CheckNodes(AST_INDEX node,
+		      StmtOrderInfoType *StmtOrderInfo)
+
+{
+  if (node == StmtOrderInfo->New)
+    {
+      StmtOrderInfo->Found = 2;
+      return (WALK_ABORT);
+    }
+  else if (node == StmtOrderInfo->Old)
+    {
+      StmtOrderInfo->Found = 1;
+      return (WALK_ABORT);
+    }
+  return(WALK_CONTINUE);
+}
+
+      
+
+static int NewReferenceIsEarlier(AST_INDEX Old,
+			  	 AST_INDEX New)
+
+{
+  AST_INDEX OldStmt = ut_get_stmt(Old);
+  AST_INDEX NewStmt = ut_get_stmt(New);
+  stmt_info_type *OldSptr = get_stmt_info_ptr(OldStmt);
+  stmt_info_type *NewSptr = get_stmt_info_ptr(NewStmt);
+
+  if (NewSptr->stmt_num < OldSptr->stmt_num)
+    return True;
+
+  if (NewSptr->stmt_num == OldSptr->stmt_num)
+    {
+      StmtOrderInfoType StmtOrderInfo;
+
+      StmtOrderInfo.Old = Old;
+      StmtOrderInfo.New = New;
+      StmtOrderInfo.Found = 0;
+
+      if (is_assignment(NewStmt))
+	{
+	  walk_expression(gen_ASSIGNMENT_get_rvalue(NewStmt),
+			  (WK_EXPR_CLBACK)CheckNodes,
+			  (WK_EXPR_CLBACK)NOFUNC,
+			  (Generic)&StmtOrderInfo);
+	  if (StmtOrderInfo.Found == 0)
+	    walk_expression(gen_ASSIGNMENT_get_lvalue(NewStmt),
+			    (WK_EXPR_CLBACK)CheckNodes,
+			    (WK_EXPR_CLBACK)NOFUNC,
+			    (Generic)&StmtOrderInfo);
+	}
+      else
+	walk_expression(NewStmt,(WK_EXPR_CLBACK)CheckNodes,(WK_EXPR_CLBACK)NOFUNC,
+			(Generic)&StmtOrderInfo);
+      if (StmtOrderInfo.Found == 2)
+	return True;
+    }
+
+  return False;
+}
+
+static int NewReferenceIsLater(AST_INDEX Old,
+			       AST_INDEX New)
+
+{
+  AST_INDEX OldStmt = ut_get_stmt(Old);
+  AST_INDEX NewStmt = ut_get_stmt(New);
+  stmt_info_type *OldSptr = get_stmt_info_ptr(OldStmt);
+  stmt_info_type *NewSptr = get_stmt_info_ptr(NewStmt);
+
+  if (NewSptr->stmt_num > OldSptr->stmt_num)
+    return True;
+
+  if (NewSptr->stmt_num == OldSptr->stmt_num)
+    {
+      StmtOrderInfoType StmtOrderInfo;
+
+      StmtOrderInfo.Old = Old;
+      StmtOrderInfo.New = New;
+      StmtOrderInfo.Found = 0;
+
+      if (is_assignment(NewStmt))
+	walk_expression(gen_ASSIGNMENT_get_rvalue(NewStmt),
+			(WK_EXPR_CLBACK)CheckNodes,
+			(WK_EXPR_CLBACK)NOFUNC,
+			(Generic)&StmtOrderInfo);
+      else
+        walk_expression(NewStmt,(WK_EXPR_CLBACK)CheckNodes,(WK_EXPR_CLBACK)NOFUNC,
+		        (Generic)&StmtOrderInfo);
+      if (StmtOrderInfo.Found == 2)
+	return True;
+    }
+
+  return False;
+}
+
+
+int ChangeLeader(la_vect leader, la_vect new_v, int size, 
+		 AST_INDEX leader_n, AST_INDEX new_node)
 {
  int Change = False;
  int Done = False;
  int i = size - 1 ;
+ Boolean AllEqual = true;
 
  while( i >= 0 &&  !Done)
    {
     if(leader[i] > new_v[i])
-       Done = True;
+      {	
+        Done = True;
+        AllEqual = false;
+      }
     else if ( leader[i] < new_v[i] )
        {
-        Done = True;
-        Change = True;
+         Done = True;
+         Change = True;
+         AllEqual = false;
        } 
     -- i;
    }
+
+  if (AllEqual)
+    Change = NewReferenceIsEarlier(leader_n,new_node);
   
   if(Change)
     for( i = 0; i<size; i++)
@@ -955,23 +1332,45 @@ int ChangeLeader(la_vect leader, la_vect new_v, int size)
   
 }
 
-int ChangeTrailer(la_vect trailer, la_vect new_v, int size)
+int ChangeTrailer(la_vect trailer, la_vect new_v, int size,
+		  AST_INDEX trailer_n, AST_INDEX new_node)
 {
+
+//
+// Note that trailer nodes are only going to be loads
+// This information is used determine which loads should bring
+// in two cache lines.
+//
+
  int Change = False;
  int Done = False;
  int i = size - 1 ;
+ Boolean AllEqual = true;
+
+ AST_INDEX TrailerStmt = ut_get_stmt(trailer_n);
+
+ if (is_assignment(TrailerStmt))
+   if (gen_ASSIGNMENT_get_lvalue(TrailerStmt) == new_node)
+     return False;
 
  while( i >= 0 &&  !Done)
    {
     if(trailer[i] < new_v[i])
-       Done = True;
+      {	
+        Done = True;
+        AllEqual = false;
+      }
     else if ( trailer[i] > new_v[i] )
        {
-        Done = True;
-        Change = True;
+         Done = True;
+         Change = True;
+         AllEqual = false;
        } 
     -- i;
    }
+  
+  if (AllEqual)
+    Change = NewReferenceIsLater(trailer_n,new_node);
   
   if(Change)
     for( i = 0; i<size; i++)

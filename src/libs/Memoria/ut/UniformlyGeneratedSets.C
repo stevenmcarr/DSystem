@@ -1,4 +1,4 @@
-/* $Id: UniformlyGeneratedSets.C,v 1.8 1997/11/04 21:10:32 carr Exp $ */
+/* $Id: UniformlyGeneratedSets.C,v 1.9 1998/06/08 15:23:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -665,6 +665,7 @@ static int CheckNode(AST_INDEX Node,
  return(WALK_CONTINUE);
 }
 
+
 UniformlyGeneratedSets::UniformlyGeneratedSets(AST_INDEX loop,int NL,char **IV,la_vect LIS)
 
   { 
@@ -685,8 +686,8 @@ UniformlyGeneratedSets::UniformlyGeneratedSets(AST_INDEX loop,int NL,char **IV,l
        }
      else
        la_vecCopy(LIS,LocalizedIterationSpace,NestingLevel);
-     walk_expression(loop,(WK_EXPR_CLBACK)CheckNode,(WK_EXPR_CLBACK)NOFUNC,
-		     (Generic)this);
+     walk_expression(gen_DO_get_stmt_LIST(loop),(WK_EXPR_CLBACK)CheckNode,
+		     (WK_EXPR_CLBACK)NOFUNC,(Generic)this);
      //for (AstIter AIter(loop,false,true); (node = AIter()) != AST_NIL;)
        //if (is_subscript(node))
          //AddNode(node);
