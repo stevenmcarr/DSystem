@@ -408,13 +408,16 @@ AST_INDEX AddressEquivalenceClassSet::GetLeader(AST_INDEX node)
 AST_INDEX AddressEquivalenceClassSet::GetFirstInLoop(AST_INDEX node)
 
 {
-  Boolean uniform;
+  Boolean uniform = true;
 
   int Subscripts = list_length(gen_SUBSCRIPT_get_rvalue_LIST(node));
   la_matrix nodeH = la_matNew(Subscripts,NestingLevel);
+
   GetH(node,nodeH,&uniform);
-  return (GetAddressEquivalenceClass(node,nodeH)->GetFirstInLoop());
+
+  AST_INDEX FirstReference = GetAddressEquivalenceClass(node,nodeH)->GetFirstInLoop();
   la_matFree(nodeH,Subscripts,NestingLevel);
+  return FirstReference;
 }
 
 
