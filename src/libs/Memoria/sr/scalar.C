@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.7 1992/12/11 11:22:27 carr Exp $ */
+/* $Id: scalar.C,v 1.8 1993/06/16 13:14:54 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -559,12 +559,10 @@ static void perform_scalar_replacement(do_info_type  *do_info,
    FILE              *logfile;
    bal_info_type     bal_info;
 
-     if (((config_type *)PED_MH_CONFIG(do_info->ped))->logging > LOG_UNROLL)
+     if (((config_type *)PED_MH_CONFIG(do_info->ped))->logging)
        logfile = ((config_type *)PED_MH_CONFIG(do_info->ped))->logfile;
      else
        logfile = NULL;
-     if (logfile != NULL)
-       fprintf(logfile,"scalar replacement loop\n");
      prelim_info.array_refs = 0;
      prelim_info.scalar_regs = 0;
      prelim_info.def_num = 0;
@@ -613,9 +611,6 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      sr_pick_possible_generators(flow_graph,level,&prelim_info,do_info->ped);
      sr_perform_antic_analysis(flow_graph,prelim_info.array_refs,do_info->ped,
 			       do_info->ar);
-     if (((config_type *)PED_MH_CONFIG(do_info->ped))->aggressive)
-       sr_perform_profit_analysis(flow_graph,prelim_info.array_refs,
-				  prelim_info.array_table,do_info->ar);
      gen_info.entry = flow_graph.entry;
      gen_info.level = level;
      gen_info.ped = do_info->ped;
@@ -646,6 +641,8 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 			     prelim_info.array_table,logfile,do_info->ar);
 	if (!util_list_empty(name_info.glist))
 	  {
+	   if (((config_type *)PED_MH_CONFIG(do_info->ped))->logging)
+	     return;
 	   if (redo)
 	     {
 	      
@@ -673,11 +670,15 @@ static void perform_scalar_replacement(do_info_type  *do_info,
 	  }
 	util_free_nodes(name_info.glist);
        }
+     else if (((config_type *)PED_MH_CONFIG(do_info->ped))->logging)
+       {
+	fprintf(logfile,"No FP Register Pressure\n");
+	return;
+       }
      util_list_free(name_info.glist);
      walk_expression(root,remove_dependences,NOFUNC,(Generic)do_info->ped);
      walk_statements(root,level,NOFUNC,cleanup_gotos,
 		     (Generic)prelim_info.symtab);
-     /* sr_free_flow_graph(flow_graph); */
      if (logfile != NULL)
        {
 	bal_info.mem = 0;
@@ -690,7 +691,6 @@ static void perform_scalar_replacement(do_info_type  *do_info,
      fst_KillField(do_info->symtab,LBL_STMT);
      fst_KillField(do_info->symtab,REFS);
      fst_KillField(do_info->symtab,NEW_LBL_INDEX);
-     /* free(prelim_info.array_table); */
   }
 
 static int set_surrounding_do(AST_INDEX node,
@@ -800,6 +800,7 @@ static int post_scalar(AST_INDEX     stmt,
 
 void memory_scalar_replacement(PedInfo      ped,
 			       AST_INDEX    root,
+			       int          level,
 			       SymDescriptor symtab,
 			       arena_type    *ar)
 
@@ -817,5 +818,5 @@ void memory_scalar_replacement(PedInfo      ped,
      do_info.abort = false;
      do_info.symtab = symtab;
      do_info.ar = ar;
-     walk_statements(root,LEVEL1,pre_scalar,post_scalar,(Generic)&do_info);
+     walk_statements(root,level,pre_scalar,post_scalar,(Generic)&do_info);
   }

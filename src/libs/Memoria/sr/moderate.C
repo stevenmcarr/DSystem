@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.5 1992/12/11 11:22:19 carr Exp $ */
+/* $Id: moderate.C,v 1.6 1993/06/16 13:15:28 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -574,17 +574,16 @@ static void complete_temp_names(UtilList *glist,
        }
   }
 
-static int build_cost_info(UtilList *glist,
-			   int      *size,
-			   int      *regs,
-			   PedInfo  ped)
+static void build_cost_info(UtilList *glist,
+			    int      *size,
+			    int      *regs,
+			    PedInfo  ped)
 
   {
    UtilNode         *node,*lnode;
    int              benefit;
    scalar_info_type *sptr,*gptr;
    name_node_type   *name_node;
-   int              total_benefit = 0;
 
      for (lnode = UTIL_HEAD(glist);
 	  lnode != NULLNODE;
@@ -599,7 +598,6 @@ static int build_cost_info(UtilList *glist,
 	   sptr = get_scalar_info_ptr(UTIL_NODE_ATOM(node));
 	   if (sptr->generator != -1)
 	     {
-	      total_benefit++;
 	      if (sptr->gen_type == LIAV || sptr->gen_type == LCAV)
 	        benefit += 2;
 	      else
@@ -614,10 +612,7 @@ static int build_cost_info(UtilList *glist,
 	  name_node->benefit = benefit;
 	gptr = get_scalar_info_ptr(name_node->gen);
 	if (gptr->recurrence || gptr->scalar)
-	  {
-	   gptr->num_regs = 1;
-	   total_benefit++;
-	  }
+	  gptr->num_regs = 1;
 	if (!gptr->no_store)
 	  if (gen_get_converted_type(name_node->gen) == TYPE_REAL)
 	    {
@@ -648,12 +643,10 @@ static int build_cost_info(UtilList *glist,
 	  {
 	   name_node->cost = 0;
 	   name_node->ratio = 1000.0;
-	   total_benefit++;
 	  }
 	(*regs) += name_node->cost;
 	(*size)++;
        }
-     return(total_benefit);
   }
 
 
@@ -678,12 +671,13 @@ void sr_moderate_pressure(PedInfo  ped,
             opt_allocate;
    heap_type *heap;
 
-     loads = build_cost_info(glist,&size,&regs,ped);
+     build_cost_info(glist,&size,&regs,ped);
      if (logfile != NULL)
        {
-	fprintf(logfile,"possible references removed = %d\n",loads);
-	fprintf(logfile,"register pressure = %d\n",regs);
-	fprintf(logfile,"free registers = %d\n",free_regs);
+	fprintf(logfile,"FP Register Pressure = %d\n",
+	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs));
+	fprintf(logfile,"Free Registers = %d\n",free_regs-regs);
+	return;
        }
      if (regs > free_regs)
        {
@@ -696,15 +690,6 @@ void sr_moderate_pressure(PedInfo  ped,
 	do_greedy(glist,heap,allocate,opt_allocate,size,&free_regs);
 	regs = free_regs;
         do_allocation(glist,allocate,opt_allocate,&free_regs,heap,size,ped,ar);
-	if (logfile != NULL)
-	  {
-	   loads = build_cost_info(glist,&size,&regs,ped);
-	   fprintf(logfile,"references removed = %d\n",loads);
-	   fprintf(logfile,"registers used = %d\n",regs-free_regs);
-	  }
-	/* free((char *)heap);
-	   free((char *)allocate);
-	   free((char *)opt_allocate); */
        }
    *redo = false;
    complete_temp_names(glist,redo,array_table);
