@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.6 1997/11/19 14:46:27 carr Exp $ */
+/* $Id: f2i_options.C,v 1.7 1998/06/08 15:30:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -37,6 +37,7 @@ int PartitionUnrollAmount = 0;
 int ReplaceLevel = 0;
 int DependenceLevel = 3;
 int blue_color = 0;
+Boolean ReuseModelDebugFlag = false;
 
  int aiAnnotate;   /* automatically generate comments      */
  int aiCheapGoto;  /* controls assigned goto generation    */
@@ -122,6 +123,7 @@ void f2i_options_usage(char *pgm_name)
   cerr << "\t-S  compile with Sparc attributes" << endl;
   cerr << "\t-t  dump ast" << endl;
   cerr << "\t-v  report on virtual register usage" << endl;
+  cerr << "\t-X#  set debug flags" << endl;
 
   exit(-1);
 }
@@ -248,6 +250,19 @@ static void f2i_opt_module(void *state, char *str)
   f2i_module = str;
 }
 
+
+static void f2i_opt_debug_choice(void *state,Generic flag)
+{
+  switch(flag)
+    {
+     case 0:
+       ReuseModelDebugFlag = true;
+       break;
+     default:
+       cerr << "Invalid debug flag" << flag << endl;
+       break;
+    }
+}
 
 static struct flag_	Annotate_f = {
   f2i_opt_Annotate,
@@ -397,6 +412,20 @@ static struct string_	module_s = {
 };
 
 
+static struct choice_entry_ debug_choices[1] = {
+    {0,
+     "0",
+     "debug flags",
+     "debug data reuse model"}
+};
+
+static struct choice_	debug_c = {
+  f2i_opt_debug_choice,
+  "debug flags",
+  "turn on debug flag for data reuse model",
+  0,debug_choices
+};
+
 Option f2i_pgm_opt = {string, F2I_PGM_OPT,(Generic) "", true,(Generic)&program_s},
        f2i_mod_opt = {string, F2I_MOD_OPT,(Generic) "", true,(Generic)&module_s},
        f2i_Annotate_flag = {flag, F2I_ANNOTATE_FLAG, (Generic)false, true, 
@@ -438,7 +467,9 @@ Option f2i_pgm_opt = {string, F2I_PGM_OPT,(Generic) "", true,(Generic)&program_s
        f2i_Sparc_flag = {flag, F2I_SPARC_FLAG, (Generic)false, true, (Generic)&Sparc_f},
        f2i_Rocket_flag = {flag, F2I_ROCKET_FLAG, (Generic)false, true, 
 			  (Generic)&Rocket_f},
-       f2i_Rt_flag = {flag, F2I_RT_FLAG, (Generic)false, true, (Generic)&Rt_f};
+       f2i_Rt_flag = {flag, F2I_RT_FLAG, (Generic)false, true, (Generic)&Rt_f},
+       f2i_debug_choice = {choice,F2I_DEBUG_CHOICE,(Generic)false,true, 
+			      (Generic)&debug_c};
 
 int f2i_init_options(int argc, char **argv)
 {
@@ -491,6 +522,7 @@ int f2i_init_options(int argc, char **argv)
   f2iOptions.Add(&f2i_Sparc_flag);
   f2iOptions.Add(&f2i_Rocket_flag);
   f2iOptions.Add(&f2i_Rt_flag);
+  f2iOptions.Add(&f2i_debug_choice);
 
   if (opt_parse_argv(&f2iOptions,0,argc,argv)) 
     {

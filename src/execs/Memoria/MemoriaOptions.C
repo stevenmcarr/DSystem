@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.6 1997/11/19 14:46:52 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.7 1998/06/08 15:31:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -40,9 +40,11 @@ Boolean mc_extended_cache = false;
 Boolean inputs_needed = false;
 Boolean RestrictedUnrolling = false;
 
+Boolean ReuseModelDebugFlag = false;
+
 void MemoriaOptionsUsage(char *pgm_name)
 {
-   printf("Usage: %s [-s] [-e] [-i] [-p] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-R] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
+   printf("Usage: %s [-s] [-e] [-i] [-p] [-r#] [-d#] [-w#] [-u] [-U] [-D] [-R] [-X#] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
   puts(" ");
   puts("         -c  annontate with calls to cache simulator");
   puts("         -d#  set dependence analysis level at 0 or 1 (default)");
@@ -55,10 +57,11 @@ void MemoriaOptionsUsage(char *pgm_name)
   puts("         -s  do statistics");
   puts("         -u  do unroll-and-jam without cache model");
   puts("         -w#  do unroll-and-jam for partitioned register files");
-  puts("         -U  do unroll-and-jam with cache model");
-  puts("         -S  do depencence statistics");
   puts("         -D  issue DEAD instructions for dead cache lines");
   puts("         -R  let Rocket schedule prefetches");
+  puts("         -S  do depencence statistics");
+  puts("         -U  do unroll-and-jam with cache model");
+  puts("         -X#  set debug flags");
   puts("         -P  program composition");
   puts("         -M  Fortran module");
   puts("         -L  list of Fortran modules");
@@ -257,6 +260,19 @@ static void mc_opt_unroll(void *state)
   }
 }
 
+static void mc_opt_debug_choice(void *state,Generic flag)
+{
+  switch(flag)
+    {
+     case 0:
+       ReuseModelDebugFlag = true;
+       break;
+     default:
+       cerr << "Invalid debug flag" << flag << endl;
+       break;
+    }
+}
+
 static void mc_opt_unroll_cache(void *state)
 {
   mc_unroll_cache = true;
@@ -360,9 +376,15 @@ static struct choice_entry_ replacement_choices[9] = {
     {8,
      "8",
      "scalar replacement",
-     "perform full scalar replacement"},
+     "perform full scalar replacement"}
  };
 
+static struct choice_entry_ debug_choices[1] = {
+    {0,
+     "0",
+     "debug flags",
+     "debug data reuse model"}
+};
 
 static struct flag_	cache_f = {
   mc_set_cache_level,
@@ -375,11 +397,19 @@ static struct flag_	ldst_f = {
   "load and store analysis",
   "Count the number of loads and stores to arrays"
 };
+
 static struct choice_	replacement_c = {
   mc_opt_replacement,
   "scalar replacement",
   "perform scalar replacement, allowing control flow",
   8,replacement_choices
+};
+
+static struct choice_	debug_c = {
+  mc_opt_debug_choice,
+  "debug flags",
+  "turn on debug flag for data reuse model",
+  0,debug_choices
 };
 
 static struct choice_entry_ dependence_choices[2] = {
@@ -531,6 +561,8 @@ int MemoriaInitOptions(int argc, char **argv)
 				    (Generic)&ldst_f),
     *mc_repl_choice = InitOption(choice,MC_REPLACEMENT_CHOICE,(Generic)false,true, 
 				 (Generic)&replacement_c),
+    *mc_debug_choice = InitOption(choice,MC_DEBUG_CHOICE,(Generic)false,true, 
+				 (Generic)&debug_c),
     *mc_dep_choice = InitOption(choice,MC_DEPENDENCE_CHOICE,(Generic)false,true, 
 				(Generic)&dependence_c),
     *mc_stats_flag = InitOption(flag,MC_STATISTICS_FLAG,(Generic)false,true,

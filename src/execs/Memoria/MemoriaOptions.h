@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.h,v 1.5 1997/11/19 14:46:52 carr Exp $ */
+/* $Id: MemoriaOptions.h,v 1.6 1998/06/08 15:31:22 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -34,6 +34,7 @@
 #define MC_DEAD_FLAG          'D'
 #define MC_DEPENDENCE_STATS_FLAG 'S'
 #define MC_ROCKET_SCHEDULE_FLAG  'R'
+#define MC_DEBUG_CHOICE       'X'
 
 EXTERN(int, MemoriaInitOptions,(int argc, char **argv));
 EXTERN(void, MemoriaOptionsUsage,(char *pgm_name));
