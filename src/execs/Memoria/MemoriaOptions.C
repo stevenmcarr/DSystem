@@ -1,10 +1,11 @@
-/* $Id: MemoriaOptions.C,v 1.7 1998/06/08 15:31:22 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.8 1998/06/08 15:37:25 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 
 
+#include <iostream.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <libs/support/misc/general.h>
