@@ -1,4 +1,5 @@
-/* $Id: analyze.C,v 1.5 1992/10/03 15:50:25 rn Exp $ */
+/* $Id: analyze.C,v 1.6 1992/12/07 10:23:38 carr Exp $ */
+
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -41,6 +42,7 @@ static int build_pre(AST_INDEX       stmt,
 	build_info->loop_data[loop_num].reduction = false;
 	build_info->loop_data[loop_num].interchange = true;
 	build_info->loop_data[loop_num].distribute = true;
+	build_info->loop_data[loop_num].expand = false;
 	build_info->loop_data[loop_num].rho = 0;
 	build_info->loop_data[loop_num].stride = 0;
 	build_info->loop_data[loop_num].scalar_array_refs = 0;
@@ -50,6 +52,10 @@ static int build_pre(AST_INDEX       stmt,
 	build_info->loop_data[loop_num].type = RECT;
 	build_info->loop_data[loop_num].inner_stmts = MAXLOOP;
 	build_info->loop_data[loop_num].outer_stmts = -1;
+	build_info->loop_data[loop_num].OutermostLvl = 0;
+	build_info->loop_data[loop_num].GroupList = 
+	                                util_list_alloc((Generic)NULL,NULL);
+	build_info->loop_data[loop_num].OutermostLvl = 0;
 	step = gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(stmt));
 	if (!pt_eval(step,&step_v) || step == AST_NIL)
 	  {
@@ -180,7 +186,8 @@ static void check_uj_preventing(model_loop *loop_data,
 static void check_backwards_dep(model_loop *loop,
 				DG_Edge    *dg,
 				int        edge,
-				PedInfo    ped)
+				PedInfo    ped,
+				SymDescriptor symtab)
 
 /****************************************************************************/
 /*                                                                          */
@@ -198,6 +205,9 @@ static void check_backwards_dep(model_loop *loop,
 	  {
 	   loop->max = 0;
 	   loop->distribute = false;
+	   if (fst_GetField(symtab,gen_get_text(dg[edge].src),SYMTAB_NUM_DIMS)
+	       > 0)
+	     loop->expand = false;
 	  }
 	else;
       else
@@ -256,6 +266,8 @@ static void check_crossing_dep(model_loop *loop_data,
 		  loop_data[loop].level)
 	        fst_PutField(symtab,gen_get_text(dg[edge].src),EXPAND_LVL,
 			     loop_data[loop].level);
+	      if (loop_data[loop].distribute)
+	        loop_data[loop].expand = true;
 	      loop_data[loop].distribute = false;
 	     }
 	   dg_delete_free_edge( PED_DG(ped),edge);
@@ -337,7 +349,8 @@ static int build_edge_pre(AST_INDEX       stmt,
 	                                        scalar_array_refs++;
 	      }
 	    check_backwards_dep(&build_info->loop_data[build_info->
-	                        last_stack[lvl]],dg,edge,build_info->ped);
+	                        last_stack[lvl]],dg,edge,build_info->ped,
+				build_info->symtab);
 	   }
 	 else if (dg[edge].type == dg_inductive)
 	   {
