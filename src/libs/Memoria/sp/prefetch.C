@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.24 2000/02/01 19:40:25 carr Exp $ */
+/* $Id: prefetch.C,v 1.25 2000/02/10 19:05:28 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -959,7 +959,7 @@ static AST_INDEX CreatePreLoop(model_loop    *loop_data,
      if (need_pre_loop)
        {
 
-	 if (UnrollVal < 3 && step_v == 1)
+	 if (UnrollVal < 8 && step_v == 1)
 	   {
 	     AST_INDEX PeeledIteration;
 	     AST_INDEX IndexVal;
