@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.40 1996/04/10 13:13:15 carr Exp $ */
+/* $Id: mh_walk.C,v 1.41 1996/07/08 10:26:14 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -112,6 +112,21 @@ static void remove_bogus_dependences(AST_INDEX stmt,
        }
   }
 
+static AST_INDEX GetDeclInsertStmt(AST_INDEX stmt_list)
+
+{
+  AST_INDEX stmt,implicit = AST_NIL;
+  
+    for (stmt = list_first(stmt_list);
+	 stmt != AST_NIL;
+	 stmt = list_next(stmt))
+      if (is_implicit(stmt))
+	implicit = stmt;
+    if (implicit == AST_NIL)
+      return(list_first(stmt_list));
+    else
+      return(list_next(implicit));
+}
 
 /****************************************************************************/
 /*                                                                          */
@@ -500,7 +515,7 @@ static void AnnotateCodeForLDSTCount(AST_INDEX      stmt,
      List = pt_gen_ident("NumLoads");
      List = list_create(List);
      List = list_insert_last(List,pt_gen_ident("NumStores"));
-     FirstStmt = list_first(ut_GetSubprogramStmtList(stmt));
+     FirstStmt = GetDeclInsertStmt(ut_GetSubprogramStmtList(stmt));
      TypeStmt = gen_TYPE_STATEMENT(AST_NIL,gen_TYPE_LEN(gen_REAL(),
 							pt_gen_int(SIZE_PER_DB_PREC)),
 				   tree_copy(List));
@@ -917,7 +932,7 @@ static void make_decls(SymDescriptor symtab,
      decl_lists.real_list = list_create(AST_NIL);
      decl_lists.cmplx_list = list_create(AST_NIL);
      fst_ForAll(symtab,(fst_ForAllCallback)check_decl,(Generic)&decl_lists);
-     stmt = list_first(stmt_list);
+     stmt = GetDeclInsertStmt(stmt_list);
      if (!list_empty(decl_lists.dbl_prec_list))
        {
 	type_stmt = gen_TYPE_STATEMENT(AST_NIL,gen_TYPE_LEN(gen_REAL(),
