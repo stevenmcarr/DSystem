@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.14 1997/11/19 14:45:50 carr Exp $ */
+/* $Id: prefetch.C,v 1.15 1998/02/24 16:23:56 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -38,6 +38,8 @@
 #include <assert.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dg.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
+#include <libs/Memoria/ut/Recurrence.h>
+#include <iostream.h>
 
 extern Boolean Memoria_LetRocketSchedulePrefetches;
 extern Boolean Memoria_IssueDead;
@@ -192,29 +194,17 @@ static int BuildPrefetchList(AST_INDEX          node,
 
 	 name = gen_SUBSCRIPT_get_name(node);
 	 sptr = get_subscript_ptr(name);
-	 if (sptr->Locality == NONE)
 
-	   // if no locality we prefetch by word if we allocate on writes
+	 // We only prefetch stores if they are leaders of Group Spatial Set
 
-	   if (((config_type *)PED_MH_CONFIG(locality_info->ped))->
-	       write_allocate)
-	     locality_info->WordPrefetches->append_entry(node); 
+	 // We prefetch any load with self-spatial or no reuse
 
-	   // if no write allocate, only prefetch loads
-
-	   else if (NOT(sptr->store))
-	    locality_info->WordPrefetches->append_entry(node); 
-
-	   // prefetch writes that are part of group-temporal reuse
-
-	  else if (sptr->uses_regs)
-	    locality_info->WordPrefetches->append_entry(node); 
-	  else;
-
-	  // prefetch self-spatial by line
-	  
-	if (sptr->Locality == SELF_SPATIAL)
-	  locality_info->DPLinePrefetches->append_entry(node); 
+	 if (sptr->Locality == NONE &&
+	     (NOT(sptr->store) || sptr->GroupSpatialDistance > 0))
+	   locality_info->WordPrefetches->append_entry(node); 
+	 else if (sptr->Locality == SELF_SPATIAL &&
+		  (NOT(sptr->store) || sptr->GroupSpatialDistance > 0))
+	   locality_info->DPLinePrefetches->append_entry(node); 
 
 	return(WALK_SKIP_CHILDREN);
        }
@@ -450,6 +440,86 @@ static int CyclesPerIteration(AST_INDEX Node,
        return(CycleInfo.FlopCycles);
   }
 
+
+static void AllocatePrefetches(PrefetchListIterator WordIterator,
+			       PrefetchListIterator LineIterator,
+			       PrefetchList *WordPrefetches,
+			       PrefetchList *LinePrefetches,
+			       float& ScheduleBandwidth,
+			       float PrefetchBandwidth,
+			       float LineValue,
+			       float Cycles,
+			       Recurrence& RData,
+			       Boolean& NothingFetched,
+			       Boolean RecurrenceOnly)
+{
+
+  Boolean OnRecurrence;
+
+  // Add word prefetches until bandwidth required is too high
+  
+  while (WordIterator.current() != NULL)
+    {
+      if (RecurrenceOnly)
+	{
+	  AST_INDEX stmt = ut_get_stmt(WordIterator.current()->GetValue());
+	  OnRecurrence = RData.IsReferenceOnRecurrence(stmt);
+ 	  if (OnRecurrence)
+ 	    {
+ 	      cout << "**Node is on Recurrence**" << endl;
+ 	      tree_print(WordIterator.current()->GetValue());
+ 	    }
+	}
+      else
+	OnRecurrence = true;
+      
+      if ((ScheduleBandwidth <= (PrefetchBandwidth - 1.0/Cycles) || NothingFetched)
+	  && OnRecurrence)
+	{
+	  ScheduleBandwidth += (1.0/Cycles);
+	  (void)++WordIterator;
+	  NothingFetched = false;
+	}
+      else if (NOT(RecurrenceOnly))
+	{
+	  PrefetchListEntry *temp = WordIterator.current();
+	  (void)++WordIterator;
+	  WordPrefetches->Delete(temp);
+	}
+      else
+	(void)++WordIterator;
+    }
+  
+  // Add line prefetches until bandwidth too high
+  
+  while (LineIterator.current() != NULL)
+    {
+      if (RecurrenceOnly)
+	{
+	  AST_INDEX stmt = ut_get_stmt(LineIterator.current()->GetValue());
+	  OnRecurrence = RData.IsReferenceOnRecurrence(stmt);
+	}
+      else
+	OnRecurrence = true;
+      
+      if ((ScheduleBandwidth <= (PrefetchBandwidth - LineValue/Cycles) || NothingFetched)
+	  && OnRecurrence)
+	{
+	  ScheduleBandwidth += (LineValue/Cycles);
+	  (void)++LineIterator;
+	  NothingFetched = false;
+	}
+      else if (NOT(RecurrenceOnly))
+	{
+	  PrefetchListEntry *temp = LineIterator.current();
+	  (void)++LineIterator;
+	  LinePrefetches->Delete(temp);
+	}
+      else
+	(void)++LineIterator;
+    }
+}
+      
 //
 //  Function: ModeratePrefetchRequirements
 //
@@ -480,7 +550,9 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
     float Cycles;
     PrefetchListIterator LineIterator(LinePrefetches),// Iterator for line prefetches
       WordIterator(WordPrefetches);                   // Iterator for word prefetches
-   PrefetchListEntry    *temp;
+    PrefetchListEntry    *temp;
+    Boolean NothingFetched = true;
+
 
 
    // Get machine prefetch bandwidth 
@@ -503,40 +575,28 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 
 
      // If machine does not have enough bandwidth, remove some prefetches
+     // We would like to issue at least one prefetch in a loop even if
+     // bandwidth is not there (Is this too aggressive? I don't know yet.)
 
      if (BandwidthNeeded > PrefetchBandwidth)
        {
-	ScheduleBandwidth = 0.0;
+	 Recurrence RData(loop_data[loop].node,ped,loop_data[loop].level);
+	 ScheduleBandwidth = 0.0;
 
-	// Add word prefetches until bandwidth required is too high
+	 // First Check for References on Recurrences
 
-	while (WordIterator.current() != NULL)
-	  if (ScheduleBandwidth <= (PrefetchBandwidth - 1.0/Cycles))
-	    {
-	     ScheduleBandwidth += (1.0/Cycles);
-	     (void)++WordIterator;
-	    }
-	  else
-	    {
-	     temp = WordIterator.current();
-	     (void)++WordIterator;
-	     WordPrefetches->Delete(temp);
-	    }
+	 AllocatePrefetches(WordIterator,LineIterator,WordPrefetches,LinePrefetches,
+			    ScheduleBandwidth,PrefetchBandwidth,LineValue,Cycles,
+			    RData,NothingFetched,true);
 
-	// Add line prefetches until bandwidth too high
+	 // Now Check for any References
 
-	while (LineIterator.current() != NULL)
-	  if (ScheduleBandwidth <= (PrefetchBandwidth - LineValue/Cycles))
-	    {
-	     ScheduleBandwidth += (LineValue/Cycles);
-	     (void)++LineIterator;
-	    }
-	  else
-	    {
-	     temp = LineIterator.current();
-	     (void)++LineIterator;
-	     LinePrefetches->Delete(temp);
-	    }
+	 WordIterator.Reset();
+	 LineIterator.Reset();
+
+	 AllocatePrefetches(WordIterator,LineIterator,WordPrefetches,LinePrefetches,
+			    ScheduleBandwidth,PrefetchBandwidth,LineValue,Cycles,
+			    RData,NothingFetched,false);
        }
   }
 
