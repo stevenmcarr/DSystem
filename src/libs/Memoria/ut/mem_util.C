@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.19 1996/09/30 14:21:18 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.20 1996/10/14 19:25:17 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -454,19 +454,11 @@ static char *FindInductionVar(model_loop *loop_data,
    int i,loop_level;
    AST_INDEX lnode;
 
-     i = get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->surrounding_do;
-     lnode = get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->surround_node;
-     loop_level = loop_data[i].level;
-     if (loop_level < level)
-       /* this must be a bug in the dependence graph */
-       return NULL;
-     while(loop_level != level)
-       {
-        lnode = get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->surround_node;
-	loop_level--;
-       }
-     return(gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
-			 loop_data[i].node))));
+ 
+    i = get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->surrounding_do;
+    while(loop_data[i].level != level)
+	  i = loop_data[i].parent;
+    return(gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(loop_data[i].node))));
   }
 
 
