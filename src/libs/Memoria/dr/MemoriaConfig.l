@@ -1,5 +1,5 @@
 %{
-/* $Id: MemoriaConfig.l,v 1.2 1999/04/21 14:42:43 carr Exp $ */
+/* $Id: MemoriaConfig.l,v 1.3 1999/09/10 14:42:44 carr Exp $ */
 
 /*****************************************************************/
 /*                                                               */
@@ -106,6 +106,11 @@ non[ ]blocking[ ]cache[ \t]+[yn] {
 .				;
 
 %%
+
+int Memoriawrap()
+{
+  return 1;
+}
 
 void mh_get_config(NewConfig,filename)
 
