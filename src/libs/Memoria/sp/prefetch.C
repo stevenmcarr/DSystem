@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.8 1995/08/22 10:56:26 carr Exp $ */
+/* $Id: prefetch.C,v 1.9 1995/09/14 14:44:25 carr Exp $ */
 
 #include <mh.h>
 #include <fort/gi.h>
@@ -729,7 +729,7 @@ static int ConvertPrefetchCallsToDirectives(AST_INDEX stmt,
   {
    char Text[80],
         Instruction[100];
-   AST_INDEX Inv;
+   AST_INDEX Inv,Comment;
 
      if (is_call(stmt))
        {
@@ -738,8 +738,9 @@ static int ConvertPrefetchCallsToDirectives(AST_INDEX stmt,
 	  {
 	   ut_GetSubscriptText(list_first(gen_INVOCATION_get_actual_arg_LIST(Inv)),
 			       Text);
-	   sprintf(Instruction,"prefetch (%s)",Text);
-	   pt_tree_replace(stmt,pt_gen_comment(Instruction));
+	   sprintf(Instruction,"$directive prefetch (%s)",Text);
+	   Comment = pt_gen_comment(Instruction);
+	   pt_tree_replace(stmt,Comment);
 	   return(WALK_FROM_OLD_NEXT);
 	  }
        }
@@ -760,8 +761,8 @@ static void walk_loops(model_loop    *loop_data,
    PrefetchList DPLinePrefetches;
    PrefetchList WordPrefetches;
 
-     IVar[loop_data[loop].level-1] = gen_get_text(gen_DO_get_control(
-                                     gen_INDUCTIVE_get_name(loop_data[loop].node)));
+     IVar[loop_data[loop].level-1] = gen_get_text(gen_INDUCTIVE_get_name(
+					  gen_DO_get_control(loop_data[loop].node)));
 
      if (loop_data[loop].inner_loop == -1)
        {
