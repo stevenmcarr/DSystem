@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.16 1998/03/30 16:30:52 carr Exp $ */
+/* $Id: prefetch.C,v 1.17 1998/06/01 22:02:34 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -877,6 +877,22 @@ static int PipelineIterations(int minimum,
     return minimum >= iteration ? minimum : minimum * ceil_ab(iteration,minimum);
   }
 
+
+static int set_type(AST_INDEX node,
+		    Generic   dummy)
+ {   
+   gen_put_real_type(node,TYPE_INTEGER);   
+   gen_put_converted_type(node,TYPE_INTEGER);   
+   return(WALK_CONTINUE);
+ }
+
+static AST_INDEX make_integer_type(AST_INDEX expr)
+
+ {   
+   walk_expression(expr,(WK_EXPR_CLBACK)set_type,(WK_EXPR_CLBACK)NOFUNC,(Generic)NULL);
+   return expr;
+ }
+
 //  Function: CreatePreLoop
 //
 //  Input: loop_data - tree structure of loop nest
@@ -906,10 +922,19 @@ static AST_INDEX CreatePreLoop(model_loop    *loop_data,
     Boolean need_pre_loop = false;
     int lwb_v,                 // lower bound of loop
       upb_v,                   // upper bound of loop
-      step_v;                  // step size of loop
+      step_v = 0;              // step size of loop
 
      control = gen_DO_get_control(loop_data[loop].node);
      lwb = gen_INDUCTIVE_get_rvalue1(control);
+
+     step = gen_INDUCTIVE_get_rvalue3(control);
+     if (step == AST_NIL)
+       step_v = 1;
+
+     // if step symbolic we need a pre loop
+
+     else if (pt_eval(step,&step_v))
+        need_pre_loop = true;
 
      // if lower bound symbolic we need a pre loop
 
@@ -923,43 +948,72 @@ static AST_INDEX CreatePreLoop(model_loop    *loop_data,
 
 	if (pt_eval(upb,&upb_v))
 	  need_pre_loop = true;
-	else
-	  {
-	   step = gen_INDUCTIVE_get_rvalue3(control);
-	   if (step == AST_NIL)
-	     step_v = 1;
-
-	   // if step symbolic we need a pre loop
-
-	   else if (pt_eval(step,&step_v))
-	     need_pre_loop = true;
-	   if (!need_pre_loop)
-	     if (mod((upb_v - lwb_v + 1)/step_v, UnrollVal + 1)
+	else if (mod((upb_v - lwb_v + 1)/step_v, UnrollVal + 1)
 	           != 0)
 
-	       // if loop not executed a multiple of unroll value then need pre loop
+	    // if loop not executed a multiple of unroll value then need pre loop
 
-	       need_pre_loop = true;
-	  }
+	    need_pre_loop = true;
        }
      if (need_pre_loop)
        {
 
-	 // create pre loop
+	 if (UnrollVal < 8 && step_v == 1)
+	   {
+	     AST_INDEX PeeledIteration;
+	     AST_INDEX IndexVal;
+	     AST_INDEX TestVal;
+	     AST_INDEX TestExpr;
+	     AST_INDEX OffsetVar = pt_gen_ident("offset$$");
+	     char      *Index = gen_get_text(gen_INDUCTIVE_get_name(control));
+	     AST_INDEX Mod = 
+	       make_integer_type(pt_gen_mod(pt_simplify_expr(pt_gen_add(
+						pt_gen_sub(tree_copy_with_type(upb),
+							   tree_copy_with_type(lwb)),
+							 pt_gen_int(1))),
+					    pt_simplify_expr(pt_gen_int(UnrollVal+1))));
 
-	 new_loop = tree_copy_with_type(loop_data[loop].node);
+	     list_insert_before(loop_data[loop].node,
+				gen_ASSIGNMENT(AST_NIL,OffsetVar,Mod));
+	     for (int i = 0; i < UnrollVal; i++)
+	       {
+		 IndexVal = pt_simplify_expr(pt_gen_add(tree_copy_with_type(lwb),
+			 				pt_gen_int(i)));
+		 PeeledIteration = 
+		   tree_copy_with_type(gen_DO_get_stmt_LIST(loop_data[loop].node));
+		 ut_update_labels(PeeledIteration,Symtab);
+		 pt_var_replace(PeeledIteration,Index,IndexVal);
+		 TestVal = pt_gen_int(i+1);
+		 TestExpr = gen_BINARY_GE(tree_copy_with_type(OffsetVar),
+					  tree_copy_with_type(TestVal));
+		 list_insert_before(loop_data[loop].node,
+				    gen_IF(AST_NIL,AST_NIL,
+					   list_create(gen_GUARD(AST_NIL,TestExpr,
+								 PeeledIteration))));
+	       }
 
-	 // change duplicate labels
-
-	 ut_update_labels(new_loop,Symtab);
-
-	 // update loop bounds for pre-loop and loop
-
-	 ut_update_bounds(loop_data[loop].node,new_loop,UnrollVal);
-
-	 // put pre loop before current loop
-
-	 list_insert_before(loop_data[loop].node,new_loop);
+	     gen_INDUCTIVE_put_rvalue1(control,
+				       pt_gen_add(tree_copy_with_type(lwb),
+						  tree_copy_with_type(OffsetVar)));
+	   }
+	 else
+	   {
+	     // create pre loop
+	     
+	     new_loop = tree_copy_with_type(loop_data[loop].node);
+	     
+	     // change duplicate labels
+	     
+	     ut_update_labels(new_loop,Symtab);
+	     
+	     // update loop bounds for pre-loop and loop
+	     
+	     ut_update_bounds(loop_data[loop].node,new_loop,UnrollVal);
+	     
+	     // put pre loop before current loop
+	     
+	     list_insert_before(loop_data[loop].node,new_loop);
+	   }
        }
      else 
 
@@ -1111,22 +1165,25 @@ static void UnrollLoop(model_loop   *loop_data,
      // insert "priming" prefetches before pre-loop begins.  These are the things that
      // need to be prefetched but aren't in loop do to distance offset
 
-     if (PreLoop == AST_NIL)
-       PreLoop = loop_data[loop].node;
-     for (i = 0; i < WordPrefetchDistance; i++)
-       InsertPrefetchesBeforeStmt(PreLoop,WordPrefetches,Var,
-				  gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
-				  i,false,false,
-				  gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
+     if (NOT(Memoria_LetRocketSchedulePrefetches))
+       { 
+        if (PreLoop == AST_NIL)
+          PreLoop = loop_data[loop].node;
+        for (i = 0; i < WordPrefetchDistance; i++)
+          InsertPrefetchesBeforeStmt(PreLoop,WordPrefetches,Var,
+				     gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
+				     i,false,false,
+				     gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
        
-     // insert "priming" prefetches for line prefetches.  Prefetch all lines before
-     // the first prefetch in the pre-conditioning loop.
+        // insert "priming" prefetches for line prefetches.  Prefetch all lines before
+        // the first prefetch in the pre-conditioning loop.
 
-     for (i = 0; i < 2*LineDistance; i+= UnrollVal)
-       InsertPrefetchesBeforeStmt(PreLoop,LinePrefetches,Var,
-				  gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
-				  i,true,false,
-				  gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
+        for (i = 0; i < 2*LineDistance; i+= UnrollVal)
+          InsertPrefetchesBeforeStmt(PreLoop,LinePrefetches,Var,
+				     gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(PreLoop)),
+				     i,true,false,
+				     gen_INDUCTIVE_get_rvalue1(gen_DO_get_control(PreLoop)));
+      }
       
   }
 
