@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.33 1995/08/07 16:50:14 carr Exp $ */
+/* $Id: mh_walk.C,v 1.34 1995/08/18 10:07:16 trsuchyt Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -48,8 +48,8 @@
 #include <FDgraph.h>
 #include <PedExtern.h>
 
-extern char *mc_program;
-extern char *mc_module_list;
+static char *mc_program = NULL;
+static char *mc_module_list = NULL;
 
 static LoopStatsType *LoopStats = NULL;
 
@@ -446,47 +446,6 @@ static void AnnotateCodeForCache(AST_INDEX      stmt,
 				   walk_info->ftt);
   }
 
-/****************************************************************************/
-/*                                                                          */
-/*   Function:     AnnotateCodeForLDSTCount                                 */
-/*                                                                          */
-/*   Input:      stmt - a DO-loop stmt                                      */
-/*               level - nesting level of stmt                              */
-/*               walk_info - structure to hold passed information           */
-/*                                                                          */
-/****************************************************************************/
-
-
-static void AnnotateCodeForLDSTCount(AST_INDEX      stmt,
-				     int            level,
-				     walk_info_type *walk_info)
-  {
-   AST_INDEX List,ExecutableStmt,TypeStmt,CommonStmt;
-
-     List = pt_gen_ident("NumLoads");
-     List = list_create(List);
-     List = list_insert_last(List,pt_gen_ident("NumStores"));
-     ExecutableStmt = first_f77_executable_stmt(ut_GetSubprogramStmtList(stmt));
-     TypeStmt = gen_TYPE_STATEMENT(AST_NIL,gen_TYPE_LEN(gen_REAL(),
-							pt_gen_int(SIZE_PER_DB_PREC)),
-				   tree_copy(List));
-     ft_SetComma(TypeStmt,false);
-     list_insert_before(ExecutableStmt,TypeStmt);
-     CommonStmt = gen_COMMON(AST_NIL,list_create(gen_COMMON_ELT(
-					           pt_gen_ident("/LdStCount/"),List)));
-     list_insert_before(ExecutableStmt,CommonStmt);
-     if (walk_info->MainProgram)
-       {
-	list_insert_before(ExecutableStmt,gen_ASSIGNMENT(AST_NIL,
-							 pt_gen_ident("NumLoads"),
-							 pt_gen_int(0)));
-	list_insert_before(ExecutableStmt,gen_ASSIGNMENT(AST_NIL,
-							 pt_gen_ident("NumStores"),
-							 pt_gen_int(0)));
-       }
-     memory_AnnotateWithLDSTCount(stmt,level,walk_info->MainProgram);
-  }
-
 
 static void PerformCacheAnalysis(AST_INDEX stmt,
 				 int level,
@@ -588,12 +547,10 @@ static int post_walk(AST_INDEX      stmt,
        }
       return(WALK_FROM_OLD_NEXT);
      } 
-   else if (is_program(stmt) || is_function(stmt) || is_subroutine(stmt))
-     if (walk_info->selection == LDST)
-       AnnotateCodeForLDSTCount(stmt,level,walk_info);
-     else if ((mc_program != NULL || mc_module_list != NULL) && 
-	      walk_info->selection == ANNOTATE)
-       AnnotateCodeForCache(stmt,level,walk_info);
+   else if ((is_program(stmt) || is_function(stmt) || is_subroutine(stmt)) && 
+	    (mc_program != NULL || mc_module_list != NULL) && 
+	    walk_info->selection == ANNOTATE)
+     AnnotateCodeForCache(stmt,level,walk_info);
    return(WALK_CONTINUE);
   }
 
