@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.2 1993/06/30 21:31:34 johnmc Exp $ */
+/* $Id: prefetch.C,v 1.3 1993/07/20 16:31:32 carr Exp $ */
 
 #include <mh.h>
 #include <fort/gi.h>
@@ -275,36 +275,36 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 	  if (ScheduleBandwidth <= (PrefetchBandwidth - 1.0/Cycles))
 	    {
 	     ScheduleBandwidth += (1.0/Cycles);
-	     (void)WordIterator.next_entry();
+	     (void)WordIterator++;
 	    }
 	  else
 	    {
 	     temp = WordIterator.current();
-	     (void)WordIterator.next_entry();
+	     (void)WordIterator++;
 	     WordPrefetches->Delete(temp);
 	    }
 	while (DPLineIterator.current() != NULL)
 	  if (ScheduleBandwidth <= (PrefetchBandwidth - DPLineValue/Cycles))
 	    {
 	     ScheduleBandwidth += (DPLineValue/Cycles);
-	     (void)DPLineIterator.next_entry();
+	     (void)DPLineIterator++;
 	    }
 	  else
 	    {
 	     temp = DPLineIterator.current();
-	     (void)DPLineIterator.next_entry();
+	     (void)DPLineIterator++;
 	     DPLinePrefetches->Delete(temp);
 	    }
 	while (SPLineIterator.current() != NULL)
 	  if (ScheduleBandwidth <= (PrefetchBandwidth - SPLineValue/Cycles))
 	    {
 	     ScheduleBandwidth += (SPLineValue/Cycles);
-	     (void)SPLineIterator.next_entry();
+	     (void)SPLineIterator++;
 	    }
 	  else
 	    {
 	     temp = SPLineIterator.current();
-	     (void)SPLineIterator.next_entry();
+	     (void)SPLineIterator++;
 	     SPLinePrefetches->Delete(temp);
 	    }
        }
@@ -341,7 +341,7 @@ static void InsertPrefetchesBeforeStmt(AST_INDEX    Stmt,
 
      for (Node = Iterator.current();
 	  Node != NULL;
-	  Node = Iterator.next_entry())
+	  Node = Iterator.current())
        {
 	if (Stmt != AST_NIL)
           list_insert_before(Stmt,MakePrefetchStmt(Node->GetValue(),Var,
@@ -349,6 +349,7 @@ static void InsertPrefetchesBeforeStmt(AST_INDEX    Stmt,
 	else
          list_insert_before(ut_get_stmt(Node->GetValue()),
 			    MakePrefetchStmt(Node->GetValue(),Var,distance));
+	Iterator++;
        }
   }
 
