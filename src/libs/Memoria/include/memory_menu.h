@@ -1,4 +1,4 @@
-/* $Id: memory_menu.h,v 1.1 1993/09/06 15:01:35 carr Exp $ */
+/* $Id: memory_menu.h,v 1.2 1994/04/13 14:25:43 carr Exp $ */
 
 #ifndef memory_menu_h
 #define memory_menu_h
@@ -15,7 +15,8 @@
 #define MEM_ALL			8 
 #define PREFETCH                9
 #define ANNOTATE                10
-#define MEM_SIZE		11    /* MUST BE LAST! */
+#define LI_FUSION		11
+#define MEM_SIZE		12    /* MUST BE LAST! */
 
 #define ARENAS 1
 

@@ -1,4 +1,4 @@
-/* $Id: mh.h,v 1.11 1994/01/18 14:24:43 carr Exp $ */
+/* $Id: mh.h,v 1.12 1994/04/13 14:25:48 carr Exp $ */
 
 #ifndef mh_h
 #define mh_h 
@@ -90,7 +90,8 @@ struct loop_struct {
   int             *unroll_vector;
   int             MemoryOrder[MAX_LEVEL],
                   FinalOrder[MAX_LEVEL],
-                  OutermostLvl;
+                  OutermostLvl,
+                  DistributeNumber;
   FloatList       InvariantCostList,
                   SpatialCostList,
                   OtherSpatialCostList,

@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.11 1994/01/18 14:23:11 carr Exp $ */
+/* $Id: mh_walk.C,v 1.12 1994/04/13 14:23:23 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -18,6 +18,7 @@
 #include <fort/walk.h>
 #include <pt_util.h>
 #include <mem_util.h>
+#include <assert.h>
 
 #ifndef memory_menu_h
 #include <memory_menu.h>
@@ -44,7 +45,10 @@
 #endif
 
 #include <fort/FortTextTree.h>
-#include <ArrayTable.h>
+#include <FDgraph.h>
+
+extern char *mc_program;
+extern char *mc_module_list;
 
 static LoopStatsType *LoopStats = NULL;
 
@@ -133,73 +137,6 @@ static int remove_do_labels(AST_INDEX stmt,
 
 /****************************************************************************/
 /*                                                                          */
-/*   Function:   MakeInitList                                               */
-/*                                                                          */
-/*   Input:  TableInfo - Table of array reference names to initialize the   */
-/*                       name table used by the cache simulator on          */
-/*                       code annotated with calls to the simulator         */
-/*                                                                          */
-/*   Description: Create a declaration of a table of array reference        */
-/*                strings used as output of the cache simulator.            */
-/*                                                                          */
-/****************************************************************************/
-
-
-static AST_INDEX MakeInitList(TableInfoType *TableInfo)
-
-  {
-   AST_INDEX list,node;
-   int i;
-   char TextConstant[80];
-
-     list = list_create(AST_NIL);
-     for (i = 0; i < TableInfo->count; i++)
-       if (TableInfo->ArrayTable[i].node != AST_NIL)
-	 {
-	  node = gen_CONSTANT();
-	  sprintf(TextConstant,"'%s\\0'",TableInfo->ArrayTable[i].Text);
-	  gen_put_text(node,TextConstant,STR_TEXT_STRING);
-	  list_insert_last(list,node);
-	 }
-       else
-	 {
-	  node = gen_CONSTANT();
-	  sprintf(TextConstant,"'%s\\0'","");
-	  gen_put_text(node,TextConstant,STR_TEXT_STRING);
-	  list_insert_last(list,node);
-	 }
-     return(list);
-  }
-
-
-/****************************************************************************/
-/*                                                                          */
-/*   Function: CreateTableDecls                                             */
-/*                                                                          */
-/*   Input:      StmtList - list of statements in a subroutine              */
-/*               TableInfo - Table of array reference names                 */
-/*                                                                          */
-/*   Description: Create a type statement for the table of array reference  */
-/*                strings.                                                  */
-/*                                                                          */
-/****************************************************************************/
-
-static void CreateTableDecls(AST_INDEX StmtList,
-			     TableInfoType *TableInfo)
-
-  {
-   list_insert_first(StmtList,gen_TYPE_STATEMENT(AST_NIL,
-	gen_TYPE_LEN(gen_CHARACTER(),pt_gen_int(TableInfo->MaxLength)),
-                     list_create(
-                         gen_ARRAY_DECL_LEN(
-                             pt_gen_ident("array$table"),AST_NIL,
-                             list_create(pt_gen_int(TableInfo->count)),
-			     MakeInitList(TableInfo)))));
-   ft_SetComma(list_first(StmtList),false);
-  }
-
-/****************************************************************************/
-/*                                                                          */
 /*   Function:  pre_walk                                                    */
 /*                                                                          */
 /*   Input:     stmt - statement in the AST                                 */
@@ -226,56 +163,37 @@ static int pre_walk(AST_INDEX      stmt,
 	walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
 	walk_info->routine = gen_get_text(gen_PROGRAM_get_name(stmt));
 	walk_info->symtab = ft_SymGetTable(walk_info->ft,walk_info->routine);
+	walk_info->MainProgram = true;
 	fst_InitField(walk_info->symtab,NEW_VAR,false,0);
-	if (walk_info->selection == ANNOTATE)
-	  {
-	   memory_BuildArrayTableInfo(stmt,LEVEL1,&walk_info->TableInfo,
-				      walk_info->ar);
-	   CreateTableDecls(gen_PROGRAM_get_stmt_LIST(stmt),
-			    &walk_info->TableInfo);
-	  }
        }
      else if (is_subroutine(stmt))
        {
 	walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
 	walk_info->routine = gen_get_text(gen_SUBROUTINE_get_name(stmt));
 	walk_info->symtab = ft_SymGetTable(walk_info->ft,walk_info->routine);
+	walk_info->MainProgram = false;
 	fst_InitField(walk_info->symtab,NEW_VAR,false,0);
-	if (walk_info->selection == ANNOTATE)
-	  {
-	   memory_BuildArrayTableInfo(stmt,LEVEL1,&walk_info->TableInfo,
-				      walk_info->ar);
-	   CreateTableDecls(gen_SUBROUTINE_get_stmt_LIST(stmt),
-			    &walk_info->TableInfo);
-	  }
        }
      else if (is_function(stmt))
        {
 	walk_expression(stmt,set_scratch,NOFUNC,(Generic)NULL);
 	walk_info->routine = gen_get_text(gen_FUNCTION_get_name(stmt));
 	walk_info->symtab = ft_SymGetTable(walk_info->ft,walk_info->routine);
+	walk_info->MainProgram = false;
 	fst_InitField(walk_info->symtab,NEW_VAR,false,0);
-	if (walk_info->selection == ANNOTATE)
-	  {
-	   memory_BuildArrayTableInfo(stmt,LEVEL1,&walk_info->TableInfo,
-				      walk_info->ar);
-	   CreateTableDecls(gen_FUNCTION_get_stmt_LIST(stmt),
-			    &walk_info->TableInfo);
-	  }
        }
      else if ((is_stop(stmt) || is_return(stmt)) && 
 	      walk_info->selection == ANNOTATE)
-       {
-	node1 = gen_CONSTANT();
-	sprintf(TextConstant,"%%val(%d)",walk_info->TableInfo.MaxLength);
-	gen_put_text(node1,TextConstant,STR_TEXT_STRING);
-	list_insert_before(stmt,pt_gen_call("fortran_cache_report",
-	  list_insert_last(list_create(pt_gen_ident("array$table")),node1)));
-       }
-     remove_bogus_dependences(stmt,walk_info->ped);
+       if (mc_program != NULL || mc_module_list != NULL)
+         if (walk_info->MainProgram)
+	   list_insert_before(stmt,pt_gen_call("cache_report",AST_NIL));
+	 else;  
+       else
+	 list_insert_before(stmt,pt_gen_call("cache_report",AST_NIL));
+     if (walk_info->selection != ANNOTATE)
+       remove_bogus_dependences(stmt,walk_info->ped);
      return(WALK_CONTINUE);
   }
-
 
 /****************************************************************************/
 /*                                                                          */
@@ -329,12 +247,13 @@ static void InterchangeStats(AST_INDEX      stmt,
 
 static void Interchange(AST_INDEX      stmt,
 			int            level,
-			walk_info_type *walk_info)
+			walk_info_type *walk_info,
+			Boolean        Fusion)
   {
       /* perform loop interchange */
    memory_loop_interchange(walk_info->ped,stmt,
 			   LEVEL1,walk_info->symtab,
-			   walk_info->ar);
+			   walk_info->ar,Fusion);
 
      /* re-initialize scratch field (no dangling pointers) */
    walk_expression(stmt,set_scratch,NOFUNC,
@@ -485,26 +404,26 @@ static void AnnotateCodeForCache(AST_INDEX      stmt,
 				 int            level,
 				 walk_info_type *walk_info)
   {
-   AST_INDEX node1,node2;
+   AST_INDEX node1,node2,ExecutableStmt;
    char TextConstant[80];
 
-     if (walk_info->LoopStats->Nests == 1)
+     if (walk_info->LoopStats->Nests == 1 && mc_program == NULL &&
+	 mc_module_list == NULL)
        {
 
 	  /* initialize the simulator before the first loop nest */
 
-	node1 = gen_CONSTANT();
-	sprintf(TextConstant,"%%val(%d)",walk_info->TableInfo.count);
-	gen_put_text(node1,TextConstant,STR_TEXT_STRING);
-	node2 = gen_CONSTANT();
-	sprintf(TextConstant,"%%val(%d)",walk_info->TableInfo.LineNum);
-	gen_put_text(node2,TextConstant,STR_TEXT_STRING);
-	list_insert_before(stmt,pt_gen_call("cache_init",
-					   list_insert_last(list_create(node1),
-							    node2)));
+	ExecutableStmt = first_f77_executable_stmt(ut_GetSubprogramStmtList(stmt));
+	list_insert_before(ExecutableStmt,pt_gen_call("cache_init",AST_NIL));
        }
+     else if ((mc_program != NULL || mc_module_list != NULL) &&
+	      walk_info->MainProgram)
+       {
+	ExecutableStmt = first_f77_executable_stmt(gen_PROGRAM_get_stmt_LIST(stmt));
+	list_insert_before(ExecutableStmt,pt_gen_call("cache_init",AST_NIL));
+       }	   
      memory_AnnotateWithCacheCalls(stmt,level, walk_info->routine,
-				   &walk_info->TableInfo,walk_info->ftt);
+				   walk_info->ftt);
   }
 
 
@@ -536,7 +455,7 @@ static int post_walk(AST_INDEX      stmt,
       switch(walk_info->selection) {
 	case INTERSTATS:     InterchangeStats(stmt,level,walk_info);
 	                     break;
-	case INTERCHANGE:    Interchange(stmt,level,walk_info);
+	case INTERCHANGE:    Interchange(stmt,level,walk_info,false);
 	                     break;
 	case SCALAR_REP:     ScalarReplacement(stmt,level,walk_info);
 	                     break;
@@ -560,13 +479,15 @@ static int post_walk(AST_INDEX      stmt,
 			       }
 			     ScalarReplacement(stmt,level,walk_info);
 	                     break;
-	case LI_SCALAR:      Interchange(stmt,level,walk_info);
+	case LI_SCALAR:      Interchange(stmt,level,walk_info,false);
 			     ScalarReplacement(stmt,level,walk_info);
 	                     break;
-	case LI_UNROLL:      Interchange(stmt,level,walk_info);
+	case LI_UNROLL:      Interchange(stmt,level,walk_info,false);
 			     (void)UnrollAndJam(stmt,level,walk_info);
 	                     break;
-	case MEM_ALL:        Interchange(stmt,level,walk_info);
+	case LI_FUSION:      Interchange(stmt,level,walk_info,true);
+	                     break;
+	case MEM_ALL:        Interchange(stmt,level,walk_info,true);
 			     new_stmt = UnrollAndJam(stmt,level,walk_info);
 
 			        /* perform scalar replacement on each of the
@@ -585,15 +506,47 @@ static int post_walk(AST_INDEX      stmt,
 	                     break;
 	case PREFETCH:       SoftwarePrefetch(stmt,level,walk_info);
 	                     break;
-	case ANNOTATE:       AnnotateCodeForCache(stmt,level,walk_info);
+	case ANNOTATE:       if (mc_program == NULL && mc_module_list == NULL)
+	                       AnnotateCodeForCache(stmt,level,walk_info);
 	                     break;
        }
       return(WALK_FROM_OLD_NEXT);
      } 
+   else if ((is_program(stmt) || is_function(stmt) || is_subroutine(stmt)) && 
+	    (mc_program != NULL || mc_module_list != NULL))
+     AnnotateCodeForCache(stmt,level,walk_info);
    return(WALK_CONTINUE);
   }
 
 
+static int TryFusionToCleanup(AST_INDEX stmt,
+			      int       level,
+			      PedInfo   ped)
+
+  {
+   FDGraph *problem;
+   Boolean all,any;
+
+     if (is_do(stmt) && level == LEVEL1)
+       {
+	if ((problem = fdBuildFusion(ped,stmt,false)) != NULL)
+	  {
+	   fdGreedyFusion(ped,problem,false,&all,&any);
+	   if (any)
+	     {	   
+	      fprintf(stderr,"Fusion Candidates = %d\n",problem->size);
+	      fprintf(stderr,"Fusion Applied = %d\n",problem->types);
+	      fdDoFusion(ped,problem,stmt);
+	      fprintf(stderr,"Fusion Performed to Improve Cache Performance\n");
+	     }
+	   fdDestroyProblem(problem);
+	  }
+	return(WALK_CONTINUE);
+       }
+     return(WALK_CONTINUE);
+  }
+
+ 
 /****************************************************************************/
 /*                                                                          */
 /*   Function:   build_label_symtab                                         */
@@ -1160,18 +1113,20 @@ void mh_walk_ast(int          selection,
      walk_info.ped = ped;
      walk_info.ft = ft;
      walk_info.ftt = PED_FTT(ped);
-     walk_info.TableInfo.ftt = walk_info.ftt;
      walk_info.ar = ar;
      walk_info.program = ctxLocation(mod_context); 
-
-     if (selection == UNROLLSTATS || selection == INTERSTATS)
-       walk_info.LoopStats = (LoopStatsType *)calloc(1,sizeof(LoopStatsType));
+     walk_info.LoopStats = (LoopStatsType *)calloc(1,sizeof(LoopStatsType));
+     walk_info.MainProgram = false;
 	
      walk_statements(root,LEVEL1,remove_do_labels,NOFUNC,(Generic)NULL);
      walk_statements(root,LEVEL1,build_label_symtab,check_labels,
 		     (Generic)&walk_info);
+     walk_statements(root,LEVEL1,NOFUNC,ut_change_logical_to_block_if,
+			   (Generic)NULL);
      walk_statements(root,LEVEL1,pre_walk,post_walk,
 		     (Generic)&walk_info);
+     if (selection == LI_FUSION)
+       walk_statements(root,LEVEL1,TryFusionToCleanup,NOFUNC,(Generic)ped);
      walk_statements(root,LEVEL1,build_label_symtab,check_labels,
 		     (Generic)&walk_info);
      walk_statements(root,LEVEL1,get_symtab_for_decls,NOFUNC,

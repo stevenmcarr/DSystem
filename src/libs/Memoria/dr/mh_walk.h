@@ -1,4 +1,4 @@
-/* $Id: mh_walk.h,v 1.10 1994/01/18 14:23:12 carr Exp $ */
+/* $Id: mh_walk.h,v 1.11 1994/04/13 14:23:29 carr Exp $ */
 
 #ifndef mh_walk_h
 #define mh_walk_h
@@ -33,19 +33,18 @@
 #include <ast.h>
 #endif
 
-#include <ArrayTable.h>
 
 typedef struct walkinfotype {
   int     selection;
   PedInfo ped;
   FortTree ft;
   FortTextTree ftt;
-  TableInfoType TableInfo;
   SymDescriptor symtab;
   arena_type    *ar;
   LoopStatsType *LoopStats;
   char          *routine;
   char          *program;
+  Boolean       MainProgram;
  } walk_info_type;
 
 typedef struct decllisttype {

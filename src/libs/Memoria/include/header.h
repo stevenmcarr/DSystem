@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.8 1993/07/20 15:28:59 carr Exp $ */
+/* $Id: header.h,v 1.9 1994/04/13 14:25:32 carr Exp $ */
 
 #ifndef header_h
 #define header_h
@@ -34,8 +34,8 @@ EXTERN(void, memory_interchange_stats,(PedInfo ped,AST_INDEX root,
 					       arena_type *ar));
 
 EXTERN(void, memory_loop_interchange,(PedInfo ped,AST_INDEX root,
-					      int level,SymDescriptor symtab,
-					      arena_type *ar));
+				      int level,SymDescriptor symtab,
+				      arena_type *ar, Boolean Fusion));
 
 EXTERN(AST_INDEX, memory_unroll_and_jam,(PedInfo ped,AST_INDEX root,
 					 int level,int num_loops,
@@ -54,7 +54,6 @@ EXTERN(void, memory_software_prefetch,(PedInfo ped,AST_INDEX root,
 
 EXTERN(void, memory_AnnotateWithCacheCalls,(AST_INDEX root, int level,
 					    char *routine,
-					    TableInfoType *TableInfo,
 					    FortTextTree ftt));
 
 EXTERN (void, ApplyMemoryCompiler, (int selection, PedInfo ped, AST_INDEX root,

@@ -1,4 +1,4 @@
-/* $Id: mem_util.h,v 1.8 1994/01/18 16:12:55 carr Exp $ */
+/* $Id: mem_util.h,v 1.9 1994/04/13 14:25:37 carr Exp $ */
 
 #ifndef mem_util_h
 #define mem_util_h
@@ -81,6 +81,7 @@ typedef struct StatsStruct {
 
 
 EXTERN(AST_INDEX, ut_get_stmt,(AST_INDEX node));
+EXTERN(AST_INDEX, ut_GetSubprogramStmtList,(AST_INDEX stmt));
 EXTERN(AST_INDEX, ut_tree_copy_with_type,(AST_INDEX node,int index,
 					arena_type *ar));
 
@@ -105,4 +106,8 @@ EXTERN(LocalityType, ut_GetReferenceType, (AST_INDEX  node,
 					   int        loop,
 					   PedInfo    ped));
 EXTERN(void, ut_GetSubscriptText, (AST_INDEX Node, char *Text));
+
+EXTERN(int,ut_change_logical_to_block_if, (AST_INDEX stmt,
+					   int       level,
+					   int       dummy));
 #endif
