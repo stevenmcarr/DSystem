@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 1997/03/11 14:30:01 carr Exp $
+# $Id: Makefile,v 1.2 1997/04/09 18:59:59 carr Exp $
 
 HERE = libs/frontEnd/prettyPrinter
 
@@ -10,6 +10,6 @@ SRCS = \
 #	   options_drace.C \
 #	   ptree_lib.C
 
-ARCHIVE = FrontEnd-$(DSYSTEM_OS)-g.a
+ARCHIVE = ../FrontEnd-$(DSYSTEM_OS)-g.a
 
 include Makeinclude
