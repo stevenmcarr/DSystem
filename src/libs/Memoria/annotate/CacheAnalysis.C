@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.14 1997/11/10 21:20:42 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.15 1997/11/19 14:44:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -241,7 +241,7 @@ static Boolean IsDead(AST_INDEX Stmt)
 
 static Boolean IsValidDependence(AST_INDEX PrefetchNode,
 				 AST_INDEX RefNode,
-				 char      *InnerIvar)
+				 char      *InnerIvar = NULL)
 
 {
   AST_INDEX SubList1,SubList2;
@@ -255,24 +255,44 @@ static Boolean IsValidDependence(AST_INDEX PrefetchNode,
       for (Sub1 = list_first(SubList1), Sub2 = list_first(SubList2);
 	   Sub1 != AST_NIL && Sub2 != AST_NIL;
 	   Sub1 = list_next(Sub1), Sub2 = list_next(Sub2))
-	if (NOT(pt_find_var(Sub1,InnerIvar)) && NOT(pt_find_var(Sub2,InnerIvar)))
+	if (InnerIvar != NULL)
+	  if (NOT(pt_find_var(Sub1,InnerIvar)))
+	    if (NOT(pt_find_var(Sub2,InnerIvar)))
+	      if (NOT(pt_expr_equal(Sub1,Sub2)))
+		return false;
+	      else;
+	    else
+	      return false;
+	  else 
+	    if (pt_find_var(Sub2,InnerIvar))
+	      return false;
+	    else;
+	else
 	  if (NOT(pt_expr_equal(Sub1,Sub2)))
 	    return false;
+      if (Sub1 != AST_NIL || Sub2 != AST_NIL)
+	return false;
+      else
+	return true;
     }
-  return true;
+  else
+    return false;
 }
 
 static void AddDependencesToDirective(Directive *Dir,
-				      UtilList  *RefList,
-				      char      *InnerIvar)
+				      UtilList  *RefList)
 {
   UtilNode *Ref;
   DepStruct *Dep;
+  AST_INDEX DepNode;
 
   for (Ref = UTIL_HEAD(RefList);
        Ref != NULLNODE;
        Ref = UTIL_NEXT(Ref))
-    if (IsValidDependence(Dir->Subscript,(AST_INDEX)UTIL_NODE_ATOM(Ref),InnerIvar))
+    for (DepNode = list_first(Dir->ASTDependenceList);
+	 DepNode != AST_NIL;
+	 DepNode = list_next(DepNode))
+      if (IsValidDependence(DepNode,(AST_INDEX)UTIL_NODE_ATOM(Ref)))
       {
 	Dep = new DepStruct;
 	Dep->ReferenceNumber = DepInfoPtr(UTIL_NODE_ATOM(Ref))->ReferenceNumber;
@@ -354,7 +374,7 @@ static void BuildPrefetchDependenceList(CacheInfoType *CacheInfo)
        Stmt = list_next(Stmt))
     {
       if (IsPrefetch(Stmt))
-	AddDependencesToDirective(DirectiveInfoPtr(Stmt),AfterList,InnerIvar);
+	AddDependencesToDirective(DirectiveInfoPtr(Stmt),AfterList);
       else if (IsDead(Stmt))
 	AddDependencesToReferences(DirectiveInfoPtr(Stmt),BeforeList,InnerIvar);
       walk_expression(Stmt,(WK_EXPR_CLBACK)AddRefsToList,NOFUNC,(Generic)BeforeList);

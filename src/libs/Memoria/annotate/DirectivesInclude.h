@@ -1,4 +1,4 @@
-/* $Id: DirectivesInclude.h,v 1.3 1997/03/27 20:22:30 carr Exp $ */
+/* $Id: DirectivesInclude.h,v 1.4 1997/11/19 14:44:51 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -16,6 +16,7 @@ typedef enum {PrefetchInstruction,FlushInstruction} Instruction;
 typedef struct DirectiveStruct {
   Instruction Instr;
   AST_INDEX   Subscript;
+  AST_INDEX   ASTDependenceList;
   UtilList    *DependenceList;
   int         DirectiveNumber;
  }  Directive;
