@@ -257,7 +257,8 @@ static void DoPartition(AST_INDEX name,
 	  edge != END_OF_LIST;
 	  edge = dg_next_src_ref( PED_DG(ped),edge))
 
-       if (dg[edge].level >= MinLevel)
+       if (dg[edge].level >= MinLevel ||
+	   dg[edge].level == LOOP_INDEPENDENT)
          if ((dg[edge].consistent == consistent_SIV ||   /* check consistency */
 	      (dg[edge].consistent == consistent_MIV && 
 	       (dg[edge].level == LOOP_INDEPENDENT ||
@@ -282,7 +283,8 @@ static void DoPartition(AST_INDEX name,
      for (edge = dg_first_sink_ref( PED_DG(ped),refl);
 	  edge != END_OF_LIST;
 	  edge = dg_next_sink_ref( PED_DG(ped),edge))
-       if (dg[edge].level >= MinLevel)
+       if (dg[edge].level >= MinLevel ||
+	   dg[edge].level == LOOP_INDEPENDENT)
          if ((dg[edge].consistent == consistent_SIV ||   /* check consistency */
 	      (dg[edge].consistent == consistent_MIV && 
 	       dg[edge].level == LOOP_INDEPENDENT ||
