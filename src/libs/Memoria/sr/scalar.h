@@ -1,7 +1,9 @@
-/* $Id: scalar.h,v 1.5 1993/06/21 13:47:17 carr Exp $ */
+/* $Id: scalar.h,v 1.6 1993/07/20 16:33:44 carr Exp $ */
 
 #ifndef scalar_h
 #define scalar_h
+
+#include <LoopStats.h>
 
 #ifndef general_h
 #include <general.h>
@@ -62,6 +64,7 @@ typedef struct doinfotype {
   Boolean  abort;
   SymDescriptor symtab;
   arena_type *ar;
+  LoopStatsType *LoopStats;
  } do_info_type;
 
 typedef struct reginfotype {

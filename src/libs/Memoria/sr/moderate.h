@@ -1,4 +1,4 @@
-/* $Id: moderate.h,v 1.5 1993/06/21 13:47:03 carr Exp $ */
+/* $Id: moderate.h,v 1.6 1993/07/20 16:33:22 carr Exp $ */
 
 #ifndef moderate_h
 #define moderate_h
@@ -33,6 +33,8 @@
 #include <name.h>
 #endif
 
+#include <LoopStats.h>
+
 #define GREEDY   0
 
 typedef struct regelement {
@@ -54,6 +56,7 @@ typedef struct heaptype {
 EXTERN(void, sr_moderate_pressure,(PedInfo ped,UtilList *glist,
 				   int free_regs,Boolean *red,
 				   array_table_type *array_table,
-				   FILE *logfile,arena_type *ar));
+				   FILE *logfile,arena_type *ar,
+				   LoopStatsType *LoopStats));
 
 #endif

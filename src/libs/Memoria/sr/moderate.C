@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.6 1993/06/16 13:15:28 carr Exp $ */
+/* $Id: moderate.C,v 1.7 1993/07/20 16:32:18 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -656,7 +656,8 @@ void sr_moderate_pressure(PedInfo  ped,
 			  Boolean  *redo,
 			  array_table_type *array_table,
 			  FILE     *logfile,
-			  arena_type *ar)
+			  arena_type *ar,
+			  LoopStatsType *LoopStats)
 
 /****************************************************************************/
 /*                                                                          */
@@ -677,6 +678,8 @@ void sr_moderate_pressure(PedInfo  ped,
 	fprintf(logfile,"FP Register Pressure = %d\n",
 	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs));
 	fprintf(logfile,"Free Registers = %d\n",free_regs-regs);
+	LoopStats->ActualFPRegisterPressure += 
+	       regs+(((config_type *)PED_MH_CONFIG(ped))->max_regs-free_regs);
 	return;
        }
      if (regs > free_regs)
