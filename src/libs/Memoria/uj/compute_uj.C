@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.25 1996/02/14 11:01:00 carr Exp $ */
+/* $Id: compute_uj.C,v 1.26 1996/10/14 14:47:18 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -40,6 +40,55 @@
 
 extern Boolean mc_unroll_cache;
 dep_info_type *machine_info;
+
+
+static int CheckForCarriedDependences(AST_INDEX      stmt,
+				      int            level,
+				      comp_info_type *comp_info)
+
+  {
+   DG_Edge    *dg;
+   EDGE_INDEX edge;
+   int        vector,
+              lvl;
+
+     if (is_do(stmt))
+       comp_info->loop_stack[level] = get_stmt_info_ptr(stmt)->loop_num;
+     dg = dg_get_edge_structure( PED_DG(comp_info->ped));
+     vector = get_info(comp_info->ped,stmt,type_levelv);
+     for (lvl = comp_info->level; lvl < level;lvl++)
+       for (edge = dg_first_src_stmt( PED_DG(comp_info->ped),vector,lvl);
+	    edge != END_OF_LIST;
+	    edge = dg_next_src_stmt( PED_DG(comp_info->ped),edge))
+         if ((dg[edge].type == dg_true || dg[edge].type == dg_anti ||
+	      dg[edge].type == dg_output) &&
+	     fst_GetField(comp_info->symtab,gen_get_text(dg[edge].src),
+			  SYMTAB_NUM_DIMS) > 0)
+	   comp_info->loop_data[comp_info->loop_stack[lvl]].CarriedDependences++;
+     return(WALK_CONTINUE);
+  }
+
+
+static Boolean pick_innermost_parallel_loop(model_loop         *loop_data,
+					    int                loop)
+
+  {
+   int next;
+   Boolean InnerFound = False;
+
+     for (next = loop_data[loop].inner_loop;
+	  next != -1;
+	  next = loop_data[next].next_loop)
+       InnerFound = InnerFound || pick_innermost_parallel_loop(loop_data,next);
+     if (NOT(InnerFound) && loop_data[loop].CarriedDependences == 0)
+       {
+	 loop_data[loop].unroll = true;
+	 loop_data[loop].val = PartitionUnrollAmount;
+	 InnerFound = true;
+       }
+     return(InnerFound);
+  }
+
 
 /****************************************************************************/
 /*                                                                          */
@@ -266,18 +315,30 @@ static void pick_loops(model_loop *loop_data,
    comp_info_type comp_info;
    int i;
 
-   comp_info.count = (int **)ar->arena_alloc_mem(LOOP_ARENA,
-						 size*sizeof(int *));
-   for (i=0;i<size;i++)
-     comp_info.count[i] = (int *)ar->arena_alloc_mem_clear(LOOP_ARENA,
-							   size*sizeof(int));
+   comp_info.loop_data = loop_data;
    comp_info.ped = ped;
    comp_info.num_loops = num_loops;
    comp_info.level = loop_data[0].level;
    comp_info.symtab = symtab;
-   walk_statements(loop_data[0].node,loop_data[0].level,(WK_STMT_CLBACK)determine_uj_prof,(WK_STMT_CLBACK)
-		   NOFUNC,(Generic)&comp_info);
-   pick_loops_to_unroll(loop_data,0,comp_info);
+   if (PartitionUnrollAmount > 0)
+     {
+       walk_statements(loop_data[0].node,loop_data[0].level,
+		       (WK_STMT_CLBACK)CheckForCarriedDependences,
+		       (WK_STMT_CLBACK)NOFUNC,(Generic)&comp_info);
+       (void)pick_innermost_parallel_loop(loop_data,0);
+     }
+   else
+     {
+       comp_info.count = (int **)ar->arena_alloc_mem(LOOP_ARENA,
+						 size*sizeof(int *));
+       for (i=0;i<size;i++)
+	 comp_info.count[i] = (int *)ar->arena_alloc_mem_clear(LOOP_ARENA,
+							       size*sizeof(int));
+       walk_statements(loop_data[0].node,loop_data[0].level,
+		       (WK_STMT_CLBACK)determine_uj_prof,(WK_STMT_CLBACK)NOFUNC,
+		       (Generic)&comp_info);
+       pick_loops_to_unroll(loop_data,0,comp_info);
+     }
   }
 
 
@@ -3682,7 +3743,7 @@ static void compute_values(model_loop    *loop_data,
      util_append(loop_list,util_node_alloc(loop,"loop node"));
      if (loop_data[loop].inner_loop == -1)
        if (count > 0)
-         do_computation(loop_data,loop,unroll_vector,unroll_loops,count,ped,
+	 do_computation(loop_data,loop,unroll_vector,unroll_loops,count,ped,
 			symtab,ar,loop_list);
        else if (loop_data[loop].reduction)
 	 {

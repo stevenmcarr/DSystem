@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.41 1996/07/08 10:26:14 carr Exp $ */
+/* $Id: mh_walk.C,v 1.42 1996/10/14 14:49:22 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -585,6 +585,8 @@ static int post_walk(AST_INDEX      stmt,
 	case UJ_STATS:       UnrollStats(stmt,level,walk_info);
 	                     break;
 	case UNROLL_AND_JAM: (void)UnrollAndJam(stmt,level,walk_info);
+	                     break;
+	case PARTITION_UNROLL: (void)UnrollAndJam(stmt,level,walk_info);
 	                     break;
 	case UNROLL_SCALAR:  new_stmt = UnrollAndJam(stmt,level,walk_info);
 

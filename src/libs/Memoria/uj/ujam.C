@@ -1,4 +1,4 @@
-/* $Id: ujam.C,v 1.8 1995/04/11 15:47:27 carr Exp $ */
+/* $Id: ujam.C,v 1.9 1996/10/14 14:47:35 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -252,7 +252,13 @@ static int check_unroll(AST_INDEX      stmt,
 	  }
 	else
 	  {
-	   mh_do_distribution(loop_data,&loop_info->num_do);
+
+	    // no distribution is necessary for partitioned unrolling as
+	    // amounts do not differ (currently)
+
+	    if (PartitionUnrollAmount == 0)
+	      mh_do_distribution(loop_data,&loop_info->num_do);
+
 	   mh_do_unroll_and_jam(loop_data,loop_info->ped,loop_info->symtab,
 				loop_info->num_loops,loop_info->ar,loop_info->LoopStats);
 	   walk_to_free_split(loop_data,0);

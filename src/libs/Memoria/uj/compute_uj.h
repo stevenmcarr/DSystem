@@ -1,4 +1,4 @@
-/* $Id: compute_uj.h,v 1.11 1996/02/14 11:02:10 carr Exp $ */
+/* $Id: compute_uj.h,v 1.12 1996/10/14 14:47:39 carr Exp $ */
 
 #ifndef compute_uj_h
 #define compute_uj_h
@@ -37,6 +37,7 @@ typedef struct exprinfotype {
  } expr_info_type;
 
 typedef struct compinfotype {
+  model_loop *loop_data;
   int     loop_stack[MAX_LEVEL];
   int     **count;
   int     num_loops;
