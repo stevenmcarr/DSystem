@@ -1,4 +1,4 @@
-/* $Id: do_unroll.h,v 1.6 1993/06/21 13:48:54 carr Exp $ */
+/* $Id: do_unroll.h,v 1.7 1993/07/20 16:35:08 carr Exp $ */
 
 #ifndef do_unroll_h
 #define do_unroll_h
@@ -78,7 +78,8 @@ EXTERN(void, mh_do_unroll_and_jam,(model_loop *loop_data,
 				   PedInfo ped,
 				   SymDescriptor symtab,
 				   int num_loops,
-				   arena_type *ar));
+				   arena_type *ar,
+				   LoopStatsType *LoopStats));
 EXTERN(int, mh_copy_edges,(AST_INDEX node,
 			   Generic ped));
 EXTERN(void, mh_replicate_body,(AST_INDEX     stmt_list,

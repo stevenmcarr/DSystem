@@ -1,4 +1,4 @@
-/* $Id: ujam.C,v 1.5 1992/12/11 11:23:29 carr Exp $ */
+/* $Id: ujam.C,v 1.6 1993/07/20 16:34:56 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -8,6 +8,7 @@
 #include <mh_ast.h>
 #include <fort/walk.h>
 #include <ujam.h>
+#include <log.h>
 
 #include <mark.h>
 #include <mem_util.h>
@@ -195,11 +196,18 @@ static int check_unroll(AST_INDEX      stmt,
 	mh_compute_unroll_amounts(loop_data,loop_info->num_do,
 				  loop_info->num_loops,loop_info->ped,
 				  loop_info->symtab,loop_info->ar);
-	mh_do_distribution(loop_data,&loop_info->num_do);
-	mh_do_unroll_and_jam(loop_data,loop_info->ped,loop_info->symtab,
-			     loop_info->num_loops,loop_info->ar);
-	walk_to_free_split(loop_data,0);
-	/* free((char *)loop_data); */
+	if (((config_type *)PED_MH_CONFIG(loop_info->ped))->logging)
+	  mh_log_data(loop_data,
+		      ((config_type *)PED_MH_CONFIG(loop_info->ped))->logfile,
+		      loop_info->ped,loop_info->symtab,loop_info->ar,
+		      loop_info->LoopStats);
+	else
+	  {
+	   mh_do_distribution(loop_data,&loop_info->num_do);
+	   mh_do_unroll_and_jam(loop_data,loop_info->ped,loop_info->symtab,
+				loop_info->num_loops,loop_info->ar,loop_info->LoopStats);
+	   walk_to_free_split(loop_data,0);
+	  }
        }
      else if (loop_info->unroll_level > level)
        loop_info->unroll_level = level;
@@ -212,7 +220,8 @@ AST_INDEX memory_unroll_and_jam(PedInfo       ped,
 				int           level,
 				int           num_loops,
 				SymDescriptor symtab,
-				arena_type    *ar)
+				arena_type    *ar,
+				LoopStatsType *LoopStats)
 
 /****************************************************************************/
 /*                                                                          */
@@ -232,6 +241,7 @@ AST_INDEX memory_unroll_and_jam(PedInfo       ped,
      loop_info.num_loops = num_loops;
      loop_info.symtab = symtab;
      loop_info.ar = ar;
+     loop_info.LoopStats = LoopStats;
      walk_statements(root,level,check_loop,check_unroll,(Generic)&loop_info);
      while (list_prev(root) != prev)
        root = list_prev(root);

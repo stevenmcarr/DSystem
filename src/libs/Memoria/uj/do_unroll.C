@@ -1,4 +1,4 @@
-/* $Id: do_unroll.C,v 1.8 1992/12/11 11:23:24 carr Exp $ */
+/* $Id: do_unroll.C,v 1.9 1993/07/20 16:34:38 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -8,6 +8,7 @@
 #include <mh_ast.h>
 #include <fort/walk.h>
 #include <do_unroll.h>
+#include <LoopStats.h>
 
 #include <ujam.h>
 #include <mem_util.h>
@@ -213,9 +214,9 @@ static int create_ref_lists(AST_INDEX node,
   }
 	  
 
-static void set_level_vectors(AST_INDEX old_list,
-			      AST_INDEX new_list,
-			      PedInfo   ped)
+void set_level_vectors(AST_INDEX old_list,
+		       AST_INDEX new_list,
+		       PedInfo   ped)
 
 /****************************************************************************/
 /*                                                                          */
@@ -724,19 +725,19 @@ static int update_graph(AST_INDEX     node,
      return(WALK_CONTINUE);
   }
 
-static void replicate_body(AST_INDEX     stmt_list,
-			   int           val,
-			   int           level,
-			   char          *ivar,
-			   AST_INDEX     step,
-			   PedInfo       ped,
-			   SymDescriptor symtab,
-			   Boolean       inner_rdx,
-			   int           surrounding_do,
-			   AST_INDEX     surround_node,
-			   char          *inner_ivar,
-			   int           inner_level,
-			   arena_type    *ar)
+void mh_replicate_body(AST_INDEX     stmt_list,
+		       int           val,
+		       int           level,
+		       char          *ivar,
+		       AST_INDEX     step,
+		       PedInfo       ped,
+		       SymDescriptor symtab,
+		       Boolean       inner_rdx,
+		       int           surrounding_do,
+		       AST_INDEX     surround_node,
+		       char          *inner_ivar,
+		       int           inner_level,
+		       arena_type    *ar)
   
 /****************************************************************************/
 /*                                                                          */
@@ -1092,7 +1093,7 @@ static void unroll_rhomboid(model_loop    *loop_data,
        copy_info.val = loop_data[uloop].val;
        walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		       ut_init_copies,NOFUNC,(Generic)&copy_info);
-       replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
+       mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
 	              loop_data[uloop].val,loop_data[uloop].level,
 		      gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
 		      loop_data[uloop].node))),step,ped,symtab,false,
@@ -1298,7 +1299,7 @@ static void unroll_triangular(model_loop    *loop_data,
        copy_info.val = loop_data[uloop].val;
        walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		       ut_init_copies,NOFUNC,(Generic)&copy_info);
-       replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
+       mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
 	              loop_data[uloop].val,loop_data[uloop].level,
 		      gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
 		      loop_data[uloop].node))),step,ped,symtab,false,
@@ -1356,7 +1357,7 @@ static void walk_loops_to_unroll(model_loop    *loop_data,
        copy_info.symtab = symtab;
        walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		       ut_init_copies,NOFUNC,(Generic)&copy_info);
-       replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
+       mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
 	              loop_data[unroll_loop].val,loop_data[unroll_loop].level,
 		      gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
 		      loop_data[unroll_loop].node))),step,ped,symtab,false,
@@ -1577,7 +1578,8 @@ static void unroll_and_jam_pre_loop(PedInfo       ped,
 				    int           level,
 				    int           num_loops,
 				    SymDescriptor symtab,
-				    arena_type    *ar)
+				    arena_type    *ar,
+				    LoopStatsType *LoopStats)
 
   {
    AST_INDEX stmt,
@@ -1589,7 +1591,7 @@ static void unroll_and_jam_pre_loop(PedInfo       ped,
        {
 	next_stmt = list_next(stmt);
 	if (is_do(stmt))
-          (void)memory_unroll_and_jam(ped,stmt,level,num_loops,symtab,ar);
+          (void)memory_unroll_and_jam(ped,stmt,level,num_loops,symtab,ar,LoopStats);
        }
   }
 
@@ -1599,7 +1601,8 @@ static void create_pre_loop(model_loop    *loop_data,
 			    int           loops_unrolled,
 			    PedInfo       ped,
 			    SymDescriptor symtab,
-			    arena_type    *ar)
+			    arena_type    *ar,
+			    LoopStatsType *LoopStats)
 
 /****************************************************************************/
 /*                                                                          */
@@ -1654,7 +1657,7 @@ static void create_pre_loop(model_loop    *loop_data,
 	    (loops_unrolled == 0))
 	  unroll_and_jam_pre_loop(ped,gen_DO_get_stmt_LIST(new_loop),
 				  loop_data[loop].level+1,num_loops,symtab,
-				  ar);
+				  ar,LoopStats);
 	list_insert_before(loop_data[loop].node,new_loop);
        }
      else 
@@ -1748,7 +1751,8 @@ static void unroll_reduction(model_loop      *loop_data,
 			     PedInfo         ped,
 			     SymDescriptor   symtab,
 			     label_info_type *label_info,
-			     arena_type      *ar)
+			     arena_type      *ar,
+			     LoopStatsType   *LoopStats)
 
   {
    rdx_stmts_type  rdx_stmts;
@@ -1775,14 +1779,14 @@ static void unroll_reduction(model_loop      *loop_data,
        return;
      step = tree_copy_with_type(gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
                       loop_data[loop].node)));
-     create_pre_loop(loop_data,loop,0,1,ped,symtab,ar);
+     create_pre_loop(loop_data,loop,0,1,ped,symtab,ar,LoopStats);
      copy_info.val = loop_data[loop].val;
      copy_info.ar = ar;
      copy_info.symtab = symtab;
      walk_expression(gen_DO_get_stmt_LIST(loop_data[loop].node),ut_init_copies,
 		     NOFUNC,(Generic)&copy_info);
      fst_InitField(symtab,RDX_VAR,AST_NIL,cleanup_rdx_var);
-     replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
+     mh_replicate_body(gen_DO_get_stmt_LIST(loop_data[loop].node),
 		    loop_data[loop].val,loop_data[loop].level,
 		    gen_get_text(gen_INDUCTIVE_get_name(gen_DO_get_control(
 		    loop_data[loop].node))),step,ped,symtab,true,
@@ -1817,7 +1821,8 @@ static void walk_loops(model_loop    *loop_data,
 		       SymDescriptor symtab,
 		       char          *fieldn,
 		       int           loops_unrolled,
-		       arena_type    *ar)
+		       arena_type    *ar,
+		       LoopStatsType *LoopStats)
 
 /****************************************************************************/
 /*                                                                          */
@@ -1838,7 +1843,7 @@ static void walk_loops(model_loop    *loop_data,
 	  listnode != NULLNODE;
 	  listnode = UTIL_NEXT(listnode))
        walk_loops((model_loop *)util_node_atom(listnode),0,num_loops,ped,
-		  symtab,fieldn,loops_unrolled,ar);
+		  symtab,fieldn,loops_unrolled,ar,LoopStats);
      label_info.symtab = symtab;
      label_info.fieldn = fieldn;
      if (loop_data[loop].val > 0 && loop_data[loop].type == TRAP)
@@ -1873,15 +1878,15 @@ static void walk_loops(model_loop    *loop_data,
 					loop_data[loop].trap_loop,ped,symtab,
 					ar);
 	    if (split_loop1[0].val > 0)
-	      create_pre_loop(split_loop1,0,0,loops_unrolled,ped,symtab,ar);
+	      create_pre_loop(split_loop1,0,0,loops_unrolled,ped,symtab,ar,LoopStats);
 	    if (split_loop2[0].val > 0)
-	      create_pre_loop(split_loop2,0,0,loops_unrolled,ped,symtab,ar);
+	      create_pre_loop(split_loop2,0,0,loops_unrolled,ped,symtab,ar,LoopStats);
 	    break;
 	   }
 	walk_statements_reverse(split_loop[0].node,loop_data[loop].level,
 				NOFUNC,check_labels,(Generic)&label_info);
 	if (split_loop[0].val > 0)
-	  create_pre_loop(split_loop,0,0,loops_unrolled,ped,symtab,ar);
+	  create_pre_loop(split_loop,0,0,loops_unrolled,ped,symtab,ar,LoopStats);
 	util_append(loop_data[loop].split_list,
 		    util_node_alloc((Generic)split_loop,"split-list"));
        }
@@ -1896,24 +1901,25 @@ static void walk_loops(model_loop    *loop_data,
 	step = tree_copy_with_type(gen_INDUCTIVE_get_rvalue3(gen_DO_get_control(
                          loop_data[loop].node)));
 	create_pre_loop(loop_data,loop,num_loops-loops_unrolled,loops_unrolled,
-			ped,symtab,ar); 
+			ped,symtab,ar,LoopStats); 
 	walk_loops_to_unroll(loop_data,loop,loop,ped,symtab,step,ar);
 	loops_unrolled++;
        }
     else if (loop_data[loop].inner_loop == -1 &&
 	      loop_data[loop].reduction && loops_unrolled == 0)
-       unroll_reduction(loop_data,loop,ped,symtab,&label_info,ar);
+       unroll_reduction(loop_data,loop,ped,symtab,&label_info,ar,LoopStats);
     for (next = loop_data[loop].inner_loop;
 	 next != -1;
 	 next = loop_data[next].next_loop)
-      walk_loops(loop_data,next,num_loops,ped,symtab,fieldn,loops_unrolled,ar);
+      walk_loops(loop_data,next,num_loops,ped,symtab,fieldn,loops_unrolled,ar,LoopStats);
   }
 
 void mh_do_unroll_and_jam(model_loop    *loop_data,
 			  PedInfo       ped,
 			  SymDescriptor symtab,
 			  int           num_loops,
-			  arena_type    *ar)
+			  arena_type    *ar,
+			  LoopStatsType *LoopStats)
 
 /****************************************************************************/
 /*                                                                          */
@@ -1924,14 +1930,8 @@ void mh_do_unroll_and_jam(model_loop    *loop_data,
    static int field = 0;
    char fieldn[20];
    int  logval;
-   FILE *logfile;
    int  temp,loop;
 
-     logval = ((config_type *)PED_MH_CONFIG(ped))->logging;
-     logfile = ((config_type *)PED_MH_CONFIG(ped))->logfile;
-     if ((logval == LOG_UNROLL) || (logval == LOG_ALL) &&
-	 logfile != NULL)
-       mh_log_data(loop_data,logfile);
      sprintf(fieldn,"mh: lbl_stmt%d",field++);
      if (field == 100)
        field = 0;
@@ -1941,11 +1941,9 @@ void mh_do_unroll_and_jam(model_loop    *loop_data,
        {
 	temp = loop_data[loop].next_loop;
 	loop_data[loop].next_loop = -1;
-	walk_loops(loop_data,loop,num_loops,ped,symtab,fieldn,2-num_loops,ar);
+	walk_loops(loop_data,loop,num_loops,ped,symtab,fieldn,2-num_loops,ar,LoopStats);
 	loop_data[loop].next_loop = temp;
 	loop = temp;
        } while (loop != -1); 
      fst_KillField(symtab,fieldn);
-     logval = ((config_type *)PED_MH_CONFIG(ped))->logging;
-     logfile = ((config_type *)PED_MH_CONFIG(ped))->logfile;
   }

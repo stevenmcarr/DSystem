@@ -1,4 +1,4 @@
-/* $Id: ujam.h,v 1.5 1993/06/21 13:48:56 carr Exp $ */
+/* $Id: ujam.h,v 1.6 1993/07/20 16:35:17 carr Exp $ */
 
 #ifndef ujam_h
 #define ujam_h
@@ -15,6 +15,8 @@
 #include <fort/fortsym.h>
 #endif
 
+#include <LoopStats.h>
+
 typedef struct loopinfotype {
   int     unroll_level,
           num_loops,
@@ -22,6 +24,7 @@ typedef struct loopinfotype {
   PedInfo ped;
   SymDescriptor symtab;
   arena_type    *ar;
+  LoopStatsType *LoopStats;
  } loop_info_type;
 
 #endif 
