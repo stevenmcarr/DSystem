@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.12 1995/09/14 14:49:16 carr Exp $ */
+/* $Id: prune.C,v 1.13 1995/12/27 16:13:28 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -170,7 +170,7 @@ static int check_gen(AST_INDEX       node,
 
 	  {
 	   prune_dependence_edges(name,-2,gen_info,Invariant);
-	   if (Invariant && ReplaceLevel < 2)
+	   if (Invariant && (ReplaceLevel < 2 || ReplaceLevel == 5))
 	     scalar_info->scalar = false;
 	  }
 	else if (!scalar_info->is_consistent || !scalar_info->constant)
@@ -183,11 +183,13 @@ static int check_gen(AST_INDEX       node,
 	/* loop-independent available generator */
 
 	  prune_dependence_edges(name,0,gen_info,Invariant);
-	else if (scalar_info->gen_type == LIPAV && ReplaceLevel > 5)
+	else if (scalar_info->gen_type == LIPAV && ReplaceLevel > 6)
 	  prune_dependence_edges(name,0,gen_info,Invariant);
 	else if (scalar_info->gen_type == LCAV &&
-		 ((scalar_info->gen_distance == 1 && ReplaceLevel > 1) ||
-		  (scalar_info->gen_distance > 1 && ReplaceLevel > 3)))
+		 ((scalar_info->gen_distance == 1 && ReplaceLevel > 1 &&
+		   ReplaceLevel != 5) ||
+		  (scalar_info->gen_distance > 1 && (ReplaceLevel == 4 ||
+						     ReplaceLevel == 8))))
 	
 	/* loop-carried available generator */
 
@@ -200,7 +202,7 @@ static int check_gen(AST_INDEX       node,
 	      prune_dependence_edges(name,-2,gen_info,Invariant);
 	     }
 	  }
-	else if (scalar_info->gen_type == LCPAV && ReplaceLevel > 5)
+	else if (scalar_info->gen_type == LCPAV && ReplaceLevel == 8)
 	  {
 	    /* loop-carried partially available generator */
 
