@@ -1,4 +1,4 @@
-/* $Id: expr.C,v 1.7 2000/01/12 23:05:37 mjbedy Exp $ */
+/* $Id: expr.C,v 1.8 2000/01/27 19:43:06 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -418,8 +418,10 @@ int getConstantRegister( AST_INDEX node )
     Index = fst_my_QueryIndex(ft_SymTable, name);
     if (Index == SYM_INVALID_INDEX)
     {
-      (void) sprintf(error_buffer, "'%s' not entered in Symbol Table", name);
-      ERROR("getConstantRegister", error_buffer, FATAL);
+      Index = SymInsertSymbol(name, gen_get_real_type(node), OC_IS_DATA, 0, SC_CONSTANT, 
+			      NO_ALIAS);
+      //(void) sprintf(error_buffer, "'%s' not entered in Symbol Table", name);
+      //ERROR("getConstantRegister", error_buffer, FATAL);
     }
   }
   else
@@ -429,8 +431,10 @@ int getConstantRegister( AST_INDEX node )
     Index = fst_my_QueryIndex(ft_SymTable, name);
     if (Index == SYM_INVALID_INDEX)
     {
-      (void) sprintf(error_buffer, "'%s' not entered in Symbol Table", name);
-      ERROR("getConstantRegister", error_buffer, FATAL);
+      Index = SymInsertSymbol(name, gen_get_real_type(node), OC_IS_DATA, 0, SC_CONSTANT, 
+			      NO_ALIAS);
+      //(void) sprintf(error_buffer, "'%s' not entered in Symbol Table", name);
+      //ERROR("getConstantRegister", error_buffer, FATAL);
     }
   }
 
