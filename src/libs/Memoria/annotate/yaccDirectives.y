@@ -1,4 +1,4 @@
-/* $Id: yaccDirectives.y,v 1.9 2000/01/27 19:20:47 carr Exp $ */
+/* $Id: yaccDirectives.y,v 1.10 2000/02/02 14:09:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -192,7 +192,7 @@ static void SetTypes(Subscript,ft_SymTable)
      gen_put_real_type(name,type);
      gen_put_converted_type(name,type);
      walk_expression(gen_SUBSCRIPT_get_rvalue_LIST(Subscript),SetIndexExprNodeType,
-		     NOFUNC,ft_SymTable);
+		     NOFUNC,(Generic)ft_SymTable);
   }
 
 Boolean a2i_string_parse (str,Dir,symtab)
@@ -202,8 +202,8 @@ Boolean a2i_string_parse (str,Dir,symtab)
   SymDescriptor symtab;
 
   {
-   // tell flex to scan the string rather than
-   // a file
+   /* tell flex to scan the string rather than
+      a file */
 
    a2i__scan_string(str); 
    a2i_IsDirective = true;
