@@ -1,4 +1,4 @@
-/* $Id: analyze.C,v 1.8 1993/06/15 14:05:06 carr Exp $ */
+/* $Id: analyze.C,v 1.9 1993/07/20 16:35:32 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -82,6 +82,10 @@ static int build_pre(AST_INDEX       stmt,
 	build_info->loop_data[loop_num].interchange = true;
 	build_info->loop_data[loop_num].distribute = true;
 	build_info->loop_data[loop_num].expand = false;
+	build_info->loop_data[loop_num].NoImprovement = false;
+	build_info->loop_data[loop_num].Distribute = false;
+	build_info->loop_data[loop_num].Interchange = false;
+	build_info->loop_data[loop_num].InterlockCausedUnroll = false;
 	build_info->loop_data[loop_num].rho = 0;
 	build_info->loop_data[loop_num].stride = 0;
 	build_info->loop_data[loop_num].scalar_array_refs = 0;
