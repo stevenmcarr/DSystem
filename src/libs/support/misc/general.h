@@ -1,4 +1,4 @@
-/* $Id: general.h,v 1.15 1999/01/07 20:37:37 carr Exp $ */
+/* $Id: general.h,v 1.16 1999/03/31 22:01:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -111,7 +111,7 @@
 #define general_h
 
 /* Commonly used types */
-#if defined(__GNUC__) || defined(__cplusplus)
+#if defined(__GNUC__) && defined(__cplusplus)
 typedef bool Boolean;   /* BOOLEAN DATATYPE             */
 #else
 typedef	enum { false, true } Boolean;	/* BOOLEAN DATATYPE		*/
