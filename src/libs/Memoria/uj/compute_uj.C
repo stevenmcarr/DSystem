@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.11 1993/07/23 17:32:11 tseng Exp $ */
+/* $Id: compute_uj.C,v 1.12 1993/09/06 14:56:15 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -30,8 +30,8 @@
 #include <dt.h>
 #endif 
 
-#ifndef pt_h
-#include <pt.h>
+#ifndef pt_util_h
+#include <pt_util.h>
 #endif 
 
 #include <mem_util.h>
@@ -2830,9 +2830,9 @@ static void compute_values(model_loop    *loop_data,
 	   i = loop_data[i].next_loop;
 	   if (i != -1)
 	     {
-	      loop_data[i].unroll_vector= ar->arena_alloc_mem_clear(LOOP_ARENA,
-								    MAXLOOP * 
-								  sizeof(int));
+	      loop_data[i].unroll_vector= (int *)ar->arena_alloc_mem_clear(LOOP_ARENA,
+									   MAXLOOP * 
+									   sizeof(int));
 	      unroll_vector = loop_data[i].unroll_vector;
 	     }
 	   
@@ -2863,9 +2863,9 @@ void mh_compute_unroll_amounts(model_loop    *loop_data,
    int unroll_loops[2];
 
      pick_loops(loop_data,size,num_loops,ped,symtab,ar);
-     loop_data[0].unroll_vector = ar->arena_alloc_mem_clear(LOOP_ARENA,
-							    MAXLOOP * 
-							    sizeof(int));
+     loop_data[0].unroll_vector = (int *)ar->arena_alloc_mem_clear(LOOP_ARENA,
+								   MAXLOOP * 
+								   sizeof(int));
      compute_values(loop_data,0,loop_data[0].unroll_vector,unroll_loops,0,ped,
 		    symtab,ar);
   }
