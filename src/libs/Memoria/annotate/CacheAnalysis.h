@@ -14,8 +14,11 @@ typedef struct CacheInfoStruct {
   int        loop;
   int        RefNum;
   PedInfo    ped;
+  SymDescriptor symtab;
+  arena_type *ar;
   UniformlyGeneratedSets *UGS;
   char       **IVar;
+  Boolean    HasSelfSpatial;
  } CacheInfoType;
 
 typedef struct DepInfoStruct {
@@ -36,4 +39,5 @@ typedef struct depstruct {
 #define CreateDepInfoPtr(n) \
    ast_put_scratch(n,(SCRATCH)malloc(sizeof(DepInfoType)))
 
+extern int aiCache;
 #endif
