@@ -1,4 +1,4 @@
-/* $Id: moderate.C,v 1.10 1994/06/30 14:35:52 carr Exp $ */
+/* $Id: moderate.C,v 1.11 1994/07/25 13:56:27 yguan Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -575,7 +575,8 @@ static void complete_temp_names(UtilList *glist,
   }
 
 static void build_cost_info(UtilList *glist,
-			    int      *size,
+			    int      *NumPartitions,
+			    int      *NumReferences,
 			    int      *regs,
 			    PedInfo  ped)
 
@@ -605,9 +606,13 @@ static void build_cost_info(UtilList *glist,
 	        benefit += 2;
 	      else
 	        benefit++;
+	      (*NumReferences)++ ;
 	     }
 	   else if (sptr->no_store)
-	     benefit += 2;
+	     {
+	      benefit += 2;
+	      (*NumReferences)++ ;
+	     }
 	  }
 	if (name_node->opt_will_allocate)
 	  name_node->benefit = benefit * 100;
@@ -642,7 +647,7 @@ static void build_cost_info(UtilList *glist,
 	     name_node->ratio = 1000.0;
 	    }
 	(*regs) += name_node->cost;
-	(*size)++;
+	(*NumPartitions)++;
        }
   }
 
@@ -662,14 +667,15 @@ void sr_moderate_pressure(PedInfo  ped,
 /****************************************************************************/
 
   {
-   int      size = 0,
+   int      NumPartitions = 0,
+            NumReferences = 0,
             regs = 0,
             loads;
    Set      allocate,
             opt_allocate;
    heap_type *heap;
 
-     build_cost_info(glist,&size,&regs,ped);
+     build_cost_info(glist,&NumPartitions,&NumReferences,&regs,ped);
      if (logfile != NULL)
        {
 	fprintf(logfile,"FP Register Pressure = %d\n",
@@ -688,21 +694,22 @@ void sr_moderate_pressure(PedInfo  ped,
 
 	if (logfile != NULL)
 	  fprintf(logfile,"need to spill registers\n");
-	allocate = ut_create_set(ar,LOOP_ARENA,size);
-	opt_allocate = ut_create_set(ar,LOOP_ARENA,size);
+	allocate = ut_create_set(ar,LOOP_ARENA,NumPartitions);
+	opt_allocate = ut_create_set(ar,LOOP_ARENA,NumPartitions);
 	heap = (heap_type *)ar->arena_alloc_mem(LOOP_ARENA,
-						size*sizeof(heap_type));
-	do_greedy(glist,heap,allocate,opt_allocate,size,&free_regs);
+						NumPartitions*sizeof(heap_type));
+	do_greedy(glist,heap,allocate,opt_allocate,NumPartitions,&free_regs);
 	regs = free_regs;
 
 	/* GET REGS AFTER SPILLING HERE */
 
-        do_allocation(glist,allocate,opt_allocate,&free_regs,heap,size,ped,ar);
-        size = 0;
+        do_allocation(glist,allocate,opt_allocate,&free_regs,heap,NumPartitions,ped,ar);
+        NumPartitions = 0;
+        NumReferences = 0;
         regs = 0;
-        build_cost_info(glist,&size,&regs,ped);
+        build_cost_info(glist,&NumPartitions,&NumReferences,&regs,ped);
        }
    *redo = false;
-   LoopStats->NumRefRep += size;
+   LoopStats->NumRefRep += NumReferences;
    complete_temp_names(glist,redo,array_table);
   }
