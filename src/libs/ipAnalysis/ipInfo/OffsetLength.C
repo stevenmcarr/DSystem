@@ -1,4 +1,4 @@
-/* $Id: OffsetLength.C,v 1.1 1997/03/11 14:34:43 carr Exp $ */
+/* $Id: OffsetLength.C,v 1.2 1999/06/11 20:34:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -36,7 +36,11 @@
 // infiniteInterval describes an interval that spans from the most 
 // negative integer to the most positive integer
 //-----------------------------------------------------------------------
+#ifndef LINUX
 OffsetLengthPair infiniteInterval(HIBITI, ~0);
+#else
+OffsetLengthPair infiniteInterval(MININT, ~0);
+#endif
 
 
 

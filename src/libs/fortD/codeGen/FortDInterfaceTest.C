@@ -1,4 +1,4 @@
-/* $Id: FortDInterfaceTest.C,v 1.3 1997/03/11 14:28:12 carr Exp $ */
+/* $Id: FortDInterfaceTest.C,v 1.4 1999/06/11 20:39:44 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -16,7 +16,12 @@
 #include <libs/support/strings/StringBuffer.h>
 
 #undef is_open
+
+#ifdef LINUX
+#include <stream.h>
+#else
 #include <sys/stream.h>
+#endif
 
 #include <libs/frontEnd/ast/ast_include_all.h>
 

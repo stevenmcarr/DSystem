@@ -1,4 +1,4 @@
-/* $Id: FortDInterfaceStr.C,v 1.7 1997/03/11 14:28:11 carr Exp $ */
+/* $Id: FortDInterfaceStr.C,v 1.8 1999/06/11 20:38:48 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -19,7 +19,13 @@
 #include <libs/fortD/codeGen/FortDInterface.i>
 #include <libs/support/strings/StringBuffer.h>
 #undef is_open
+
+#ifdef LINUX
+#include <stream.h>
+#else
 #include <sys/stream.h>
+#endif
+
 #include <libs/frontEnd/ast/ast_include_all.h>
 #include <libs/support/database/context.h>
 

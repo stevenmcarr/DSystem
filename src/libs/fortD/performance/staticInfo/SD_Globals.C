@@ -1,14 +1,14 @@
-/* $Id: SD_Globals.C,v 1.2 1999/03/31 21:53:26 carr Exp $ */
+/* $Id: SD_Globals.C,v 1.3 1999/06/11 20:47:17 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 // -*- C++ -*- 
 /* One line expanatory comment */ 
-/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/SD_Globals.C,v 1.2 1999/03/31 21:53:26 carr Exp $
+/* $Header: /home/cs/carr/cvsroot/DSystem/src/libs/fortD/performance/staticInfo/SD_Globals.C,v 1.3 1999/06/11 20:47:17 carr Exp $
 */
 
-static const char * RCS_ID = "$Id: SD_Globals.C,v 1.2 1999/03/31 21:53:26 carr Exp $";
+static const char * RCS_ID = "$Id: SD_Globals.C,v 1.3 1999/06/11 20:47:17 carr Exp $";
 #define ASSERT_FILE_VERSION RCS_ID
 #define MKASSERT
 
@@ -38,7 +38,8 @@ void SetStringInDossier(RecordDossier & d, const char * entryName,
   Array * ProcName = d.getArrayP(entryName);
   dimSizes[0] = strlen(theString) +1;
   ProcName->setDimSizes(dimSizes);
-  ProcName->setCellString(theString,0);
+  CString theCString(theString);
+  ProcName->setCellString(theCString,0);
 }
 
 void AddEntryToStructureDesc(StructureDescriptor & s, 

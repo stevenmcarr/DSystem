@@ -1,4 +1,4 @@
-/* $Id: IdGenerator.C,v 1.2 1997/06/25 15:16:57 carr Exp $ */
+/* $Id: IdGenerator.C,v 1.3 1999/06/11 20:40:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,6 +13,7 @@
 
 
 #include <assert.h>
+#include <malloc.h>
 
 #include <libs/support/sets/WordSet.h>
 #include <libs/support/file/FormattedFile.h>

@@ -1,4 +1,4 @@
-/* $Id: FortDExpr.h,v 1.9 1997/06/24 17:39:43 carr Exp $ */
+/* $Id: FortDExpr.h,v 1.10 1999/06/11 20:35:50 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,7 +13,12 @@
 
 #undef is_open
 
+#ifdef LINUX
+#include <stream.h>
+#else
 #include <sys/stream.h>
+#endif
+
 #include <libs/frontEnd/include/expr.h>
 #include <libs/fortD/misc/fd_types.h>
 #include <libs/support/file/FormattedFile.h>

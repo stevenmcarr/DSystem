@@ -1,4 +1,4 @@
-/* $Id: File.C,v 1.7 1997/03/27 20:49:09 carr Exp $ */
+/* $Id: File.C,v 1.8 1999/06/11 20:32:29 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -45,7 +45,11 @@ int File::Open(const char *name, const char *mode)
 
 unsigned char File::Flags()
 {
+#ifdef LINUX
+  return hidden->fp->_flags;
+#else
   return hidden->fp->_flag;
+#endif
 }
 
 // EOF returned if error
