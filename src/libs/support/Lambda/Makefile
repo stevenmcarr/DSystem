@@ -6,8 +6,8 @@ SYSNAME=`uname|sed -e 's/-/_/'`
 
 CFLAGS := $(CFLAGS) -DLA_$(SYSNAME) -DLA_$(RN_ARCH)
 
-SRCS	= la-bounds.c la-code.c la-dep1.c la-dep2.c la-hermite.c la-integers.c\
-	la-lattice.c la-matrix.c la-print1.c la-print2.c la-trans.c la-vec.c \
-	la-vecMat.c
+SRCS	= la-bounds.C la-code.C la-dep1.C la-dep2.C la-hermite.C la-integers.C\
+	la-lattice.C la-matrix.C la-print1.C la-print2.C la-trans.C la-vec.C \
+	la-vecMat.C
 
 include Makeinclude

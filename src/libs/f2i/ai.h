@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.3 1997/04/24 14:11:33 carr Exp $ */
+/* $Id: ai.h,v 1.4 1997/04/28 20:16:30 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -186,7 +186,7 @@ EXTERN(int, BaseIndex,(int ));
 EXTERN(void, ai,(Context  , FortTree  , FortTextTree  , char * ));
 
      /* assign.ansi.c */
-EXTERN(int, HandleAssign,(AST_INDEX ));
+EXTERN(void, HandleAssign,(AST_INDEX ));
 
      /* assignment.ansi.c */
 EXTERN(void, HandleAssignment,(AST_INDEX ));
@@ -194,16 +194,16 @@ struct  CharDesc;
 EXTERN(void,evalCharExpr,(AST_INDEX  , struct CharDesc [] , int *  , int ));
 
      /* calls.ansi.c */
-EXTERN(int,HandleCall,(AST_INDEX ));
+EXTERN(void,HandleCall,(AST_INDEX ));
 EXTERN(int,HandleInvocation,(AST_INDEX ));
 EXTERN(int,InlineStmtFunc,(AST_INDEX ));
 EXTERN(void,HandleStatementFunction,(AST_INDEX ));
 
      /* chars.ansi.c */
-EXTERN( int, generate_mvcl,(int  , int  , int ));
-EXTERN( int, generate_fill,(int  , int  , int ));
+EXTERN( void, generate_mvcl,(int  , int  , int ));
+EXTERN( void, generate_fill,(int  , int  , int ));
 EXTERN( int, generate_char_compare,(int  , int  , int  , int  , int ));
-EXTERN( int, generate_index,(int  , int  , int  , int  , int ));
+EXTERN( void, generate_index,(int  , int  , int  , int  , int ));
 
      /* common.ansi.c */
 EXTERN(void, CommonDumpTable,(SymDescriptor,fst_index_t,Generic));
@@ -217,31 +217,31 @@ EXTERN(int *, aiGlobalNames,(char *  , int  , int ));
 EXTERN(void,setIndex,(AST_INDEX ));
 EXTERN(int,string_length,(int ));
 EXTERN(int,SizeOfTypewIndex,(int ));
-EXTERN(int,HandleData,(AST_INDEX ));
+EXTERN(void,HandleData,(AST_INDEX ));
 EXTERN(int,evalExpr,(AST_INDEX ));
 EXTERN(char *,evalConvert,(char *  , int  , int ));
-EXTERN(int,printVal,(AST_INDEX *  , int  , int  , int  , FILE * ));
+EXTERN(void,printVal,(AST_INDEX *  , int  , int  , int  , FILE * ));
 EXTERN(void,evalAddress,(AST_INDEX  , AST_INDEX *  , FILE * ));
-EXTERN(int,ProcessData,(FILE * ));
+EXTERN(void,ProcessData,(FILE * ));
 
      /* directives.ansi.c */
 EXTERN(void, HandleDirective,(AST_INDEX ));
 
      /* do.ansi.c */
 EXTERN(int,get_increment,(AST_INDEX  , int  , int *  , int * ));
-EXTERN(int,HandleInductiveDo,(AST_INDEX ));
+EXTERN(void,HandleInductiveDo,(AST_INDEX ));
 EXTERN(int,typed_arithmetic,(int  , int ));
-EXTERN(int,HandleRepetitiveDo,(AST_INDEX ));
-EXTERN(int,HandleConditionalDo,(AST_INDEX ));
+EXTERN(void,HandleRepetitiveDo,(AST_INDEX ));
+EXTERN(void,HandleConditionalDo,(AST_INDEX ));
 
      /* equiv.ansi.c */
 struct  equiv_struct;
 EXTERN(int *,aiEquivClass,(int ));
-EXTERN(int,Equivalence,(AST_INDEX ));
-EXTERN(int,ProcessEquivalences,(void));
-EXTERN(int,AnEquivalence,(AST_INDEX ));
-EXTERN(int,EquivEltList,(AST_INDEX ));
-EXTERN(int,find_leader,(struct equiv_struct * ));
+EXTERN(void,Equivalence,(AST_INDEX ));
+EXTERN(void,ProcessEquivalences,(void));
+EXTERN(void,AnEquivalence,(AST_INDEX ));
+EXTERN(void,EquivEltList,(AST_INDEX ));
+EXTERN(void,find_leader,(struct equiv_struct * ));
 
      /* expr.ansi.c */
 EXTERN(int,getExprInReg,(AST_INDEX ));
@@ -259,7 +259,7 @@ EXTERN(int,ArithOp,(int  , int ));
 struct  CallTemplate;
 EXTERN(char *, add_to_regs_list,(char *  , int ));
 EXTERN(char *, add_to_tags_list,(char *  , int ));
-EXTERN(int, GenerateCall,(struct CallTemplate * ));
+EXTERN(void, GenerateCall,(struct CallTemplate * ));
 
      /* expr3.ansi.c */
 EXTERN(int,index_by_type,(int ));
@@ -280,14 +280,14 @@ EXTERN(void, generate_branch,(int, int, int, int, int, int, int, char*));
 EXTERN(void,generate_string,(char*, int, int, int, int, char*));
 EXTERN(void,generate_load,(int, int, int, int, char*));
 EXTERN(void, generate_cache_op,(int, int, Directive *));
-EXTERN(int,PrintData,(int  , int  , int  , int ));
-EXTERN(int,generate_long,(int, int, int, int, int, int, int  , int  , int  , char * ));
+EXTERN(void,PrintData,(int  , int  , int  , int ));
+EXTERN(void,generate_long,(int, int, Generic, int, int, int, int  , int  , int  , char * ));
 EXTERN(int,convert_opcode,(int  , int ));
 EXTERN(int,getAlignment,(int ));
 EXTERN(char *,getTag,(int ));
-EXTERN(int,PrintString,(char *  , int ));
-EXTERN(int,PrintFloat,(char *  , int ));
-EXTERN(int,PrintDouble,(char *  , int ));
+EXTERN(void,PrintString,(char *  , int ));
+EXTERN(void,PrintFloat,(char *  , int ));
+EXTERN(void,PrintDouble,(char *  , int ));
 EXTERN(char *,Prefix,(char * ));
 
      /* get.ansi.c */
@@ -296,9 +296,9 @@ EXTERN(int, getIntConstantIndex,(int ));
 EXTERN(char *,getLocality,(AST_INDEX ));
 
      /* goto.ansi.c */
-EXTERN(int,HandleGoto,(AST_INDEX ));
-EXTERN(int,HandleComputedGoto,(AST_INDEX ));
-EXTERN(int,HandleAssignedGoto,(AST_INDEX ));
+EXTERN(void,HandleGoto,(AST_INDEX ));
+EXTERN(void,HandleComputedGoto,(AST_INDEX ));
+EXTERN(void,HandleAssignedGoto,(AST_INDEX ));
 
      /* idfa.ansi.c */
 EXTERN(void,aiGetAllGlobals,(void));
@@ -313,41 +313,41 @@ EXTERN(char *,aiNameIsConstant,(int ));
 EXTERN(char *,aiNameIsConstantOnReturn,(AST_INDEX  , int ));
 
      /* if.ansi.c */
-EXTERN(int,HandleIf,(AST_INDEX ));
-EXTERN(int,ExtendIf,(AST_INDEX  , int ));
-EXTERN(int,HandleLogicalIf,(AST_INDEX ));
-EXTERN(int,HandleArithmeticIf,(AST_INDEX ));
+EXTERN(void,HandleIf,(AST_INDEX ));
+EXTERN(void,ExtendIf,(AST_INDEX  , int ));
+EXTERN(void,HandleLogicalIf,(AST_INDEX ));
+EXTERN(void,HandleArithmeticIf,(AST_INDEX ));
 
      /* initials.ansi.c */
-EXTERN(int,RecordInitialExp,(int  , AST_INDEX ));
-EXTERN(int,GenerateInitialExps,(void));
+EXTERN(void,RecordInitialExp,(int  , AST_INDEX ));
+EXTERN(void,GenerateInitialExps,(void));
 
      /* intrins.ansi.c */
 EXTERN(int,HandleIntrinsic,(AST_INDEX ));
 EXTERN(int,generate_len,(AST_INDEX ));
 
      /* io.ansi.c */
-EXTERN(int,DoIO,(int  , AST_INDEX ));
-EXTERN(int,GenerateFormat,(AST_INDEX ));
+EXTERN(void,DoIO,(int  , AST_INDEX ));
+EXTERN(void,GenerateFormat,(AST_INDEX ));
 EXTERN(char *,GenerateArrayDecl,(int ));
-EXTERN(int,BuildIOL,(AST_INDEX  , AST_INDEX  , AST_INDEX  , int  , int ));
+EXTERN(void,BuildIOL,(AST_INDEX  , AST_INDEX  , AST_INDEX  , int  , int ));
 EXTERN(int,getIOLActuals,(void));
-EXTERN(int,HandlePause,(AST_INDEX ));
-EXTERN(int,HandleStop,(AST_INDEX ));
+EXTERN(void,HandlePause,(AST_INDEX ));
+EXTERN(void,HandleStop,(AST_INDEX ));
 
      /* label.ansi.c */
 EXTERN(void, LabelGet,(STR_TEXT,int*));
-EXTERN(int,LabelCreateTable,(int ));
+EXTERN(void,LabelCreateTable,(int ));
 EXTERN(void,LabelDestroyTable,(void));
 EXTERN(int,LabelDefine,(STR_TEXT  , int *  , AST_INDEX ));
-EXTERN(int,LabelInAssign,(STR_TEXT  , int * ));
+EXTERN(void,LabelInAssign,(STR_TEXT  , int * ));
 EXTERN(void,LabelDumpTable,(void));
 EXTERN(int,LabelNextAssigned,(int * ));
 EXTERN(int,LabelAssigned,(STR_TEXT ));
 EXTERN(AST_INDEX,LabelGetNode,(STR_TEXT ));
 
      /* map.ansi.c */
-EXTERN(int,MapStorage,(AST_INDEX ));
+EXTERN(void,MapStorage,(AST_INDEX ));
 EXTERN(int,VarSize,(int ));
 EXTERN(int,IsValidName,(char * ));
 EXTERN(int,is_double,(int ));
@@ -356,13 +356,13 @@ EXTERN(int,Align,(int ));
 
      /* memos.ansi.c */
 EXTERN(int,aiStaticLabel,(void));
-EXTERN(int,aiRecordStaticLabel,(char * ));
+EXTERN(void,aiRecordStaticLabel,(char * ));
 EXTERN(int,aiStackBase,(void));
 EXTERN(int,aiFunctionValueIndex,(void));
-EXTERN(int,aiRecordFunctionValueIndex,(int ));
+EXTERN(void,aiRecordFunctionValueIndex,(int ));
 
      /* mnemonics.ansi.c */
-EXTERN(int,iloc_rep_init,(void));
+EXTERN(void,iloc_rep_init,(void));
 EXTERN(int,iloc_rep_version,(void));
 EXTERN(char *,iloc_mnemonic,(int ));
 EXTERN(int,iloc_format,(int ));
@@ -372,23 +372,23 @@ EXTERN(int,iloc_intrinsic,(char * ));
 EXTERN(int,iloc_op_commutes,(int ));
 
      /* params.ansi.c */
-EXTERN(int,MarkParameters,(AST_INDEX ));
-EXTERN(int,aiParameters,(AST_INDEX ));
+EXTERN(void,MarkParameters,(AST_INDEX ));
+EXTERN(void,aiParameters,(AST_INDEX ));
 
      /* postmap.ansi.c */
 EXTERN(void,aiPostMap,(AST_INDEX ));
 
      /* prepass.ansi.c */
-EXTERN(int,aiPrePass,(AST_INDEX ));
-EXTERN(int,WalkCommon,(AST_INDEX ));
-EXTERN(int,convertToReal,(AST_INDEX ));
-EXTERN(int,convertToInt,(AST_INDEX ));
+EXTERN(void,aiPrePass,(AST_INDEX ));
+EXTERN(void,WalkCommon,(AST_INDEX ));
+EXTERN(void,convertToReal,(AST_INDEX ));
+EXTERN(void,convertToInt,(AST_INDEX ));
 
      /* procs.ansi.c */
 EXTERN(void, aiProcedures,(AST_INDEX,FortTree));
-EXTERN(int,aiFormals,(AST_INDEX ));
+EXTERN(void,aiFormals,(AST_INDEX ));
 EXTERN(int,aiFormalName,(int ));
-EXTERN(int,aiExit,(int  , char * ));
+EXTERN(void,aiExit,(int  , char * ));
 
      /* regs.ansi.c */
 EXTERN(int,getAddressRegister,(int ));
@@ -396,28 +396,28 @@ EXTERN(int,getAddressInRegister,(int ));
 EXTERN(int,getFunctionAddressInReg,(int ));
 
      /* routine.ansi.c */
-EXTERN(int,aiProcedurePrologue,(AST_INDEX ));
-EXTERN(int,aiProcedureEpilogue,(AST_INDEX  , AST_INDEX  , int ));
-EXTERN(int,aiLoadUpStuff,(void));
+EXTERN(void,aiProcedurePrologue,(AST_INDEX ));
+EXTERN(void,aiProcedureEpilogue,(AST_INDEX  , AST_INDEX  , int ));
+EXTERN(void,aiLoadUpStuff,(void));
 
      /* runtime.ansi.c */
-EXTERN(int,aiRunTimeError,(char *  , int ));
-EXTERN(int,aiPause,(int  , int ));
+EXTERN(void,aiRunTimeError,(char *  , int ));
+EXTERN(void,aiPause,(int  , int ));
 
      /* static.ansi.c */
-EXTERN(int,aiGenerateStaticArea,(void));
-EXTERN(int,OutputData,(FILE * ));
-EXTERN(int,PadAndPut,(int  , FILE * ));
+EXTERN(void,aiGenerateStaticArea,(void));
+EXTERN(void,OutputData,(FILE * ));
+EXTERN(void,PadAndPut,(int  , FILE * ));
 EXTERN(int,DataFlagFromIType,(int ));
 
      /* stmts.ansi.c */
 EXTERN(Boolean, ai_isConstantExpr,(AST_INDEX));
 EXTERN(Boolean, isParameterExpr,(AST_INDEX));
 EXTERN(Boolean, aiDirectiveIsInComment,(AST_INDEX));
-EXTERN(int,aiStmtList,(AST_INDEX ));
+EXTERN(void,aiStmtList,(AST_INDEX ));
 EXTERN(int,ai_isExecutable,(int ));
-EXTERN(int,ArrayDeclLenList,(AST_INDEX  , int  , int ));
-EXTERN(int,HandleSave,(AST_INDEX ));
+EXTERN(void,ArrayDeclLenList,(AST_INDEX  , int  , int ));
+EXTERN(void,HandleSave,(AST_INDEX ));
 EXTERN(int,ArrayDeclLen,(AST_INDEX  , int  , int  , int ));
 EXTERN(int,IntConstant,(char * ));
 
@@ -427,9 +427,9 @@ EXTERN(void,generate_move_string,(struct CharDesc *  , struct CharDesc * ));
 EXTERN(int,getStringLengthIntoReg,(AST_INDEX ));
 EXTERN(int,getSubstringAddress,(AST_INDEX ));
 EXTERN(int,getSubstringLength,(AST_INDEX ));
-EXTERN(int,AddStringLengthRegister,(int  , int ));
+EXTERN(void,AddStringLengthRegister,(int  , int ));
 EXTERN(int,NewStringLength,(AST_INDEX ));
-EXTERN(int,createStackTarget,(struct CharDesc [2] , int ));
+EXTERN(void,createStackTarget,(struct CharDesc [2] , int ));
 
      /* strings.ansi.c */
 EXTERN(int,StringLength,(int ));
