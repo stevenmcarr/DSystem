@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.15 1994/06/13 16:13:57 carr Exp $ */
+/* $Id: mh_walk.C,v 1.16 1994/06/13 16:19:50 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -1355,7 +1355,7 @@ void mh_walk_ast(int          selection,
          break;
       }
      if (((config_type *)PED_MH_CONFIG(ped))->logging > 0 ||
-	 selection == LI_STATS || selection = UJ_STATS ||
+	 selection == LI_STATS || selection == UJ_STATS ||
 	 selection == SR_STATS)
        fclose(((config_type *)PED_MH_CONFIG(ped))->logfile);
      hide_message2();

@@ -1,4 +1,4 @@
-/* $Id: memory_menu.h,v 1.4 1994/06/13 16:13:32 carr Exp $ */
+/* $Id: memory_menu.h,v 1.5 1994/06/13 16:19:35 carr Exp $ */
 
 #ifndef memory_menu_h
 #define memory_menu_h
@@ -10,7 +10,7 @@
 #define UNROLL_SCALAR           3
 #define LI_SCALAR               4
 #define LI_UNROLL               5
-#define MEM_ALL			5 
+#define MEM_ALL			6 
 #define PREFETCH                7
 #define ANNOTATE                8
 #define LI_FUSION		9
