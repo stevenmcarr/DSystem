@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.28 2000/05/18 05:26:06 mjbedy Exp $ */
+/* $Id: prefetch.C,v 1.29 2000/05/18 20:45:26 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -1444,9 +1444,17 @@ static void SchedulePrefetches(model_loop *loop_data,
 	// determine how long for loop to finish
           
         // MJB: We now calculate things in a different order to deal with the 
-        // problem of address arith. 
+        // problem of address arith. If there are no line prefetches, then deal with
+        // it accordingly.
 
-        UnrollVal = ((config_type *)PED_MH_CONFIG(ped))->line >> LogMaxWordsPerLine;
+        if (LinePrefetches->NullList())
+        {       
+            UnrollVal = 1;
+        }
+        else
+        {
+            UnrollVal = ((config_type *)PED_MH_CONFIG(ped))->line >> LogMaxWordsPerLine;
+        }
 
 	Cycles = CyclesPerUnrolledIteration(ped,loop_data[loop].node,
 				            loop_data[loop].level,IVar,
