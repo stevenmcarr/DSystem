@@ -1,4 +1,4 @@
-/* $Id: prefetch.C,v 1.1 1993/06/15 13:56:47 carr Exp $ */
+/* $Id: prefetch.C,v 1.2 1993/06/30 21:31:34 johnmc Exp $ */
 
 #include <mh.h>
 #include <fort/gi.h>
@@ -260,10 +260,10 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
        PrefetchBandwidth = 
         ((float) ((config_type *)PED_MH_CONFIG(ped))->prefetch_buffer) /
         ((float) ((config_type *)PED_MH_CONFIG(ped))->prefetch_latency);
-     BandwidthNeeded = WordPrefetches->entry_count();
-     SPLineValue = ((float)SPLinePrefetches->entry_count()) *
+     BandwidthNeeded = WordPrefetches->Count();
+     SPLineValue = ((float)SPLinePrefetches->Count()) *
                            (4.0/(float)((config_type *)PED_MH_CONFIG(ped))->line);
-     DPLineValue = ((float)DPLinePrefetches->entry_count()) *
+     DPLineValue = ((float)DPLinePrefetches->Count()) *
                            (8.0/(float)((config_type *)PED_MH_CONFIG(ped))->line);
      BandwidthNeeded += SPLineValue + DPLineValue;
      Cycles = CyclesPerIteration(loop_data[loop].node,ped);
@@ -281,7 +281,7 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 	    {
 	     temp = WordIterator.current();
 	     (void)WordIterator.next_entry();
-	     WordPrefetches->delete_entry(temp);
+	     WordPrefetches->Delete(temp);
 	    }
 	while (DPLineIterator.current() != NULL)
 	  if (ScheduleBandwidth <= (PrefetchBandwidth - DPLineValue/Cycles))
@@ -293,7 +293,7 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 	    {
 	     temp = DPLineIterator.current();
 	     (void)DPLineIterator.next_entry();
-	     DPLinePrefetches->delete_entry(temp);
+	     DPLinePrefetches->Delete(temp);
 	    }
 	while (SPLineIterator.current() != NULL)
 	  if (ScheduleBandwidth <= (PrefetchBandwidth - SPLineValue/Cycles))
@@ -305,7 +305,7 @@ static void ModeratePrefetchRequirements(model_loop   *loop_data,
 	    {
 	     temp = SPLineIterator.current();
 	     (void)SPLineIterator.next_entry();
-	     SPLinePrefetches->delete_entry(temp);
+	     SPLinePrefetches->Delete(temp);
 	    }
        }
   }
