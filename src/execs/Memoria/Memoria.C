@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.10 1999/06/23 13:39:30 carr Exp $ */
+/* $Id: Memoria.C,v 1.11 2000/04/05 17:28:01 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -13,7 +13,7 @@
 /*                                                                      */
 /************************************************************************/
 
-#include <strstream.h>
+#include <fstream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -252,7 +252,7 @@ int MemoriaMain(int argc, char **argv)
   } else if (mc_module_list) {
     /* Run the memory compiler on each file in a file list */
 
-    istrstream ModuleList(mc_module_list);
+    ifstream ModuleList(mc_module_list);
     if (!ModuleList)
       {
 	cerr << "The module list file " << mc_module_list <<  "could not be opened..."
