@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.20 1997/06/30 18:43:10 carr Exp $ */
+/* $Id: header.h,v 1.21 1997/07/01 13:20:42 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -88,5 +88,12 @@ EXTERN(void, memory_AnnotateWithLDSTCount, (AST_INDEX    root,
 					    int          level,
 					    Boolean      MainProgram));
 EXTERN(void, memory_DepStatsTotal, (char *program));
+EXTERN(void, memory_GetDependenceStats, (PedInfo      ped,
+					 AST_INDEX    root,
+					 LoopStatsType *LoopStats,
+					 SymDescriptor symtab,
+					 arena_type   *ar,
+					 int          level));
+
 EXTERN(void, DepStatsDump, (FILE *logfile, LoopStatsType *LoopStats));
 #endif

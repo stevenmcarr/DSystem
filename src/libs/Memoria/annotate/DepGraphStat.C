@@ -16,6 +16,7 @@
 #include <libs/Memoria/include/mem_util.h>
 #include <libs/Memoria/annotate/CacheAnalysis.h>
 #include <libs/Memoria/annotate/DirectivesInclude.h>
+#include <libs/Memoria/annotate/DepGraphStat.h>
  
 static int RefCount = 0;
 
