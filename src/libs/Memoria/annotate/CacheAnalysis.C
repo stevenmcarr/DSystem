@@ -105,8 +105,8 @@ static void walk_loops(CacheInfoType  *CacheInfo,
      if (CacheInfo->loop_data[loop].inner_loop == -1)
        {
 	CacheInfo->loop = loop;
-	walk_expression(CacheInfo->loop_data[loop].node,StoreCacheInfo,NOFUNC,
-			(Generic)CacheInfo);
+	walk_expression(CacheInfo->loop_data[loop].node,
+			(WK_EXPR_CLBACK)StoreCacheInfo,NOFUNC,(Generic)CacheInfo);
        }
      else
        {
@@ -142,9 +142,9 @@ void memory_PerformCacheAnalysis(PedInfo      ped,
      pre_info.ped = ped;
      pre_info.symtab = symtab;
      pre_info.ar = ar;
-     walk_statements(root,level,ut_mark_do_pre,ut_mark_do_post,
-		     (Generic)&pre_info);
-     walk_statements(root,level,remove_edges,NOFUNC,(Generic)ped);
+     walk_statements(root,level,(WK_STMT_CLBACK)ut_mark_do_pre,
+		     (WK_STMT_CLBACK)ut_mark_do_post,(Generic)&pre_info);
+     walk_statements(root,level,(WK_STMT_CLBACK)remove_edges,NOFUNC,(Generic)ped);
      CacheInfo.loop_data = (model_loop *)ar->arena_alloc_mem_clear
                   (LOOP_ARENA,pre_info.loop_num*sizeof(model_loop)*4);
      ut_analyze_loop(root,CacheInfo.loop_data,level,ped,symtab);

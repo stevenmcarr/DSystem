@@ -10,8 +10,8 @@
 #include <pt_util.h>
 #include <header.h>
 #include <annotate.h>
-#include <std.h>
 #include <mem_util.h>
+#include <string.h>
 
 #include <misc/Arena.h>
 
@@ -64,38 +64,38 @@ static int InsertCacheCalls(AST_INDEX     stmt,
      strcpy(CallInfo->CacheRoutine,"cache_load");
      if (is_assignment(stmt))
        {
-	walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,AddCall,
-			(Generic)CallInfo);
+	walk_expression(gen_ASSIGNMENT_get_rvalue(stmt),NOFUNC,
+			(WK_EXPR_CLBACK)AddCall,(Generic)CallInfo);
 	strcpy(CallInfo->CacheRoutine,"cache_store");
-	walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,AddCall,
-			(Generic)CallInfo);
+	walk_expression(gen_ASSIGNMENT_get_lvalue(stmt),NOFUNC,
+			(WK_EXPR_CLBACK)AddCall,(Generic)CallInfo);
        }
      else if (is_guard(stmt))
-       walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,AddCall,
+       walk_expression(gen_GUARD_get_rvalue(stmt),NOFUNC,(WK_EXPR_CLBACK)AddCall,
 		       (Generic)CallInfo);
      else if (is_write(stmt))
-       walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,AddCall,
-		       (Generic)CallInfo);
+       walk_expression(gen_WRITE_get_data_vars_LIST(stmt),NOFUNC,
+		       (WK_EXPR_CLBACK)AddCall,(Generic)CallInfo);
      else if (is_read_short(stmt))
        {
 	strcpy(CallInfo->CacheRoutine,"cache_store");
 	walk_expression(gen_READ_SHORT_get_data_vars_LIST(stmt),NOFUNC,
-			AddCall,(Generic)CallInfo);
+			(WK_EXPR_CLBACK)AddCall,(Generic)CallInfo);
        }
      else if (is_read_long(stmt))
        {
 	strcpy(CallInfo->CacheRoutine,"cache_store");
 	walk_expression(gen_READ_LONG_get_io_LIST(stmt),NOFUNC,
-			AddCall,(Generic)CallInfo);
+			(WK_EXPR_CLBACK)AddCall,(Generic)CallInfo);
        }
      else if (is_logical_if(stmt))
-       walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,AddCall,
-		       (Generic)CallInfo);
+       walk_expression(gen_LOGICAL_IF_get_rvalue(stmt),NOFUNC,
+		       (WK_EXPR_CLBACK)AddCall,(Generic)CallInfo);
      else if (is_arithmetic_if(stmt))
-       walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,AddCall,
-		       (Generic)CallInfo);
+       walk_expression(gen_ARITHMETIC_IF_get_rvalue(stmt),NOFUNC,
+		       (WK_EXPR_CLBACK)AddCall,(Generic)CallInfo);
      else if (is_do(stmt))
-       walk_expression(gen_DO_get_control(stmt),NOFUNC,AddCall,
+       walk_expression(gen_DO_get_control(stmt),NOFUNC,(WK_EXPR_CLBACK)AddCall,
 		       (Generic)CallInfo);
      else if (is_if(stmt) || is_continue(stmt) || is_goto(stmt) ||
 	      is_computed_goto(stmt) || is_call(stmt));
@@ -126,5 +126,6 @@ void memory_AnnotateWithCacheCalls(AST_INDEX    root,
    CallInfoType CallInfo;
 
      CallInfo.routine = routine;
-     walk_statements(root,level,InsertCacheCalls,NOFUNC,(Generic)&CallInfo);
+     walk_statements(root,level,(WK_STMT_CLBACK)InsertCacheCalls,NOFUNC,
+		     (Generic)&CallInfo);
   }
