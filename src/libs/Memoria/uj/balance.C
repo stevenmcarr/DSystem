@@ -1,4 +1,4 @@
-/* $Id: balance.C,v 1.7 1995/06/07 16:04:27 carr Exp $ */
+/* $Id: balance.C,v 1.8 1995/08/24 14:12:11 yguan Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -147,6 +147,26 @@ float mh_loop_balance(int   mem_coeff[4][3][3],
      else
        return(ML/FL);
   }
+
+/* Return How Many Memory References in the loop */
+
+int mh_memref(int   mem_coeff[4][3][3],
+                      int   x1,
+                      int   x2)
+
+  {
+   int cindex1,cindex2;
+   int num_memref;
+
+     cindex1 = get_coeff_index(x1);
+     cindex2 = get_coeff_index(x2);
+     num_memref = (mem_coeff[0][cindex1][cindex2] * x1 * x2 +
+                   mem_coeff[1][cindex1][cindex2] * x1 +
+                   mem_coeff[2][cindex1][cindex2] * x2 +
+                   mem_coeff[3][cindex1][cindex2]);
+       return(num_memref);
+  }
+
 
 float mh_PrefetchRequirements(float     PrefetchCoeff[4][3][3],
 			      int       flops,
