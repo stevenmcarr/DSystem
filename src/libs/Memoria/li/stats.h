@@ -1,8 +1,9 @@
+/* $Id: stats.h,v 1.2 1992/10/03 15:15:58 rn Exp $ */
 #ifndef stats_h
 #define stats_h
 
 #include <Arena.h>
-#include <set.h>
+#include <global.h>
 
 typedef struct {
   PedInfo       ped;

@@ -1,6 +1,7 @@
+/* $Id: stats.C,v 1.2 1992/10/03 15:15:14 rn Exp $ */
 #include <mh.h>
-#include <gi.h>
-#include "stats.h"
+#include <fort/gi.h>
+#include <stats.h>
 #include <analyze.h>
 #include <shape.h>
 #include <mem_util.h>
