@@ -1,4 +1,4 @@
-/* $Id: compute_uj.C,v 1.17 1995/05/23 09:12:28 carr Exp $ */
+/* $Id: compute_uj.C,v 1.18 1995/05/26 10:16:14 qwu Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -37,6 +37,7 @@
 #include <mem_util.h>
 
 extern Boolean mc_unroll_cache;
+dep_info_type *machine_info;
 
 /****************************************************************************/
 /*                                                                          */
@@ -2369,20 +2370,45 @@ static void compute_coefficients(dep_info_type *dep_info)
 
 int mh_increase_unroll(int   max,
 		       int   denom,
-		       float rhoL_lp)
+		       float rhoL_lp,
+		       dep_info_type *dep_info)
 
   {
    float v;
    int x;
+   int fp_regs,a_regs,mach_fp,mach_a;
+
+
+
+     mach_fp = ((config_type *)PED_MH_CONFIG(dep_info->ped))->max_regs;
+     mach_a = ((config_type *)PED_MH_CONFIG(dep_info->ped)) ->int_regs;
 
      x = (int)(rhoL_lp / denom);
      v = rhoL_lp / denom;
      if (v > (float) x)
        x++;
-     if (x <= max+1)
-       return(x);
-     else
-       return(max+1);
+     if (x > max+1)
+	x= max+1;
+
+	fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,
+					  dep_info->scalar_coeff,x,1) +
+					  dep_info->scalar_regs;
+
+	a_regs = mh_addr_register_pressure(dep_info->addr_coeff,x,1);
+
+	while(fp_regs >mach_fp || a_regs >mach_a) {
+		x = x-1;
+		fp_regs = mh_fp_register_pressure(dep_info->reg_coeff,
+                                        dep_info->scalar_coeff,x,1) +
+                                        dep_info->scalar_regs;
+		a_regs = mh_addr_register_pressure(dep_info->addr_coeff,x,1);
+	}
+
+	if(x>=1)
+		return(x);
+	else
+		return(1);
+
   }
 
 
@@ -2509,11 +2535,11 @@ static void compute_two_loops(model_loop    *loop_data,
 	    {
 	     dep_info->x1 = mh_increase_unroll(loop_data[unroll_loops[0]].max,
 					       dep_info->x2 * dep_info->flops,
-					       rhoL_lp);
+					       rhoL_lp,dep_info);
 	     if (rhoL_lp > dep_info->x1 * dep_info->x2 * dep_info->flops)
 	       dep_info->x2 =mh_increase_unroll(loop_data[unroll_loops[1]].max,
 						dep_info->x1 * dep_info->flops,
-						rhoL_lp);
+						rhoL_lp,dep_info);
 	     loop_data[inner_loop].InterlockCausedUnroll = true;
 	    }
 	  unroll_vector[loop_data[unroll_loops[0]].level-1] = dep_info->x1 - 1;
@@ -2529,7 +2555,7 @@ static void compute_two_loops(model_loop    *loop_data,
 	    {
 	     dep_info->x1 = mh_increase_unroll(loop_data[unroll_loops[0]].max,
 					       dep_info->x2 * dep_info->flops,
-					       rhoL_lp);
+					       rhoL_lp,dep_info);
 	     loop_data[inner_loop].InterlockCausedUnroll = true;
 	    }
 	  unroll_vector[loop_data[unroll_loops[0]].level-1] = dep_info->x1 - 1;
@@ -2545,7 +2571,7 @@ static void compute_two_loops(model_loop    *loop_data,
 	    {
 	     dep_info->x2 = mh_increase_unroll(loop_data[unroll_loops[1]].max,
 					       dep_info->x1 * dep_info->flops,
-					       rhoL_lp);
+					       rhoL_lp,dep_info);
 	     loop_data[inner_loop].InterlockCausedUnroll = true;
 	    }
 	  unroll_vector[loop_data[unroll_loops[1]].level-1] = dep_info->x2 - 1;
@@ -2660,7 +2686,7 @@ static void compute_one_loop(model_loop    *loop_data,
 	  {
 	   dep_info->x1 = mh_increase_unroll(loop_data[unroll_loop].max,
 					     dep_info->x2 * dep_info->flops,
-					     rhoL_lp);
+					     rhoL_lp,dep_info);
 	   loop_data[inner_loop].InterlockCausedUnroll = true;
 	  }
 	unroll_vector[loop_data[unroll_loop].level-1]= dep_info->x1 - 1;
@@ -2817,7 +2843,7 @@ static void do_computation(model_loop    *loop_data,
 	if (rhoL_lp > (float)(dep_info.flops) && dep_info.flops > 0)
 	  {
 	   unroll_vector[loop_data[unroll_loops[0]].level-1] = 
-	      mh_increase_unroll(loop_data[unroll_loops[0]].max,dep_info.flops,rhoL_lp);
+	      mh_increase_unroll(loop_data[unroll_loops[0]].max,dep_info.flops,rhoL_lp,&dep_info); 
 	   loop_data[loop].fbalance = mh_loop_balance(dep_info.mem_coeff,dep_info.flops,
 				    unroll_vector[loop_data[unroll_loops[0]].level-1]+1,
 						      1);
@@ -2857,6 +2883,8 @@ static void do_computation(model_loop    *loop_data,
 				      dep_info.x1,dep_info.x2) +
 				      dep_info.scalar_regs;
        }
+
+       machine_info = &dep_info;
   }
       
 
