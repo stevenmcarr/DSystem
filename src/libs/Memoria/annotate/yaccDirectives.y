@@ -1,4 +1,4 @@
-/* $Id: yaccDirectives.y,v 1.4 1999/02/23 19:05:34 carr Exp $ */
+/* $Id: yaccDirectives.y,v 1.5 1999/04/22 14:31:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -39,7 +39,7 @@ Boolean a2i_IsDirective;
   }
 
 %token CDIR
-%token PREFETCH FLUSH DEP
+%token PREFETCH FLUSH DEP SETSLR
 %token <cval> NAME ICONST
 %token LPAR RPAR COMMA
 %token PLUS MINUS TIMES DIVIDE
@@ -74,6 +74,12 @@ command : PREFETCH constexpr COMMA subvar
 	      $$.Subscript = $4;
 	      $$.DirectiveNumber = atoi(gen_get_text($2));
 	    }
+        | SETSLR constexpr
+            {
+	     $$.Instr = SetSLRInstruction;
+	     $$.SpecialLoadStride = $2;
+	    }
+        ;
 
 subvar : id LPAR subscript_list RPAR 
   {

@@ -1,4 +1,4 @@
-/* $Id: prepass.C,v 1.2 1998/04/29 13:00:23 carr Exp $ */
+/* $Id: prepass.C,v 1.3 1999/04/22 14:30:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -189,7 +189,8 @@ static void PrePass(AST_INDEX node)
 	  break;
 
 	case GEN_COMMENT: 
-	  if (aiDirectiveIsInComment(node) && aiParseComments)
+	  if (aiDirectiveIsInComment(node) && aiGeneratePrefetches &&
+	      (aiStatementIsPrefetch(node) || aiStatementIsFlush(node)))
 	    PrePass(GET_DIRECTIVE_INFO(node)->Subscript);
 	  break;
 

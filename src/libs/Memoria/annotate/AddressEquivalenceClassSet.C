@@ -319,6 +319,7 @@ AddressEquivalenceClass::AddressEquivalenceClass(char *EntryName,
   Uniform = uniform;
   LeaderIsADirective = false;
   LeaderDirective = NULL;
+  Leader = NULL;
   H = la_matNew(Subscripts,NestingLevel);
   la_matCopy(nodeH,H,Subscripts,NestingLevel);
   C_L = la_vecNew(Subscripts);
@@ -375,7 +376,7 @@ void AddressEquivalenceClass::CheckLeader(AST_INDEX node)
   la_vect C_n;
   Boolean Earlier;
 
-  if (Leader != NULL)
+  if (Leader != AST_NIL)
     {
       Boolean Earlier;
 
@@ -406,7 +407,7 @@ void AddressEquivalenceClass::CheckLeader(Directive *Dir)
   la_vect C_n;
   Boolean Earlier;
 
-  if (Leader != NULL)
+  if (Leader != AST_NIL)
     {
       if (LeaderIsADirective)
 	Earlier = NewReferenceIsEarlier(LeaderDirective,Dir);
@@ -434,5 +435,5 @@ GenericListEntry *e;
      e = GenericListIter::operator()();
      if( e != NULL )
          return (AST_INDEX)( e->GetValue());
-     else return NULL;
+     else return AST_NIL;
 }

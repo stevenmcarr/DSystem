@@ -1,4 +1,4 @@
-/* $Id: ai.h,v 1.12 1999/02/23 19:04:40 carr Exp $ */
+/* $Id: ai.h,v 1.13 1999/04/22 14:30:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -45,6 +45,7 @@
     extern int aiVirtual;	/* report on virtual register use?	*/
     extern int aiNoAlias;	/* assume No Aliases exist		*/
     extern int aiParseComments;/* parse comments for directives        */
+    extern int aiGeneratePrefetches; /* gen code for fetch and flush */
     extern int aiSymMap;	/* print out a storage map		*/
     extern int aiSparc;	/* compile with SPARC attributes	*/
     extern int aiRocket;	/* compile with Rocket naming	*/
@@ -426,6 +427,8 @@ EXTERN(int,DataFlagFromIType,(int ));
 EXTERN(Boolean, ai_isConstantExpr,(AST_INDEX));
 EXTERN(Boolean, isParameterExpr,(AST_INDEX));
 EXTERN(Boolean, aiDirectiveIsInComment,(AST_INDEX));
+EXTERN(Boolean, aiStatementIsPrefetch,(AST_INDEX));
+EXTERN(Boolean, aiStatementIsFlush,(AST_INDEX));
 EXTERN(void,aiStmtList,(AST_INDEX ));
 EXTERN(int,ai_isExecutable,(int ));
 EXTERN(void,ArrayDeclLenList,(AST_INDEX  , int  , int ));

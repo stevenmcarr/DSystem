@@ -1,4 +1,4 @@
-/* $Id: gen.C,v 1.6 1998/07/07 20:25:53 carr Exp $ */
+/* $Id: gen.C,v 1.7 1999/04/22 14:30:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -147,6 +147,7 @@ void generate(int label, int op, Generic r1, Generic r2, Generic r3, char *comme
       case C:
 	switch (op)
 	  {
+	    case SETSLR:
             case BYTES:	/* print constant as an integer */
 	      (void) fprintf(stdout, "\t%-8.8s\t%d\t\t\t", MNEM(op), r1);
 	      break;

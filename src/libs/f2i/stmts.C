@@ -1,4 +1,4 @@
-/* $Id: stmts.C,v 1.5 1999/02/23 19:04:40 carr Exp $ */
+/* $Id: stmts.C,v 1.6 1999/04/22 14:30:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -193,18 +193,22 @@ void aiStmtList(AST_INDEX StmtList)
       }
 
 
-      ftt_NodeToText(ftt, Stmt, &l1, &c1, &l2, &c2);
-      line = (char *) ftt_GetTextLine(ftt,l1);
-
-      if (StmtLabel != ast_null_node)
-      {
-        (void) LabelGet(gen_get_text(StmtLabel), &IlocLabel);
-	generate(IlocLabel, NOP, 0, 0, 0, line);
-      }
-      else
-	/* generate declaratory statements only if labelled */
-	generate(0, COMMENT, 0, 0, 0, line);
-
+      if (NOT(IsDirective) || (aiStatementIsPrefetch(Stmt) || 
+			       aiStatementIsFlush(Stmt)))
+	{
+	  ftt_NodeToText(ftt, Stmt, &l1, &c1, &l2, &c2);
+	  line = (char *) ftt_GetTextLine(ftt,l1);
+	  
+	  if (StmtLabel != ast_null_node)
+	    {
+	      (void) LabelGet(gen_get_text(StmtLabel), &IlocLabel);
+	      generate(IlocLabel, NOP, 0, 0, 0, line);
+	    }
+	  else
+	    /* generate declaratory statements only if labelled */
+	    generate(0, COMMENT, 0, 0, 0, line);
+	}
+	  
       switch(StmtType)
       {
 	case GEN_ARITHMETIC_IF:
@@ -888,7 +892,31 @@ Boolean aiDirectiveIsInComment(AST_INDEX Stmt)
   {
     if (GET_DIRECTIVE_INFO(Stmt) != NULL)
       return (BOOL(GET_DIRECTIVE_INFO(Stmt)->Instr == PrefetchInstruction ||
-		   GET_DIRECTIVE_INFO(Stmt)->Instr == FlushInstruction));
+		   GET_DIRECTIVE_INFO(Stmt)->Instr == FlushInstruction ||
+		   GET_DIRECTIVE_INFO(Stmt)->Instr == SetSLRInstruction));
     else
       return false;
   }
+
+Boolean aiStatementIsPrefetch(AST_INDEX Stmt)
+
+  {
+    if (GET_DIRECTIVE_INFO(Stmt) != NULL && is_comment(Stmt))
+      return (BOOL(GET_DIRECTIVE_INFO(Stmt)->Instr == PrefetchInstruction));
+    else
+      return false;
+  }
+
+Boolean aiStatementIsFlush(AST_INDEX Stmt)
+
+  {
+    if (GET_DIRECTIVE_INFO(Stmt) != NULL && is_comment(Stmt))
+      return (BOOL(GET_DIRECTIVE_INFO(Stmt)->Instr == FlushInstruction));
+    else
+      return false;
+  }
+
+
+
+
+

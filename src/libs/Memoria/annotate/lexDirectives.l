@@ -1,8 +1,6 @@
 %{
-#include <libs/Memoria/annotate/DirectivesInclude.h>
-#include <libs/Memoria/annotate/yaccDirectives.h>
-#include <string.h>
-#include <stdlib.h>
+#include <DirectivesInclude.h>
+#include <yaccDirectives.h>
 
 #define yywrap() 1
 #define EOS     '\0'
@@ -25,6 +23,12 @@ flush                        {
                               yylval.ival = FlushInstruction;
                               return FLUSH;
                              }
+
+setslr                        {
+                              yylval.ival = SetSLRInstruction;
+                              return SETSLR;
+                             }
+
 
 [a-zA-Z][a-zA-Z$_0-9]*       {
                               yylval.cval = (char *)malloc(strlen(yytext) *

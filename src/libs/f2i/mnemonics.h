@@ -1,4 +1,4 @@
-/* $Id: mnemonics.h,v 1.3 1997/04/10 14:21:41 carr Exp $ */
+/* $Id: mnemonics.h,v 1.4 1999/04/22 14:30:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -193,6 +193,7 @@
 
 #define FETCHor   124
 #define FLUSHor   125
+#define SETSLR   125
 
 /* leave numbers for additional opcodes */
 

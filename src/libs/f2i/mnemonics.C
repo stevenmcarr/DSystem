@@ -1,4 +1,4 @@
-/* $Id: mnemonics.C,v 1.1 1997/04/28 20:18:07 carr Exp $ */
+/* $Id: mnemonics.C,v 1.2 1999/04/22 14:30:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -228,6 +228,7 @@ static void init_ftable()
 	
 	ftable[FETCHor] =       R;
 	ftable[FLUSHor] =       R;
+	ftable[SETSLR]  =       C2R;
 
 
 	ftable[fTRUNC] =	R2R;
@@ -536,6 +537,7 @@ static void init_ntable()
 
 	ntable[FETCHor] =       "FETCHor";
 	ntable[FLUSHor] =       "FLUSHor";
+	ntable[SETSLR]  =       "SETSLR";
 
 	if (aiDoubleReals)
 	  ntable[fTRUNC] =	"dTRUNC";

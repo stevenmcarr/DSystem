@@ -1,4 +1,4 @@
-/* $Id: f2i_options.C,v 1.9 1999/02/10 16:23:10 carr Exp $ */
+/* $Id: f2i_options.C,v 1.10 1999/04/22 14:31:37 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -52,7 +52,8 @@ Boolean ReuseModelDebugFlag = false;
  int aiTreeCheck;     /* run ft_Check() on the tree?          */
  int aiVirtual;       /* report on virtual register use?      */
  int aiNoAlias;       /* assume No Aliases exist              */
- int aiParseComments;/* parse comments for directives        */
+ int aiParseComments; /* parse comments for directives        */
+ int aiGeneratePrefetches; /* generate code for prefetches found in comments */
  int aiSymMap;        /* print out a storage map              */
  int aiSparc; /* compile with SPARC attributes        */
  int aiRocket; /* compile with Rocket naming        */
@@ -175,6 +176,12 @@ static void f2i_opt_NoAlias(void *state)
  aiNoAlias++;
 }
 
+static void f2i_opt_GeneratePrefetches(void *state)
+{
+ aiGeneratePrefetches++;
+ aiParseComments++;
+}
+
 static void f2i_opt_ParseComments(void *state)
 {
  aiParseComments++;
@@ -233,6 +240,7 @@ static void f2i_opt_Cache(void *state)
 
 static void f2i_opt_SpecialCache(void *state)
   {
+   aiParseComments++;
    aiSpecialCache++;
    aiCache++;
   }
@@ -356,11 +364,18 @@ static struct flag_	NoAlias_f = {
   " ",
 };
 
+static struct flag_	GeneratePrefetches_f = {
+  f2i_opt_GeneratePrefetches,
+  "GeneratePrefetches flag",	
+  " ",
+};
+
 static struct flag_	ParseComments_f = {
   f2i_opt_ParseComments,
   "ParseComments flag",	
   " ",
 };
+
 static struct flag_	SymDump_f = {
   f2i_opt_SymDump,
   "SymDump flag",	
@@ -468,8 +483,10 @@ Option f2i_pgm_opt = {string, F2I_PGM_OPT,(Generic) "", true,(Generic)&program_s
 			     (Generic)&MessageId_f},
        f2i_NoAlias_flag = {flag, F2I_NOALIAS_FLAG, (Generic)false, true, 
 			   (Generic)&NoAlias_f},
-       f2i_ParseComments_flag = {flag, F2I_PARSECOMMENTS_FLAG, (Generic)false, true,
-				 (Generic)&ParseComments_f},
+       f2i_GeneratePrefetches_flag = {flag, F2I_GENFETCH_FLAG, (Generic)false,
+				      true,(Generic)&GeneratePrefetches_f},
+       f2i_ParseComments_flag = {flag, F2I_PARSECOMMENTS_FLAG, (Generic)false,
+				 true,(Generic)&ParseComments_f},
        f2i_SymDump_flag = {flag, F2I_SYMDUMP_FLAG, (Generic)false, true, 
 			   (Generic)&SymDump_f},
        f2i_TreeCheck_flag = {flag, F2I_TREECHECK_FLAG, (Generic)false, true,
@@ -506,6 +523,7 @@ int f2i_init_options(int argc, char **argv)
   aiMessageId 		= 0;
   aiNoAlias   		= 0;
   aiParseComments 	= 0;
+  aiGeneratePrefetches 	= 0;
   aiSymDump   		= 0;
   aiTreeCheck 		= 0;
   aiTreeDump		= 0;
@@ -532,6 +550,7 @@ int f2i_init_options(int argc, char **argv)
   f2iOptions.Add(&f2i_MessageId_flag);
   f2iOptions.Add(&f2i_NoAlias_flag);
   f2iOptions.Add(&f2i_ParseComments_flag);
+  f2iOptions.Add(&f2i_GeneratePrefetches_flag);
   f2iOptions.Add(&f2i_SymDump_flag);
   f2iOptions.Add(&f2i_TreeCheck_flag);
   f2iOptions.Add(&f2i_TreeDump_flag);

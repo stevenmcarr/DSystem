@@ -1,5 +1,5 @@
 
-/* $Id: f2iAnalysis.C,v 1.2 1999/02/23 19:05:34 carr Exp $ */
+/* $Id: f2iAnalysis.C,v 1.3 1999/04/22 14:31:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -129,5 +129,6 @@ void memory_PerformF2iAnalysis(PedInfo      ped,
      if (aiCache || aiParseComments)
        memory_PerformCacheAnalysis(ped,symtab,ar,root,level,pre_info.loop_num);
      if (aiOptimizeAddressCode)
-       memory_PerformAddressOptimization(ped,symtab,ar,root,level,pre_info.loop_num);
+       memory_PerformAddressOptimization(ped,symtab,ar,root,level,
+					 pre_info.loop_num);
   }

@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.h,v 1.15 1999/02/23 19:05:34 carr Exp $ */
+/* $Id: CacheAnalysis.h,v 1.16 1999/04/22 14:31:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -24,7 +24,7 @@ typedef struct CacheInfoStruct {
   SymDescriptor symtab;
   arena_type *ar;
   char       **IVar;
-  Boolean    HasSelfSpatial;
+  Boolean    HasSpecialSelfSpatial;
   DataReuseModel *ReuseModel;
   AddressEquivalenceClassSet *AECS;
  } CacheInfoType;
@@ -45,6 +45,13 @@ typedef struct depstruct {
   char DType;
   int Distance;
  } DepStruct; /* copy in a2i_lib/ai.h */
+
+typedef struct cachecycleinfostruct {
+    int             IntCycles;
+    int             FPCycles;
+    PedInfo         ped;
+    DataReuseModel *ReuseModel;
+} CacheCycleInfoType;
 
 #define DepInfoPtr(n) \
    ((DepInfoType *)ast_get_scratch(n))

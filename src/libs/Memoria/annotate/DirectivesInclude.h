@@ -1,4 +1,4 @@
-/* $Id: DirectivesInclude.h,v 1.6 1999/03/31 21:56:30 carr Exp $ */
+/* $Id: DirectivesInclude.h,v 1.7 1999/04/22 14:31:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -8,11 +8,12 @@
 #define DirectivesInclude_h
 
 #include <stdio.h>
+#include <libs/frontEnd/ast/ast.h>
 #include <libs/support/lists/list.h>
-#include <libs/Memoria/include/mh_ast.h>
 #include <libs/frontEnd/fortTree/fortsym.h>
 
-typedef enum {PrefetchInstruction,FlushInstruction,Dependence} Instruction;
+typedef enum {PrefetchInstruction,FlushInstruction,Dependence,
+              SetSLRInstruction} Instruction;
 
 typedef struct DirectiveStruct {
   Instruction Instr;
@@ -20,12 +21,14 @@ typedef struct DirectiveStruct {
   UtilList    *DependenceList;
   int         DirectiveNumber;
   int         StmtNumber;
+  int         SpecialLoadStride;
   AST_INDEX   AddressLeader; /* used in AddressOptimization */
   int         Offset; /* used in AddressOptimization */
  }  Directive;
 
-EXTERN(Boolean, a2i_string_parse, (char *str,Directive *Dir,
-				   SymDescriptor symtab));
+EXTERN(Boolean, a2i_string_parse, (char *,
+				   Directive *,
+				   SymDescriptor));
 
 #define DirectiveInfoPtr(n) \
    ((Directive *)ast_get_scratch(n))

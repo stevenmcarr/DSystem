@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.22 1999/03/31 21:56:30 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.23 1999/04/22 14:31:10 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -12,6 +12,7 @@
 #include <iostream.h>
 #include <assert.h>
 #include <libs/support/misc/general.h>
+#include <libs/frontEnd/include/gi.h>
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/Memoria/include/mh_config.h>
@@ -223,7 +224,7 @@ static void CreateDepInfoSubscript(AST_INDEX Id,
     {
       node = tree_out(Id);
       CreateDepInfoPtr(node);
-      DepInfoPtr(node)->DependenceList = util_list_alloc(NULL,NULL);
+      DepInfoPtr(node)->DependenceList = util_list_alloc((int)NULL,NULL);
       DepInfoPtr(node)->ReferenceNumber = RefCount++;
     }
 }
@@ -242,7 +243,7 @@ static int CreateDepInfo(AST_INDEX node,
 	 Dir = new Directive;
 	 if (a2i_string_parse(gen_get_text(gen_COMMENT_get_text(node)),Dir,Symtab))
 	   {
-	     Dir->DependenceList = util_list_alloc(NULL,NULL);
+	     Dir->DependenceList = util_list_alloc((int)NULL,NULL);
 	     Dir->StmtNumber = get_stmt_info_ptr(node)->stmt_num;
 	     PutDirectiveInfoPtr(node,Dir);
 	     switch (Dir->Instr) 
@@ -259,6 +260,7 @@ static int CreateDepInfo(AST_INDEX node,
 		 break;
 		 
 	       case FlushInstruction:
+	       case SetSLRInstruction:
 		 break;
 	       }
 	   }
@@ -293,8 +295,12 @@ static int StoreCacheInfo(AST_INDEX     node,
        if (aiSpecialCache && 
 	   NOT(get_subscript_ptr(gen_SUBSCRIPT_get_name(node))->store) &&
 	   CacheInfo->ReuseModel->HasSelfSpatialReuse(node))
-	 DepInfoPtr(node)->UseSpecialSelfSpatialLoad = 
-	   CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
+	 {
+	   DepInfoPtr(node)->UseSpecialSelfSpatialLoad = 
+	     CacheInfo->ReuseModel->IsGroupSpatialLoadLeader(node);
+	   CacheInfo->HasSpecialSelfSpatial = CacheInfo->HasSpecialSelfSpatial
+	     || DepInfoPtr(node)->UseSpecialSelfSpatialLoad;
+	 }
       }
      return(WALK_CONTINUE);
   }
@@ -399,8 +405,8 @@ static void BuildPrefetchDependenceList(CacheInfoType *CacheInfo)
   UtilList *BeforeList,*AfterList;
   char *InnerIvar;
 
-  BeforeList = util_list_alloc(NULL,NULL);
-  AfterList = util_list_alloc(NULL,NULL);
+  BeforeList = util_list_alloc((int)NULL,NULL);
+  AfterList = util_list_alloc((int)NULL,NULL);
   StmtList = gen_DO_get_stmt_LIST(CacheInfo->loop_data[CacheInfo->loop].node);
   InnerIvar = CacheInfo->IVar[CacheInfo->loop_data[CacheInfo->loop].level-1]; 
 
@@ -493,6 +499,198 @@ static int BuildGroupSpatialDependenceList(AST_INDEX     node,
 	 ReuseModel->AddSpatialDependences(node);
      return(WALK_CONTINUE);
   }
+   
+static int LoadCycles(AST_INDEX Node,
+		      CacheCycleInfoType *CycleInfo)
+
+  {
+    int LoadPenalty = 
+      ((config_type *)PED_MH_CONFIG(CycleInfo->ped))->hit_cycles;
+
+    int MissPenalty = 
+      ((config_type *)PED_MH_CONFIG(CycleInfo->ped))->miss_cycles;
+    
+    switch(CycleInfo->ReuseModel->GetNodeReuseType(Node))
+       {
+	case SELF_TEMPORAL:
+	case GROUP_TEMPORAL:
+	  return 0;
+
+	case SELF_SPATIAL:
+        case GROUP_SPATIAL:
+	  return(LoadPenalty);
+
+	case NONE:
+	  if (((config_type *)PED_MH_CONFIG(CycleInfo->ped))->NonBlockingCache)
+	    return(LoadPenalty);
+	  else
+	    return(LoadPenalty + MissPenalty);
+       }
+  }
+
+//
+//  Function: OperationCycles
+//
+//  Input: Node - binary operator AST
+//         ped - configuration info
+//
+//  Output: number of cycles for an operator
+//
+//  Description: look up in configuration info how long a particular 
+//               operation takes
+//
+
+static int OperationCycles(AST_INDEX Node,
+			   PedInfo   ped)
+
+  {
+    int ops;  // complex operations take more than 1 instruction
+     
+     if (!is_binary_times(Node) || 
+	 (!is_binary_plus(tree_out(Node)) && 
+	  !is_binary_minus(tree_out(Node))) ||
+	 !((config_type *)PED_MH_CONFIG(ped))->mult_accum)
+       if (gen_get_converted_type(Node) == TYPE_DOUBLE_PRECISION ||
+	   gen_get_converted_type(Node) == TYPE_COMPLEX ||
+	   gen_get_converted_type(Node) == TYPE_REAL)
+	 {
+	  if (gen_get_converted_type(Node) == TYPE_COMPLEX)
+	    ops = 2;
+	  else
+	    ops = 1;
+	  if (is_binary_times(Node))
+	    return(((config_type *)PED_MH_CONFIG(ped))->mul_cycles * ops);
+	  else if (is_binary_plus(Node) || is_binary_minus(Node))
+	    return(((config_type *)PED_MH_CONFIG(ped))->add_cycles * ops);
+	  else if (is_binary_divide(Node))
+	    return(((config_type *)PED_MH_CONFIG(ped))->div_cycles * ops);
+	  else
+	    return(ops); 
+	 }
+     return(0);
+  }
+
+//
+//  Function: CountCycles
+//
+//  Input: Node - AST node of operation to check cycle count on
+//         CycleInfo - record of cycles in loop so far
+//
+//  Output: Increase in number of cycles in loop depending on operation
+//
+//  Description: Add to memory cycles for array references and flops for operators
+//
+
+static int CountCycles(AST_INDEX     Node,
+		       CacheCycleInfoType *CycleInfo)
+
+  {
+    if (is_subscript(Node))
+      CycleInfo->IntCycles += LoadCycles(Node,CycleInfo);
+    else if (is_binary_op(Node))
+      CycleInfo->FPCycles += OperationCycles(Node,CycleInfo->ped);
+    return(WALK_CONTINUE);
+  }
+
+//
+//  Function: CyclesPerIteration
+//
+//  Input: Node -  AST index of an innermost loop
+//         ped - dependence graph and configuration info
+//
+//  Output: The number of floating-point and memory cycles in a loop
+//
+//  Description: walk the statements in the AST and compute how much each
+//               node requires in machine cycles
+//
+
+static int CyclesPerIteration(AST_INDEX Node,
+			      DataReuseModel *ReuseModel,
+			      int NumberOfAddressSets,
+			      PedInfo   ped)
+
+  {
+    CacheCycleInfoType CycleInfo; // Cycle information
+  
+    // Initilization 
+
+    CycleInfo.IntCycles = 0;
+    CycleInfo.FPCycles = 0;
+    CycleInfo.ped = ped;
+    CycleInfo.ReuseModel = ReuseModel;
+
+    // walk statements and compute cycles
+
+    walk_expression(gen_DO_get_stmt_LIST(Node),(WK_EXPR_CLBACK)CountCycles,
+		    NOFUNC,(Generic)&CycleInfo);
+     
+    // conservatively assume that ints and flops are parallel.  This gives a
+    // lower bound on cycle time 
+
+    CycleInfo.FPCycles = 
+      ceil_ab(CycleInfo.FPCycles,
+	      ((config_type *)PED_MH_CONFIG(ped))->FPUnits);
+	      
+    // add in the integer instructions for address arithmetic
+    // and the loop induction variable if there is not an
+    // auto-increment address mode
+
+    if (!((config_type *)PED_MH_CONFIG(ped))->AutoIncrement)
+      CycleInfo.IntCycles += (NumberOfAddressSets+1); 
+    
+    CycleInfo.IntCycles = 
+      ceil_ab(CycleInfo.IntCycles,
+	      ((config_type *)PED_MH_CONFIG(ped))->IntegerUnits);
+
+    if (CycleInfo.IntCycles >= CycleInfo.FPCycles)
+      return(CycleInfo.IntCycles);
+    else
+      return(CycleInfo.FPCycles);
+  }
+
+static int AddSpecialLoadDistanceInstruction(AST_INDEX LoopHeader,
+					     DataReuseModel *ReuseModel,
+					     int NumberOfAddressSets,
+					     PedInfo ped)
+{
+  
+  // Get the number of cycles for enough loop iterations to go through an
+  // an entire cache line
+
+  int LoopCycles = CyclesPerIteration(LoopHeader,ReuseModel,
+				      NumberOfAddressSets,ped) * 
+    (((config_type *)PED_MH_CONFIG(ped))->line >> 3); 
+
+  // Get how long will it take for the Special Load to fetch the 
+  // prefetched cache line
+
+  int PrefetchLatency = ((config_type *) PED_MH_CONFIG(ped))->prefetch_latency;
+
+  // Get how far away in memory the prefetched line is
+
+  int SpecialLoadDistance = ceil_ab(PrefetchLatency,LoopCycles) *
+    ((config_type *)PED_MH_CONFIG(ped))->line;
+
+  
+  // Build directive to set special load distance 
+
+  char *Instruction = new char[72];
+
+  sprintf(Instruction,"$directive setslr %d",SpecialLoadDistance);
+
+  AST_INDEX NewDirective = pt_gen_comment(Instruction);
+  
+  Directive *Dir = new Directive;
+  Dir->DependenceList = util_list_alloc((int)NULL,NULL);
+  Dir->StmtNumber = 0;
+  Dir->Instr = SetSLRInstruction;
+  Dir->SpecialLoadStride = SpecialLoadDistance;
+  PutDirectiveInfoPtr(NewDirective,Dir);
+
+  list_insert_before(LoopHeader,NewDirective);
+
+}
+
 
 static void walk_loops(CacheInfoType  *CacheInfo,
 		       int            loop)
@@ -509,11 +707,12 @@ static void walk_loops(CacheInfoType  *CacheInfo,
      if (CacheInfo->loop_data[loop].inner_loop == -1)
        {
 	CacheInfo->loop = loop;
+	CacheInfo->HasSpecialSelfSpatial = false;
 	LIS = new int[CacheInfo->loop_data[loop].level];
 	for (i = 0; i < CacheInfo->loop_data[loop].level-1; i++)
 	  LIS[i] = 0;
 	AST_INDEX step = gen_INDUCTIVE_get_rvalue3(
-                           gen_DO_get_control(CacheInfo->loop_data[loop].node));
+                          gen_DO_get_control(CacheInfo->loop_data[loop].node));
 	if (step == AST_NIL)
 	  LIS[CacheInfo->loop_data[loop].level-1] = 1;
 	else if (pt_eval(step,&LIS[CacheInfo->loop_data[loop].level-1]))
@@ -522,15 +721,31 @@ static void walk_loops(CacheInfoType  *CacheInfo,
 					 CacheInfo->loop_data[loop].level,
 					 CacheInfo->IVar,LIS);
 	CacheInfo->ReuseModel = new DataReuseModel(UGS);
-	walk_expression(CacheInfo->loop_data[loop].node,(WK_EXPR_CLBACK)StoreCacheInfo,
+					 
+	walk_expression(CacheInfo->loop_data[loop].node,
+			(WK_EXPR_CLBACK)StoreCacheInfo,
 			NOFUNC,(Generic)CacheInfo);
 	walk_expression(CacheInfo->loop_data[loop].node,
-			(WK_EXPR_CLBACK)BuildDependenceList,NOFUNC,(Generic)CacheInfo);
+			(WK_EXPR_CLBACK)BuildDependenceList,NOFUNC,
+			(Generic)CacheInfo);
 	BuildPrefetchDependenceList(CacheInfo);
 	if (aiSpecialCache)
-	  walk_expression(CacheInfo->loop_data[loop].node,
-			  (WK_EXPR_CLBACK)BuildGroupSpatialDependenceList,NOFUNC,
-			  (Generic)CacheInfo->ReuseModel);
+	  {
+	    CacheInfo->AECS =
+	      new AddressEquivalenceClassSet(CacheInfo->loop_data[loop].node,
+					     CacheInfo->loop_data[loop].level,
+					     CacheInfo->IVar);
+	    walk_expression(CacheInfo->loop_data[loop].node,
+			    (WK_EXPR_CLBACK)BuildGroupSpatialDependenceList,
+			    NOFUNC,(Generic)CacheInfo->ReuseModel);
+	    if (CacheInfo->HasSpecialSelfSpatial)
+	     AddSpecialLoadDistanceInstruction(CacheInfo->loop_data[loop].node,
+					       CacheInfo->ReuseModel,
+					       CacheInfo->AECS->GetSize(),
+					       CacheInfo->ped);
+	    delete CacheInfo->AECS;
+	  }
+	      
 	delete CacheInfo->ReuseModel;
 	delete UGS;
 	delete LIS;

@@ -46,6 +46,7 @@ public:
   int GetOffset(AST_INDEX n);
   void AddNode(AST_INDEX node);
   void AddNode(Directive *Dir);
+  int GetSize() {return Size;};
 
 };
 
