@@ -1,118 +1,312 @@
-/* $Id: DoublyLinkedList.C,v 1.5 1997/03/11 14:36:47 carr Exp $ */
+/* $Id: DoublyLinkedList.C,v 1.6 1998/02/19 15:25:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
 /******************************************************************************/
-// DList.cc - Member function definitions for the doubly linked list class
-//
-// Nat McIntosh - added shift functions, iterator, and incorporated into Rn
-// Cliff Click  - Hacked 10/12/91
-// Cliff Click  - Made functionality and coding style match rest of class lib
-//
-// Author: Chris Vick, Copyright (C) 1991
-// This material is released for public use, but is not placed in the public
-// domain.  You are free to use/mangle/copy this code, but since I retain
-// ownership you cannot copyright or patent this code.	Please leave this
-// copyright notice in copies of this code, so that future programmers cannot
-// be denied using it.
-//
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
 
 #include <libs/support/lists/DoublyLinkedList.h>
 
-//------------------------------~DList-----------------------------------------
-// Empty the list, ignoring contents.
-DList::~DList()
+/******************************************************************
+ * Doubly Linked List Abstraction              September 1991     *
+ * Author: John Mellor-Crummey                                    *
+ *                                                                *
+ * this file contains a general purpose singly linked list        *
+ * abstraction. the two components are the list itself,           *
+ * and a template for entries in the list. this abstraction is    *
+ * useless in its own right since the list and its entries        *
+ * contain no information other than what is needed to describe   *
+ * the structure. to make use of this abstraction, derive a       *
+ * list entry class that contains some useful data, and           *
+ * derive a corresponding list class composed of elements         *
+ * of the derived list entry class. all of the structural         *
+ * manipulation can be performed using the functions              *
+ * provided in the base classes defined herein.                   *
+ *                                                                *
+ * Copyright 1991, Rice University, as part of the ParaScope      *
+ * Programming Environment Project                                *
+ *                                                                *
+ ******************************************************************/
+
+DoublyLinkedListEntry::DoublyLinkedListEntry()
 {
-  register DList *temp;
-  while( x.cnt ) {              // While list not empty
-    temp = h;                   // Item to nuke
-    h = h->h;                   // Get next item
-    temp->x.cnt = 0;            // Nothing here (list is empty)
-    delete temp;                // Nuke this item
-    x.cnt--;                    // Lower list size
+  next = 0;
+  previous = 0;
+}
+
+//----------------------------------------------------------------
+// if a derived entry class contains any pointers to heap
+// allocated storage, this virtual function should be
+// defined for the derived class to free that storage
+//----------------------------------------------------------------
+DoublyLinkedListEntry::~DoublyLinkedListEntry()
+{
+  if (next) delete next;
+  if (previous) delete previous;
+}
+
+DoublyLinkedListEntry *
+DoublyLinkedListEntry::Next()
+{
+  return next;
+}
+
+DoublyLinkedListEntry *
+DoublyLinkedListEntry::Previous()
+{
+  return previous;
+}
+
+void DoublyLinkedListEntry::LinkSuccessor(DoublyLinkedListEntry *e)
+{
+  next = e;
+}
+
+void DoublyLinkedListEntry::LinkPredecessor(DoublyLinkedListEntry *e)
+{
+  previous = e;
+}
+
+//----------------------------------------------------------------
+// destructor invokes the destructor for the first element in 
+// the list. the destructor for that element will delete any 
+// successors to that element in the list.
+//----------------------------------------------------------------
+DoublyLinkedList::~DoublyLinkedList() 
+{ 
+  delete head;
+}
+
+
+//----------------------------------------------------------------
+// add a list entry at the at the end of the current list
+//
+// pre-condition: the list entry must not already be part of a
+//                list (i.e. it must have a null successor)
+//----------------------------------------------------------------
+void DoublyLinkedList::Append(DoublyLinkedListEntry *e) 
+{ 
+  assert(e->Next() == 0 && e->Previous() == 0); 
+  
+  if (head == 0) head = e;
+  else {
+    tail->LinkSuccessor(e); 
+    e->LinkPredecessor(tail);
+  }
+  tail = e;
+  count++;
+}
+
+
+//----------------------------------------------------------------
+// add a list entry before the Old entry
+//
+// pre-condition: the list entry must not already be part of a
+//                list (i.e. it must have a null successor)
+//----------------------------------------------------------------
+void DoublyLinkedList::InsertBefore(DoublyLinkedListEntry *Old,
+				    DoublyLinkedListEntry *New) 
+{ 
+  assert(New->Next() == 0 && New->Previous() == 0); 
+  
+  if (Old == NULL) Append(New); 
+  else
+    {
+      New->LinkPredecessor(Old->Previous());
+      Old->LinkPredecessor(New);
+      New->LinkSuccessor(Old);
+      if (head = Old)
+	head = New;
+    }
+  
+  count++;
+}
+
+
+//----------------------------------------------------------------
+// add a list entry after the Old entry
+//
+// pre-condition: the list entry must not already be part of a
+//                list (i.e. it must have a null successor)
+//----------------------------------------------------------------
+void DoublyLinkedList::InsertAfter(DoublyLinkedListEntry *Old,
+				   DoublyLinkedListEntry *New) 
+{ 
+  assert(New->Next() == 0 && New->Previous() == 0); 
+  
+  if (Old == NULL) Append(New); 
+  else
+    {
+      New->LinkPredecessor(Old);
+      New->LinkSuccessor(Old->Next());
+      Old->LinkSuccessor(New);
+      if (tail = Old)
+	tail = New;
+    }
+  
+  count++;
+}
+
+
+//----------------------------------------------------------------
+// add a list entry at the front of the current list
+//
+// pre-condition: the list entry must not already be part of a
+//                list (i.e. it must have a null successor)
+//----------------------------------------------------------------
+void DoublyLinkedList::Push(DoublyLinkedListEntry *e) 
+{
+  assert(e->Next() == 0 && e->Previous() == 0); 
+  
+  if (tail == 0) tail = e;
+  else
+    {
+      e->LinkSuccessor(head);
+      head->LinkPredecessor(e);
+    }
+  head = e;
+  count++;
+}
+
+
+//----------------------------------------------------------------
+// unlink and return the first entry in the list. if the list is
+// empty, return null entry.
+//
+// post-condition: the list entry returned (if any) will have a
+//                 null successor
+//----------------------------------------------------------------
+DoublyLinkedListEntry *DoublyLinkedList::Pop() 
+{
+  DoublyLinkedListEntry *first = head;
+  if (head) {
+    count--;
+    head = head->Next();
+    head->LinkPredecessor(0);
+  }
+  if (first) {
+    if (tail == first) tail = 0;
+    first->LinkSuccessor(0);
+    first->LinkPredecessor(0);
+  }
+  return first;
+}
+
+//----------------------------------------------------------------
+// delete a particular entry from the DoublyLinkedList
+//
+// note: make sure to zero the 'next' field for the list
+// prior to deleting it, otherwise the destructor for the
+// list entry will get rid of the rest of the list...
+//
+//----------------------------------------------------------------
+void DoublyLinkedList::Delete(DoublyLinkedListEntry *e)
+{
+  DoublyLinkedListEntry *e1;
+  count--;
+  if (e == head && e == tail){
+    head = tail = 0;
+    e->LinkSuccessor(0);
+    e->LinkPredecessor(0);
+    delete e;
+  }
+  
+  else if (e == head) {
+    head = e->Next();
+    head->LinkPredecessor(0);
+    e->LinkSuccessor(0);
+    e->LinkPredecessor(0);
+    delete e;
+  }
+  else if (e == tail) {
+    tail = tail->Previous();
+    tail->LinkSuccessor(0);
+    e->LinkSuccessor(0);
+    e->LinkPredecessor(0);
+    delete e;
+  }
+  else {
+    e->Previous()->LinkSuccessor(e->Next());
+    e->Next()->LinkPredecessor(e->Previous());
+    e->LinkSuccessor(0);
+    e->LinkPredecessor(0);
+    delete e;
   }
 }
 
-void DList::iterate_func(voidfunc_ptr_voidstar func)
-{
-  DList *tmp;
-  int i;
 
-  i = (int)x.cnt;
-  tmp = h;
-  while (i--) {
-    (*func)(tmp->x.user);
-    tmp = tmp->h;
-  }
-  return;
+DoublyLinkedList::DoublyLinkedList()
+{
+  count = 0;
+  head = 0;
+  tail = 0;
 }
 
-// Cycle shift head to tail
-DList& DList::operator >>(int nshift)
-{
-  DList *p;
 
-  while (nshift--) {
-    /* remove from head */
-     p = h;
-     h = h->h;
-     h->t = this;
-     /* add to tail */
-     p->h = this;
-     p->t = t;
-     t->h = p;
-     t = p;
-   }
-  return *this;
+DoublyLinkedListEntry *
+DoublyLinkedList::First()
+{
+  return head;
 }
 
-// Cycle shift tail to head
-DList& DList::operator <<(int nshift)
-{
-  DList *p;
 
-  while (nshift--) {
-    /* remove from tail */
-    p = t;
-    t = t->t;
-    t->h = this;
-    /* add to head */
-    p->h = h;
-    p->t = this;
-    h->t = p;
-    h = p;
-  }
-  return *this;
+DoublyLinkedListEntry *
+DoublyLinkedList::Last()
+{
+  return tail;
 }
 
-#if 0
-void print_list_elem(void *u)
+
+unsigned int
+DoublyLinkedList::Count()
 {
-  printf("%d ", u);
+  return count;
 }
 
-void print_dlist(DList *l)
-{
-  printf("0x%x: ", l);
-  (*l).iterate_func(print_list_elem);
-  printf("\n");
+
+DoublyLinkedListIterator::DoublyLinkedListIterator(DoublyLinkedList *l,
+						   Boolean Rev)
+{ 
+  // extend to handle degenerate case (NULL list) to increase convenience 
+  // of use -- JMC 1/93
+  Reverse = Rev;
+  if (Reverse)
+    first = current_entry = (l ? l->Last() : 0);
+  else
+    first = current_entry = (l ? l->First() : 0);
 }
 
-main(int argc, char **argv)
-{
-  DList x;
 
-  x >>= (void *) 3;
-  x >>= (void *) 2;
-  x >>= (void *) 1;
-  print_dlist(&x);
-  x >> 1;
-  print_dlist(&x);
-  x >> 1;
-  print_dlist(&x);
-  x >> 1;
-  print_dlist(&x);
-  x >> 3;
-  print_dlist(&x);
+DoublyLinkedListIterator::DoublyLinkedListIterator(DoublyLinkedList &l,
+						   Boolean Rev)
+{ 
+  Reverse = Rev;
+  if (Reverse)
+    first = current_entry = l.Last();
+  else
+    first = current_entry = l.First(); 
 }
-#endif
+
+
+void DoublyLinkedListIterator::operator ++()
+{
+  current_entry = (current_entry ? current_entry->Next() : 0);
+}
+
+void DoublyLinkedListIterator::operator --()
+{
+  current_entry = (current_entry ? current_entry->Previous() : 0);
+}
+
+DoublyLinkedListEntry *DoublyLinkedListIterator::Current()
+{
+  return current_entry;
+}
+
+void DoublyLinkedListIterator::Reset()
+{
+  current_entry = first;
+}
+
