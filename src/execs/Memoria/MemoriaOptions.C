@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.14 2000/04/09 20:22:37 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.15 2000/06/15 16:01:47 mjbedy Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -36,7 +36,7 @@ int blue_color = 0;
 
 Boolean Memoria_LetRocketSchedulePrefetches = false;
 Boolean Memoria_IssueDead = false;
-
+Boolean Memoria_ConservativeSelfSpatial = false;
 Options MemoriaOptions("Memoria Options");
 
 Boolean mc_unroll_cache = false;  
