@@ -1,9 +1,11 @@
-/* $Id: codegen.C,v 1.6 1992/12/11 11:22:09 carr Exp $ */
+/* $Id: codegen.C,v 1.7 1992/12/16 12:25:15 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
+#include <general.h>
+#include <string.h>
 #include <sr.h>
 #include <mh_ast.h>
 #include <fort/walk.h>
@@ -257,7 +259,7 @@ static int check_def(AST_INDEX node,
 				NUM_REGS)) > 0)
          {
 	  strcpy(reg_name,gen_get_text(node));
-	  s = rindex(reg_name,'$');
+	  s = strrchr(reg_name,'$');
 	  s[1] = '\0';
 	  sprintf(reg_name,"%s%d",reg_name,mod(-code_info->copy,dist+1));
 	  pt_tree_replace(node,ut_gen_ident(code_info->symtab,reg_name,
