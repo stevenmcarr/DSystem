@@ -1,0 +1,34 @@
+/* $Id: mon.ansi.c.14526,v 1.7 1997/03/11 14:34:27 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
+
+#include <stdarg.h>
+#include <stdio.h>
+
+/* Print a message */
+void message(char* format, ...)
+{
+va_list arg_list;
+
+  va_start(arg_list, format);
+    {
+       _doprnt(format, arg_list, stdout);
+    }
+  va_end(arg_list);
+
+  return;
+}
+
+void show_message2(void)
+{
+  return;
+}
+
+void hide_message2(void)
+{
+  return;
+}
+
