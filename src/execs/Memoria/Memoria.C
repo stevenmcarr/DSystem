@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.3 1997/04/09 19:49:15 carr Exp $ */
+/* $Id: Memoria.C,v 1.4 1997/04/09 20:20:12 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -43,7 +43,7 @@
 #include <string.h>
 #include <libs/Memoria/include/memory_menu.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/dp.h>
-#include <libs/frontEnd/prettyPrinter/ft2text.h>
+#include <libs/frontEnd/ast/ftExportSimple.h>
 #include <libs/moduleAnalysis/dependence/edgeList/el_header.h>
 #include <libs/moduleAnalysis/dependence/edgeList/el_instance.h>
 
@@ -206,8 +206,7 @@ void CompileFile(FortranModule *module)
 	  fprintf(stderr, "The output file could not be opened...\n");
 	  exit(-1);
 	}
-      ftt_TreeChanged(ftt,root);
-      ft_export((Context)module, ft, ftt, fd, None);
+      ftExportSimple(ft, ftt, fd);
       fclose(fd);
     }
 
