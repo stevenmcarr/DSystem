@@ -1,4 +1,4 @@
-/* $Id: memory_menu.h,v 1.7 1994/07/11 13:34:14 carr Exp $ */
+/* $Id: memory_menu.h,v 1.8 1995/08/07 16:51:31 carr Exp $ */
 
 #ifndef memory_menu_h
 #define memory_menu_h
@@ -20,7 +20,8 @@
 #define SR_STATS                13
 #define STATS			14
 #define FUSION                  15
-#define MEM_SIZE		16    /* MUST BE LAST! */
+#define LDST			16
+#define MEM_SIZE		17    /* MUST BE LAST! */
 
 #define ARENAS 1
 
