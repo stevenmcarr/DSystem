@@ -37,7 +37,7 @@
 
 /**************************** variable definitions ****************************/
 
-char D_copyright[] = "\nD System Version 0.6\nCopyright (c) 1990, 1991, 1992, 1993, 1994 Rice University; All Rights Reserved\n\nIncorporates portions of the Pablo Performance Analysis Environment Version 3.0\nCopyright (c) 1994 University of Illinois (UI)\n\nThis program is provided _as is_ with ABSOLUTELY NO WARRANTY of any kind.\n\nThis program is free software and may be redistributed under the conditions\nof the license.\n\nUsage of this software implies acceptance of the licenses which can be found in\n/DSystem/LicenseDSystem and /DSystem/LicensePablo or retrieved from the World\nWide Web, using the URL http:/www.cs.rice.edu/fortran-tools/DSystem/v0.6\n\n";
+char D_copyright[] = ""
 
 
    /* seconds the notice must show */
