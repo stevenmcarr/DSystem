@@ -1,4 +1,4 @@
-/* $Id: scalar.C,v 1.21 1994/11/30 15:44:28 carr Exp $ */
+/* $Id: scalar.C,v 1.22 1994/12/08 14:41:36 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -10,6 +10,7 @@
 #include <fort/walk.h>
 #include <scalar.h>
 #include <LoopStats.h>
+#include <fort/AstIter.h>
 
 #ifndef check_h
 #include <check.h>
