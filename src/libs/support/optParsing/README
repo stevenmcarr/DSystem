@@ -1,0 +1,19 @@
+README for <$DSYSTEM>/develop/ReadmeFileSrc/libs/support/optParsing
+
+
+The files in this directory support options parsing. The 
+following classes make up the options parsing abstraction:
+
+  OptionsListEntry (inherits from SinglyLinkedListEntry)
+  Options
+  OptionsIterator 
+
+
+
+
+
+
+
+
+
+

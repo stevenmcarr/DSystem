@@ -1,0 +1,6 @@
+README for <$DSystem>/develop/src/libs/moduleAnalysis/cfgValNum
+
+
+The code in this directory allows value numbering to be attached 
+to a control flow graph (cfg) or static single assignment (ssa).
+

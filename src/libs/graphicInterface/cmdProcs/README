@@ -1,0 +1,6 @@
+README for <$DSystem>/develop/src/libs/graphicInterface/cmdProcs
+
+
+The code in this directory uses the building blocks 
+in framework/ to create a specific editor.
+

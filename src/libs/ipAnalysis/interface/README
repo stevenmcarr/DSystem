@@ -1,0 +1,9 @@
+README for <$DSystem>/develop/src/libs/ipAnalysis/interface
+
+
+The files in this directory support a DEPRECATED interface
+for attaching and detaching a callgraph for a program from
+C programs. 
+
+ATTACH_ATTRIBUTE(programCompositionPtr, CallGraph)
+is the recommended way of accessing a callgraph from C++. 

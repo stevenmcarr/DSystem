@@ -1,0 +1,23 @@
+README for <$DSYSTEM>/develop/src/libs/support/sets
+
+
+The files in this directory support the creation of vector 
+sets, sparse sets, list sets, and word sets. 
+
+
+The following class supports the set abstraction:
+
+  Set (used only through inheritance)
+
+The following classes support the vector set abstraction:
+
+  VectorSet (inherits from Set)
+  VSetI_ (inherits from SetI_)
+  VectorSetI (inherits from SetI) 
+
+The following classes support the word set abstraction:
+
+  WordSet (inherits from HashTable)
+  WordSetIterator (inherits from HashTableIterator)
+
+

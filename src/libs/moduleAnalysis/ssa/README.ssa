@@ -1,0 +1,484 @@
+Documentation for implementation of Static Single-Assignment (SSA) form
+=======================================================================
+paco, May/June 1992
+
+Introduction
+------------
+    SSA form is a representation of program dataflow with generally
+linear construction and representation costs.  SSA nodes are normal
+definitions and uses of variables, plus special "phi-nodes" that serve
+as both defs and uses.  SSA edges represent the flow of values from
+defs to uses.  The only difference between an SSA graph and normal
+def-use chains is the insertion of phi-nodes both to tie the def-use
+information to the control flow graph and to reduce the number of du
+edges to expected linear complexity.
+    More information on SSA form can be found in several papers.  The
+most important are:
+
+	Alpern, Wegman & Zadeck, "Detecting Equality of Variables in
+	Programs," POPL 88, Jan. 1988, pp. 1--11.
+
+	Cytron, Ferrante, Rosen, Wegman & Zadeck, "Efficiently
+	Computing Static Single-Assignment Form and the Control
+	Dependence Graph," TOPLAS 13:4, Oct. 1991, pp. 451--490.
+
+	Wegman & Zadeck, "Constant Propagation with Conditional
+	Branches," TOPLAS 13:2, Apr. 1991, pp. 181--210.
+
+    This implementation has several extensions and elaborations of
+this work.  For example, def-def SSA edges are supported, as well as
+edges on arrays.  None of these greatly disturb the algorithms.
+
+How to build things
+-------------------
+    The SSA implementation is cravenly dependent on the CFG, in a way
+that totally violates any concept of abstraction.  Well, not quite.
+As far as CFG is concerned, SSA is just another client.  But SSA looks
+directly at CFG's low-level data structures, like a peeping Tom.
+    Getting the SSA information for a subprogram proceeds as follows:
+
+	(1) cfgGlobals = cfg_Open(ft); /* on the FortTree for the module */
+
+	(2) ssa_Open(cfgGlobals, (Generic) ipInfo,
+			(Boolean) doArrays, (Boolean) doDefDef);
+
+		Where ipInfo is either a handle to ip information or 0,
+		and doArrays and doDefDef say if you want edges on
+		arrays and/or between definitions, respectively.
+
+	(3a) If you want just a specific subprogram "mine",
+
+		cfg = cfg_get_inst(cfgGlobals, "mine");
+
+	(3b) If you want to iterate through the subprograms,
+
+		for (cfg = cfg_get_first_inst(cfgGlobals);
+		     cfg;
+		     cfg = cfg_get_next_inst(cfg))
+		{
+		    /* your code here */
+		}
+
+	(4) If one wants to rebuild the SSA information for a single
+		subprogram,
+
+		ssa_CloseOne((Generic) junk, cfg);
+		ssa_OpenOne((Generic) junk, cfg);
+
+	    Note that any saved pointers and indices into the SSA
+	    information will become stale.
+
+	(5) When done,
+
+		ssa_Close(cfgGlobals);
+		cfg_Close(cfgGlobals);
+
+
+Strictly speaking, it doesn't matter if (2) comes before or after (3),
+as long as both are done before you try and call any of the other SSA
+routines.
+    Unfortunately, there is not yet a similar registration mechanism
+for clients of the SSA.
+
+What is built
+-------------
+    SSA nodes correspond to
+
+	* modifications of variables (call these "definitions" or "defs")
+
+	* "interesting" expressions
+
+    SSA edges go from defs to
+
+	* unambiguous definitions ("kill" nodes)
+
+	    -- these edges built only if the doDefDef flag passed in is true
+
+	    -- kills include:
+
+		+ direct definitions of scalars
+
+		+ direct, unsubscripted definitions of arrays
+
+	* ambiguous definitions ("mod" nodes)
+
+	    -- these edges always built (at least for scalars)
+
+	    -- mods include:
+
+		+ indirect definitions of scalars (at call sites)
+
+		+ indirect or subscripted definitions of arrays
+
+		+ phi-nodes, which aren't really ambiguous, but which
+			summarize data flow
+
+	    -- edges are built as if mods are uses and kills
+
+	* interesting expressions ("use" nodes)
+
+	    -- uses include:
+
+		+ right-hand sides of assignments
+
+		+ array subscript lists
+
+		+ write statements
+
+	    -- only one SSA edge reaches a real use for each variable
+
+		+ there is frequently only one use node for an expression,
+			with inedges distinguishing the various values
+
+	* Note that no outedges are built for array definitions unless
+		the DoArrays flag is passed in as true.
+
+    The structure of the SSA nodes at a given CFG node (statement) is
+as follows:
+
+	* There is a linear list of SSA nodes
+
+		CFG_node(cfg, cfgNode)->ssaKids
+		SSA_node(cfg, ssaNode)->nextCfgSib
+
+	    + The ordering of this list is a linearization of the partial
+		ordering on execution defined in the standard.
+	    + SSA edges are built from a def to other nodes in the same
+		statement when the def comes earlier in the list.
+
+	    + Phi-nodes come after any loop-initialization nodes
+		(SSA_LOOP_INIT, SSA_LOOP_BOUND, SSA_LOOP_STEP) and before
+		any other nodes that may directly use or define a value.
+
+	* There is a hierarchy of SSA nodes
+
+		SSA_node(cfg, ssaNode)->subUses
+		SSA_node(cfg, ssaUse)->subDefs
+		SSA_node(cfg, ssaNode)->nextSsaSib
+
+	    + Nodes can have subUses
+
+		Typical examples are subscripts for an array reference
+		and function invocations within an expression.
+
+		An important example is the SSA_RESULT subUse of an
+		SSA_ASSIGN, which represents the value computed for the
+		assignment.
+
+	    + Some uses can have subDefs
+
+		SSA_CALL nodes (subroutine calls and function invocations)
+		can have subDefs corresponding to side effects.
+
+		SSA_GUARD_INDUCTIVE represents the control condition on
+		an inductive DO loop, and has a subDef representing the 
+		assignment to the loop index.
+
+More about fields
+-----------------
+
+refAst		Defined iff
+
+		    * the node is a use, and corresponds to an
+		      expression which is not an unsubscripted
+		      reference.
+			If there is no ast expression, no refAst.
+			If the expression is an unsubscripted reference, the
+			ast is saved for the inedge for that variable.
+
+		    * the node is a def/mod, and the reference occurs
+		      in the ast.  The only defs without ast nodes are 
+		      SSA_IP_IN and SSA_IP_MOD for globals and statics,
+		      and SSA_PHI and SSA_ETA pseudo-defs.
+
+		Additional significance that if the refAst field is
+		not AST_NIL, then
+
+			ssa_node_map(cfg, SSA_node(cfg, id)->refAst)) == id
+
+name		If the expression is a reference (subscripted or not),
+		this is the symbol table id of the variable.
+
+type		SSA_GUARD_LOGICAL, etc.
+
+cfgParent	The CFG node of the statement containing the use or def.
+
+nextCfgSib	The next SSA node with the same cfgParent.
+
+ssaParent	The SSA node for the expression containing this use or def.
+		An ssaParent for a def must be an SSA_CALL (then the def is
+		an SSA_IP_MOD or SSA_IP_KILL) or an SSA_GUARD_INDUCTIVE 
+		(then the def is an SSA_INDUCTIVE).
+
+nextSsaSib	The next SSA node with the same ssaParent.
+
+subUses		The first SSA use node, if any, with this node as its
+		ssaParent.
+
+		Common parent/child combinations:
+
+		SSA_DEF (assignment LHS)	SSA_RESULT (for RHS)
+		SSA_DEF (assignment LHS)	SSA_CALL (RHS is fn invoc'n)
+		SSA_INDUCTIVE (DO loop index)	SSA_LOOP_*
+		array ref (SSA_DEF or some uses)SSA_SUBSCRIPT (subscript list)
+		SSA_SUBSCRIPT			SSA_RESULT (single subscript)
+
+		SSA_CALL			SSA_ACTUAL (expression actual)
+		SSA_CALL			SSA_IP_MOD (ref actual, global)
+
+		SSA_GUARD_INDUCTIVE		SSA_INDUCTIVE
+
+value		Reserved for use by value numbering.
+
+defsIn		The first inedge from the reaching definitions of
+		variables accessed by this SSA node.
+
+		If the current SSA node is a
+
+		* non-PHI def, there can be only one reaching
+			definition, and the edge is present iff the
+			def is a mod or if it is a kill and doDefDefs
+			is true.
+
+		* use, there is at most one re
+
+		
+Use node details
+----------------
+
+In cases where the use is just a variable reference and we don't
+especially need a node for it, we represent the use by an inedge to an
+SSA node for a containing expression.  If there is no "ssaParent,"
+then we create a node for the reference anyway.
+
+We don't save an AST_INDEX for a use node unless it is a complicated
+expression (not just a variable ref).  Variable refs are associated
+with the SSA edges from their (unique) reaching definitions to the SSA
+use node for the closest surrounding expression.
+
+Since a use node may represent several references, each may be several
+inedges.  However, there is at most one inedge into any use node for
+any particular variable.  An inedge has a list of AST_INDEXes for all
+references to the variable, in case there are more than one.
+
+SSA_GUARD_*
+	These represent different types of conditions that control
+	execution; the only ones which are really useful right now
+	are:
+
+	SSA_GUARD_LOGICAL
+		The condition has a logical (Boolean) value, as in an
+		IF, block IF, ELSE IF, or DO WHILE.
+
+	SSA_GUARD_INTEGER
+		The condition has an integer value, as in a computed
+		GOTO, assigned GOTO, or arithmetic IF.
+
+	SSA_GUARD_INDUCTIVE
+		The condition specifies iterative execution while an
+		index value ranges from an initial value to a bound by
+		a step, as with an inductive DO loop.
+
+	SSA_GUARD_ALT_ENTRY
+		Inserted at the start node, cfg->start, to represent
+		the choice among multiple entries.  Is omitted if
+		there are no alternate entries.
+
+	SSA_GUARD_ALT_RETURN
+		Inserted at a call site which passes alternate return
+		specifiers (e.g., the call site in the example under
+		SSA_ALT_RETURN), to represent the choice among the
+		normal and alternate returns.
+
+	Coming with Fortran 90: SSA_GUARD_CASE
+		Will represent the CASE expression (like switch).
+
+SSA_ACTUAL
+	This represents a value passed as an actual parameter.  It
+	gets a special node to signify that it cannot be replaced with
+	a reference, because that could change the effect of executing
+	the call in Fortran's call-by-reference world.
+
+SSA_SUBSCRIPT
+	This is a place to hang subscript references off, to avoid
+	confusing them with other subUses of the array reference
+	(e.g., the SSA_RESULT for the RHS if it is an SSA_ASSIGN).  If
+	a subscript is a complicated expression, it is represented by
+	an SSA_USE subordinate to this node; if it is just a variable
+	reference, it is represented by an SSA inedge.
+
+SSA_ALT_RETURN
+	Represents the expression for which alternate return is used.
+	This is a grubby Fortran detail.  When we have the following
+	arrangement:
+
+		subroutine sub1()
+
+		    call sub2(*10, *20, *30)
+
+	   10	    print
+	   20	    print
+	   30	    print
+		    return
+		end
+
+		subroutine sub2(*,*,*)
+
+		    return (expression)
+		end
+
+	...then an SSA_ALT_RETURN at the final return represents the
+	value of (expression).  If the value is 1, 2, or 3, control is
+	returned to label 10, 20, or 30 in the caller, respectively.
+
+SSA_RESULT
+	Represents an interesting expression whose value we want to
+	get at, or sometimes a list of such expressions.  The node is
+	omitted if the expression is simply a scalar reference and the
+	ssaParent is another use node.
+
+	The RHS of an assignment is normally an SSA_RESULT, as are
+	values written out in PRINT and WRITE statements.  The only
+	exception is when the top-level result expression is a
+	function call, in which case there is an SSA_CALL.
+
+	One is built at cfg->end to receive inedges from the final
+	definitions of every variable which must be preserved
+	interprocedurally: formals, statics, and common vars.  If
+	there are no direct definitions of a variable, DUMMY_GLOBAL
+	serves as a standin.
+
+SSA_USE
+	An expression that doesn't especially need a node, if its
+	ssaParent is another use.  In that case, subordinate
+	expressions are connected directly to the ssaParent, either as
+	subUses or just as inedges for references.
+
+	(This differs from SSA_RESULT because only the SSA_USE is
+	omitted if there are subordinate expressions.)
+
+SSA_LOOP_*
+	The values controlling loop index variables.  These must come
+	before SSA_PHI at the entry to a DO loop, because they must
+	get the initial values of variables and not those modified by
+	the loop.
+
+	Also used for implied DO in I/O statements.  There can be
+	several sets in a single statement, and the only necessity is
+	that they are in the ssaKids list before the SSA_INDUCTIVE
+	definition of the index variable.
+
+SSA_CALL
+	Gives a handle on CALL sites and function invocations.
+	Subordinate uses can be SSA_ACTUALs only (or simple inedges if
+	we've done interprocedural analysis); subordinate defs are
+	SSA_IP_MOD or SSA_IP_KILL (the latter being used only if we
+	have interprocedural kill analysis).
+
+Definition node details
+-----------------------
+    Whereas a use node may summarize several references, there is a
+distinct def node for each definition.  A def node gets inedges from
+previous definitions of the same variable only.  Except for SSA_PHI
+nodes, no SSA nodes may have multiple inedges for the same variable.
+    There are two kinds of definitions:
+
+	* a kill node corresponds to a certain definition
+
+		-- gets inedges from previous definitions iff the
+			doDefDef flag is true
+
+	* a mod node represents a pseudo-def (PHI) or ambiguous def
+
+		-- always has inedges from previous definitions,
+			because it is modeled as a use and a kill
+
+Interprocedural definitions are handled with one significant twist: if
+there are no direct modifications to a variable, then no indirect
+modifications are represented.  Uses of the variable are treated as
+uses of DUMMY_GLOBAL, which has an SSA_IP_IN at each entry, an
+SSA_IP_MOD at each call site, and an inedge to SSA_END_RSLT.
+
+SSA_IP_IN (kill)
+	Each represents the value on entry of a formal parameter,
+	common block variable, or local static variable, respectively.
+	Every entry point has a distinct set of such defs.
+
+	If a variable is not directly defined in the current
+	subprogram, or if it is a local dynamic variable, then the
+	on-entry definition is omitted.  If there is an
+	upwards-exposed use, it gets an edge from the SSA_IP_IN for
+	DUMMY_GLOBAL.
+
+SSA_INDUCTIVE (kill)
+	The definition of an inductive DO loop index variable.  A
+	subDef of the SSA_GUARD_INDUCTIVE; has the SSA_LOOP_*
+	expressions as subUses.
+
+	No SSA_PHI node is built at the loop header for a loop index
+	variable, because (1) it would always be dead, and (2) it
+	would be confusing, because the SSA_INDUCTIVE is all we need.
+
+SSA_DEF (kill if unsubscripted)
+	A definition from an assignment, ASSIGN, or READ.  Not a kill
+	if the memory defined is a subscripted array ref.  An
+	SSA_SUBSCRIPT subUse gives subscripts if any; an SSA_RESULT
+	gives the RHS (or an SSA_CALL if RHS is a function
+	invocation).
+
+SSA_PHI (mod)
+	This is a pseudo-definition representing the merge of values
+	from different definitions at a control flow merge.  It uses
+	the value from each reaching definition of a variable, and
+	produces a value for the reachable uses.
+
+	SSA_PHI nodes are the only SSA nodes with inedges from
+	multiple definitions from the same variable.
+
+SSA_ETA (mod)
+	Built to represent the final value of a variant value coming
+	out of a loop.  These are added for an implied DO (within the 
+	same statement) and at the sink of loop exits for variables
+	with loop SSA_PHI nodes at the loop header and for loop index 
+	variables (with SSA_INDUCTIVEs at the header).
+
+	For a real loop, use the cfg->intervals information to tell how
+	many loops are exited or the outermost loop exited.
+
+	The sole inedge to an SSA_ETA is from the SSA_PHI or SSA_INDUCTIVE
+	for the index or variant value.
+
+SSA_GAMMA (mod)
+	Dags of SSA_GAMMA nodes are built to replace SSA_PHIs.  The
+	gammas in a given dag all reside at the same cfg node, so it's
+	impossible to arrange for the dataflow edges hook up
+	automatically.  The gamma-conversion phase (optional, but
+	required for good value numbering) hooks up the dataflow edges
+	directly.
+
+	An SSA_GAMMA has no subUses.  The subUse field is used to
+	record the guard node that controls the merge.  Inedges
+	provide the definitions that reach the merge (under the
+	control of the guard); the pathEdge field of each edge gives
+	the label corresponding to the guard value which results in
+	that definition's reaching.
+
+SSA_IP_KILL (kill)
+	Not used until we get better interprocedural information.
+
+SSA_IP_MOD (mod)
+	These represent indirect potential uses and modifications via
+	call sites and function invocations.  These are inserted for
+	things passed explicitly (actuals) and implicitly (common
+	block variables a.k.a. globals).
+
+	If there are no *direct* modifications of a variable in the
+	current subprogram, SSA_IP_MOD nodes are omitted, and the
+	SSA_IP_MOD for DUMMY_GLOBAL serves as a stand-in.  This is to
+	cut down on the number of nodes encoding no information.
+
+	Things get more subtle if interprocedural information is
+	available.  In that case, indirect uses should be treated as
+	uses by the SSA_CALL, indirect killing defs as SSA_IP_KILLs,
+	and only indirect ambiguous definitions should be represented
+	by SSA_IP_MOD nodes.

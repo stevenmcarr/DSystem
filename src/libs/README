@@ -1,0 +1,7 @@
+README for <$DSYSTEM>/develop/src/libs
+
+
+These subdirectories contain the main source 
+code for the D System, which is compiled into
+multiple library archives.
+

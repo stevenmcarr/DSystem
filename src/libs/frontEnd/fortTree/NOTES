@@ -1,0 +1,25 @@
+tcCheckSubstring:
+	new code that checks error condition (non-id or subscript)
+	is untested
+
+private variable declarations:
+
+	typechecker allows private declaration for a parallel loop 
+	  index variable. is this legal?
+
+	should a parallel loop declaration infer private variable status
+	  for the loop index variable?
+
+SAVE statements:
+	storage class information not handled correctly
+
+statement function invocations: 
+	not expanded in tree. this causes problems for recording
+	interprocedural information for function call sites
+	that are in the statement function definition.
+	need to declare a new tree node statement function
+	invocation that has an expanded tree for the statement
+	function invocation
+
+character variables:
+	not handled completely

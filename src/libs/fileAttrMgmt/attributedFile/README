@@ -1,0 +1,69 @@
+README for <$DSYSTEM>/develop/src/libs/fileAttrMgmt/attributedFile
+
+
+The files in this directory support the creation of 
+"attributed files." Attributed files are simply files 
+that you attach "attributes" to:
+
+  Attribute - An "attribute" is any class that 
+  inherits from the class Attribute. 
+
+  Attributed File - An "attributed file" is any 
+  class that inherits from the class AttributedFile. 
+  You use the macro ATTACH_ATTRIBUTE to attach an 
+  attribute to an attributed file. (ATTACH_ATTRIBUTE 
+  lives in AttributedFile.h.)
+
+  Attributed File Set - An "attributed file set" is 
+  a collection of attributed files. 
+
+
+In Figure 1 below, the classes FontAttr, LayoutAttr, 
+and PublisherInfoAttr are all attributes, because 
+they all inherit from Attribute. Likewise, TextFile 
+and Chapter are attributed files, because they inherit 
+from AttributedFile. The class Book is both an attri-
+buted file and an attributed file set. 
+ 
+
+      Attribute  -------->  AttributedFile    AttributedFileSet
+       |                          |                   |
+       |                     _____|________________   |
+       |                    |                      |  |                 
+       |                    |                      |  |
+       |- FontAttr  ---->  TextFile                |  |
+       |                    |                      |  |   
+       |                    |                      |  |           
+       |- LayoutAttr ----> Chapter                 |  |             
+       |                                           |  |          
+       |                                           |  |        
+       |- PublisherInfoAttr  ------------------->  Book
+ 
+ 
+   Figure 1. The relationship between attributes, attributed 
+   files, and attributed file sets. Arrows indicate attributes 
+   that are attached to an attributed file.
+
+
+Thus, the classes Attribute, AttributedFile, and AttributedFileSet 
+are not used directly; they are used through inheritance. 
+
+The classes that make up the attributed file abstraction are
+ 
+   Attribute 
+   AttributeConstructorRegistry 
+   AttributeTable
+   AttributeTableIterator
+   AttributedFile
+   RepositoryObjectComponentsIterator
+   AttributedFileSet
+   AttributedFileSetIterator
+   FileSuffixHandle
+   FileSuffixRegistry
+   File
+   FileTimeStamp
+   RepositoryContext
+
+
+See Also: ../composition/README  ../fortranModule/README
+          ../module/README

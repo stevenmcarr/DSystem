@@ -1,0 +1,7 @@
+README for <$DSYSTEM>/develop/src/libs/config
+
+
+This directory contains configuration source files. These files 
+produce copyright messages and check environment variables.
+
+

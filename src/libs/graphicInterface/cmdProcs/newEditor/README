@@ -1,0 +1,6 @@
+README for <$DSystem>/develop/src/libs/graphicInterface/cmdProcs/newEditor
+
+
+This directory contains code specific to the new editor "ned," 
+an old editor that grew out of the ParaScope editor.
+

@@ -1,0 +1,5 @@
+README for <$DSystem>/develop/src/libs/fortD
+
+
+The files in this directory support code generation, 
+compilation, and analysis in the Fortran D compiler.

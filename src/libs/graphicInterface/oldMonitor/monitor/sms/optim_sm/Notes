@@ -1,0 +1,87 @@
+typedef struct {
+	short	lineno;
+	short	ohash;
+	short	nhash;
+	o_pos	*oline;
+	o_pos	*nline;
+	o_line	*olist;		/* may have to make these a list type */
+	o_line	*nlist;
+	boolean	line_ok;
+	boolean hash_ok;
+} o_line;
+
+typedef struct {
+	o_line	*actual;	/* may have to make these a list head type */
+	o_line	*desire;
+} bucket;
+
+bucket *ht;
+
+
+fix_line(src,dst)
+	o_line *src;
+	o_line *dst;
+{
+	if (src == NIL)
+	{
+		/* update dst by explicitly drawing it */
+	}
+	else
+		line_blt( src, dst )
+
+	/* put dst on the correct olist, mark it updated */
+	pluck( dst->nlist )
+	push( dst, &(ht[dst->nhash].actual) )
+	nh = dst->nhash;
+	if ( ht[nh].desired == EMPTY )
+			move all nodes from ht[nh].actual to UNNEEDED list
+	dst->ohash = nh;
+	dst->line_ok = true;
+}
+
+
+SELF LOOP NODES
+For self loop nodes (ohash == nhash)
+	pluck( this->nlist )
+	this->line_ok = true
+
+UNNEEDED SCREEN LINES
+For all i such that (ht[i].actual != EMPTY && ht[i].desired == EMPTY)
+
+fix_unneeded_lines()
+{
+	while NIL != (this = pop(UNNEEDED)) )
+	{
+		pluck(this->olist)
+		nh = this->nhash;
+		src = head(ht[nh].olist)
+		fix_line(src,this)
+	}
+}
+
+NEEDED SCREEN LINES
+For a given i such that (ht[i].actual != EMPTY && ht[i].desired != EMPTY)
+
+fix_needed_line(i)
+{
+	If a node "done" in ht[i].actual has done->line_ok set true
+		move all other nodes from ht[i].actual to UNNEEDED list
+	elseif j exists st. ht[j].actual == NIL && ht[j].desired != NIL
+		src = head(ht[i].actual)
+		dst = head(ht[j].desired)
+		line_blt( src, dst )
+		push( dst, &(ht[i].actual) )
+		move all other nodes from ht[i].actual to UNNEEDED list
+	else
+		move all nodes from ht[i].actual to UNNEEDED list
+
+	fix_unneeded_lines()
+
+	while( ht[i].desired != EMPTY )
+		fix_line( head(ht[i].actual, head(ht[i].desired) )
+
+	/*
+	 * previous fix_line calls may have freed up some lines
+	 */
+	fix_unneeded_lines()
+}

@@ -1,0 +1,18 @@
+README for <$DSYSTEM>/develop/src/execs
+
+
+The files in these subdirectories produce executables for 
+
+  o the control flow graph
+  o the control dependence graph generator
+  o the syntax and semantic checker  
+  o the Fortran D compiler
+  o the Fortran D editor
+
+The Fortran D compiler translates sequential Fortran programs
+with data decomposition directives into message-passing 
+Fortran 77 programs.
+
+The Fortran D editor provides information about parallelism 
+and communication placement in Fortran D programs. 
+

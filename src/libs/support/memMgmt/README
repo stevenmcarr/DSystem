@@ -1,0 +1,11 @@
+README for <$DSYSTEM>/develop/src/libs/support/memMgmt
+
+
+The files in this directory support the creation of various 
+memory management utilities, including an arena-based allo-
+cation utility. The following class makes up the various 
+memory management abstractions:
+
+  class arena_type
+  static class Tag
+

@@ -1,0 +1,8 @@
+README for <$DSYSTEM>/develop/src/libs/support/patternMatch
+
+
+The files in this directory support the creation of various 
+pattern matching and substitution utilities. Files beginning 
+with "bm" support the implementationof the Boyer-Moore 
+"expected sublinear" searching algorithm.
+

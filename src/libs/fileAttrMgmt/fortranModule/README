@@ -1,0 +1,45 @@
+README for DSYSTEM/develop/src/libs/fileAttrMgmt/fortranModule
+
+
+This files in this directory support the creation 
+of Fortran modules:
+
+  Fortran Module - A single .f file that is used 
+  to form a larger grouping of files, called a 
+  composition file. 
+
+The class fortranModule inherits from the class Module, 
+which inherits from the class AttributedFile. 
+
+The classes that make up the Fortran module abstraction are
+
+   ProcAFormalInfo
+   ModuleLocalInfo
+   ProcLocalInfo
+   FortranModule
+   StandardModuleAttribute
+
+This directory contains the following module attributes (*ModAttr) 
+and Fortran module attributes (*FortModAttr):
+
+   AFormalModAttr
+   FortDModAttr  
+   FortTreeModAttr
+   FortTextTreeModAttr
+   NeedProvFortModAttr
+   ParseErrorsModAttr
+   ProcSummariesFortModAttr
+   RefTextModAttr
+   ScalarModRefModAttr
+
+
+See Also: ../attributedFile/README, ../composition/README,
+          ../module/README
+
+
+
+
+
+
+
+  

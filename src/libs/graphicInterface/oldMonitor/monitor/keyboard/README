@@ -1,0 +1,5 @@
+README for <$DSYSTEM>/develop/src/libs/support/keyboard
+
+
+The files in this directory support the creation of keyboard 
+input and keysequence mapping utilities.

@@ -1,0 +1,10 @@
+parameter bindings
+   need to do something better with constants, 
+   constant expressions in parameter bindings
+
+augmented call graph 
+
+unknown functions -- not handled
+intrinsics -- not handled
+
+

@@ -1,0 +1,5 @@
+README for <$DSystem>/develop/src/libs/fortD/codeGen
+
+
+This directory contains the bulk of the code generator
+for the Fortran D compiler and related support files.

@@ -1,0 +1,9 @@
+README for <$DSYSTEM>/develop/src/libs/support/templates
+
+
+This directory contains some experimental code for a template
+that would be useful, unfortunately the link-time
+instantiation provided by the Sun C++ 2.0.1 compiler rendered
+it virtually impossible to use templates within the DSystem
+code. As the C++ compilers we have available to use improve, 
+perhaps this will become useful.

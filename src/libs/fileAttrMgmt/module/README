@@ -1,0 +1,27 @@
+README for <$DSYSTEM>/develop/src/libs/fileAttrMgmt/module
+
+ 
+The files in this directory support the creation of modules:
+
+  Module - A file that is indirectly used in a larger 
+  grouping of files. This larger grouping of files is 
+  called a composition. In the graph below, arrows in-
+  dicate inheritance. 
+
+    AttributedFile --> Module --> FortranModule
+
+
+The classes that make up the module abstraction are
+
+   Module 
+   ModuleProcsIterator
+   NeedProvSet
+   
+This directory contains the following module attributes (*ModAttr):  
+
+   NeedProvModAttr
+   ProcSummariesModAttr
+
+
+See Also: ../attributedFile/README, ../composition/README, 
+          ../fortranModule/README

@@ -1,0 +1,6 @@
+README for <$DSYSTEM>/develop/src/libs/support/annotation
+
+
+The files in this directory support annotations, annotated 
+objects, managed annotations, and annotation sets.
+

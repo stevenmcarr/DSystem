@@ -1,0 +1,84 @@
+I assume that the intended interpretations are as follows:
+
+	SC_STATIC
+		Must be treated as local static, so that scope is
+		restricted to this subprogram, but values present on
+		exit from one execution of this subprogram must be
+		preserved to the next execution of this subprogram.
+
+		e.g., SAVE variables
+
+	SC_STACK
+		Local, not static; scope is restricted to this
+		subprogram, and any modifications executed are lost on
+		exit from this subprogram.
+
+	SC_GLOBAL
+		E.g., variables in COMMON blocks, assumed to be
+		preserved over the whole program.  Do formals fall
+		into this class?
+
+There are subtleties associated with DATA statements for non-SAVEd
+variables, and with COMMON variables whose blocks are not defined in
+the main program, but only at deeper levels.
+
+COMMON blocks
+-------------
+
+The standard says that COMMON blocks can become undefined.  SAVEd
+COMMON blocks and ones defined in the main program always stay
+defined.
+
+	* Do we treat other COMMON blocks as always defined?
+		(implicitly SAVEd)
+
+	* If not, do we treat them as reinitialized by BLOCK DATA
+		statements each time they are resurrected?  The
+		standard is silent.
+
+	* We could treat them as becoming undefined.
+
+Implications for analysis and source-to-source transformation:
+
+The first interpretation means we can treat BLOCK DATA subprograms as
+being executed just before the main program.
+
+The second means we must treat BLOCK DATA subprograms as executing
+just before the top procedure in the rooted call graph which declares
+the COMMON block.  But what if a BLOCK DATA subprogram contains COMMON
+blocks with their highest declarations in different procedures?
+
+The third means that we can treat BLOCK DATA subprograms as being
+executed just before the main program, but any variables in the COMMON
+blocks which are ever modified should be treated as having unknown
+values.
+
+I suggest the first approach.
+
+DATA statements
+---------------
+
+The standard says that non-SAVEd local variables which occur in DATA
+statements become undefined if they have been modified by an
+executable statement and the subprogram exits.
+
+	* Do we follow the standard?
+
+	* Do we follow the common implementation that all variables in
+		DATA statements are implicitly SAVEd?
+
+	* Do we follow another implementation which re-initializes?
+
+I suggest we take the second approach, except that we never go to the
+extreme of propagating a value from one invocation to the next (e.g.,
+in cloning).
+
+	* Any variables which are defined only in DATA statements
+		should be treated as being initialized on each entry
+		to the program (except for the purposes of computing
+		the hidden modification info for dependence analysis).
+
+	* Variables defined both in DATA statements and executable
+		statements should be treated as having unknown value
+		on entry, and should be counted in computing the
+		hidden modification info for dependence analysis.

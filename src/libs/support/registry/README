@@ -1,0 +1,14 @@
+README for <$DSYSTEM>/develop/src/libs/support/registry
+
+
+The files in this directory support the creation of the 
+registry, a place where instances of classes are listed. 
+
+The following classes make up the registry abstraction:
+
+  NamedRegistryObject (inherits from NamedObject)
+  ClassInstanceRegistry (inherits from NamedObjectTable)
+  DoClassInstanceRegister
+  ConstructorRegistryEntry (inherits from RegistryObject)
+  RegistryObject
+

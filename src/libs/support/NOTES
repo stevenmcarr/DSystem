@@ -1,0 +1,2 @@
+sllist.C --> rationalized naming of methods, removed deprecated methods
+Options.C -- > fixed with sllist.C op name change

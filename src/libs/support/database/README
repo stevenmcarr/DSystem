@@ -1,0 +1,5 @@
+README for <$DSYSTEM>/develop/src/libs/support/database
+
+
+The files in this directory support database and database 
+I/O abstract data types.

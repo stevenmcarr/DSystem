@@ -1,0 +1,693 @@
+/** Fortran node definition file.  There must be spaces before and after */
+/** each comma or |.							 */
+struct nodedef_t nodedef[] = {
+   "FREED_NODE" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "NULL_NODE" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "LIST_OF_NODES" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "ERROR" , 0 , 6 , 1 , 0 , 1 , {
+       /* complaint */  GEN_text , 
+       /* tree */ GEN_any , 
+       /* part0 */ GEN_any , 
+       /* part1 */ GEN_any , 
+       /* part2 */ GEN_any , 
+       /* part3 */ GEN_any , 
+   } , 
+   "PLACE_HOLDER" , 0 , 0 , 0 , 0 , 1 , {
+      /* NULL  */ NO_SONS
+   } , 
+/** The top of each tree corresponding to a module */
+   "GLOBAL" , 1 , 1 , 1 , 1 , 0 , {
+       /* subprogram_scope_LIST */ GEN_subprogram | LIST , 
+   } , 
+/** Subprogram statements */
+   "FUNCTION" , 6 , 6 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* type_len */ GEN_type , 
+       /* name */ GEN_name , 
+       /* formal_arg_LIST */ GEN_formal | LIST | OPTIONAL | RECOMMENDED , 
+       /* stmt_LIST */ GEN_stmt | LIST | OPTIONAL | RECOMMENDED , 
+   } , 
+   "PROGRAM" , 4 , 4 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name */ GEN_name | OPTIONAL | RECOMMENDED , 
+       /* stmt_LIST */ GEN_stmt | LIST | OPTIONAL | RECOMMENDED , 
+   } , 
+   "SUBROUTINE" , 5 , 5 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name */ GEN_name , 
+       /* formal_arg_LIST */ GEN_formal | LIST | OPTIONAL | RECOMMENDED , 
+       /* stmt_LIST */ GEN_stmt | LIST | OPTIONAL | RECOMMENDED , 
+   } , 
+   "BLOCK_DATA" , 4 , 4 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name */ GEN_name | OPTIONAL | RECOMMENDED , 
+       /* stmt_LIST */ GEN_stmt | LIST | OPTIONAL | RECOMMENDED , 
+   } , 
+/** Specifications statements */
+   "COMMON" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* common_elt_LIST */ GEN_common_elt | LIST
+   } , 
+   "COMMON_ELT" , 0 , 2 , 0 , 0 , 1 , {
+       /* name */ GEN_name | OPTIONAL | RECOMMENDED , 
+       /* common_vars_LIST */ GEN_common_vars | LIST
+   } , 
+   "DIMENSION" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* array_decl_len_LIST */ GEN_array_decl_len | LIST
+   } , 
+   "EQUIVALENCE" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* equiv_elt_LIST */ GEN_equiv | LIST
+   } , 
+   "EQUIV_ELT" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue_LIST */  GEN_var | LIST
+   } , 
+   "TYPE_STATEMENT" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL ,
+       /* type_len */  GEN_type , 
+       /* array_decl_len_LIST */  GEN_array_decl_len | LIST , 
+   } , 
+   "ARRAY_DECL_LEN" , 0 , 4 , 0 , 0 , 1 , {
+       /* name */ GEN_name , 
+       /* len  */ GEN_len | OPTIONAL , 
+       /* dim_LIST */ GEN_dim | LIST | OPTIONAL | RECOMMENDED , 
+       /* init_LIST */ GEN_init | LIST | OPTIONAL
+   } , 
+   "EXTERNAL" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name_LIST */ GEN_name | LIST
+   } , 
+   "IMPLICIT" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* implicit_elt_LIST */ GEN_implicit_def | LIST
+   } , 
+   "IMPLICIT_ELT" , 0 , 2 , 0 , 0 , 1 , {
+       /* type_len */ GEN_type , 
+       /* implicit_refs_LIST */ GEN_letters | LIST
+   } , 
+   "IMPLICIT_PAIR" , 0 , 2 , 0 , 0 , 1 , {
+       /* start */  GEN_letter , 
+       /* end   */  GEN_letter
+   } , 
+   "INTRINSIC" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name_LIST */ GEN_name | LIST
+   } , 
+   "PARAMETER" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* param_elt_LIST */ GEN_param_def | LIST
+   } , 
+   "PARAM_ELT" , 0 , 2 , 0 , 0 , 1 , {
+       /* name */   GEN_name , 
+       /* rvalue */ GEN_expr
+   } , 
+   "SAVE" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name_LIST */ GEN_name | LIST
+   } , 
+/** the comment statement */
+   "COMMENT" , 0 , 1 , 1 , 0 , 1 , {
+       /* text */ GEN_text | OPTIONAL | RECOMMENDED
+   } , 
+/** entry statements */
+   "ENTRY" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name */ GEN_name , 
+       /* formal_arg_LIST */ GEN_formal | LIST | OPTIONAL | RECOMMENDED
+   } , 
+/** data statements */
+   "DATA" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* data_elt_LIST */ GEN_data_init | LIST , 
+   } , 
+   "IMPLIED_DO" , 0 , 5 , 0 , 0 , 1 , {
+       /* imp_elt_LIST */ GEN_data | LIST , 
+       /* name */ GEN_name , 
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr , 
+       /* rvalue3 */ GEN_expr | OPTIONAL
+   } , 
+   "DATA_ELT" , 0 , 2 , 0 , 0 , 1 , {
+       /* data_vars_LIST */ GEN_data | LIST , 
+       /* init_LIST */ GEN_init | LIST
+   } , 
+/** stmt function */
+   "STMT_FUNCTION" , 0 , 4 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name */ GEN_name , 
+       /* formal_arg_LIST */ GEN_formal | LIST | OPTIONAL | RECOMMENDED , 
+       /* rvalue */ GEN_expr
+   } , 
+/** format statement */
+   "FORMAT" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def , 
+       /* text    */ GEN_text
+   } , 
+/** executable statements */
+   "ASSIGN" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lbl_ref */ GEN_lbl_ref , 
+       /* name */ GEN_name
+   } , 
+   "ASSIGNMENT" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lvalue  */ GEN_var , 
+       /* rvalue */ GEN_expr
+   } , 
+   "BACKSPACE_SHORT" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* unit_identifier */ GEN_unit
+   } , 
+   "BACKSPACE_LONG" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* kwd_LIST */ GEN_kwd | LIST
+   } , 
+   "CALL" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* invocation */ GEN_invocation
+   } , 
+   "CLOSE" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* kwd_LIST */ GEN_kwd | LIST
+   } , 
+   "CONTINUE" , 0 , 1 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL | RECOMMENDED
+   } , 
+   "DO" , 5 , 5 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lbl_ref */ GEN_lbl_ref , 
+       /* control */ GEN_loop_control , 
+       /* stmt_LIST */ GEN_stmt | LIST | OPTIONAL | RECOMMENDED
+   } , 
+   "ENDFILE_SHORT" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* unit_identifier */ GEN_unit
+   } , 
+   "ENDFILE_LONG" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* kwd_LIST */ GEN_kwd | LIST
+   } , 
+   "ASSIGNED_GOTO" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name */ GEN_name , 
+       /* lbl_ref_LIST */ GEN_lbl_ref | LIST | OPTIONAL | RECOMMENDED
+   } , 
+   "COMPUTED_GOTO" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lbl_ref_LIST */ GEN_lbl_ref | LIST , 
+       /* rvalue */ GEN_expr
+   } , 
+   "GOTO" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lbl_ref */ GEN_lbl_ref
+   } , 
+   "ARITHMETIC_IF" , 0 , 5 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* rvalue */ GEN_expr , 
+       /* lbl_ref1 */ GEN_lbl_ref , 
+       /* lbl_ref2 */ GEN_lbl_ref , 
+       /* lbl_ref3 */ GEN_lbl_ref
+   } , 
+   "IF" , 3 , 3 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* guard_LIST */ GEN_guard | LIST
+   } , 
+   "LOGICAL_IF" , 3 , 3 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* rvalue */ GEN_expr , 
+       /* stmt_LIST */ GEN_stmt | LIST , 
+   } , 
+   "GUARD" , 3 , 3 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* rvalue */ GEN_expr , 
+       /* stmt_LIST */ GEN_stmt | LIST , 
+   } , 
+   "INQUIRE" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* kwd_LIST */ GEN_kwd | LIST
+   } , 
+   "OPEN" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* kwd_LIST */ GEN_kwd | LIST
+   } , 
+   "PAUSE" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* constant */ GEN_constant | OPTIONAL | RECOMMENDED
+   } , 
+   "PRINT" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* format_identifier */ GEN_format , 
+       /* data_vars_LIST */ GEN_data | LIST | OPTIONAL | RECOMMENDED
+   } , 
+   "READ_SHORT" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* format_identifier */ GEN_format , 
+       /* data_vars_LIST */ GEN_data | LIST | OPTIONAL | RECOMMENDED
+   } , 
+   "READ_LONG" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* kwd_LIST */ GEN_kwd | LIST , 
+       /* io_LIST */ GEN_data | LIST | OPTIONAL | RECOMMENDED
+   } , 
+   "RETURN" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* rvalue */ GEN_expr | OPTIONAL | RECOMMENDED
+   } , 
+   "REWIND_SHORT" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* unit_identifier */ GEN_unit
+   } , 
+   "REWIND_LONG" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* kwd_LIST */ GEN_kwd | LIST
+   } , 
+   "STOP" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* constant */ GEN_constant | OPTIONAL | RECOMMENDED
+   } , 
+   "WRITE" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* kwd_LIST */ GEN_kwd | LIST , 
+       /* data_vars_LIST  */ GEN_data | LIST | OPTIONAL | RECOMMENDED
+   } , 
+/** debug statements */
+   "AT" , 0 , 2 , 1 , 0 , 1 , {
+	/* lbl_def */ GEN_lbl_def | OPTIONAL , 
+	/* lbl_ref */ GEN_lbl_ref
+   } , 
+   "DEBUG" , 4 , 4 , 1 , 1 , 0 , {
+	/* lbl_def */     GEN_lbl_def | OPTIONAL , 
+	/* close_lbl_def */  GEN_lbl_def | OPTIONAL , 
+	/* option_LIST */ GEN_option | LIST , 
+	/* stmt_LIST */   GEN_stmt | LIST | OPTIONAL | RECOMMENDED
+   } , 
+   "TRACEON" , 0 , 1 , 1 , 0 , 1 , {
+	/* lbl_def */     GEN_lbl_def | OPTIONAL
+   } , 
+   "TRACEOFF" , 0 , 1 , 1 , 0 , 1 , {
+	/* lbl_def */     GEN_lbl_def | OPTIONAL
+   } , 
+   "UNIT" , 0 , 1 , 0 , 0 , 1 , {
+       /* unit_num */   GEN_constant
+   } , 
+   "SUBCHK" , 0 , 1 , 0 , 0 , 1 , {
+       /* array_LIST */ GEN_name | LIST | OPTIONAL | RECOMMENDED
+   } , 
+   "TRACE" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "INIT" , 0 , 1 , 0 , 0 , 1 , {
+       /* var_LIST */ GEN_name | LIST | OPTIONAL | RECOMMENDED
+   } , 
+   "SUBTRACE" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+/** parascope extensions */
+   "TASK" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* invocation */ GEN_invocation , 
+       /* lvalue */ GEN_posting , 
+   } , 
+   "VALUE_PARAMETER" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr , 
+   } , 
+   "PARALLEL" , 6 , 6 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lvalue */ GEN_var , 
+       /* rvalue */ GEN_expr , 
+       /* stmt_LIST */ GEN_stmt | LIST , 
+       /* parallel_case_LIST */ GEN_parallel_case | LIST , 
+   } , 
+   "PARALLEL_CASE" , 3 , 3 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* rvalue_LIST */ GEN_expr | LIST , 
+       /* stmt_LIST */ GEN_stmt | LIST , 
+   } , 
+   "DO_ALL" , 5 , 5 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lbl_ref */ GEN_lbl_ref , 
+       /* control */ GEN_loop_control , 
+       /* stmt_LIST */ GEN_stmt | LIST | OPTIONAL | RECOMMENDED , 
+   } , 
+   "TASK_COMMON" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* common_elt_LIST */ GEN_common_elt | LIST , 
+   } , 
+   "LOCK" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lvalue */ GEN_var , 
+   } , 
+   "UNLOCK" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lvalue */ GEN_var , 
+   } , 
+   "WAIT" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lvalue */ GEN_var , 
+       /* rvalue */ GEN_expr | OPTIONAL | RECOMMENDED , 
+   } , 
+   "POST" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* postvalue */ GEN_posting , 
+   } , 
+   "POSTING" , 0 , 2 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var , 
+       /* postvalue */ GEN_post_expr | OPTIONAL | RECOMMENDED , 
+   } , 
+   "POST_TO" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr , 
+   } , 
+   "POST_INC" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr , 
+   } , 
+   "CLEAR" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lvalue */ GEN_var , 
+   } , 
+   "SET_BARRIER" , 0 , 3 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lvalue */ GEN_var , 
+       /* rvalue */ GEN_expr , 
+   } , 
+   "BLOCK" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lvalue */ GEN_var , 
+   } , 
+   "SEMAPHORE" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+   "EVENT" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+   "BARRIER" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+/** operators and invocations */
+   "SUBSCRIPT" , 0 , 2 , 0 , 0 , 1 , {
+       /* name */ GEN_name , 
+       /* rvalue_LIST */ GEN_expr | LIST 
+   } , 
+   "SUBSTRING" , 0 , 3 , 0 , 0 , 1 , {
+       /* substring_name */ GEN_string_var , 
+       /* rvalue1 */ GEN_expr | OPTIONAL | RECOMMENDED , 
+       /* rvalue2 */ GEN_expr | OPTIONAL | RECOMMENDED
+   } , 
+   "INVOCATION" , 0 , 2 , 0 , 0 , 1 , {
+       /* name */ GEN_name , 
+       /* actual_arg_LIST */ GEN_arg | LIST | OPTIONAL | RECOMMENDED
+   } , 
+   "BINARY_EXPONENT" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_TIMES" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_DIVIDE" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_PLUS" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_MINUS" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_CONCAT" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_AND" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_OR" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_EQ" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_NE" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_GE" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_GT" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_LE" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_LT" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_EQV" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "BINARY_NEQV" , 0 , 2 , 0 , 0 , 1 , {
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr
+   } , 
+   "UNARY_MINUS" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+   "UNARY_NOT" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+/** do loop control nodes */
+   "CONDITIONAL" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+   "INDUCTIVE" , 0 , 4 , 0 , 0 , 1 , {
+       /* name */ GEN_name , 
+       /* rvalue1 */ GEN_expr , 
+       /* rvalue2 */ GEN_expr , 
+       /* rvalue3 */ GEN_expr | OPTIONAL
+   } , 
+   "REPETITIVE" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+/** type nodes */
+   "INTEGER" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+   "REAL" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+   "CHARACTER" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+   "DOUBLE_PRECISION" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+   "COMPLEX" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+   "LOGICAL" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+   "EXACT" , 0 , 0 , 0 , 0 , 0 , {
+       /* NULL */ NO_SONS
+   } , 
+/** io keywords - queries and specifies */
+   "EXIST_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "OPENED_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "NUMBER_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "NAMED_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "NAME_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "ACCESS_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "SEQUENTIAL_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "DIRECT_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "FORM_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "FORMATTED_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "UNFORMATTED_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "RECL_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "BLANK_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "NEXTREC_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "IOSTAT_QUERY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lvalue */ GEN_var
+   } , 
+   "FILE_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+   "FMT_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* format_identifier */ GEN_format
+   } , 
+   "REC_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+   "END_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lbl_ref */ GEN_lbl_ref
+   } , 
+   "STATUS_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+   "ACCESS_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+   "FORM_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+   "RECL_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+   "BLANK_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* rvalue */ GEN_expr
+   } , 
+   "UNIT_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* unit_identifier */ GEN_unit
+   } , 
+   "ERR_SPECIFY" , 0 , 1 , 0 , 0 , 1 , {
+       /* lbl_ref */ GEN_lbl_ref
+   } , 
+/** lbls & constants */
+   "LABEL_DEF" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "LABEL_REF" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "COMPLEX_CONSTANT" , 0 , 2 , 0 , 0 , 1 , {
+       /* real_const */ GEN_constant , 
+       /* imag_const */ GEN_constant
+   } , 
+   "CONSTANT" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "LETTER" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "TEXT" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "IDENTIFIER" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+/** miscellaneous stuff */
+   "STAR" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } , 
+   "RETURN_LABEL" , 0 , 1 , 0 , 0 , 1 , {
+       /* lbl_ref */ GEN_lbl_ref
+   } , 
+   "TYPE_LEN" , 0 , 2 , 0 , 0 , 1 , {
+       /* type */   GEN_type_name , 
+       /* length */ GEN_len | OPTIONAL
+   } , 
+   "DIM" , 0 , 2 , 0 , 0 , 1 , {
+       /* lower */ GEN_expr | OPTIONAL , 
+       /* upper */ GEN_bound | OPTIONAL
+   } , 
+   "REPEAT" , 0 , 2 , 0 , 0 , 1 , {
+       /* count */ GEN_expr , 
+       /* constant */ GEN_constant
+   } , 
+   "DECL" , 0 , 3 , 0 , 0 , 1 , {
+       /* type_len */ GEN_type | OPTIONAL | RECOMMENDED , 
+       /* list_LIST */ GEN_any | LIST | OPTIONAL | RECOMMENDED , 
+       /* value */ GEN_any | OPTIONAL | RECOMMENDED
+   } , 
+/** IBM Parallel Fortran Extensions */
+   "PARALLELLOOP" , 5 , 5 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lbl_ref */ GEN_lbl_ref , 
+       /* control */ GEN_loop_control , 
+       /* stmt_LIST */ GEN_stmt | LIST | OPTIONAL | RECOMMENDED , 
+   } , 
+   "PRIVATE" , 2 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* name_LIST */ GEN_name | LIST , 
+   } , 
+   "STOPLOOP" , 2 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* lbl_ref */ GEN_lbl_ref | OPTIONAL , 
+   } , 
+/** Support IMPLICT NONE **/
+   "NONE" , 0 , 0 , 0 , 0 , 1 , {
+       /* NULL */ NO_SONS
+   } ,
+/** Fortran 90 extensions **/
+   "TRIPLET" , 0 , 3 , 0 , 0 , 1 , {
+       /* lower */ GEN_expr | OPTIONAL | RECOMMENDED ,
+       /* upper */ GEN_expr | OPTIONAL | RECOMMENDED ,
+       /* step  */ GEN_expr | OPTIONAL
+   } , 
+   "ALLOCATABLE" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* arrays_LIST */ GEN_array_decl_len | LIST
+   } , 
+   "ALLOCATE" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* object_LIST */ GEN_alloc_object | LIST
+   } , 
+   "DEALLOCATE" , 0 , 2 , 1 , 0 , 1 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* object_LIST */ GEN_alloc_object | LIST
+   } ,
+   "WHERE_BLOCK" , 3 , 3 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* close_lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* guard_LIST */ GEN_guard | LIST
+   } , 
+   "WHERE" , 3 , 3 , 1 , 1 , 0 , {
+       /* lbl_def */ GEN_lbl_def | OPTIONAL , 
+       /* rvalue */ GEN_expr , 
+       /* stmt_LIST */ GEN_stmt | LIST , 
+   } , 
+};

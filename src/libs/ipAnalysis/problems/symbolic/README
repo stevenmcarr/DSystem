@@ -1,0 +1,8 @@
+README for <$DSystem>/develop/src/libs/ipAnalysis/problems/symbolic
+
+
+This directory contains source code for solving symbolic analysis 
+problems.
+
+Currently the code in this directory is being redesigned, so it is 
+not being compiled and linked in.

@@ -1,0 +1,11 @@
+README for <$DSYSTEM>/develop/src/libs/support/numerical 
+
+
+The files in this directory support the creation of utilities 
+described in Press' "Numerical Recipes in C" and Knuth's 
+"The Art of Computer Science,Fundamental Algorithms." 
+
+Implementations from "Numerical Recipes in C" include a chi-
+squared fit routine, and implementations from  "The Art of 
+Computer Science" include an extended gcd (greatest common 
+divisor) routine.

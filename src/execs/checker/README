@@ -1,0 +1,10 @@
+README for <$DSYSTEM>/develop/src/execs/checker
+
+
+The files in this directory produce the executable 
+for the syntax and semantic checker. A symbolic link 
+in the <$DSYSTEM>/bin/<$DSYSTEM_OS> directory provides 
+access to this executable.
+
+See Also: man checker
+

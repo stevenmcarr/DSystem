@@ -1,0 +1,33 @@
+Here is a quick summary of the contents of some of the .h files
+in this directory.
+
+ast.h
+	declaration of AST_INDEX, AST_NIL, asttab
+	(included by astutil.h)
+astcons.h
+	generate new nodes of each type
+astlist.h
+	extern declarations for functions manipulating ast lists
+astmeta.h
+	#defines for various types of metanodes
+astnode.h
+	#defines of node types
+astrec.h
+	simple predicates for various kinds of nodes
+astsel.h
+	get/put sons for each type of astnode
+asttree.h
+	extern declarations for bulk tree functions, eg. tree_print()
+astutil.h
+	internal structure of Astnode, Asttab, Ast_side_array, Ast_stats
+	field selection macros,
+	low level bulk ast_ operations
+strutil.h
+	declaration of STR_INDEX, Strtab, Str_stats
+	low level bulk str_ operations
+	#defines for string types
+gen.h
+	gen_ layer version of astrec.h predicates
+	gen_ layer access functions
+	#defines for USAGE_
+	(#includes astnode.h, astmeta.h, astcons.h, astsel.h, astrec.h)

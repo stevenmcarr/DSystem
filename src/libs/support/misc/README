@@ -1,0 +1,10 @@
+README for <$DSYSTEM>/develop/src/libs/support/misc
+
+
+  Note: The contents of this directory may vary.
+
+
+Currently this directory contains miscellaneous files
+that make up the dictionary, ID generator, and portable 
+compile abstractions, among other things.
+

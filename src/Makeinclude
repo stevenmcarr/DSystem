@@ -1,0 +1,1326 @@
+# $Id: Makeinclude,v 1.1 1997/03/11 14:27:21 carr Exp $
+###########################################################################
+#
+# File:
+#   Makeinclude
+#
+# Authors: 
+#    Don Baker, John Mellor-Crummey, Kevin Cureton
+#
+# Date:
+#    August 1994
+#
+# Description:
+#    This file contains standard definitions used for compiling the
+#    D System Environment.
+#
+###########################################################################
+#
+#          Copyright 1992, 1993, 1994  Rice University
+#                     All Rights Reserved
+#
+###########################################################################
+
+
+
+###########################################################################
+# Special variables and targets for dealing with make
+###########################################################################
+
+# Incrementally list all variables not to be passed to recursive invocations
+NO_PASS_VARS := NO_PASS_VARS SANITIZE SUB_SANITIZE SUBMAKE RMAKE
+
+#-----------------------------------------------------------------
+# Remove variables from the environment that would cause trouble
+# in recursive invocations of make.  Fix MAKELEVEL for invocations
+# within the same directory.
+#-----------------------------------------------------------------
+SANITIZE     = unset $(NO_PASS_VARS); MAKELEVEL=`echo $$MAKELEVEL \
+	| $(AWK) '{print $$1-1}'`; export MAKELEVEL
+SUB_SANITIZE = unset $(NO_PASS_VARS) MAKEFILES ARCHIVE
+
+# These macros are provided for convenience, but it will not work properly
+# with the -n flag.  "make -n" will stop at this command because $(MAKE)
+# won't have been mentioned explicitly.
+SUBMAKE = $(SUB_SANITIZE); $(MAKE) $(LOCAL_SUBMAKE_FLAGS)
+RMAKE   = $(SANITIZE); $(MAKE)
+
+
+#-----------------------------------------------------------------
+# Command modifier to indent output of commands with minimal buffering.
+# If you don't like the buffering, set INDENTED:= in your override file.
+#-----------------------------------------------------------------
+INDENTED = 2>&1 | sed -e 's/^/   /' 1>&2
+
+
+#-----------------------------------------------------------------
+# Some rules to terminate rule chaining. these are present for
+# efficiency only and are not necessary for correctness given the
+# assumption that Makefiles and such are not "made" themselves.
+#-----------------------------------------------------------------
+%akefile:
+%akeinclude:
+%akeinclude.components:
+%akeinclude.config:
+%akeinclude.override:
+
+NO_PASS_VARS := $(NO_PASS_VARS) LOCAL_SUBMAKE_FLAGS
+
+###########################################################################
+# Include OS specific configuration information
+###########################################################################
+
+include Makeinclude.config
+
+###########################################################################
+# modifications to predefined variables and rules used by gnumake
+###########################################################################
+
+#-----------------------------------------------------------------
+# linker configuration
+# when C++ the compiler is known (after Makeinclude.override has been 
+# included) LINK.prefix will have $(LDFLAGS) added to it using the
+# appropriate convention to pass the flags through to the linker
+#-----------------------------------------------------------------
+
+LINK.prefix = $(CXX) $(TARGET_ARCH)
+
+COMPILE.ACC = $(ACC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
+
+COMPILE.CC = $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
+
+COMPILE.CXX = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
+
+#-----------------------------------------------------------------
+# Override gnumake's default compilation strategy of specifying an
+# explicit target with "-o" even when the link stage is suppressed
+# with a "-c".  (Some RS6k C compiler versions don't accept this.)
+#-----------------------------------------------------------------
+OUTPUT_OPTION :=
+
+# remove unnecessary default pattern rules that slow compilation
+% : s.%         ## remove SCCS dependence rule
+% : SCCS/s.%    ## remove SCCS dependence rule 
+
+# turn off all default suffix rules so we don't get anything unexpected
+.SUFFIXES: 
+
+# remove any existing implicit rule for compiling .ansi.c (ANSI C) files
+%.ansi.o: %.ansi.c
+
+# specify our implicit rule for compiling .ansi.c (ANSI C) files
+%.ansi.o: %.ansi.c
+ifeq "$(EXTRACT)" "no"
+	$(COMPILE.ACC) -c $< $(OUTPUT_OPTION)
+else # "$(EXTRACT)" neq "no"
+	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE.ACC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
+endif # "$(EXTRACT)" "no"
+
+# remove any existing implicit rule for compiling .c files
+%.o: %.c
+
+# specify our implicit rule for compiling .c files
+%.o: %.c
+ifeq "$(EXTRACT)" "no"
+	$(COMPILE.CC) -c $< $(OUTPUT_OPTION)
+else # "$(EXTRACT)" neq "no"
+	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE.CC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
+endif # "$(EXTRACT)" "no"
+
+# remove any existing implicit rule for compiling .C (C++) files
+%.o: %.C
+
+# specify our implicit rule for compiling .C (C++) files
+%.o: %.C
+ifeq "$(EXTRACT)" "no"
+	$(COMPILE.CXX) -c $< $(OUTPUT_OPTION)
+else # "$(EXTRACT)" neq "no"
+	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE.CXX) -c $< $(OUTPUT_OPTION)" $(ARCHIVE)
+endif # "$(EXTRACT)" "no"
+
+# rules for getting C and C++ preprocessor output
+%.cpp: %.C
+	$(COMPILE.CXX) -E $< > $@
+
+%.ansi.cpp: %.ansi.c
+	$(COMPILE.ACC) -E $< > $@
+
+%.cpp: %.c
+	$(COMPILE.CC) -E $< > $@
+
+# C++ compiler source output
+%.cfront: %.C
+	$(COMPILE.CXX) -F $< > $@
+
+# rules for getting 'includes' C and C++ include files raw output
+%.includes: %.C
+	$(DSYSTEM_TOOLS_DEV_BIN)/includes $< $(addprefix -I,$(ALL_INCLUDE_DIRS)) > $@
+
+%.ansi.includes: %.ansi.c
+	$(DSYSTEM_TOOLS_DEV_BIN)/includes $< $(addprefix -I,$(ALL_INCLUDE_DIRS)) > $@
+
+%.includes: %.c
+	$(DSYSTEM_TOOLS_DEV_BIN)/includes $< $(addprefix -I,$(ALL_INCLUDE_DIRS)) > $@
+
+%.includes: %.h
+	$(DSYSTEM_TOOLS_DEV_BIN)/includes $< $(addprefix -I,$(ALL_INCLUDE_DIRS)) > $@
+
+
+###########################################################################
+# Check for errors and announce the make 
+###########################################################################
+
+archive: error_check hello
+
+install: error_check hello
+
+stripped: error_check hello
+
+.PHONY: archive install stripped
+
+
+###########################################################################
+# Initialize environment variables used by make & do reality check
+###########################################################################
+
+NO_PASS_VARS := $(NO_PASS_VARS) PWD DSYSTEM_SRC DSYSTEM_OBJ
+
+ifndef DSYSTEM
+error_check::
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "DSYSTEM should be defined in your environment."
+	@exit 1
+else
+DSYSTEM_SRC := $(DSYSTEM)/develop/src
+DSYSTEM_OBJ := $(DSYSTEM)/develop/obj
+endif # DSYSTEM
+
+ifndef DSYSTEM_OS
+error_check::
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "DSYSTEM_OS should be defined in your environment or by dmake."
+	@exit 1
+endif # DSYSTEM_OS
+
+ifndef HERE
+error_check::
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "HERE should be defined by Makefile."
+	@exit 1
+else
+# use HERE_SUFFIX instead of /$(HERE) if . in a pathname causes problems
+ifeq "$(HERE)" "."
+HERE_SUFFIX := 
+else
+HERE_SUFFIX := /$(HERE)
+endif # "$(HERE)" "."
+endif # HERE
+
+ifndef DSYSTEM_PVT
+error_check::
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "DSYSTEM_PVT should be defined in your environment."
+	@exit 1
+else
+DSYSTEM_PVT_SRC := $(shell $(DSYS_PVT_STATUS) $(DSYSTEM_PVT) src)
+DSYSTEM_PVT_OBJ := $(shell $(DSYS_PVT_STATUS) $(DSYSTEM_PVT) obj)
+endif # DSYSTEM_PVT 
+
+# Figure out where we should be.
+ifeq "$(DSYSTEM_PVT_SRC)" "$(DSYSTEM_PVT_OBJ)"
+
+# User's object files are in the same directory as their source files.
+PWD = $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX)
+
+else # "$(DSYSTEM_PVT_SRC)" "$(DSYSTEM_PVT_OBJ)"
+
+# Object files are under $(DSYSTEM_PVT_OBJ)/$(DSYSTEM_OS) directory
+# like the installed object world.
+PWD = $(DSYSTEM_PVT_OBJ)/$(DSYSTEM_OS)$(HERE_SUFFIX)
+
+endif # "$(DSYSTEM_PVT_SRC)" "$(DSYSTEM_PVT_OBJ)"
+
+
+# Make sure we're in the right directory for this make.
+ifneq "$(shell /bin/pwd)"  "$(shell if test -d $(PWD); \
+	                                then cd $(PWD); /bin/pwd; else echo; fi)"
+error_check::
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "This dmake run is being done in the wrong place!"
+	@$(ECHO) "currently in:" `/bin/pwd`
+	@if test -d $(PWD); then	\
+		cd $(PWD); \
+		$(ECHO) "should be in:" `/bin/pwd`; \
+	else \
+		$(ECHO) "should be in: $(PWD)"; \
+	fi
+	@exit 1
+endif # "$(shell /bin/pwd)"  "$(shell if test -d $(PWD); \
+	                                then cd $(PWD); /bin/pwd; else echo; fi)"
+
+#-----------------------------------------------------------------
+# Define the target for the case of there being no errors.
+#-----------------------------------------------------------------
+error_check::
+
+.PHONY: error_check
+
+
+###########################################################################
+# Set vpath to look for source files in their installed home or
+# the local source directory (which may not be the same as the
+# current directory).
+#
+# It would be helpful to specify that the .d_* files and
+# derived files must come from the local directory only, but
+# there appears to be a bug in the vpath handling that effectively
+# ignores such a specification in the context of the general
+# vpath specification below.  There also doesn't appear to be a
+# general way to force files to appear in the current directory
+# without messing up the rule chaining.
+###########################################################################
+
+ifeq "$(DSYSTEM_PVT_SRC)" "$(DSYSTEM_PVT_OBJ)"
+
+#-----------------------------------------------------------------
+# vpath for the source files
+#-----------------------------------------------------------------
+vpath %.c $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX)
+vpath %.c $(DSYSTEM_SRC)$(HERE_SUFFIX):$(DSYSTEM_OBJ)/$(DSYSTEM_OS)$(HERE_SUFFIX)
+vpath %.C $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.h $(DSYSTEM_PVT_SRC):$(DSYSTEM_PVT_SRC)$(HERE_SUFFIX)
+vpath %.h $(DSYSTEM_SRC):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.h $(DSYSTEM_OBJ)/$(DSYSTEM_OS):$(DSYSTEM_OBJ)/$(DSYSTEM_OS)$(HERE_SUFFIX)
+vpath %.i $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.y $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.l $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.def $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.awk $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+
+#-----------------------------------------------------------------
+# vpath for the .d_* files
+#-----------------------------------------------------------------
+vpath .d_% $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX)
+
+#-----------------------------------------------------------------
+# vpath for the libraries and the object files
+#-----------------------------------------------------------------
+vpath %.o $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_PVT_SRC):$(DSYSTEM_OBJ)/$(DSYSTEM_OS)
+vpath %.a $(DSYSTEM_PVT_SRC):$(DSYSTEM_OBJ)/$(DSYSTEM_OS)
+
+
+else # "$(DSYSTEM_PVT_SRC)" neq "$(DSYSTEM_PVT_OBJ)"
+
+
+#-----------------------------------------------------------------
+# vpath for the source files
+#-----------------------------------------------------------------
+vpath %.c $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_PVT_OBJ)/$(DSYSTEM_OS)$(HERE_SUFFIX)
+vpath %.c $(DSYSTEM_SRC)$(HERE_SUFFIX):$(DSYSTEM_OBJ)/$(DSYSTEM_OS)$(HERE_SUFFIX)
+vpath %.C $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.h $(DSYSTEM_PVT_SRC):$(DSYSTEM_PVT_SRC)$(HERE_SUFFIX)
+vpath %.h $(DSYSTEM_PVT_OBJ)/$(DSYSTEM_OS):$(DSYSTEM_PVT_OBJ)/$(DSYSTEM_OS)$(HERE_SUFFIX)
+vpath %.h $(DSYSTEM_SRC):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.h $(DSYSTEM_OBJ)/$(DSYSTEM_OS):$(DSYSTEM_OBJ)/$(DSYSTEM_OS)$(HERE_SUFFIX)
+vpath %.i $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.y $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.l $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.def $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+vpath %.awk $(DSYSTEM_PVT_SRC)$(HERE_SUFFIX):$(DSYSTEM_SRC)$(HERE_SUFFIX)
+
+#-----------------------------------------------------------------
+# vpath for the .d_* files
+#-----------------------------------------------------------------
+vpath .d_% $(DSYSTEM_PVT_OBJ)/$(DSYSTEM_OS)$(HERE_SUFFIX)
+
+#-----------------------------------------------------------------
+# vpath for the libraries and the object files
+#-----------------------------------------------------------------
+vpath %.o $(DSYSTEM_PVT_OBJ)$(HERE_SUFFIX):$(DSYSTEM_PVT_OBJ)/$(DSYSTEM_OS):$(DSYSTEM_OBJ)/$(DSYSTEM_OS)
+vpath %.a $(DSYSTEM_PVT_OBJ)/$(DSYSTEM_OS):$(DSYSTEM_OBJ)/$(DSYSTEM_OS)
+
+
+endif # "$(DSYSTEM_PVT_SRC)" "$(DSYSTEM_PVT_OBJ)"
+
+
+###########################################################################
+# Include standard components & allow customization
+###########################################################################
+
+# Include components if some type of executable is being made
+ifneq "$(strip $(EXEC)$(foreach V,$(VERSIONS),$($(addprefix EXEC_,$(V)))))" ""
+include Makeinclude.components
+endif
+
+include Makeinclude.override
+
+###########################################################################
+# compiler dependent configuration -- for user convenience it must be
+# possible to specify the compiler in the override file, so this 
+# setup must be delayed until this point.
+###########################################################################
+
+#-----------------------------------------------------------------
+# Source Browser - add flags if sbrowser is to be used
+#-----------------------------------------------------------------
+ifeq "$(DSYSTEM_OS)" "SunOS-5.x"
+ifeq "$(SBROWSER)" "yes"
+
+# collect information for Solaris source browser using Solaris cc
+ifneq "$(CC)" "$(GCC)"
+CFLAGS := $(CFLAGS) -xsb
+endif # "$(CC)" "$(GCC)"
+
+# collect information for Solaris source browser using Solaris CC
+ifneq "$(CXX)" "$(GXX)"
+CXXFLAGS := $(CXXFLAGS) -sb
+endif # "$(CXX)" "$(GXX)"
+
+endif # "$(SBROWSER)" "yes"
+endif # "$(DSYSTEM_OS)" "SunOS-5.x"
+
+
+#-----------------------------------------------------------------
+# Purify - modify LINK.prefix if purify is to be used 
+#-----------------------------------------------------------------
+ifneq "$(DSYSTEM_OS)" "AIX-3.x"
+ifeq "$(PURIFY)" "yes"
+
+LINK.prefix := unset GCC_EXEC_PREFIX ; \
+	$(PURE) -cache-dir=$(DSYSTEM_OBJ)/purifycache -first-only $(LINK.prefix)
+
+endif # "$(PURIFY)" "yes"
+endif # "$(DSYSTEM_OS)" "AIX-3.x"
+
+#	$(PURE) -cache-dir=$(DSYSTEM_OBJ)/purifycache -first-only -collector=$(DSYSTEM_GCC_LIB)/ld $(LINK.prefix)
+
+#-----------------------------------------------------------------
+# GNU-ism: augment LINK.prefix with the compiler-appropriate 
+#          specification of LDFLAGS
+#-----------------------------------------------------------------
+ifneq "$(CXX)" "$(GXX)"
+
+LINK.CXX.g = $(LINK.prefix) -g $(LDFLAGS)
+LINK.CXX.ng = $(LINK.prefix) $(LDFLAGS)
+
+else # "$(CXX)" "$(GXX)"
+
+LINK.CXX.g = $(LINK.prefix) -g $(addprefix -Xlinker ,$(LDFLAGS))
+LINK.CXX.ng = $(LINK.prefix) $(addprefix -Xlinker ,$(LDFLAGS))
+
+endif # "$(CXX)" "$(GXX)"
+
+###########################################################################
+# Modify user-customized variables
+###########################################################################
+
+#-----------------------------------------------------------------
+# default include paths
+#-----------------------------------------------------------------
+NO_PASS_VARS := $(NO_PASS_VARS) HERE HERE_SUFFIX \
+				DEFAULT_INCLUDE_DIRS PRIVATE_SRC_DIRS ALL_INCLUDE_DIRS \
+				SPECIAL_INCLUDE_DIRS OMIT_DIRS
+
+# Directories to look at under some shadow copy of $(DSYSTEM_SRC)
+DEFAULT_INCLUDE_DIRS := $(HERE)
+
+ifeq "$(DSYSTEM_PVT_SRC)" "$(DSYSTEM_PVT_OBJ)"
+PRIVATE_SRC_DIRS := \
+  $(DSYSTEM_PVT_SRC) $(DSYSTEM_OBJ)/$(DSYSTEM_OS) $(DSYSTEM_SRC)
+else
+PRIVATE_SRC_DIRS := $(DSYSTEM_PVT_OBJ)/$(DSYSTEM_OS) \
+  $(DSYSTEM_PVT_SRC) $(DSYSTEM_OBJ)/$(DSYSTEM_OS) $(DSYSTEM_SRC)
+endif # "$(DSYSTEM_PVT_SRC)" "$(DSYSTEM_PVT_OBJ)"
+
+# The cross product of $(PRIVATE_SRC_DIRS) and $(DEFAULT_INCLUDE_DIRS)
+ALL_INCLUDE_DIRS := $(PRIVATE_SRC_DIRS) $(addsuffix /$(HERE),$(PRIVATE_SRC_DIRS)) \
+                    $(SPECIAL_INCLUDE_DIRS)
+
+# Check for existence of each directory, omit extraneous directories and
+# remove duplicates (assumes ALL_INCLUDE_DIRS is not empty)
+ALL_INCLUDE_DIRS := $(shell (for dir in $(ALL_INCLUDE_DIRS); do \
+			         if test -d $$dir; then echo $$dir; fi; \
+                             done ) \
+                             | $(AWK) '{if (!seen[$$0]) {seen[$$0] = 1; print}}')
+
+ifneq "$(strip $(DIRS) $(foreach V,$(VERSIONS),$($(addprefix DIRS_,$(V)))))" ""
+
+ALL_SUB_DIRS := \
+	$(shell (for dir in $(DIRS) \
+		  $(foreach V,$(VERSIONS),$($(addprefix DIRS_,$(V)))); do \
+			echo $$dir; \
+		 done ) \
+		| $(AWK) '{if (!seen[$$0]) {seen[$$0] = 1; print}}' )
+
+endif
+
+#-----------------------------------------------------------------
+# redefine/tweak some flag variables used by implicit rules
+# (It'd be nice to pass these along in their unmodified form to
+# recursive makes..., but there doesn't seem to be an easy way to
+# do this.)
+#-----------------------------------------------------------------
+NO_PASS_VARS := $(NO_PASS_VARS) CFLAGS CPPFLAGS CXXFLAGS LDFLAGS LOCAL_LIBS \
+	ALL_SUB_DIRS  $(foreach V,$(VERSIONS),$($(addprefix DIRS_,$(V)))) \
+	GCC_EXEC_PREFIX
+
+# Add the environment compilation flavor
+CFLAGS  := $(CFLAGS) -g
+
+# Add standard flags for compiling on this machine
+CFLAGS  := $(CFLAGS)
+
+# Add our list of include directories
+CPPFLAGS := $(CPPFLAGS) $(ARCH_CPPFLAGS) $(addprefix -I,$(ALL_INCLUDE_DIRS))
+
+# Add our environment flag to C++ compiles
+CXXFLAGS := $(CXXFLAGS) -g
+
+#-----------------------------------------------------------------
+# GNU-ism: Precondition LDFLAGS for finding -lgcc and set the 
+#          GCC_EXEC_PREFIX if need be
+#-----------------------------------------------------------------
+ifeq "$(CC)" "$(GCC)"
+
+LDFLAGS := $(LDFLAGS) -L$(DSYSTEM_GCC_LIB)
+ifndef GCC_EXEC_PREFIX
+GCC_EXEC_PREFIX = $(DSYSTEM_GCC_LIB)/
+endif # GCC_EXEC_PREFIX
+
+else # "$(CC)" "$(GCC)"
+
+ifeq "$(ACC)" "$(GCC)"
+
+LDFLAGS := $(LDFLAGS) -L$(DSYSTEM_GCC_LIB)
+ifndef GCC_EXEC_PREFIX
+GCC_EXEC_PREFIX = $(DSYSTEM_GCC_LIB)/
+endif # GCC_EXEC_PREFIX
+
+else # "$(ACC)" "$(GCC)"
+
+ifeq "$(CXX)" "$(GXX)"
+
+LDFLAGS := $(LDFLAGS) -L$(DSYSTEM_GCC_LIB)
+ifndef GCC_EXEC_PREFIX
+GCC_EXEC_PREFIX = $(DSYSTEM_GCC_LIB)/
+endif # GCC_EXEC_PREFIX
+
+endif # "$(CXX)" "$(GXX)"
+endif # "$(ACC)" "$(GCC)"
+endif # "$(CC)" "$(GCC)"
+
+
+###########################################################################
+# Build derived files during "archive" target
+###########################################################################
+
+NO_PASS_VARS := $(NO_PASS_VARS) DERIVED
+
+archive: derived
+
+# NOTE:  public "derived" target
+derived:: error_check $(DERIVED)
+
+.PHONY: derived
+
+
+
+###########################################################################
+# Handle versioning of directories, archives, and executables
+###########################################################################
+
+ifneq "$(VERSIONS)" ""
+
+# Neither ARCHIVE nor EXEC should be defined if versioning
+ifdef ARCHIVE
+error_check::
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Can't have ARCHIVE defined if you are versioning."
+	@exit 1
+endif # ARCHIVE
+
+ifdef EXEC
+error_check::
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Can't have EXEC defined if you are versioning."
+	@exit 1
+endif # EXEC
+
+# short circuit a single version by specifying that version
+ifeq "$(words $(VERSIONS))" "1"
+VERSION := $(firstword $(VERSIONS))
+endif #  "$(words $(VERSIONS))" "1"
+
+ifeq "$(VERSION)" "" # No specific version--make them all
+
+archive: archive_all_versions
+
+install: install_all_versions
+
+archive_all_versions:
+	-@$(SUB_SANITIZE);						\
+	$(ECHO) "";							\
+	for v in $(VERSIONS); do					\
+	    $(MAKE) "VERSION=$$v" archive $(INDENTED);			\
+	    $(ECHO) "";							\
+	done
+
+install_all_versions:
+	-@$(SUB_SANITIZE);						\
+	$(ECHO) "";							\
+	for v in $(VERSIONS); do					\
+	    $(MAKE) "VERSION=$$v" install $(INDENTED);			\
+	    $(ECHO) "";							\
+	done
+
+.PHONY: archive_all_versions install_all_versions
+
+else # "$(VERSION)" "" # Handle a specific version
+
+# Check for valid version
+ifeq "$(findstring $(VERSION),$(VERSIONS))" ""
+error_check::
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Invalid VERSION ($(VERSION)) specified."
+	@exit 1
+endif # "$(findstring $(VERSION),$(VERSIONS))" ""
+
+# Define version specific source
+ifneq "$(SRCS_$(VERSION))" ""
+SRCS	:= $(SRCS_$(VERSION))
+endif # "$(SRCS_$(VERSION))" ""
+
+# Define version specific objects
+ifneq "$(OBJS_$(VERSION))" ""
+OBJS	:= $(OBJS_$(VERSION))
+endif # "$(OBJS_$(VERSION))" ""
+
+# Define version specific archive
+ifneq "$(ARCHIVE_$(VERSION))" ""
+ARCHIVE	:= $(ARCHIVE_$(VERSION))
+endif # "$(ARCHIVE_$(VERSION))" ""
+
+# Define version specific executable
+ifneq "$(EXEC_$(VERSION))" ""
+EXEC	:= $(EXEC_$(VERSION))
+endif # "$(EXEC_$(VERSION))" ""
+
+# Define version specific directories
+ifneq "$(DIRS_$(VERSION))" ""
+DIRS	:= $(DIRS_$(VERSION))
+endif # "$(DIRS_$(VERSION))" ""
+
+endif # "$(VERSION)" ""
+
+endif # "$(VERSIONS)" ""
+
+# Warning:  Don't add "VERSION" to the NO_PASS_VARS list!
+NO_PASS_VARS := $(NO_PASS_VARS) VERSIONS  $(foreach VAR, \
+		SRCS OBJS ARCHIVE EXEC DIRS, $(addprefix $(VAR)_,$(VERSIONS)))
+
+
+
+###########################################################################
+# Build dependences within "archive" target
+###########################################################################
+
+NO_PASS_VARS := $(NO_PASS_VARS) DEPENDS
+
+# commands to compute dependence information
+
+DODEPEND = dodepend
+
+archive: $(DODEPEND)
+
+DEPENDS := ${addprefix .d_,$(basename $(SRCS))}
+
+# remove any .d_* files that are out of date
+dodepend::
+ifneq "$(DEPENDS)" ""
+	@$(DEPVERIFY) "$(DEPENDS)"
+endif # "$(DEPENDS)" ""
+
+
+#-----------------------------------------------------------------
+# demand rebuilding of any .d_* files that are missing
+#
+# Note: this rule is required to force the making of local .d_*
+#       files.  Without this rule, they would would not be lazily 
+#       made due to rule chaining similar to the handling of .o 
+#       files when they are kept in an archive.
+#-----------------------------------------------------------------
+
+dodepend:: $(DEPENDS) 
+
+.PHONY: dodepend 
+
+#-----------------------------------------------------------------
+# implicit rules to construct dependences from source files
+#
+# Note: the full path name target is required due to a bug in  
+#       the handling of rule chaining in the presence of an 
+#       all-inclusive vpath and with the specification of the 
+#       wild-card (%) character that is not at the beginning of 
+#       the name.
+#-----------------------------------------------------------------
+
+.d_%: %.C
+	@$(ECHO) Updating dependences for $< ...
+	@$(CXX) -E $(CPPFLAGS) $< | $(DEPFILTER) > $@
+
+.d_%.ansi: %.ansi.c
+	@$(ECHO) Updating dependences for $< ...
+	@$(ACC) -E $(CPPFLAGS) $< | $(DEPFILTER) > $@
+
+.d_%: %.c
+	@$(ECHO) Updating dependences for $< ...
+	@$(CC) -E $(CPPFLAGS) $< | $(DEPFILTER) > $@
+
+.d_%: %.f
+	@$(ECHO) Updating dependences for $< ...
+	@$(ECHO) '$*.o: $<'          | $(DEPFILTER) > $@
+
+#-----------------------------------------------------------------
+# Adding this rule would be _very_ conservative...
+# it would remake everything every time the Makefile changed
+#-----------------------------------------------------------------
+#ifneq "$(DEPENDS)" ""
+#$(DEPENDS): Makefile
+#endif # "$(DEPENDS)" ""
+
+
+
+###########################################################################
+# Build archive and subdirectories within "archive" target
+###########################################################################
+
+#-----------------------------------------------------------------
+# compute the default list of object files for the list of sources 
+#-----------------------------------------------------------------
+NO_PASS_VARS := $(NO_PASS_VARS) OBJS SRCS
+
+ifndef OBJS
+OBJS	:= $(addsuffix .o,${basename $(SRCS)})
+endif # OBJS
+
+
+ifdef ARCHIVE
+
+archive: $(ARCHIVE) subarchive
+
+# not for use in public Makefiles...
+$(ARCHIVE): ${addsuffix ),${addprefix $(ARCHIVE)(,$(OBJS)}}
+
+
+#-----------------------------------------------------------------
+# an implicit rule which ensures that only the archive version of 
+# an object file is kept.  The -g version of the archive is built
+# by default and the non-debug version is built if 
+# STRIPPED_ARCHIVES is yes.
+#-----------------------------------------------------------------
+ifneq "$(DSYSTEM_OS)" "SunOS-5.x"
+
+(%.o): %.o .d_%
+	$(AR) $(ARFLAGS) $@ $<
+ifeq "$(STRIPPED_ARCHIVES)" "yes"
+	$(STRIP) $< -o $<.new
+	mv $<.new $<
+	$(AR) $(ARFLAGS) $(subst -g,-ng,$@) $<
+endif # "$(STRIPPED_ARCHIVES)" "yes"
+	$(RM) $<
+
+else # "$(DSYSTEM_OS)" "SunOS-5.x"
+
+(%.o): %.o .d_%
+	$(AR) $(ARFLAGS) $@ $<
+ifeq "$(STRIPPED_ARCHIVES)" "yes"
+	$(STRIP) $<
+	$(AR) $(ARFLAGS) $(subst -g,-ng,$@) $<
+endif # "$(STRIPPED_ARCHIVES)" "yes"
+	$(RM) $<
+
+endif # "$(DSYSTEM_OS)" "SunOS-5.x"
+
+
+#-----------------------------------------------------------------
+# rule for making a stripped archive from an already created -g
+# archive
+#-----------------------------------------------------------------
+
+stripped: $(subst -g,-ng,$(ARCHIVE))
+
+$(subst -g,-ng,$(ARCHIVE)):
+	@if test ! -f $(ARCHIVE); then                                        \
+	   $(ECHO) "$(ARCHIVE) does not exist";                               \
+	   $(ECHO) "stripped archive can be built along with the -g archive"; \
+	   $(ECHO) "by setting STRIPPED_ARCHIVES=yes on the command line.";            \
+	   exit 1;                                                            \
+	fi
+
+ifneq "$(DSYSTEM_OS)" "SunOS-5.x"
+
+	@$(ECHO) "Stripping $(ARCHIVE) \c"
+	@ar x $(ARCHIVE)
+	@$(RM)  __.SYMDEF
+	@for objfile in `ar t $(ARCHIVE) | sed -e '/^__.SYMDEF$$/d'`; do  \
+	   $(ECHO) ".\c";                                                 \
+	   $(STRIP) $$objfile -o tmp.object.file.$$$$;                    \
+	   mv tmp.object.file.$$$$ $$objfile;                             \
+	   $(AR) rc $(subst -g,-ng,$(ARCHIVE)) $$objfile;                    \
+	   $(RM) $$objfile;                                               \
+	done
+
+	ifdef DORANLIB
+	   @$(ECHO) ""
+	   @$(ECHO) ranlib $@
+	   @ranlib $@
+	   @ranlib -t $@	# Workaround for Sun NFS bug
+	endif # DORANLIB
+
+else # "$(DSYSTEM_OS)" "SunOS-5.x"
+
+	@$(ECHO) "Stripping $(ARCHIVE) \c"
+	@ar x $(ARCHIVE)
+	@for objfile in `ar t $(ARCHIVE) | sed -e '/^__.SYMDEF$$/d'`; do  \
+	   $(ECHO) ".\c";                                                 \
+	   $(STRIP) $$objfile;                                            \
+	   $(AR) rc $(subst -g,-ng,$(ARCHIVE)) $$objfile;                    \
+	   $(RM) $$objfile;                                               \
+	done
+
+endif # "$(DSYSTEM_OS)" "SunOS-5.x"
+
+	@$(ECHO) ""
+
+
+###########################################################################
+# Run ranlib within "archive" target
+###########################################################################
+
+#-----------------------------------------------------------------
+# Build the table of contents if the archive is in this directory
+#-----------------------------------------------------------------
+ifeq ($(dir $(ARCHIVE)),./)
+archive: toc
+endif # ($(dir $(ARCHIVE)),./)
+
+TOC_DEP_FILE = .archive_toc_dependences
+
+toc:
+ifdef DORANLIB
+	@ar t $(ARCHIVE) | sed -e '/^__.SYMDEF$$/d' \
+	-e 's/^\(.*\)$$/$$(ARCHIVE)(__.SYMDEF): $$(ARCHIVE)(\1)/g' \
+	> $(TOC_DEP_FILE);
+	@$(SANITIZE); \
+	MAKEFILES=$(TOC_DEP_FILE) $(MAKE) -s '$(ARCHIVE)\(__.SYMDEF\)'; 
+	@$(RM) $(TOC_DEP_FILE); 
+endif # DORANLIB
+
+# avoid rule chaining that will try to remake $(TOC_DEP_FILE)
+.PHONY: toc $(TOC_DEP_FILE)
+
+#-----------------------------------------------------------------
+# rule to build table of contents for an archive assuming
+# TOC_DEP_FILE as a MAKEFILES entry
+#-----------------------------------------------------------------
+$(ARCHIVE)(__.SYMDEF):
+	@$(ECHO) ranlib $(ARCHIVE)
+	@ranlib $(ARCHIVE)
+	@ranlib -t $(ARCHIVE)	# Workaround for Sun NFS bug
+ifeq "$(STRIPPED_ARCHIVES)" "yes"
+	@$(ECHO) ranlib $(subst -g,-ng,$(ARCHIVE))
+	@ranlib $(subst -g,-ng,$(ARCHIVE))
+	@ranlib -t $(subst -g,-ng,$(ARCHIVE))	# Workaround for Sun NFS bug
+endif # "$(STRIPPED_ARCHIVES)" "yes"
+
+else # ARCHIVE
+
+#-----------------------------------------------------------------
+# No archive to be made--just do the subdirectories
+#-----------------------------------------------------------------
+
+# do subdirectories if there is no versioning 
+ifeq "$(VERSIONS)" ""
+archive: subarchive
+install: subinstall
+endif # "$(VERSIONS)" ""
+
+# do subdirectories if there is a specific version
+ifneq "$(VERSION)" ""
+archive: subarchive
+install: subinstall
+endif # "$(VERSION)" ""
+
+
+endif # ARCHIVE
+
+
+#-----------------------------------------------------------------
+# Recursively handle subdirectories
+#-----------------------------------------------------------------
+
+NO_PASS_VARS := $(NO_PASS_VARS) DIRS
+
+subarchive:
+ifneq "$(DIRS)" ""
+	-@$(SUB_SANITIZE);						\
+	$(ECHO) "";							\
+	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
+	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) archive $(INDENTED);\
+	    $(ECHO) "";							\
+	fi; done
+endif # "$(DIRS)" ""
+
+subinstall:
+ifneq "$(DIRS)" ""
+	-@$(SUB_SANITIZE);						\
+	$(ECHO) "";							\
+	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
+	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) install $(INDENTED);\
+	    $(ECHO) "";							\
+	fi; done
+endif # "$(DIRS)" ""
+
+.PHONY: subarchive subinstall
+
+
+###########################################################################
+# Build executables within "archive" target (handles optional stubs file)
+###########################################################################
+
+NO_PASS_VARS := $(NO_PASS_VARS) EXEC DSYSTEM_LIBS LOCAL_LIBS STUB_OBJS STUB_SRCS
+
+ifdef EXEC
+
+ifndef STUB_OBJS
+STUB_OBJS := $(addsuffix .o,${basename $(STUB_SRCS)})
+endif # STUB_OBJS
+
+EXEC_g = $(EXEC)
+EXEC_ng = $(subst -g,-ng,$(EXEC))
+
+archive: $(EXEC_g)
+$(EXEC_g): $(ARCHIVE) $(DSYSTEM_LIBS) $(STUB_OBJS)
+exec_install: $(EXEC_g)
+
+ifeq "$(STRIPPED_EXECS)" "yes"
+archive: $(EXEC_ng)
+$(EXEC_ng): $(subst -g,-ng,$(ARCHIVE)) $(subst -g,-ng,$(DSYSTEM_LIBS)) \
+           $(subst -g,-ng,$(STUB_OBJS))
+exec_install: $(EXEC_ng)
+endif # "$(STRIPPED_EXECS)" "yes"
+
+archive: exec_clean
+
+exec_clean:
+ifneq "$(STUB_OBJS)" ""
+	@$(RM) $(STUB_OBJS)
+endif # "$(STUB_OBJS)" ""
+
+
+install: exec_install
+	@$(MAKE_BIN_LINKS) $(EXEC_g) -g
+
+.PHONY: exec_clean
+
+clean:: exec_clean
+
+
+ifdef ARCHIVE
+
+#-----------------------------------------------------------------
+# rule to make an executable from an archive
+#-----------------------------------------------------------------
+%-$(DSYSTEM_OS)-g: $(ARCHIVE) $(DSYSTEM_LIBS) $(STUB_OBJS)
+ifneq "$(STUB_OBJS)" ""
+	$(SANITIZE); $(MAKE) $(STUB_OBJS)
+endif # "$(STUB_OBJS)" ""
+	$(LINK.CXX.g) -o $@ $^ $(LOCAL_LIBS) $(ARCH_LIBS)
+
+
+ifeq "$(STRIPPED_EXECS)" "yes"
+
+%-$(DSYSTEM_OS)-ng: $(subst -g,-ng,$(ARCHIVE)) $(subst -g,-ng,$(DSYSTEM_LIBS)) \
+                $(subst -g,-ng,$(STUB_OBJS))
+ifneq "$(STUB_OBJS)" ""
+	@$(SANITIZE); $(MAKE) $(STUB_OBJS)
+endif # "$(STUB_OBJS)" ""
+	$(LINK.CXX.ng) -o $@ $^ $(LOCAL_LIBS) $(ARCH_LIBS)
+
+endif # "$(STRIPPED_EXECS)" "yes"
+
+else # ARCHIVE
+
+#-----------------------------------------------------------------
+# rule to make an executable from a single object file
+#-----------------------------------------------------------------
+%-$(DSYSTEM_OS)-g: .d_% %.o $(DSYSTEM_LIBS) $(STUB_OBJS)
+ifneq "$(STUB_OBJS)" ""
+	$(SANITIZE); $(MAKE) $(STUB_OBJS)
+endif # "$(STUB_OBJS)" ""
+	$(LINK.CXX.g) -o $@ $(filter-out .d_%,$^) $(LOCAL_LIBS) $(ARCH_LIBS) 
+ifndef STRIPPED_ARCHIVES
+	$(RM) $(word 2,$^)
+endif # STRIPPED_ARCHIVES
+
+
+ifeq "$(STRIPPED_EXECS)" "yes"
+
+%-$(DSYSTEM_OS)-ng: .d_% %.o $(subst -g,-ng,$(DSYSTEM_LIBS)) $(subst -g,-ng,$(STUB_OBJS))
+ifneq "$(STUB_OBJS)" ""
+	@$(SANITIZE); $(MAKE) $(STUB_OBJS)
+endif # "$(STUB_OBJS)" ""
+	$(LINK.CXX.ng) -o $@ $(filter-out .d_%,$^) $(LOCAL_LIBS) $(ARCH_LIBS) 
+	$(RM) $(word 2,$^)
+
+endif # "$(STRIPPED_EXECS)" "yes"
+
+endif # ARCHIVE
+
+endif # EXEC
+
+
+
+###########################################################################
+# Finish the "archive" target
+###########################################################################
+
+archive: goodbye
+
+install: goodbye
+
+stripped: goodbye
+
+
+###########################################################################
+# "template" target builds a source directory template 
+# (in $DSYSTEM_PVT_SRC only!)
+###########################################################################
+
+template:
+
+ifeq "$(MAKELEVEL)" "0"
+ifneq "$(shell /bin/pwd)" "$(shell cd $(DSYSTEM_PVT_SRC)/$(HERE); /bin/pwd)"
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "You may only make template under your \$$DSYSTEM_PVT_SRC directory."
+	@exit 1
+endif # "$(shell /bin/pwd)" "$(shell cd $(DSYSTEM_PVT_SRC)/$(HERE); /bin/pwd)"
+
+ifeq "$(shell /bin/pwd)"  "$(shell if test -d $(DSYSTEM_SRC)/$(HERE); \
+	then cd $(DSYSTEM_SRC)/$(HERE); /bin/pwd; else echo; fi)"
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "You may not make template under the $(DSYSTEM_SRC) directory."
+	@exit 1
+endif # "$(shell /bin/pwd)" "$(shell if test -d $(DSYSTEM_SRC)/$(HERE); \
+	then cd $(DSYSTEM_SRC)/$(HERE); /bin/pwd; else echo; fi)"
+endif # "$(MAKELEVEL)" "0"
+
+	@$(ECHO) "Making template in $(HERE)"
+	@if test ! -h RCS; then ln -s $(DSYSTEM_SRC)$(HERE_SUFFIX)/RCS; fi
+ifneq "$(ALL_SUB_DIRS)" ""
+	-@$(SUB_SANITIZE);                                                          \
+	for dir in $(ALL_SUB_DIRS); do                                              \
+	  if test -d  $(DSYSTEM_SRC)$(HERE_SUFFIX)/$$dir; then                      \
+	     $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) template;                      \
+      else                                                                      \
+	     $(ECHO) "Makeinclude error: ";                                         \
+	     $(ECHO) "    unable to create template since \c";                      \
+	     $(ECHO) "directory $(DSYSTEM_SRC)$(HERE_SUFFIX)/$$dir does not exist"; \
+      fi;                                                                       \
+	done
+endif # "$(ALL_SUB_DIRS)" ""
+
+#            $(ECHO) "unable to create template: "                  \
+#	        $(ECHO) "    directory $(DSYSTEM_SRC)$(HERE_SUFFIX)/$$dir does not exist"; \
+.PHONY: template
+
+
+###########################################################################
+# "clean" target removes all generatable files (except final products)
+# (incrementally defined)
+#
+# "realclean" target remove everthing that was generated (including the
+#  final products)
+###########################################################################
+
+clean::
+	@$(RM) $(OBJS) $(STUB_OBJS) $(DERIVED) *~ core
+ifneq "$(DIRS)" ""
+	-@$(SUB_SANITIZE);						\
+	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
+	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) clean;		\
+	fi; done
+endif # "$(DIRS)" ""
+
+realclean::
+	@$(RM) $(OBJS) $(STUB_OBJS) $(DERIVED) *~ core 
+	@$(RM) .d_* .pure
+	@$(RM) $(ARCHIVE) $(subst -g,-ng,$(ARCHIVE))
+	@$(RM) $(subst -g,-g_pure_*,$(ARCHIVE)) $(subst -g,-ng_pure_*,$(ARCHIVE))
+	@$(RM) $(EXEC) $(subst -g,-ng,$(EXEC))
+	@$(RM) -r .sb
+ifneq "$(DIRS)" ""
+	-@$(SUB_SANITIZE);						\
+	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
+	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) clean;		\
+	fi; done
+endif # "$(DIRS)" ""
+
+.PHONY: clean realclean
+
+
+
+###########################################################################
+# "force_depend" target builds dependence files (usually automatic)
+# "depend" was previously used target, changed to "force_depend" to
+# dissuade casuals use of this option
+###########################################################################
+depend:
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Target 'depend' is no longer required."
+	@$(ECHO) "All .d_ files are now created automatically, as needed."
+	@$(ECHO) "If you feel that you must rebuild the .d_ files, then"
+	@$(ECHO) "use the 'force_depend' option instead."
+	@exit 1
+
+force_depend: error_check derived depend_clean
+ifneq "$(VERSIONS)" ""
+ifndef VERSION
+	-@for v in $(VERSIONS); do $(MAKE) "VERSION=$$v" dodepend; done
+else  # $(VERSION) defined
+	@$(MAKE) dodepend
+endif # $(VERSION)
+else  # $(VERSIONS) empty
+	@$(MAKE) dodepend
+endif # $(VERSIONS)
+ifneq "$(DIRS)" ""
+	-@$(SUB_SANITIZE);						\
+	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
+	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) force_depend;	\
+	fi; done
+endif # "$(DIRS)" ""
+
+depend_clean:
+	@$(RM) .d_*
+
+.PHONY: force_depend depend_clean
+
+
+###########################################################################
+# "sbrowser" target builds just the Source Browser database without
+# creating any object files, archives, or executables.  It is best,
+# however, to create the database when recompiling the source code from 
+# the ground up, since that also includes focus information for the Source
+# Browser.
+###########################################################################
+NO_PASS_VARS := $(NO_PASS_VARS) SB_C_SRCS SB_ACC_SRCS SB_CXX_SRCS \
+	            LOCAL_SB LOCAL_SUB_SB 
+
+ifeq "$(DSYSTEM_OS)" "SunOS-5.x"
+
+ifndef SB_C_SRCS
+SB_C_SRCS := ${filter-out %.ansi.c,${filter %.c,$(SRCS)}}
+endif # SB_C_SRCS
+
+ifndef SB_ACC_SRCS
+SB_ACC_SRCS := ${filter %.ansi.c,$(SRCS)}
+endif # SB_ACC_SRCS
+
+ifndef SB_CXX_SRCS
+SB_CXX_SRCS := ${filter %.C,$(SRCS)}
+endif # SB_CXX_SRCS
+
+SB.ACC = $(ACC) -xsbfast $(CPPFLAGS) $(TARGET_ARCH)
+
+SB.CC = $(CC) -xsbfast $(CPPFLAGS) $(TARGET_ARCH)
+
+SB.CXX = $(CXX) -sbfast $(CPPFLAGS) $(TARGET_ARCH)
+
+#-----------------------------------------------------------------
+# local sbrowser handling
+#-----------------------------------------------------------------
+default_local_sb:: default_local_sb_cc
+default_local_sb:: default_local_sb_acc
+default_local_sb:: default_local_sb_cxx
+
+default_local_sb_cc: $(SB_C_SRCS)
+ifneq "$(SB_C_SRCS)" ""
+	@$(SB.CC) $^
+endif # "$(SB_C_SRCS)" ""
+
+default_local_sb_acc: $(SB_ACC_SRCS)
+ifneq "$(SB_ACC_SRCS)" ""
+	@$(SB.ACC) $^
+endif # "$(SB_ACC_SRCS)" ""
+
+default_local_sb_cxx: $(SB_CXX_SRCS)
+ifneq "$(SB_CXX_SRCS)" ""
+	@$(SB.CXX) $^
+endif # "$(SB_CXX_SRCS)" ""
+
+.PHONY: default_local_sb
+.PHONY: default_local_sb_cc default_local_sb_acc default_local_sb_cxx
+
+#-----------------------------------------------------------------
+# subdirectory sbrowser handling
+#-----------------------------------------------------------------
+default_sub_sb: 
+ifneq "$(DIRS)" ""
+	-@$(SUB_SANITIZE);						\
+	$(ECHO) "";							\
+	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
+	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) sbrowser_build $(INDENTED);	\
+	    $(ECHO) "";							\
+	fi; done
+endif # "$(DIRS)" ""
+
+.PHONY: default_sub_sb
+
+
+#-----------------------------------------------------------------
+# cordinate local, subdirectory, and cleanup handling
+#-----------------------------------------------------------------
+ifndef LOCAL_SB
+LOCAL_SB := default_local_sb
+endif # LOCAL_SB
+
+ifndef LOCAL_SUB_SB
+LOCAL_SUB_SB := default_sub_sb
+endif # LOCAL_SUB_SB
+
+sbrowser: sbrowser_build sbrowser_finish
+
+sbrowser_build: hello error_check derived $(LOCAL_SB) $(LOCAL_SUB_SB) goodbye
+
+sbrowser_clean:
+	@$(ECHO) "Removing the old sbrowser database..."
+	-@$(RM) -r $(DSYSTEM_PVT_SRC)/.sb/*
+
+sbrowser_finish:
+	@$(ECHO) "Building the sbrowser index..."
+	@sbquery -no_source main 2>&1 /dev/null
+
+.PHONY: sbrowser sbrowser_build sbrowser_clean sbrowser_finish
+
+else # "$(DSYSTEM_OS)" "SunOS-5.x"
+
+sbrowser:
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Must be under SunOS-5.x to build the sbrowser database."
+	@exit 1
+
+endif # "$(DSYSTEM_OS)" "SunOS-5.x"
+
+
+###########################################################################
+# "lint" target prints lint output
+###########################################################################
+
+NO_PASS_VARS := $(NO_PASS_VARS) LINT_SRCS LINT_LINK_FILES \
+	        LOCAL_LINT LOCAL_SUB_LINT LOCAL_LINT_CLEANUP LOCAL_LINT_FLAGS
+
+ifndef LINT_SRCS
+LINT_SRCS := ${filter %.c,$(SRCS)}
+endif # LINT_SRCS
+
+#-----------------------------------------------------------------
+# local lint handling
+#-----------------------------------------------------------------
+default_local_lint: $(LINT_SRCS)
+ifneq "$(LINT_SRCS)" ""
+	$(LINT.c) $^ -lc $(LOCAL_LINT_FLAGS)
+endif # "$(LINT_SRCS)" ""
+
+.PHONY: default_local_lint
+
+#-----------------------------------------------------------------
+# subdirectory lint handling
+#-----------------------------------------------------------------
+default_sub_lint: 
+ifneq "$(DIRS)" ""
+	-@$(SUB_SANITIZE);						\
+	$(ECHO) "";							\
+	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
+	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) lint $(INDENTED);	\
+	    $(ECHO) "";							\
+	fi; done
+endif # "$(DIRS)" ""
+
+.PHONY: default_sub_lint
+
+
+#-----------------------------------------------------------------
+# cordinate local, subdirectory, and cleanup handling
+#-----------------------------------------------------------------
+ifndef LOCAL_LINT
+LOCAL_LINT := default_local_lint
+endif # LOCAL_LINT
+
+ifndef LOCAL_SUB_LINT
+LOCAL_SUB_LINT := default_sub_lint
+endif # LOCAL_SUB_LINT
+
+
+lint: hello error_check derived $(LOCAL_LINT) $(LOCAL_SUB_LINT) \
+      lint_clean goodbye
+
+clean:: lint_clean
+
+lint_clean::
+	@$(RM) *.ln
+
+.PHONY: lint lint_clean
+
+
+#-----------------------------------------------------------------
+# lint pattern rule for lint libraries
+#-----------------------------------------------------------------
+llib-l%.ln: llib-l%.c
+	$(LINT) $(CPPFLAGS) -C$(patsubst llib-l%.ln,%,$@) $<
+
+
+
+###########################################################################
+# Announce the beginning and termination of this make
+###########################################################################
+
+hello:
+ifeq "$(MAKELEVEL)" "0"
+	@$(ECHO) "Current directory:  $(PWD)"
+endif # "$(MAKELEVEL)" "0"
+	@$(ECHO) "*** Beginning dmake in $(HERE)\c"
+ifdef VERSION
+	@$(ECHO) " (version = $(VERSION))\c"
+endif # VERSION
+	@$(ECHO) " ***"
+
+goodbye:
+	@$(ECHO) "*** Finishing dmake in $(HERE)\c"
+ifdef VERSION
+	@$(ECHO) " (version = $(VERSION))\c"
+endif # VERSION
+	@$(ECHO) " ***"
+ifeq "$(MAKELEVEL)" "0"
+ifeq "$(PWD)" "$(DSYSTEM_OBJ)/SunOS-5.x"
+ifeq "$(SBROWSER)" "yes"
+	@$(ECHO) ""
+	@$(ECHO) "Building the sbrowser index...";
+	@sbquery -no_source main > /dev/null
+endif # "$(SBROWSER)" "yes"
+endif # "$(PWD)" "$(DSYSTEM_OBJ)/SunOS-5.x"
+endif # "$(MAKELEVEL)" "0"
+
+.PHONY: hello goodbye
+
+.EXPORT_ALL_VARIABLES:
+
+
+###########################################################################
+# Attempt RCS check-out during the make
+###########################################################################
+
+ifneq "$(CHECKOUT)" "on"
+# NOTE:  This doesn't work right to check out into the $(DSYSTEM_SRC) directory.
+%: %,v
+%: RCS/%,v
+endif # "$(CHECKOUT)" "on"

@@ -1,0 +1,30 @@
+README for <$DSYSTEM>/develop/src/libs/support/strings
+
+
+This files in this directory support the creation of various 
+string utilities:
+
+  OrderedSetOfStrings creates a vector of strings that can 
+  be read from and written to a file.
+
+  StringBuffer builds strings of arbitrary length through 
+  a sequence of Append operations.
+
+  StringIO provides a simple interface for reading and 
+  writing ASCII strings.
+
+  StringSet creates a set of string pointers.
+
+
+The following class supports the ordered set of strings abstraction:
+
+  OrderedSetOfStrings (inherits from PointerVector)
+ 
+The following class supports the string buffer abstraction:
+
+  StringBuffer
+
+The following classes support the string set abstraction:
+
+  StringSet (inherits from NamedObjectTableIO)
+  StringSetIterator (inherits from NamedObjectTableIterator)

@@ -1,0 +1,23 @@
+README for <$DSYSTEM>/develop/src/libs/fileAttrMgmt
+
+ 
+The files in these subdirectories support the creation of 
+"attributed files." (To learn more about attributed files, 
+see attributedFile/README.) An inheritance chart is shown 
+in Figure 1 below.
+
+
+              AttributedFile        AttributedFileSet
+                    |                        |
+             _______|_____________________   |
+            |                             |  |                 
+            |                             |  |
+           Module                       Composition
+            |
+            |
+       FortranModule
+
+   Figure 1. Inheritance chart for the classes Module, 
+   FortranModule, and Composition. Module and FortranModule 
+   are attributed files. Compostion is both an attributed 
+   file and an attributed file set. 

@@ -1,0 +1,7 @@
+README for <$DSystem>/develop/src/libs/ipAnalysis/ipInfo
+
+
+The files in this directory support the handling of 
+interprocedural information that's passed by nodes or 
+edges, like call-site information.
+

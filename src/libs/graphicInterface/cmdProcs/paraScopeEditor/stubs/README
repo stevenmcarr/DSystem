@@ -1,0 +1,12 @@
+README for <$DSystem>/develop/src/libs/graphicInterface/cmdProcs/paraScopeEditor/stubs
+
+This directory contains stubs that are needed for tools that use
+pedInitialize and pedReinitialize with without using the graphical
+user interface. These functions stub out functionality useful only
+to the ParaScope Editor graphical user interface that are called
+from the ped dg support library because of ill-conceived software
+structure.
+
+Reliance on the stubs file in this directory is HIGHLY DEPRECATED.
+If you write new code and that depends on the existence of stubs
+such as those in this directory, you should be ashamed of yourself. 

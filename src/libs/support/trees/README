@@ -1,0 +1,21 @@
+README for <$DSYSTEM>/develop/src/libs/support/trees
+
+This directory contains the files that support the creation
+of non-uniform degree trees and non-uniform degree tree
+traversal tools:
+
+  Non-uniform Degree Tree - A cross between a generic tree 
+  and a (circular) singly-linked list, as shown below. 
+
+      parent
+        |
+        |
+      child --> sibling --> sibling
+
+
+The following classes make up this abstraction:
+
+  NonUniformDegreeTreeIterator 
+  NonUniformDegreeTreeNode
+
+

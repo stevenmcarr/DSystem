@@ -1,0 +1,33 @@
+README for <$DSYSTEM>/develop/src/libs/support/lists
+
+
+The files in this directory support the creation of various 
+types of lists and list utilities:
+
+  Singly Linked List - A series of records in which 
+  each record contains both an element and a pointer 
+  to the next record. 
+
+  Singly Linked List I/O - A utility that reads from 
+  and writes to a singly linked list.
+
+  Doubly Linked List - A series of records in which 
+  each record contains an element, a pointer to the 
+  next record, and a pointer to the previous record. 
+
+
+The following classes make up the singly linked list abstraction:
+
+  SinglyLinkedListEntry
+  SinglyLinkedList
+  SinglyLinkedListIterator
+
+The following class makes up the singly linked list I/O abstraction:
+
+  SinglyLinkedListEntryIO (inherits from SinglyLinkedListEntry)
+  SinglyLinkedListIO (inherits from SinglyLinkedList)
+ 
+The following class makes up the circular doubly linked list abstraction:
+
+  DList
+

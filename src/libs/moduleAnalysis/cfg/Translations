@@ -1,0 +1,167 @@
+Translations from Rhonda's to new CFG/SSA
+=========================================
+
+CPROP_ASTMAP(cprop).scc[ast]			cfg_node_map(AST_INDEX)
+(CPROP_NODEMAP(cprop))[id]->			CFG_node(CfgNodeId)->
+CPROP_VAL_TABLE(cprop)				???
+CPROP_INSTANCES_F(cprop)			CFG_FirstInstance
+CPROP_INSTANCES_L(cprop)			CFG_LastInstance
+curr_inst					CFG_Inst
+
+				new		ssa_edge_map(ast)
+						ssa_node_map(ast)
+
+expressionList->				SSA_node(SsaNodeId)->
+SSA_edgeList->					SSA_edge(SsaEdgeId)->
+PCF_edgeList->					CFG_edge(CfgEdgeId)->
+
+TRUE						true
+FALSE						false
+Explicit coercions between Boolean and integer required 
+(because some compilers are picky).
+
+#define EXECUTABLE  1				not used
+
+#define REACHED     1				not used
+#define NO_REEVAL   2				not used
+
+#define is_executable(x) ((x) & EXECUTABLE)	not used
+
+typedef struct ast_list_elt {
+    AST_INDEX node;
+    struct ast_list_elt *next;
+    } astList;					CfgAstList
+
+/* info for var occurring in exp - make into SSA edge and delete when build SSA graph */
+typedef struct op_var {
+    STR_INDEX in_var;				STR_INDEX inVar
+    int occrs;					short occrs
+    astList *nodes;				CfgAstList *nodes
+    struct op_var *next;			struct... *next
+    } operand_var;				SsaOperaandVar
+
+typedef struct var_expr_list {
+    STR_INDEX var;				same
+    int node;					CfgNodeId cfgNode
+    latticeValue val;				LatticeValue val
+    int valNum;					same
+    AST_INDEX type;			/	AST_INDEX defAst
+					\	SsaType type
+    int fan_in;					TinyInt fanInLeft (countdown)
+						TinyInt fanIn (don't change)
+    short unused;				TinyBool unused
+    short /* Boolean */ visited;		TinyBool visited
+    operand_var *in_vars;			moved...
+    struct SSA_edge *ins;			SsaEdgeId defUseIns
+    struct SSA_edge *outs;			SsaEdgeId defUseOuts
+    struct var_expr_list *next;			SsaNodeId next
+    } *expressionList, exprItem;		SsaNode
+
+typedef struct SSA_edge {
+    expressionList def;				SsaNodeId def
+    expressionList use;				SsaNodeId use
+    astList *ASTnodes;				CfgAstList *astNodes
+    int occr;					TinyInt occr
+    char exec;					TinyBool exec
+    char in_wk;					TinyBool inWork
+    struct SSA_edge *innext;			SsaEdgeId inNext
+    struct SSA_edge *outnext;			SsaEdgeId outNext
+    struct SSA_edge *wknext;			SsaEdgeId wkNext
+    } *SSA_edgeList;				SsaEdge
+
+typedef struct PCF_edge {
+    int src;					CfgNodeId src
+    int dest;					CfgNodeId dest
+    char exec;					TinyBool exec
+    char in_wk;					TinyBool inWork
+    int join;					SmallInt join
+    struct PCF_edge *innext;			CfgEdgeId inNext
+    struct PCF_edge *outnext;			CfgEdgeId outNext
+    struct PCF_edge *wknext;			CfgEdgeId wkNext
+    } *PCF_edgeList;				CfgEdge
+
+
+typedef struct {
+    AST_INDEX astnode;				same
+    int lbldef;					same
+    short type;					TinyInt type (CfgNodeType)
+    int fan_in;					SmallInt fanIn
+    PCF_edgeList ins;				CfgEdgeId ins
+    PCF_edgeList outs;				CfgEdgeId outs
+    expressionList e_list;			SsaNodeId ssaKids
+    } SCCnode;					CfgNode
+
+typedef struct defining_expr {
+    expressionList def;
+    struct defining_expr *next;
+    } defing_expr;
+
+typedef struct instance_var {
+    STR_INDEX var;				fst_index_t var
+    int *work;					Boolean *work
+    int *DFP;					Boolean *DFPP
+    defing_expr *deflist;			SsaNodeId defList
+    defing_expr *stack;				SsaNodeId stack
+    struct instance_var *next;			--gone--
+    } inst_var;					SsaRefVar
+
+
+typedef struct i_elem {
+    STR_INDEX name;				STR_INDEX name
+    int type;					CfgInstanceType type
+    label_map *lbl_map;				Generic *lblMap (symtable)
+    int root;					CfgNodeId root
+    int end;					CfgNodeId end
+    var_value *params;				???
+    inst_var **i_vars;				???
+    astList *iv_used;				???
+    short *in_pcf;				--gone--
+    int comn;					CfgNodeId comn
+    int t_comn;					CfgNodeId tcomn
+    struct i_elem *next;			same
+    } instance;					CfgInstance
+
+
+typedef struct cprop {
+    ...						restructured
+    ValTable	valTable;			same
+    SymTable	valHashTable;			same
+} *CpropInfo;
+
+/* instance types */				typedef enum -- CfgInstanceType
+#define GLOBAL          0			CFG_GLOBAL
+#define PROGRAM         1			...
+#define FUNCTION        2
+#define SUBROUTINE      3
+#define BLOCK_DATA      4
+#define NON_PROCEDURAL  5
+
+
+/* SCC node types */				typedef enum -- CfgNodeType
+#define START           0			CFG_START
+#define DATA            1			...
+#define ASSGN           2
+#define ASSGN_SSTR      3
+#define GOTO            4
+#define SPREAD_MULTI    5			CFG_SPREAD
+#define SPREAD_SNGL     6			CFG_FORK
+#define DO_REP          7
+#define DO_CND          8
+#define DO_IND          9
+#define WRITE           10
+#define READ            11
+#define FILE_POS        12
+#define LEAF            13
+#define OPEN            14
+#define CLOSE           15
+#define CONTINUE        16
+#define INQUIRE         17
+#define CALL            18
+#define TASK            19
+#define STOPLOOP        20
+#define END             21
+#define COMMON          22
+#define PARALLEL        23
+				new		CFG_PREHEADER
+						CFG_END_ITER
+						CFG_OTHER

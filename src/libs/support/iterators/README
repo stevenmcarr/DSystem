@@ -1,0 +1,20 @@
+README for <$DSYSTEM>/develop/src/libs/support/iterators
+ 
+
+The files in this directory support the creation of iterators 
+and iterator stacks, a nested structure traversal tool.
+
+  Iterator - A base-class iterator.
+
+  Iterator Stack - A stack of iterators that is itself an iterator. 
+  Iterator stacks are useful for traversing nested structures.
+
+
+The following class makes up the iterator abstraction:
+
+  Iterator
+
+The following classes make up the iterator stack abstraction:
+
+  StackableIterator
+  IteratorStack (inherits from StackableIterator)

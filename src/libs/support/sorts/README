@@ -1,0 +1,15 @@
+README for <$DSYSTEM>/develop/src/libs/support/sorts
+
+
+The files in this directory support the creation of 
+the QuickSort utility:
+
+  QuickSort sorts an array based on user-defined 
+  sorting functions.
+
+
+The following class makes up the quick sort abstraction:
+
+  QuickSort 
+
+

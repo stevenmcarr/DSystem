@@ -1,0 +1,18 @@
+README for <$DSYSTEM>/develop/src/libs/support/stacks
+
+
+The files in this directory support the creation of 
+general stacks and pointer stacks:
+
+  General Stack - A stack of any type of element.
+
+  Pointer Stack - A stack of pointers.
+
+
+The following classes make up the pointer stack abstraction:
+
+  class PointerStack 
+
+
+
+

@@ -1,0 +1,5 @@
+README for <$DSystem>/develop/src/libs/graphicInterface
+
+
+The subdirectories in this directory contain files that support 
+the Fortran D editor graphic user interface.

@@ -1,0 +1,16 @@
+README for <$DSYSTEM>/develop/src/libs/support/msgHandlers
+
+
+The files in this directory support the creation of message 
+handling utilities. The following classes make up the message 
+handling abstraction:
+
+  MsgHandler
+  ErrorMsgHandler (inherits from MsgHandler)
+  TraceMsgHandler (inherits from MsgHandler)
+  MsgHandlerStack (inherits from PointerStack)
+
+  
+ 
+ 
+  

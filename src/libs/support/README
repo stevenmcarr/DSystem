@@ -1,0 +1,6 @@
+README for <$DSYSTEM>/develop/src/libs/support
+
+
+These subdirectories contain source files for various 
+base classes, base data structures, base data types, 
+and low-level utilities. 

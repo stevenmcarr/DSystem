@@ -1,0 +1,12 @@
+Here are list of items needing fixing the filer:
+
+1) text_item needs to be able to enable/disable scrolling of text items
+   - needs calls in ted_sm
+
+2) need a more understandable paradigm for copy/copydir, rename, 
+   and remove/rmdir. The paradigm now, is that whatever strings are supplied
+   in the from and to fields become arguments to UNIX commands, therefore our
+   semantics are those of /bin/cp.
+
+3) At this time, the contents of the TO field are deleted when the FROM
+   field is selected. The contents should be grayed, but not deleted.

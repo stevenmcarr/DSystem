@@ -1,0 +1,6 @@
+README for <$DSystem>/develop/src/libs/fortD/driver
+
+
+The files in this directory provide a driver for the 
+Fortran 77D compiler, and miscellaneous other things
+that should be elsewhere :-).

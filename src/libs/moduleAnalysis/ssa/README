@@ -1,0 +1,9 @@
+README for <$DSystem>/develop/src/libs/moduleAnalysis/ssa
+
+
+The files in this directory support the static single 
+assignment (ssa) abstraction. Instructions for imple-
+menting an ssa are provided in README.ssa.
+
+
+

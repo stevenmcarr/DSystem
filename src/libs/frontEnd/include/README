@@ -1,0 +1,7 @@
+README for <$DSystem>/develop/src/libs/frontEnd/include
+
+
+This directory contains various include files that support 
+parsing and syntax analysis and generate ASTs and various 
+kinds of trees.
+

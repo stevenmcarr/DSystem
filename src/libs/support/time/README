@@ -1,0 +1,12 @@
+README for <$DSYSTEM>/develop/src/libs/support/time   
+
+
+The files in this directory support the creation of stop watches:
+
+  stop watch - A counter that may be used to provide a pause.
+
+
+The following class makes up the stop watch abstraction:
+
+  StopWatch
+ 

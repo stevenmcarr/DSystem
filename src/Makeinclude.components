@@ -1,0 +1,219 @@
+# $Id: Makeinclude.components,v 1.1 1997/03/11 14:27:21 carr Exp $
+###########################################################################
+#
+# File:
+#   Makeinclude.components
+#
+# Authors: 
+#    Kevin Cureton
+#
+# Date:
+#    August 1994
+#
+# Description:
+#    This file contains standard component definitions used for making
+#    executables in the D System Programming Environment.
+#
+###########################################################################
+#
+#          Copyright 1992, 1993, 1994  Rice University
+#                     All Rights Reserved
+#
+###########################################################################
+
+#-----------------------------------------------------------------
+# Common stuff
+#-----------------------------------------------------------------
+OKIND     = $(DSYSTEM_OS)-g
+ODIR      = $(DSYSTEM_OBJ)/$(DSYSTEM_OS)
+
+#-----------------------------------------------------------------
+# Configuration archive
+#-----------------------------------------------------------------
+CONFIG = libs/config/Config-$(OKIND).a
+
+#-----------------------------------------------------------------
+# File Attribute Management archives
+#-----------------------------------------------------------------
+FM_ATTRFILE = libs/fileAttrMgmt/attributedFile/FileAttrMgmt-$(OKIND).a
+FM_MODULE   = libs/fileAttrMgmt/module/FileAttrMgmt-$(OKIND).a
+FM_FORTMOD  = libs/fileAttrMgmt/fortranModule/FileAttrMgmt-$(OKIND).a
+FM_COMP     = libs/fileAttrMgmt/composition/FileAttrMgmt-$(OKIND).a
+
+#-----------------------------------------------------------------
+# Fortran D archives
+#-----------------------------------------------------------------
+FORT_D_DRIVER = libs/fortD/driver/FortD-$(OKIND).a
+FORT_D_CGEN = libs/fortD/codeGen/FortD-$(OKIND).a
+FORT_D_IRRG = libs/fortD/irregAnalysis/FortD-$(OKIND).a
+FORT_D_LINF = libs/fortD/localInfo/FortD-$(OKIND).a 
+FORT_D_MISC = libs/fortD/misc/FortD-$(OKIND).a 
+FORT_D_INSTR = libs/fortD/performance/instr/FortD-$(OKIND).a 
+FORT_D_STATS = libs/fortD/performance/stats/FortD-$(OKIND).a 
+FORT_D_STATIC_INFO = libs/fortD/performance/staticInfo/FortD-$(OKIND).a 
+
+FORT_D_PERF = $(FORT_D_STATIC_INFO) $(FORT_D_INSTR) $(FORT_D_STATS)
+
+#-----------------------------------------------------------------
+# The link order of FORTD differs for the FortDEditor.  The 
+# FortDEditor Makefile defines it, so we must check to make sure 
+# it hasn't already been defined.
+#-----------------------------------------------------------------
+ifndef FORT_D
+FORT_D = $(FORT_D_DRIVER) $(FORT_D_CGEN) $(FORT_D_IRRG) $(FORT_D_MISC)
+endif
+
+#-----------------------------------------------------------------
+# Front End archives
+#-----------------------------------------------------------------
+FRONT_END = libs/frontEnd/FrontEnd-$(OKIND).a
+
+FRONT_END_PTREE = libs/frontEnd/prettyPrint/FrontEnd-$(OKIND).a
+
+#-----------------------------------------------------------------
+# Interprocedual Analysis archives
+#-----------------------------------------------------------------
+IP_INTERFACE  = libs/ipAnalysis/interface/IPAnalysis-$(OKIND).a
+IP_PROBLEM    = libs/ipAnalysis/problems/IPAnalysis-$(OKIND).a
+IP_CALLGRAPH  = libs/ipAnalysis/callGraph/IPAnalysis-$(OKIND).a
+
+IP_PROB_DRACE = # libs/ipAnalysis/problems/datarace/IPAnalysis-$(OKIND).a
+IP_PROB_FORTD = libs/ipAnalysis/problems/fortD/IPAnalysis-$(OKIND).a
+
+IP_INFO       = libs/ipAnalysis/ipInfo/IPAnalysis-$(OKIND).a
+
+IP_ANALYSIS   = $(IP_INTERFACE) $(IP_PROBLEM) $(IP_CALLGRAPH)
+
+
+
+#-----------------------------------------------------------------
+# Module Analysis archives
+#-----------------------------------------------------------------
+MA_CFG    = libs/moduleAnalysis/cfg/ModuleAnalysis-$(OKIND).a
+MA_CFGVAL = libs/moduleAnalysis/cfgValNum/ModuleAnalysis-$(OKIND).a
+MA_SSA    = libs/moduleAnalysis/ssa/ModuleAnalysis-$(OKIND).a
+MA_VAL    = libs/moduleAnalysis/valNum/ModuleAnalysis-$(OKIND).a
+MA_DEP    = libs/moduleAnalysis/dependence/ModuleAnalysis-$(OKIND).a
+
+#         libs/moduleAnalysis/dependence/dg/dg-$(OKIND).a \
+#         libs/moduleAnalysis/dependence/el/el-$(OKIND).a \
+#         libs/moduleAnalysis/dependence/li/li-$(OKIND).a \
+#         libs/moduleAnalysis/dependence/utilities/dep_util-$(OKIND).a \
+#         libs/moduleAnalysis/dependence/dt/dt-$(OKIND).a \
+#         libs/moduleAnalysis/dependence/cd/cd-$(OKIND).a
+
+#-----------------------------------------------------------------
+# Support archive
+#-----------------------------------------------------------------
+SUPPORT = libs/support/Support-$(OKIND).a
+#SIMPLIFY  = libs/simplify/simplify-$(OKIND).a
+
+#-----------------------------------------------------------------
+# Command Processor archives
+#-----------------------------------------------------------------
+DED_CP  = libs/graphicInterface/cmdProcs/dEditor/DEditorCP-$(OKIND).a
+HELP_CP = libs/graphicInterface/cmdProcs/help/HelpCP-$(OKIND).a
+NED_CP  = libs/graphicInterface/cmdProcs/newEditor/NewEditorCP-$(OKIND).a
+PED_CP  = libs/graphicInterface/cmdProcs/paraScopeEditor/pedCP/PedCP-$(OKIND).a
+
+CPS = $(DED_CP) $(PED_CP) $(NED_CP) $(HELP_CP)
+
+#-----------------------------------------------------------------
+# Graphic and Non-graphic User Interface Support
+#-----------------------------------------------------------------
+GI_FRAMEWORK = libs/graphicInterface/framework/Framework-$(OKIND).a
+
+GI_SUPPORT = libs/graphicInterface/support/Support-$(OKIND).a
+
+GI_DIALOGS = libs/graphicInterface/oldMonitor/dialogs/dialogs-$(OKIND).a
+
+GI_MONX = libs/graphicInterface/oldMonitor/monitor/monX-$(OKIND).a
+GI_MONN = libs/graphicInterface/oldMonitor/monitor/monN-$(OKIND).a
+
+#-----------------------------------------------------------------
+# ParaScope Editor archives
+#-----------------------------------------------------------------
+GI_PEDDG = libs/graphicInterface/cmdProcs/paraScopeEditor/dg/ped-$(OKIND).a \
+           libs/graphicInterface/cmdProcs/paraScopeEditor/el/ped-$(OKIND).a \
+           libs/graphicInterface/cmdProcs/paraScopeEditor/dt/ped-$(OKIND).a \
+           libs/graphicInterface/cmdProcs/paraScopeEditor/stubs/stubs-$(OKIND).a 
+
+GI_PED   = libs/graphicInterface/cmdProcs/paraScopeEditor/dp/ped-$(OKIND).a \
+	       libs/graphicInterface/cmdProcs/paraScopeEditor/perf/ped-$(OKIND).a \
+	       libs/graphicInterface/cmdProcs/paraScopeEditor/pt/ped-$(OKIND).a \
+           $(GI_PEDDG)
+
+#           libs/ped_cp/memory/ped-$(OKIND).a \
+
+#-----------------------------------------------------------------
+# The libraries in link order for graphic user interface apps
+#-----------------------------------------------------------------
+LIBS = \
+	   $(FORT_D) \
+	   $(FORT_D_PERF) \
+	   $(GI_PED) \
+	   $(MA_DEP) \
+	   $(IP_PROB_FORTD) \
+	   $(MA_CFGVAL) \
+	   $(MA_SSA) \
+	   $(MA_CFG) \
+	   $(IP_ANALYSIS) \
+	   $(IP_INTERFACE) \
+	   $(FM_COMP) \
+	   $(FM_FORTMOD) \
+	   $(FRONT_END) \
+	   $(FORT_D_LINF) \
+	   $(GI_FRAMEWORK) \
+	   $(GI_DIALOGS) \
+	   $(GI_MONX) \
+	   $(FM_MODULE) \
+	   $(FM_ATTRFILE) \
+	   $(IP_INFO) \
+	   $(MA_VAL) \
+	   $(GI_SUPPORT) \
+	   $(SUPPORT) \
+	   $(CONFIG)
+
+#-----------------------------------------------------------------
+# The libraries in link order for command line interface apps
+#-----------------------------------------------------------------
+NLIBS = \
+	   $(FORT_D) \
+	   $(FORT_D_PERF) \
+	   $(GI_PED) \
+	   $(MA_DEP) \
+	   $(IP_PROB_FORTD) \
+	   $(MA_CFGVAL) \
+	   $(MA_SSA) \
+	   $(MA_CFG) \
+	   $(IP_ANALYSIS) \
+	   $(IP_INTERFACE) \
+	   $(FM_COMP) \
+	   $(FM_FORTMOD) \
+	   $(FRONT_END) \
+	   $(FORT_D_LINF) \
+	   $(GI_FRAMEWORK) \
+	   $(GI_DIALOGS) \
+	   $(GI_MONN) \
+	   $(FM_MODULE) \
+	   $(FM_ATTRFILE) \
+	   $(IP_INFO) \
+	   $(MA_VAL) \
+	   $(GI_SUPPORT) \
+	   $(SUPPORT) \
+	   $(CONFIG)
+
+
+#	   $(DMALLOC)
+#-----------------------------------------------------------------
+# Module(s) containing malloc debugging support or appropriate 
+# stub
+#-----------------------------------------------------------------
+#ifeq "$(DSYSTEM_OS)" "SunOS-4.x"
+#DMALLOC	  = /usr/lib/debug/malloc.o \
+#			$(DSYSTEM)/tools/rice_src/debug_malloc/libc_calloc-$(DSYSTEM_OS).o
+#endif # "$(DSYSTEM_OS)" "SunOS-4.x"
+#
+#ifndef DMALLOC
+#DMALLOC   = $(DSYSTEM)/tools/rice_src/debug_malloc/debug_malloc-$(DSYSTEM_OS).o
+#endif # DMALLOC

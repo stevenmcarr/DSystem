@@ -1,0 +1,7 @@
+README for <$DSystem>/develop/src/libs/ipAnalysis/problems/perfEst
+
+
+The files in this directory supports performance estimation.
+
+Currently the code in this directory is being redesigned, so it is 
+not being compiled and linked in.

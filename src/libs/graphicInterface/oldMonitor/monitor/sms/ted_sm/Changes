@@ -1,0 +1,16 @@
+#Makefile
+#bind.c 
+#delete.c
+#iflex.c
+#move.c
+#search.c
+#sm_ted.c
+#undo.c
+#undo.h
+#tedprivate.h
+#display.c
+#win.c
+#buffers.c
+#insert.c
+#misc.c
+#dot.c

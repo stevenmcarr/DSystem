@@ -1,0 +1,25 @@
+README for <$DSYSTEM>/develop/src/libs/support/graphs
+
+
+The files in this directory support the creation of various 
+directed graph routines.
+ 
+  Directed Graph - A graph G = (V,E) whose edges are 
+  ordered pairs of the form (v,w).
+
+
+The following classes make up the directed graph abstraction:
+
+  GVvector
+  GVertex
+  GEdge
+  Graph
+  GraphPredI
+  GraphSuccI
+  GraphVertexIterator
+
+The following classes make up the dataflow analysis abstraction:
+
+  DFProblem (can only be inherited from)
+
+ 

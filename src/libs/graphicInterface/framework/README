@@ -1,0 +1,5 @@
+README for <$DSystem>/develop/src/libs/graphicInterface/framework
+
+
+This directory contains building blocks for the whole 
+editor, like editor views and filters.

@@ -1,0 +1,13 @@
+README for <$DSYSTEM>/develop/src/libs/moduleAnalysis/expnSimplifier
+
+
+This directory contains source code for the utilities 
+"normalizer" and "expression simplifier":
+
+  Normalizer - A utility that transforms an expression 
+  into a sum of products. 
+
+  Expression Simplifier - A utility that uses "normalizer" 
+  to simplify subscript expressions.
+
+

@@ -1,0 +1,9 @@
+README for <$DSystem>/develop/src/libs/ipAnalysis/problems/alias
+
+
+The files in this directory support the analysis of how 
+Fortran aliases affect analysis and parallelization.
+
+
+
+

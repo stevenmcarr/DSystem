@@ -1,0 +1,7 @@
+README for <$DSYSTEM>/develop/src/libs/support/file
+
+
+The files in this directory support the creation of read/write 
+file markers (Cookie.*), file I/O abstractions, file name 
+generators, file time stamp abstractions, and other assorted 
+file manipulation tools.

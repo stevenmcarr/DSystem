@@ -1,0 +1,54 @@
+README for <$DSYSTEM>/develop/src/libs/support/tables
+
+
+The files in this directory support the creation of various 
+types of C++ hash tables:
+
+    o Hash Table - A base-level hash table.
+
+    o Integer Hash Table - A hash table that hashes integers.
+
+    o Name Value Hash Table - A hash table that stores a name 
+      and a value as a pair.
+
+    o Named Generic Hash Table - A hash table that hashes a 
+      generic object that has a name and a value.
+
+    o String Hash Table - A hash table that hashes strings.
+
+    o Pointer Map Hash Table - A hash table that hashes pointers.
+
+
+The following classes support the hash table abstraction:
+
+  HashTable 
+  HashTableIterator
+  HashTableSortedIterator
+
+The following classes support the integer hash table abstraction:
+
+  IntHashEntry
+  IntHashTable (inherits from HashTable)
+
+The following classes support the name value hash table abstraction:
+
+  NameValueTable (inherits from HashTable)
+  NameValueTableIterator (inherits from HashTableIterator)
+
+The following classes support the string hash table abstraction:
+
+  StringHashTable (inherits from HashTable)
+  StringHashTableIterator (inherits from HashTableIterator)
+
+The following classes support the named generic hash table abstraction:
+
+  NamedGeneric (inherits from NamedObject)
+  NamedGenericTable (inherits from NamedObjectTable)
+  NamedGenericTableIterator (inherits from NamedObjectTableIterator)
+ 
+The following class supports the pointer map hash table abstraction:
+
+  PointerMap (inherits from NameValueTable)  
+
+
+

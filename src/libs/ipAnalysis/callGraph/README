@@ -1,0 +1,22 @@
+README for <$DSystem>/develop/src/libs/ipAnalysis/callGraph
+
+
+The files in this directory support the call graph 
+abstraction, which is built on top of a directed graph. 
+
+Known limitations:
+
+  call graph building fails for programs that pass intrinsic 
+  functions as procedure parameters at call sites. 
+
+  some name table support code used here handles names only < 20 
+  characters in length. this causes problems when processing codes 
+  with long variable and procedure names.
+  
+These limitations will be addressed in a future release.
+
+
+See Also: <$DSystem>/develop/src/libs/support/directedGraph
+
+
+

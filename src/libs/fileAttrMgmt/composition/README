@@ -1,0 +1,33 @@
+README for <$DSYSTEM>/develop/src/libs/fileAttrMgmt/composition
+
+
+The files in this directory support the creation of 
+composition files:
+
+  Composition - A collection of attributed files. 
+
+The class Composition inherits both from AttributedFile 
+and AttributedFileSet.
+
+
+This directory contains the following composition 
+attributes (*CompAttr):
+
+   ErrorCompAttr (remove?)
+   NeedProvCompAttr (remove?)
+
+The classes that make up the composition file abstraction are
+
+   Composition
+   CompComponentsIterator
+   CompositionModulesIterator
+   ErrorsCompAttr
+   ProcModuleMap
+   NeedProvCompAttr
+   ProcModuleMapEntry
+   ProcModuleMap
+   ProcModuleMapIterator
+
+
+See Also: ../attributedFile/README, ../fortranModule/README,   
+          ../module/README

@@ -1,0 +1,17 @@
+README for <$DSYSTEM>/develop/src/libs/support/vectors
+
+
+This directory contains the files that support the creation 
+of pointer vectors:
+
+  Pointer Vector - A vector of pointers that expands 
+  as required when elements are appended.
+
+
+The following class makes up the pointer vector abstraction:
+
+  PointerVector
+
+
+
+

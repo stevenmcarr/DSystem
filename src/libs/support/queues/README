@@ -1,0 +1,8 @@
+README for <$DSYSTEM>/develop/src/libs/support/queues
+
+
+The files in this directory support the creation of queues:
+
+  Queue - A series of records in which records may be 
+  inserted at one end and deleted at the other.
+
