@@ -1,4 +1,4 @@
-/* $Id: dfantic.C,v 1.6 1994/07/20 11:32:48 carr Exp $ */
+/* $Id: dfantic.C,v 1.7 1994/11/30 15:43:05 carr Exp $ */
 
 /****************************************************************************/
 /*                                                                          */
@@ -165,6 +165,8 @@ static void analyze_block_antic(block_type   *block,
      temp = ut_create_set(ar,LOOP_ARENA,size);
      ut_clear_set(block->LI_antic_out);
      ut_complement(block->LI_antic_out);
+     ut_clear_set(block->LC_antic_out);
+     ut_complement(block->LC_antic_out);
      for (edge = block->succ;
 	  edge != NULL;
 	  edge = edge->next_succ)
