@@ -1,4 +1,4 @@
-/* $Id: yaccDirectives.y,v 1.7 1999/07/22 18:08:52 carr Exp $ */
+/* $Id: yaccDirectives.y,v 1.8 1999/09/20 14:29:55 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -20,6 +20,8 @@
 #include <libs/frontEnd/fortTree/fortsym.h>
 
 #include <libs/Memoria/annotate/DirectivesInclude.h>
+
+void a2i_error(char*);
 
 char *a2i_DirectiveString;
 

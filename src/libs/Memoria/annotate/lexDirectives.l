@@ -1,8 +1,9 @@
 %{
+#include <string.h>
 #include <DirectivesInclude.h>
 #include <yaccDirectives.h>
 
-#define yywrap() 1
+#define a2i_wrap() 1
 #define EOS     '\0'
 
 extern char *a2i_DirectiveString;
@@ -15,26 +16,26 @@ $directive                  return CDIR;
 dep                         return DEP;
 
 prefetch                     {
-                              yylval.ival = PrefetchInstruction;
+                              a2i_lval.ival = PrefetchInstruction;
                               return PREFETCH;
                              }
 
 flush                        {
-                              yylval.ival = FlushInstruction;
+                              a2i_lval.ival = FlushInstruction;
                               return FLUSH;
                              }
 
 [a-zA-Z][a-zA-Z$_0-9]*       {
-                              yylval.cval = (char *)malloc(strlen(yytext) *
+                              a2i_lval.cval = (char *)malloc(strlen((const char *)yytext) *
                                                            sizeof(char));
-                              strcpy(yylval.cval,yytext);
+                              strcpy(a2i_lval.cval,(const char *)yytext);
                               return NAME;
                              }
 
 [0-9]+                       {
-                              yylval.cval = (char *)malloc(strlen(yytext) *
+                              a2i_lval.cval = (char *)malloc(strlen((const char *)yytext) *
                                                            sizeof(char));
-                              strcpy(yylval.cval,yytext);
+                              strcpy(a2i_lval.cval,(const char *)yytext);
                               return ICONST;
                              }
 

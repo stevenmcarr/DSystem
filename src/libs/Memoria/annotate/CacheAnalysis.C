@@ -1,4 +1,4 @@
-/* $Id: CacheAnalysis.C,v 1.25 1999/07/22 18:08:51 carr Exp $ */
+/* $Id: CacheAnalysis.C,v 1.26 1999/09/20 14:29:55 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -32,6 +32,36 @@ extern int aiCache;
 extern int aiOptimizeAddressCode;
 
 static int RefCount = 0;
+
+Boolean IsConstantStride(AST_INDEX Node,char *IVar)
+{
+  Boolean   Linear, 
+            StrideIsConstant = true, 
+            AlreadyInASubscript = false;
+  int       Coeff;
+  AST_INDEX SubList,
+            Sub;
+
+  SubList = gen_SUBSCRIPT_get_rvalue_LIST(Node);
+  for (Sub = list_first(SubList);
+       Sub != AST_NIL && StrideIsConstant;
+       Sub = list_next(Sub))
+  {
+    pt_get_coeff(Sub,IVar,&Linear,&Coeff);
+    if (Coeff != 0)
+      if (AlreadyInASubscript)
+	StrideIsConstant = false;
+      else
+      {
+	AlreadyInASubscript = true;
+	StrideIsConstant = Linear;
+      }
+    else 
+      StrideIsConstant = Linear;
+  }
+
+  return StrideIsConstant;
+}
 
 static Boolean IsValidDependence(AST_INDEX PrefetchNode,
 				 AST_INDEX RefNode,
