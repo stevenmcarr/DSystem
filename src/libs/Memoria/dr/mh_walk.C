@@ -1,4 +1,4 @@
-/* $Id: mh_walk.C,v 1.16 1994/06/13 16:19:50 carr Exp $ */
+/* $Id: mh_walk.C,v 1.17 1994/06/14 16:14:31 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*    File:  mh_walk.C                                                      */
@@ -546,7 +546,8 @@ static int post_walk(AST_INDEX      stmt,
       return(WALK_FROM_OLD_NEXT);
      } 
    else if ((is_program(stmt) || is_function(stmt) || is_subroutine(stmt)) && 
-	    (mc_program != NULL || mc_module_list != NULL))
+	    (mc_program != NULL || mc_module_list != NULL) && 
+	    selection == ANNOTATE)
      AnnotateCodeForCache(stmt,level,walk_info);
    return(WALK_CONTINUE);
   }
