@@ -1,0 +1,586 @@
+/* $Id: MemoriaOptions.C,v 1.1 1997/03/27 20:14:26 carr Exp $ */
+/******************************************************************************/
+/*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
+/*                           All Rights Reserved                              */
+/******************************************************************************/
+
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <libs/support/misc/general.h>
+#include <assert.h>
+#include <string.h>
+
+#include <execs/Memoria/MemoriaOptions.h>
+
+#include <libs/Memoria/include/memory_menu.h>
+
+int  selection = NO_SELECT;
+int  ReplaceLevel = 8;
+int  DependenceLevel = 1;
+int  PartitionUnrollAmount = 0;
+char select_char;
+char *mc_program = NULL;
+char *mc_module = NULL;
+char *mc_config = NULL;
+char *mc_module_list = NULL;
+char *mc_output = NULL;
+int aiCache = -1;
+int blue_color = 0;
+
+Options MemoriaOptions("Memoria Options");
+
+Boolean mc_unroll_cache = false;  
+Boolean mc_allow_expansion = false;
+Boolean mc_extended_cache = false;
+Boolean inputs_needed = false;
+Boolean RestrictedUnrolling = false;
+
+void MemoriaOptionsUsage(char *pgm_name)
+{
+   printf("Usage: %s [-s] [-e] [-i] [-p] [-r#] [-d#] [-w#] [-u] [-U] [-D] {-P <program> | -M <module> | -L <module list>} [-C <configuration file>] [-O <output file>]",pgm_name);
+  puts(" ");
+  puts("         -c  annontate with calls to cache simulator");
+  puts("         -d#  set dependence analysis level at 0 or 1 (default)");
+  puts("         -e  use extended cache analysis");
+  puts("         -f  do loop fusion");
+  puts("         -h  prepare code for cache analysis");
+  puts("         -i  do interchange");
+  puts("         -l  count # of loads and stores");
+  puts("         -p  do software prefetching");
+  puts("         -r#  set scalar replacement level 0 through 8");
+  puts("         -s  do statistics");
+  puts("         -u  do unroll-and-jam without cache model");
+  puts("         -w#  do unroll-and-jam for partitioned register files");
+  puts("         -U  do unroll-and-jam with cache model");
+  puts("         -D  issue DEAD instructions for dead cache lines");
+  puts("         -P  program composition");
+  puts("         -M  Fortran module");
+  puts("         -L  list of Fortran modules");
+  puts("         -C  target machine configuration file");
+  puts("         -O  output file for transformed code");
+  fflush(stdout);
+  exit(-1);
+}
+
+static void mc_opt_fusion(void *state)
+{
+  switch(selection) {
+  case NO_SELECT:
+    selection = FUSION;
+    select_char = 'f';
+    break;
+  case INTERCHANGE:
+    selection = LI_FUSION;
+    select_char = 'f';
+    break;
+  case MEM_ALL:
+    break;
+  default:
+    MemoriaOptionsUsage("Memoria");
+  }
+}
+
+static void mc_set_dependence_level(void *state,Generic level)
+
+  {
+   DependenceLevel = level;
+  }
+
+
+static void mc_set_partition_unroll_amount(void *state,char* amount)
+
+  {
+    selection = PARTITION_UNROLL;
+    PartitionUnrollAmount = atoi(amount); 
+    RestrictedUnrolling = true;
+  }
+
+
+static void mc_set_cache_level(void *state)
+
+  {
+   aiCache = 2;
+   selection = CACHE_ANALYSIS;
+   select_char = 'h';
+  }
+
+static void mc_opt_replacement(void *state,Generic level)
+{
+  if (level == 0) 
+    return;
+  inputs_needed = true;
+  ReplaceLevel = level;
+  switch(selection) {
+  case NO_SELECT:
+    selection = SCALAR_REP;
+    select_char = 'r';
+    break;
+  case UNROLL_AND_JAM:
+    selection = UNROLL_SCALAR;
+    select_char = 'u';
+    break;
+  case INTERCHANGE:
+    selection = LI_SCALAR;
+    select_char = 'i';
+    break;
+  case STATS:
+    selection = SR_STATS;
+    break;
+  case MEM_ALL:
+    break;
+  default:
+    MemoriaOptionsUsage("Memoria");
+  }
+}
+
+static void mc_opt_interchange(void *state)
+{
+  switch(selection) {
+  case NO_SELECT:
+    selection = INTERCHANGE;
+    select_char = 'i';
+    break;
+  case UNROLL_AND_JAM:
+    selection = LI_UNROLL;
+    select_char = 'i';
+    break;
+  case SCALAR_REP:
+    selection = LI_SCALAR;
+    select_char = 'i';
+    break;
+  case STATS:
+    selection = LI_STATS;
+    mc_allow_expansion = true;
+    break;
+  case FUSION:
+    selection = LI_FUSION;
+    select_char = 'f';
+    break;
+  default:
+    MemoriaOptionsUsage("Memoria");
+  }
+}
+
+void mc_opt_prefetch(void *state)
+
+  {
+   switch(selection)
+     {
+      case NO_SELECT:
+        selection = PREFETCH;
+	select_char = 'p';
+	break;
+      default:
+	MemoriaOptionsUsage("Memoria");
+     }
+  }
+
+void mc_opt_dead(void *state)
+
+  {
+   switch(selection)
+     {
+      case NO_SELECT:
+        selection = DEAD;
+	select_char = 'D';
+	break;
+      default:
+	MemoriaOptionsUsage("Memoria");
+     }
+  }
+
+static void mc_opt_statistics(void *state)
+{
+  select_char = 's';
+  switch(selection) {
+  case NO_SELECT:
+    selection = STATS;
+    break;
+  case UNROLL_AND_JAM:
+    selection = UJ_STATS;
+    break;
+  case SCALAR_REP:
+    selection = SR_STATS;
+    break;
+  case INTERCHANGE:
+    selection = LI_STATS;
+    mc_allow_expansion = true;
+    break;
+  case LI_FUSION:
+  case MEM_ALL:
+    break;
+  default:
+    MemoriaOptionsUsage("Memoria");
+  }
+}
+
+
+static void mc_opt_annotate(void *state)
+{
+  if (selection != NO_SELECT)
+    MemoriaOptionsUsage("Memoria");
+  selection = ANNOTATE;
+  select_char = 'c';
+}
+
+static void mc_opt_count_ldst(void *state)
+{
+  if (selection != NO_SELECT)
+    MemoriaOptionsUsage("Memoria");
+  selection = LDST;
+  select_char = 'l';
+}
+
+static void mc_opt_unroll(void *state)
+{
+  switch(selection) {
+  case NO_SELECT:
+    selection = UNROLL_AND_JAM;
+    select_char = 'u';
+    break;
+  case SCALAR_REP:
+    selection = UNROLL_SCALAR;
+    select_char = 'u';
+    break;
+  case INTERCHANGE:
+    selection = LI_UNROLL;
+    select_char = 'i';
+    break;
+  case STATS:
+    selection = UJ_STATS;
+    break;
+  case MEM_ALL:
+    break;
+  default:
+    MemoriaOptionsUsage("Memoria");
+  }
+}
+
+static void mc_opt_unroll_cache(void *state)
+{
+  mc_unroll_cache = true;
+  mc_opt_unroll(state);
+  }
+
+static void mc_opt_extended_cache(void *state)
+{
+  mc_extended_cache = true;
+  }
+
+static void mc_opt_RestrictedUnrolling(void *state)
+{
+  RestrictedUnrolling = true;
+  }
+
+static void mc_opt_program(void *state, char *str)
+{
+  mc_program = str;
+}
+
+static void mc_opt_module_list(void *state, char *str)
+{
+  mc_module_list = str;
+}
+
+static void mc_opt_module(void *state, char *str)
+{
+  mc_module = str;
+}
+
+static void mc_opt_config(void *state, char *str)
+{
+  mc_config = str;
+}
+
+void mc_opt_output(void *state,char *str)
+
+  {
+   mc_output = str;
+  }
+
+
+static struct flag_	fusion_f = {
+  mc_opt_fusion,
+  "loop fusion",	
+  "perform loop fusion",
+};
+
+static struct flag_	prefetch_f = {
+  mc_opt_prefetch,
+  "software prefetch", 
+  "perform software prefetching",
+};
+
+static struct flag_	dead_f = {
+  mc_opt_dead,
+  "dead cache lines", 
+  "insert dead cache line directives",
+};
+
+static struct flag_	interchange_f = {
+  mc_opt_interchange,
+  "loop interchange", 
+  "perform loop interchange for memory performance",
+};
+
+static struct choice_entry_ replacement_choices[9] = {
+    {0,
+     "0",
+     "scalar replacement",
+     "no scalar replacement"},
+    {1,
+     "1",
+     "scalar replacement",
+     "perform scalar replacement, no control flow, LI only"},
+    {2,
+     "2",
+     "scalar replacement",
+     "perform scalar replacement, add invariant references"},
+    {3,
+     "3",
+     "scalar replacement",
+     "perform scalar replacement, add loop carried distance 1"},
+    {4,
+     "4",
+     "scalar replacement",
+     "perform scalar replacement, add all loop carried"},
+    {5,
+     "5",
+     "scalar replacement",
+     "perform scalar replacement, LI only, add control flow"},
+    {6,
+     "6",
+     "scalar replacement",
+     "perform scalar replacement, level 3 + control flow"},
+    {7,
+     "7",
+     "scalar replacement",
+     "perform scalar replacement, level 6 + LI partially available"},
+    {8,
+     "8",
+     "scalar replacement",
+     "perform full scalar replacement"},
+ };
+
+
+static struct flag_	cache_f = {
+  mc_set_cache_level,
+  "cache analysis",
+  "perform cache analysis for scheduling, level 1 is unrolling"
+};
+
+static struct flag_	ldst_f = {
+  mc_opt_count_ldst,
+  "load and store analysis",
+  "Count the number of loads and stores to arrays"
+};
+static struct choice_	replacement_c = {
+  mc_opt_replacement,
+  "scalar replacement",
+  "perform scalar replacement, allowing control flow",
+  8,replacement_choices
+};
+
+static struct choice_entry_ dependence_choices[2] = {
+    {0,
+     "0",
+     "dependence",
+     "Delta only"},
+    {1,
+     "1",
+     "dependence",
+     "all tests"}
+ };
+
+
+static struct choice_	dependence_c = {
+  mc_set_dependence_level,
+  "dependence",
+  "level",
+  1,dependence_choices
+};
+
+
+static struct flag_	statistics_f = {
+  mc_opt_statistics,
+  "interchange statistics",
+  "report locality and loop permutation statistics",
+};
+
+
+static struct flag_	annotate_f = {
+  mc_opt_annotate,
+  "cache annotations",
+  "annotate code with call to cache simulator",
+};
+
+static struct flag_	unroll_f = {
+  mc_opt_unroll,
+  "unroll-and-jam",
+  "perform automatic unroll-and-jam for loop balance",
+};
+
+static struct flag_	unroll_cache_f = {
+  mc_opt_unroll_cache,
+  "unroll-and-jam",
+  "perform automatic unroll-and-jam for loop balance with cache",
+};
+
+static struct flag_	extended_cache_f = {
+  mc_opt_extended_cache,
+  "cache analysis",
+  "Use Wolfs group-spatial formulation",
+};
+
+static struct flag_	RestrictedUnrolling_f = {
+  mc_opt_RestrictedUnrolling,
+  "less unrolling",
+  "Do not unroll pre-loops",
+};
+
+static struct string_	program_s = {
+  mc_opt_program,
+  "program context     ",
+  "program context",
+  512, 50,
+  ".*"
+};
+
+static struct string_	module_s = {
+  mc_opt_module,
+  "name of fortran file",
+  "name of fortran file",
+  512, 50,
+  ".*"
+};
+
+static struct string_	partition_unroll_amount_s = {
+  mc_set_partition_unroll_amount,
+  "amount to unroll a loop for partitioned register files",
+  "amount to unroll a loop for partitioned register files",
+  512, 50,
+  ".*"
+};
+
+static struct string_	module_list_s = {
+  mc_opt_module_list,
+  "list of fortran files",
+  "list of fortran files",
+  512, 50,
+  ".*"
+};
+
+static struct string_	config_s = {
+  mc_opt_config,
+  "configuration file",
+  "configuration file",
+  512, 50,
+  ".*"
+};
+
+static struct string_	output_s = {
+  mc_opt_output,
+  "output file",
+  "output file",
+  512, 50,
+  ".*"
+};
+
+Option mc_mod_opt = { string, MC_MOD_OPT,  (Generic) "",   true, 
+			(Generic)&module_s };
+
+Option mc_pgm_opt = 
+{ string, MC_PGM_OPT,  (Generic) "",   true, (Generic)&program_s };
+
+Option mc_lst_opt = 
+{ string, MC_LST_OPT,  (Generic) "",   true, (Generic)&module_list_s };
+
+Option mc_cfg_opt = 
+{ string, MC_CFG_OPT,  (Generic) "",   true, (Generic)&config_s };
+
+Option mc_out_opt = 
+{ string, MC_OUT_OPT,  (Generic) "",   true, (Generic)&output_s };
+
+Option mc_partition_unroll_opt = { string, MC_PARTITION_UNROLL_OPT,  (Generic) "", true, 
+			(Generic)&partition_unroll_amount_s};
+Option mc_fusion_flag = 
+{ flag,   MC_FUSION_FLAG, (Generic)false, true, (Generic)&fusion_f };
+
+Option mc_int_flag = { flag,   MC_INTERCHANGE_FLAG,  (Generic)false, true, 
+			 (Generic)&interchange_f };
+
+Option mc_pre_flag = { flag,   MC_PREFETCH_FLAG,  (Generic)false, true, 
+			 (Generic)&prefetch_f };
+
+Option mc_dead_flag = { flag,   MC_DEAD_FLAG,  (Generic)false, true, 
+			 (Generic)&dead_f };
+
+Option mc_cache_anal_flag = { flag,   MC_CACHE_ANAL_FLAG, (Generic)false,
+				true, (Generic)&cache_f };
+
+Option mc_ldst_anal_flag = { flag,   MC_LDST_ANAL_FLAG, (Generic)false,
+				true, (Generic)&ldst_f };
+
+Option mc_repl_choice = { choice,   MC_REPLACEMENT_CHOICE,   (Generic)false, true, 
+			  (Generic)&replacement_c };
+
+Option mc_dep_choice = { choice,   MC_DEPENDENCE_CHOICE,   (Generic)false, true, 
+			  (Generic)&dependence_c };
+Option mc_stats_flag = 
+{ flag,   MC_STATISTICS_FLAG, (Generic)false,true, (Generic)&statistics_f };
+
+Option mc_annotate_flag = 
+{ flag,   MC_ANNOTATE_FLAG, (Generic)false,true, (Generic)&annotate_f };
+
+Option mc_unroll_flag = 
+{ flag,   MC_UNROLL_FLAG, (Generic)false,true, (Generic)&unroll_f };
+
+Option mc_unroll_cache_flag = 
+{ flag,   MC_UNROLL_CACHE_FLAG, (Generic)false,true, (Generic)&unroll_cache_f };
+
+Option mc_extended_cache_flag = 
+{ flag,   MC_EXTENDED_CACHE_FLAG, (Generic)false,true, (Generic)&extended_cache_f };
+
+Option RestrictedUnrolling_flag = 
+{ flag,   MC_RESTRICTED_FLAG, (Generic)false,true, (Generic)&RestrictedUnrolling_f };
+
+int MemoriaInitOptions(int argc, char **argv)
+{
+  MemoriaOptions.Add(&mc_mod_opt);
+  MemoriaOptions.Add(&mc_pgm_opt);
+  MemoriaOptions.Add(&mc_lst_opt);
+  MemoriaOptions.Add(&mc_cfg_opt);
+  MemoriaOptions.Add(&mc_out_opt);
+  MemoriaOptions.Add(&mc_partition_unroll_opt);
+  MemoriaOptions.Add(&mc_fusion_flag);
+  MemoriaOptions.Add(&mc_int_flag);
+  MemoriaOptions.Add(&mc_pre_flag);
+  MemoriaOptions.Add(&mc_dead_flag);
+  MemoriaOptions.Add(&mc_repl_choice);
+  MemoriaOptions.Add(&mc_cache_anal_flag);
+  MemoriaOptions.Add(&mc_ldst_anal_flag);
+  MemoriaOptions.Add(&mc_dep_choice);
+  MemoriaOptions.Add(&mc_stats_flag);
+  MemoriaOptions.Add(&mc_annotate_flag);
+  MemoriaOptions.Add(&mc_unroll_flag);
+  MemoriaOptions.Add(&mc_unroll_cache_flag);
+  MemoriaOptions.Add(&mc_extended_cache_flag);
+  MemoriaOptions.Add(&RestrictedUnrolling_flag);
+
+  if (opt_parse_argv(&MemoriaOptions,0,argc,argv)) {
+    MemoriaOptionsUsage(argv[0]);
+    return -1;
+  }
+  if ((mc_program && mc_module) || (mc_program && mc_module_list) ||
+      (mc_module && mc_module_list)) {
+    fprintf(stderr, "Specify only one of -P, -L and -M\n");
+    MemoriaOptionsUsage(argv[0]);
+  }
+  else if (!mc_program && !mc_module && !mc_module_list) {
+    fprintf(stderr, "Specify only one of -P, -L and -M\n");
+    MemoriaOptionsUsage(argv[0]);
+  }
+  
+  return 0;
+}
