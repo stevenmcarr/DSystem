@@ -1,4 +1,4 @@
-/* $Id: Arena.C,v 1.2 1997/03/11 14:36:51 carr Exp $ */
+/* $Id: Arena.C,v 1.3 1998/02/19 15:24:29 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -182,7 +182,11 @@ void *arena_type::arena_alloc_mem(int n,
    char *p = a->avail;
    char *q;
 
+#ifdef LONG_POINTER
+     k = (k + 7) & ~7;    /* ensuring alignment to 8 bytes */
+#else
      k = (k + 3) & ~3;    /* ensuring alignment to 4 bytes */
+#endif
      q = p + k;
      if (q > a->limit)
        return allocate(k,n);
@@ -215,7 +219,11 @@ void *arena_type::arena_alloc_mem_clear(int n,
    char *p = a->avail;
    char *q;
 
-     k = (k + 3) & ~3;
+#ifdef LONG_POINTER
+     k = (k + 7) & ~7;    /* ensuring alignment to 8 bytes */
+#else
+     k = (k + 3) & ~3;    /* ensuring alignment to 4 bytes */
+#endif
      q = p + k;
      if (q > a->limit)
        p = (char *)allocate(k,n);
