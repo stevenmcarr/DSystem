@@ -1,4 +1,4 @@
-/* $Id: analyze.h,v 1.4 1992/12/11 11:19:41 carr Exp $ */
+/* $Id: analyze.h,v 1.5 1994/07/11 13:33:54 carr Exp $ */
 
 #ifndef analyze_h
 #define analyze_h
@@ -31,8 +31,14 @@ typedef struct buildinfotype {
   SymDescriptor symtab;
  } build_info_type;
 
+typedef struct checkinfotype {
+  PedInfo ped;
+  Boolean illegal;
+ } CheckInfoType;
+
 EXTERN(void, ut_analyze_loop,(AST_INDEX root,model_loop *loop_data,
 				      int level,PedInfo ped,
 				      SymDescriptor symtab));
 
+#define IVAR "ut: ivar"
 #endif
