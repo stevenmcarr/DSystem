@@ -1,4 +1,4 @@
-# $Id: Makeinclude,v 1.2 1997/04/04 16:58:12 carr Exp $
+# $Id: Makeinclude,v 1.3 1997/04/04 17:13:27 carr Exp $
 ###########################################################################
 #
 # File:
@@ -35,7 +35,8 @@ NO_PASS_VARS := NO_PASS_VARS SANITIZE SUB_SANITIZE SUBMAKE RMAKE
 # in recursive invocations of make.  Fix MAKELEVEL for invocations
 # within the same directory.
 #-----------------------------------------------------------------
-SANITIZE     = unset $(NO_PASS_VARS); MAKELEVEL=`echo $$MAKELEVEL | $(AWK) '{print $$1-1}'`; export MAKELEVEL
+SANITIZE     = unset $(NO_PASS_VARS); MAKELEVEL=`echo $$MAKELEVEL \
+	| $(AWK) '{print $$1-1}'`; export MAKELEVEL
 SUB_SANITIZE = unset $(NO_PASS_VARS) MAKEFILES ARCHIVE
 
 # These macros are provided for convenience, but it will not work properly
@@ -112,7 +113,7 @@ OUTPUT_OPTION :=
 ifeq "$(EXTRACT)" "no"
 	$(COMPILE.ACC) -c $< $(OUTPUT_OPTION)
 else # "$(EXTRACT)" neq "no"
-	$(DEPCHECK) $(HERE) "$@" "$(COMPILE.ACC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
+	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE.ACC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
 endif # "$(EXTRACT)" "no"
 
 # remove any existing implicit rule for compiling .c files
@@ -123,7 +124,7 @@ endif # "$(EXTRACT)" "no"
 ifeq "$(EXTRACT)" "no"
 	$(COMPILE.CC) -c $< $(OUTPUT_OPTION)
 else # "$(EXTRACT)" neq "no"
-	$(DEPCHECK) $(HERE) "$@" "$(COMPILE.CC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
+	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE.CC) -c $< $(OUTPUT_OPTION)" $(ARCHIVE) 
 endif # "$(EXTRACT)" "no"
 
 # remove any existing implicit rule for compiling .C (C++) files
@@ -134,7 +135,7 @@ endif # "$(EXTRACT)" "no"
 ifeq "$(EXTRACT)" "no"
 	$(COMPILE.CXX) -c $< $(OUTPUT_OPTION)
 else # "$(EXTRACT)" neq "no"
-	$(DEPCHECK) $(HERE) "$@" "$(COMPILE.CXX) -c $< $(OUTPUT_OPTION)" $(ARCHIVE)
+	@$(DEPCHECK) $(HERE) "$@" "$(COMPILE.CXX) -c $< $(OUTPUT_OPTION)" $(ARCHIVE)
 endif # "$(EXTRACT)" "no"
 
 # rules for getting C and C++ preprocessor output
@@ -186,9 +187,9 @@ NO_PASS_VARS := $(NO_PASS_VARS) PWD DSYSTEM_SRC DSYSTEM_OBJ
 
 ifndef DSYSTEM
 error_check::
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "DSYSTEM should be defined in your environment."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "DSYSTEM should be defined in your environment."
+	@exit 1
 else
 DSYSTEM_SRC := $(DSYSTEM)/develop/src
 DSYSTEM_OBJ := $(DSYSTEM)/develop/obj
@@ -196,16 +197,16 @@ endif # DSYSTEM
 
 ifndef DSYSTEM_OS
 error_check::
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "DSYSTEM_OS should be defined in your environment or by dmake."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "DSYSTEM_OS should be defined in your environment or by dmake."
+	@exit 1
 endif # DSYSTEM_OS
 
 ifndef HERE
 error_check::
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "HERE should be defined by Makefile."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "HERE should be defined by Makefile."
+	@exit 1
 else
 # use HERE_SUFFIX instead of /$(HERE) if . in a pathname causes problems
 ifeq "$(HERE)" "."
@@ -217,9 +218,9 @@ endif # HERE
 
 ifndef DSYSTEM_PVT
 error_check::
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "DSYSTEM_PVT should be defined in your environment."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "DSYSTEM_PVT should be defined in your environment."
+	@exit 1
 else
 DSYSTEM_PVT_SRC := $(shell $(DSYS_PVT_STATUS) $(DSYSTEM_PVT) src)
 DSYSTEM_PVT_OBJ := $(shell $(DSYS_PVT_STATUS) $(DSYSTEM_PVT) obj)
@@ -241,19 +242,21 @@ endif # "$(DSYSTEM_PVT_SRC)" "$(DSYSTEM_PVT_OBJ)"
 
 
 # Make sure we're in the right directory for this make.
-ifneq "$(shell /bin/pwd)"  "$(shell if test -d $(PWD); then cd $(PWD); /bin/pwd; else echo; fi)"
+ifneq "$(shell /bin/pwd)"  "$(shell if test -d $(PWD); \
+	                                then cd $(PWD); /bin/pwd; else echo; fi)"
 error_check::
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "This dmake run is being done in the wrong place!"
-	$(ECHO) "currently in:" `/bin/pwd`
-	if test -d $(PWD); then	\
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "This dmake run is being done in the wrong place!"
+	@$(ECHO) "currently in:" `/bin/pwd`
+	@if test -d $(PWD); then	\
 		cd $(PWD); \
 		$(ECHO) "should be in:" `/bin/pwd`; \
 	else \
 		$(ECHO) "should be in: $(PWD)"; \
 	fi
-	exit 1
-endif # "$(shell /bin/pwd)"  "$(shell if test -d $(PWD);  then cd $(PWD); /bin/pwd; else echo; fi)"
+	@exit 1
+endif # "$(shell /bin/pwd)"  "$(shell if test -d $(PWD); \
+	                                then cd $(PWD); /bin/pwd; else echo; fi)"
 
 #-----------------------------------------------------------------
 # Define the target for the case of there being no errors.
@@ -531,16 +534,16 @@ ifneq "$(VERSIONS)" ""
 # Neither ARCHIVE nor EXEC should be defined if versioning
 ifdef ARCHIVE
 error_check::
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "Can't have ARCHIVE defined if you are versioning."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Can't have ARCHIVE defined if you are versioning."
+	@exit 1
 endif # ARCHIVE
 
 ifdef EXEC
 error_check::
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "Can't have EXEC defined if you are versioning."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Can't have EXEC defined if you are versioning."
+	@exit 1
 endif # EXEC
 
 # short circuit a single version by specifying that version
@@ -555,7 +558,7 @@ archive: archive_all_versions
 install: install_all_versions
 
 archive_all_versions:
-	$(SUB_SANITIZE);						\
+	-@$(SUB_SANITIZE);						\
 	$(ECHO) "";							\
 	for v in $(VERSIONS); do					\
 	    $(MAKE) "VERSION=$$v" archive $(INDENTED);			\
@@ -563,7 +566,7 @@ archive_all_versions:
 	done
 
 install_all_versions:
-	$(SUB_SANITIZE);						\
+	-@$(SUB_SANITIZE);						\
 	$(ECHO) "";							\
 	for v in $(VERSIONS); do					\
 	    $(MAKE) "VERSION=$$v" install $(INDENTED);			\
@@ -577,9 +580,9 @@ else # "$(VERSION)" "" # Handle a specific version
 # Check for valid version
 ifeq "$(findstring $(VERSION),$(VERSIONS))" ""
 error_check::
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "Invalid VERSION ($(VERSION)) specified."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Invalid VERSION ($(VERSION)) specified."
+	@exit 1
 endif # "$(findstring $(VERSION),$(VERSIONS))" ""
 
 # Define version specific source
@@ -634,7 +637,7 @@ DEPENDS := ${addprefix .d_,$(basename $(SRCS))}
 # remove any .d_* files that are out of date
 dodepend::
 ifneq "$(DEPENDS)" ""
-	$(DEPVERIFY) "$(DEPENDS)"
+	@$(DEPVERIFY) "$(DEPENDS)"
 endif # "$(DEPENDS)" ""
 
 
@@ -662,20 +665,20 @@ dodepend:: $(DEPENDS)
 #-----------------------------------------------------------------
 
 .d_%: %.C
-	$(ECHO) Updating dependences for $< ...
-	$(CXX) -E $(CPPFLAGS) $< | $(DEPFILTER) > $@
+	@$(ECHO) Updating dependences for $< ...
+	@$(CXX) -E $(CPPFLAGS) $< | $(DEPFILTER) > $@
 
 .d_%.ansi: %.ansi.c
-	$(ECHO) Updating dependences for $< ...
-	$(ACC) -E $(CPPFLAGS) $< | $(DEPFILTER) > $@
+	@$(ECHO) Updating dependences for $< ...
+	@$(ACC) -E $(CPPFLAGS) $< | $(DEPFILTER) > $@
 
 .d_%: %.c
-	$(ECHO) Updating dependences for $< ...
-	$(CC) -E $(CPPFLAGS) $< | $(DEPFILTER) > $@
+	@$(ECHO) Updating dependences for $< ...
+	@$(CC) -E $(CPPFLAGS) $< | $(DEPFILTER) > $@
 
 .d_%: %.f
-	$(ECHO) Updating dependences for $< ...
-	$(ECHO) '$*.o: $<'          | $(DEPFILTER) > $@
+	@$(ECHO) Updating dependences for $< ...
+	@$(ECHO) '$*.o: $<'          | $(DEPFILTER) > $@
 
 #-----------------------------------------------------------------
 # Adding this rule would be _very_ conservative...
@@ -747,7 +750,7 @@ endif # "$(DSYSTEM_OS)" "SunOS-5.x"
 stripped: $(subst -g,-ng,$(ARCHIVE))
 
 $(subst -g,-ng,$(ARCHIVE)):
-	if test ! -f $(ARCHIVE); then                                        \
+	@if test ! -f $(ARCHIVE); then                                        \
 	   $(ECHO) "$(ARCHIVE) does not exist";                               \
 	   $(ECHO) "stripped archive can be built along with the -g archive"; \
 	   $(ECHO) "by setting STRIPPED_ARCHIVES=yes on the command line.";            \
@@ -756,10 +759,10 @@ $(subst -g,-ng,$(ARCHIVE)):
 
 ifneq "$(DSYSTEM_OS)" "SunOS-5.x"
 
-	$(ECHO) "Stripping $(ARCHIVE) \c"
-	ar x $(ARCHIVE)
-	$(RM)  __.SYMDEF
-	for objfile in `ar t $(ARCHIVE) | sed -e '/^__.SYMDEF$$/d'`; do  \
+	@$(ECHO) "Stripping $(ARCHIVE) \c"
+	@ar x $(ARCHIVE)
+	@$(RM)  __.SYMDEF
+	@for objfile in `ar t $(ARCHIVE) | sed -e '/^__.SYMDEF$$/d'`; do  \
 	   $(ECHO) ".\c";                                                 \
 	   $(STRIP) $$objfile -o tmp.object.file.$$$$;                    \
 	   mv tmp.object.file.$$$$ $$objfile;                             \
@@ -768,17 +771,17 @@ ifneq "$(DSYSTEM_OS)" "SunOS-5.x"
 	done
 
 	ifdef DORANLIB
-	   $(ECHO) ""
-	   $(ECHO) ranlib $@
-	   ranlib $@
-	   ranlib -t $@	# Workaround for Sun NFS bug
+	   @$(ECHO) ""
+	   @$(ECHO) ranlib $@
+	   @ranlib $@
+	   @ranlib -t $@	# Workaround for Sun NFS bug
 	endif # DORANLIB
 
 else # "$(DSYSTEM_OS)" "SunOS-5.x"
 
-	$(ECHO) "Stripping $(ARCHIVE) \c"
-	ar x $(ARCHIVE)
-	for objfile in `ar t $(ARCHIVE) | sed -e '/^__.SYMDEF$$/d'`; do  \
+	@$(ECHO) "Stripping $(ARCHIVE) \c"
+	@ar x $(ARCHIVE)
+	@for objfile in `ar t $(ARCHIVE) | sed -e '/^__.SYMDEF$$/d'`; do  \
 	   $(ECHO) ".\c";                                                 \
 	   $(STRIP) $$objfile;                                            \
 	   $(AR) rc $(subst -g,-ng,$(ARCHIVE)) $$objfile;                    \
@@ -787,7 +790,7 @@ else # "$(DSYSTEM_OS)" "SunOS-5.x"
 
 endif # "$(DSYSTEM_OS)" "SunOS-5.x"
 
-	$(ECHO) ""
+	@$(ECHO) ""
 
 
 ###########################################################################
@@ -805,12 +808,12 @@ TOC_DEP_FILE = .archive_toc_dependences
 
 toc:
 ifdef DORANLIB
-	ar t $(ARCHIVE) | sed -e '/^__.SYMDEF$$/d' \
+	@ar t $(ARCHIVE) | sed -e '/^__.SYMDEF$$/d' \
 	-e 's/^\(.*\)$$/$$(ARCHIVE)(__.SYMDEF): $$(ARCHIVE)(\1)/g' \
 	> $(TOC_DEP_FILE);
-	$(SANITIZE); \
+	@$(SANITIZE); \
 	MAKEFILES=$(TOC_DEP_FILE) $(MAKE) -s '$(ARCHIVE)\(__.SYMDEF\)'; 
-	$(RM) $(TOC_DEP_FILE); 
+	@$(RM) $(TOC_DEP_FILE); 
 endif # DORANLIB
 
 # avoid rule chaining that will try to remake $(TOC_DEP_FILE)
@@ -821,13 +824,13 @@ endif # DORANLIB
 # TOC_DEP_FILE as a MAKEFILES entry
 #-----------------------------------------------------------------
 $(ARCHIVE)(__.SYMDEF):
-	$(ECHO) ranlib $(ARCHIVE)
-	ranlib $(ARCHIVE)
-	ranlib -t $(ARCHIVE)	# Workaround for Sun NFS bug
+	@$(ECHO) ranlib $(ARCHIVE)
+	@ranlib $(ARCHIVE)
+	@ranlib -t $(ARCHIVE)	# Workaround for Sun NFS bug
 ifeq "$(STRIPPED_ARCHIVES)" "yes"
-	$(ECHO) ranlib $(subst -g,-ng,$(ARCHIVE))
-	ranlib $(subst -g,-ng,$(ARCHIVE))
-	ranlib -t $(subst -g,-ng,$(ARCHIVE))	# Workaround for Sun NFS bug
+	@$(ECHO) ranlib $(subst -g,-ng,$(ARCHIVE))
+	@ranlib $(subst -g,-ng,$(ARCHIVE))
+	@ranlib -t $(subst -g,-ng,$(ARCHIVE))	# Workaround for Sun NFS bug
 endif # "$(STRIPPED_ARCHIVES)" "yes"
 
 else # ARCHIVE
@@ -860,7 +863,7 @@ NO_PASS_VARS := $(NO_PASS_VARS) DIRS
 
 subarchive:
 ifneq "$(DIRS)" ""
-	$(SUB_SANITIZE);						\
+	-@$(SUB_SANITIZE);						\
 	$(ECHO) "";							\
 	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
 	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) archive $(INDENTED);\
@@ -870,7 +873,7 @@ endif # "$(DIRS)" ""
 
 subinstall:
 ifneq "$(DIRS)" ""
-	$(SUB_SANITIZE);						\
+	-@$(SUB_SANITIZE);						\
 	$(ECHO) "";							\
 	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
 	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) install $(INDENTED);\
@@ -911,12 +914,12 @@ archive: exec_clean
 
 exec_clean:
 ifneq "$(STUB_OBJS)" ""
-	$(RM) $(STUB_OBJS)
+	@$(RM) $(STUB_OBJS)
 endif # "$(STUB_OBJS)" ""
 
 
 install: exec_install
-	$(MAKE_BIN_LINKS) $(EXEC_g) -g
+	@$(MAKE_BIN_LINKS) $(EXEC_g) -g
 
 .PHONY: exec_clean
 
@@ -940,7 +943,7 @@ ifeq "$(STRIPPED_EXECS)" "yes"
 %-$(DSYSTEM_OS)-ng: $(subst -g,-ng,$(ARCHIVE)) $(subst -g,-ng,$(DSYSTEM_LIBS)) \
                 $(subst -g,-ng,$(STUB_OBJS))
 ifneq "$(STUB_OBJS)" ""
-	$(SANITIZE); $(MAKE) $(STUB_OBJS)
+	@$(SANITIZE); $(MAKE) $(STUB_OBJS)
 endif # "$(STUB_OBJS)" ""
 	$(LINK.CXX.ng) -o $@ $^ $(LOCAL_LIBS) $(ARCH_LIBS)
 
@@ -965,7 +968,7 @@ ifeq "$(STRIPPED_EXECS)" "yes"
 
 %-$(DSYSTEM_OS)-ng: .d_% %.o $(subst -g,-ng,$(DSYSTEM_LIBS)) $(subst -g,-ng,$(STUB_OBJS))
 ifneq "$(STUB_OBJS)" ""
-	$(SANITIZE); $(MAKE) $(STUB_OBJS)
+	@$(SANITIZE); $(MAKE) $(STUB_OBJS)
 endif # "$(STUB_OBJS)" ""
 	$(LINK.CXX.ng) -o $@ $(filter-out .d_%,$^) $(LOCAL_LIBS) $(ARCH_LIBS) 
 	$(RM) $(word 2,$^)
@@ -998,22 +1001,24 @@ template:
 
 ifeq "$(MAKELEVEL)" "0"
 ifneq "$(shell /bin/pwd)" "$(shell cd $(DSYSTEM_PVT_SRC)/$(HERE); /bin/pwd)"
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "You may only make template under your \$$DSYSTEM_PVT_SRC directory."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "You may only make template under your \$$DSYSTEM_PVT_SRC directory."
+	@exit 1
 endif # "$(shell /bin/pwd)" "$(shell cd $(DSYSTEM_PVT_SRC)/$(HERE); /bin/pwd)"
 
-ifeq "$(shell /bin/pwd)"  "$(shell if test -d $(DSYSTEM_SRC)/$(HERE); then cd $(DSYSTEM_SRC)/$(HERE); /bin/pwd; else echo; fi)"
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "You may not make template under the $(DSYSTEM_SRC) directory."
-	exit 1
-endif # "$(shell /bin/pwd)" "$(shell if test -d $(DSYSTEM_SRC)/$(HERE); then cd $(DSYSTEM_SRC)/$(HERE); /bin/pwd; else echo; fi)"
+ifeq "$(shell /bin/pwd)"  "$(shell if test -d $(DSYSTEM_SRC)/$(HERE); \
+	then cd $(DSYSTEM_SRC)/$(HERE); /bin/pwd; else echo; fi)"
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "You may not make template under the $(DSYSTEM_SRC) directory."
+	@exit 1
+endif # "$(shell /bin/pwd)" "$(shell if test -d $(DSYSTEM_SRC)/$(HERE); \
+	then cd $(DSYSTEM_SRC)/$(HERE); /bin/pwd; else echo; fi)"
 endif # "$(MAKELEVEL)" "0"
 
-	$(ECHO) "Making template in $(HERE)"
-	if test ! -h RCS; then ln -s $(DSYSTEM_SRC)$(HERE_SUFFIX)/RCS; fi
+	@$(ECHO) "Making template in $(HERE)"
+	@if test ! -h RCS; then ln -s $(DSYSTEM_SRC)$(HERE_SUFFIX)/RCS; fi
 ifneq "$(ALL_SUB_DIRS)" ""
-	$(SUB_SANITIZE);                                                          \
+	-@$(SUB_SANITIZE);                                                          \
 	for dir in $(ALL_SUB_DIRS); do                                              \
 	  if test -d  $(DSYSTEM_SRC)$(HERE_SUFFIX)/$$dir; then                      \
 	     $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) template;                      \
@@ -1039,23 +1044,23 @@ endif # "$(ALL_SUB_DIRS)" ""
 ###########################################################################
 
 clean::
-	$(RM) $(OBJS) $(STUB_OBJS) $(DERIVED) *~ core
+	@$(RM) $(OBJS) $(STUB_OBJS) $(DERIVED) *~ core
 ifneq "$(DIRS)" ""
-	$(SUB_SANITIZE);						\
+	-@$(SUB_SANITIZE);						\
 	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
 	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) clean;		\
 	fi; done
 endif # "$(DIRS)" ""
 
 realclean::
-	$(RM) $(OBJS) $(STUB_OBJS) $(DERIVED) *~ core 
-	$(RM) .d_* .pure
-	$(RM) $(ARCHIVE) $(subst -g,-ng,$(ARCHIVE))
-	$(RM) $(subst -g,-g_pure_*,$(ARCHIVE)) $(subst -g,-ng_pure_*,$(ARCHIVE))
-	$(RM) $(EXEC) $(subst -g,-ng,$(EXEC))
-	$(RM) -r .sb
+	@$(RM) $(OBJS) $(STUB_OBJS) $(DERIVED) *~ core 
+	@$(RM) .d_* .pure
+	@$(RM) $(ARCHIVE) $(subst -g,-ng,$(ARCHIVE))
+	@$(RM) $(subst -g,-g_pure_*,$(ARCHIVE)) $(subst -g,-ng_pure_*,$(ARCHIVE))
+	@$(RM) $(EXEC) $(subst -g,-ng,$(EXEC))
+	@$(RM) -r .sb
 ifneq "$(DIRS)" ""
-	$(SUB_SANITIZE);						\
+	-@$(SUB_SANITIZE);						\
 	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
 	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) clean;		\
 	fi; done
@@ -1071,32 +1076,32 @@ endif # "$(DIRS)" ""
 # dissuade casuals use of this option
 ###########################################################################
 depend:
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "Target 'depend' is no longer required."
-	$(ECHO) "All .d_ files are now created automatically, as needed."
-	$(ECHO) "If you feel that you must rebuild the .d_ files, then"
-	$(ECHO) "use the 'force_depend' option instead."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Target 'depend' is no longer required."
+	@$(ECHO) "All .d_ files are now created automatically, as needed."
+	@$(ECHO) "If you feel that you must rebuild the .d_ files, then"
+	@$(ECHO) "use the 'force_depend' option instead."
+	@exit 1
 
 force_depend: error_check derived depend_clean
 ifneq "$(VERSIONS)" ""
 ifndef VERSION
-	for v in $(VERSIONS); do $(MAKE) "VERSION=$$v" dodepend; done
+	-@for v in $(VERSIONS); do $(MAKE) "VERSION=$$v" dodepend; done
 else  # $(VERSION) defined
-	$(MAKE) dodepend
+	@$(MAKE) dodepend
 endif # $(VERSION)
 else  # $(VERSIONS) empty
-	$(MAKE) dodepend
+	@$(MAKE) dodepend
 endif # $(VERSIONS)
 ifneq "$(DIRS)" ""
-	$(SUB_SANITIZE);						\
+	-@$(SUB_SANITIZE);						\
 	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
 	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) force_depend;	\
 	fi; done
 endif # "$(DIRS)" ""
 
 depend_clean:
-	$(RM) .d_*
+	@$(RM) .d_*
 
 .PHONY: force_depend depend_clean
 
@@ -1140,17 +1145,17 @@ default_local_sb:: default_local_sb_cxx
 
 default_local_sb_cc: $(SB_C_SRCS)
 ifneq "$(SB_C_SRCS)" ""
-	$(SB.CC) $^
+	@$(SB.CC) $^
 endif # "$(SB_C_SRCS)" ""
 
 default_local_sb_acc: $(SB_ACC_SRCS)
 ifneq "$(SB_ACC_SRCS)" ""
-	$(SB.ACC) $^
+	@$(SB.ACC) $^
 endif # "$(SB_ACC_SRCS)" ""
 
 default_local_sb_cxx: $(SB_CXX_SRCS)
 ifneq "$(SB_CXX_SRCS)" ""
-	$(SB.CXX) $^
+	@$(SB.CXX) $^
 endif # "$(SB_CXX_SRCS)" ""
 
 .PHONY: default_local_sb
@@ -1161,7 +1166,7 @@ endif # "$(SB_CXX_SRCS)" ""
 #-----------------------------------------------------------------
 default_sub_sb: 
 ifneq "$(DIRS)" ""
-	$(SUB_SANITIZE);						\
+	-@$(SUB_SANITIZE);						\
 	$(ECHO) "";							\
 	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
 	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) sbrowser_build $(INDENTED);	\
@@ -1188,21 +1193,21 @@ sbrowser: sbrowser_build sbrowser_finish
 sbrowser_build: hello error_check derived $(LOCAL_SB) $(LOCAL_SUB_SB) goodbye
 
 sbrowser_clean:
-	$(ECHO) "Removing the old sbrowser database..."
-	$(RM) -r $(DSYSTEM_PVT_SRC)/.sb/*
+	@$(ECHO) "Removing the old sbrowser database..."
+	-@$(RM) -r $(DSYSTEM_PVT_SRC)/.sb/*
 
 sbrowser_finish:
-	$(ECHO) "Building the sbrowser index..."
-	sbquery -no_source main 2>&1 /dev/null
+	@$(ECHO) "Building the sbrowser index..."
+	@sbquery -no_source main 2>&1 /dev/null
 
 .PHONY: sbrowser sbrowser_build sbrowser_clean sbrowser_finish
 
 else # "$(DSYSTEM_OS)" "SunOS-5.x"
 
 sbrowser:
-	$(ECHO) "Makeinclude error:  \c"
-	$(ECHO) "Must be under SunOS-5.x to build the sbrowser database."
-	exit 1
+	@$(ECHO) "Makeinclude error:  \c"
+	@$(ECHO) "Must be under SunOS-5.x to build the sbrowser database."
+	@exit 1
 
 endif # "$(DSYSTEM_OS)" "SunOS-5.x"
 
@@ -1233,7 +1238,7 @@ endif # "$(LINT_SRCS)" ""
 #-----------------------------------------------------------------
 default_sub_lint: 
 ifneq "$(DIRS)" ""
-	$(SUB_SANITIZE);						\
+	-@$(SUB_SANITIZE);						\
 	$(ECHO) "";							\
 	for dir in $(DIRS); do if test -d $(DSYSTEM_PVT_SRC)/$(HERE)/$$dir; then	\
 	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) lint $(INDENTED);	\
@@ -1262,7 +1267,7 @@ lint: hello error_check derived $(LOCAL_LINT) $(LOCAL_SUB_LINT) \
 clean:: lint_clean
 
 lint_clean::
-	$(RM) *.ln
+	@$(RM) *.ln
 
 .PHONY: lint lint_clean
 
@@ -1281,26 +1286,26 @@ llib-l%.ln: llib-l%.c
 
 hello:
 ifeq "$(MAKELEVEL)" "0"
-	$(ECHO) "Current directory:  $(PWD)"
+	@$(ECHO) "Current directory:  $(PWD)"
 endif # "$(MAKELEVEL)" "0"
-	$(ECHO) "*** Beginning dmake in $(HERE)\c"
+	@$(ECHO) "*** Beginning dmake in $(HERE)\c"
 ifdef VERSION
-	$(ECHO) " (version = $(VERSION))\c"
+	@$(ECHO) " (version = $(VERSION))\c"
 endif # VERSION
-	$(ECHO) " ***"
+	@$(ECHO) " ***"
 
 goodbye:
-	$(ECHO) "*** Finishing dmake in $(HERE)\c"
+	@$(ECHO) "*** Finishing dmake in $(HERE)\c"
 ifdef VERSION
-	$(ECHO) " (version = $(VERSION))\c"
+	@$(ECHO) " (version = $(VERSION))\c"
 endif # VERSION
-	$(ECHO) " ***"
+	@$(ECHO) " ***"
 ifeq "$(MAKELEVEL)" "0"
 ifeq "$(PWD)" "$(DSYSTEM_OBJ)/SunOS-5.x"
 ifeq "$(SBROWSER)" "yes"
-	$(ECHO) ""
-	$(ECHO) "Building the sbrowser index...";
-	sbquery -no_source main > /dev/null
+	@$(ECHO) ""
+	@$(ECHO) "Building the sbrowser index...";
+	@sbquery -no_source main > /dev/null
 endif # "$(SBROWSER)" "yes"
 endif # "$(PWD)" "$(DSYSTEM_OBJ)/SunOS-5.x"
 endif # "$(MAKELEVEL)" "0"

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.2 1997/03/27 20:29:39 carr Exp $
+# $Id: Makefile,v 1.3 1997/04/04 17:14:54 carr Exp $
 
 HERE = libs/config
 
@@ -7,7 +7,7 @@ SRCS = \
 	   config.C
 
 ifeq "$(DSYSTEM_OS)" "OSF1"
-CPPFLAGS := $(CPPFLAGS) -DDSYSTEM_ARCH=\\\"$(DSYSTEM_OS)\\\"
+CPPFLAGS := $(CPPFLAGS) -DDSYSTEM_ARCH=\"$(DSYSTEM_OS)\"
 endif # "$(DSYSTEM_OS)" "OSF1"
 
 ifeq "$(DSYSTEM_OS)" "SunOS-4.x"
@@ -15,7 +15,7 @@ CPPFLAGS := $(CPPFLAGS) -DDSYSTEM_ARCH=\\\"$(DSYSTEM_OS)\\\"
 endif # "$(DSYSTEM_OS)" "SunOS-4.x"
 
 ifeq "$(DSYSTEM_OS)" "SunOS-5.x"
-CPPFLAGS := $(CPPFLAGS) -DDSYSTEM_ARCH=\\\"$(DSYSTEM_OS)\\\"
+CPPFLAGS := $(CPPFLAGS) -DDSYSTEM_ARCH=\"$(DSYSTEM_OS)\"
 endif # "$(DSYSTEM_OS)" "SunOS-5.x"
 
 ifeq "$(DSYSTEM_OS)" "AIX-3.x"
