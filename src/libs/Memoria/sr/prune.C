@@ -1,4 +1,4 @@
-/* $Id: prune.C,v 1.6 1993/09/06 14:55:42 carr Exp $ */
+/* $Id: prune.C,v 1.7 1994/06/09 14:38:31 carr Exp $ */
 /****************************************************************************/
 /*                                                                          */
 /*                                                                          */
@@ -27,6 +27,25 @@
 
 #include <mem_util.h>
 
+static void MarkAllSinksAsNotScalar(PedInfo ped,
+				    AST_INDEX node)
+
+  {
+   EDGE_INDEX edge;
+   int        ref;
+   DG_Edge    *dg;
+
+    dg = dg_get_edge_structure(PED_DG(ped));
+    ref = get_info(ped,node,type_levelv);
+    for (edge = dg_first_src_ref( PED_DG(ped),ref);
+	 edge != END_OF_LIST;
+	 edge = dg_next_src_ref( PED_DG(ped),edge))
+      {
+       get_scalar_info_ptr(dg[edge].sink)->scalar = false;
+       get_scalar_info_ptr(dg[edge].sink)->prevent_slr = true;
+      }
+  }
+   
 static void prune_dependence_edges(AST_INDEX     node,
 				   int           distance,
 				   gen_info_type *gen_info)
@@ -113,8 +132,7 @@ static void prune_dependence_edges(AST_INDEX     node,
 		       {
 			scalar_src->prevent_slr = true;
 			scalar_src->scalar = false;
-			scalar_sink->prevent_slr = true;
-			scalar_sink->scalar = false;
+			MarkAllSinksAsNotScalar(gen_info->ped,dg[edge].src);
 		       }
 		     dg_delete_free_edge( PED_DG(gen_info->ped),edge);
 		    }
