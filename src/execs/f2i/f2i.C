@@ -1,4 +1,4 @@
-/* $Id: f2i.C,v 1.3 1997/04/10 19:12:49 carr Exp $ */
+/* $Id: f2i.C,v 1.4 1997/04/24 14:06:31 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -73,7 +73,9 @@ void f2iFile(FortranModule *module,
   FortTree              ft = ftAttr->ft;
   FortTextTree          ftt = fttAttr->ftt;
   
+  module->DisableAttributeCaching();
   ai((Context)module,ft,ftt,FileName);
+  module->Close();
   
 }
 

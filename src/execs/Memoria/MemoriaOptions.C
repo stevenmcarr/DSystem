@@ -1,4 +1,4 @@
-/* $Id: MemoriaOptions.C,v 1.2 1997/04/09 19:49:15 carr Exp $ */
+/* $Id: MemoriaOptions.C,v 1.3 1997/04/24 14:06:18 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -457,82 +457,77 @@ static struct string_	output_s = {
   ".*"
 };
 
-Option mc_mod_opt = { string, MC_MOD_OPT,  (Generic) "",   true, 
-			(Generic)&module_s };
+static Option *InitOption(option_type t,
+		         char arg_char,
+		         Generic init_value,
+		         Boolean in_dialog,
+		         Generic f_c)
+{
+  Option *option = new Option;
 
-Option mc_pgm_opt = 
-{ string, MC_PGM_OPT,  (Generic) "",   true, (Generic)&program_s };
-
-Option mc_lst_opt = 
-{ string, MC_LST_OPT,  (Generic) "",   true, (Generic)&module_list_s };
-
-Option mc_cfg_opt = 
-{ string, MC_CFG_OPT,  (Generic) "",   true, (Generic)&config_s };
-
-Option mc_out_opt = 
-{ string, MC_OUT_OPT,  (Generic) "",   true, (Generic)&output_s };
-
-Option mc_partition_unroll_opt = { string, MC_PARTITION_UNROLL_OPT,  (Generic) "", true, 
-			(Generic)&partition_unroll_amount_s};
-Option mc_int_flag = { flag,   MC_INTERCHANGE_FLAG,  (Generic)false, true, 
-			 (Generic)&interchange_f };
-
-Option mc_pre_flag = { flag,   MC_PREFETCH_FLAG,  (Generic)false, true, 
-			 (Generic)&prefetch_f };
-
-Option mc_dead_flag = { flag,   MC_DEAD_FLAG,  (Generic)false, true, 
-			 (Generic)&dead_f };
-
-Option mc_cache_anal_flag = { flag,   MC_CACHE_ANAL_FLAG, (Generic)false,
-				true, (Generic)&cache_f };
-
-Option mc_ldst_anal_flag = { flag,   MC_LDST_ANAL_FLAG, (Generic)false,
-				true, (Generic)&ldst_f };
-
-Option mc_repl_choice = { choice,   MC_REPLACEMENT_CHOICE,   (Generic)false, true, 
-			  (Generic)&replacement_c };
-
-Option mc_dep_choice = { choice,   MC_DEPENDENCE_CHOICE,   (Generic)false, true, 
-			  (Generic)&dependence_c };
-Option mc_stats_flag = 
-{ flag,   MC_STATISTICS_FLAG, (Generic)false,true, (Generic)&statistics_f };
-
-Option mc_annotate_flag = 
-{ flag,   MC_ANNOTATE_FLAG, (Generic)false,true, (Generic)&annotate_f };
-
-Option mc_unroll_flag = 
-{ flag,   MC_UNROLL_FLAG, (Generic)false,true, (Generic)&unroll_f };
-
-Option mc_unroll_cache_flag = 
-{ flag,   MC_UNROLL_CACHE_FLAG, (Generic)false,true, (Generic)&unroll_cache_f };
-
-Option mc_extended_cache_flag = 
-{ flag,   MC_EXTENDED_CACHE_FLAG, (Generic)false,true, (Generic)&extended_cache_f };
-
-Option RestrictedUnrolling_flag = 
-{ flag,   MC_RESTRICTED_FLAG, (Generic)false,true, (Generic)&RestrictedUnrolling_f };
+  option->t = t;
+  option->arg_char = arg_char;
+  option->init_value = init_value;
+  option->in_dialog = in_dialog,
+  option->f_c = f_c;
+  return option;
+}
 
 int MemoriaInitOptions(int argc, char **argv)
+
 {
-  MemoriaOptions.Add(&mc_mod_opt);
-  MemoriaOptions.Add(&mc_pgm_opt);
-  MemoriaOptions.Add(&mc_lst_opt);
-  MemoriaOptions.Add(&mc_cfg_opt);
-  MemoriaOptions.Add(&mc_out_opt);
-  MemoriaOptions.Add(&mc_partition_unroll_opt);
-  MemoriaOptions.Add(&mc_int_flag);
-  MemoriaOptions.Add(&mc_pre_flag);
-  MemoriaOptions.Add(&mc_dead_flag);
-  MemoriaOptions.Add(&mc_repl_choice);
-  MemoriaOptions.Add(&mc_cache_anal_flag);
-  MemoriaOptions.Add(&mc_ldst_anal_flag);
-  MemoriaOptions.Add(&mc_dep_choice);
-  MemoriaOptions.Add(&mc_stats_flag);
-  MemoriaOptions.Add(&mc_annotate_flag);
-  MemoriaOptions.Add(&mc_unroll_flag);
-  MemoriaOptions.Add(&mc_unroll_cache_flag);
-  MemoriaOptions.Add(&mc_extended_cache_flag);
-  MemoriaOptions.Add(&RestrictedUnrolling_flag);
+  Option *mc_mod_opt = InitOption(string,MC_MOD_OPT,(Generic)"",true,(Generic)&module_s),
+    *mc_pgm_opt = InitOption(string,MC_PGM_OPT,(Generic)"",true,(Generic)&program_s), 
+    *mc_lst_opt = InitOption(string,MC_LST_OPT,(Generic)"",true,(Generic)&module_list_s),
+    *mc_cfg_opt = InitOption(string,MC_CFG_OPT,(Generic)"",true,(Generic)&config_s),
+    *mc_out_opt = InitOption(string,MC_OUT_OPT,(Generic) "",true,(Generic)&output_s),
+    *mc_partition_unroll_opt = InitOption(string,MC_PARTITION_UNROLL_OPT,(Generic) "",
+					  true,(Generic)&partition_unroll_amount_s),
+    *mc_int_flag = InitOption(flag,MC_INTERCHANGE_FLAG,(Generic)false,true, 
+			      (Generic)&interchange_f),
+    *mc_pre_flag = InitOption(flag,MC_PREFETCH_FLAG,(Generic)false,true, 
+			      (Generic)&prefetch_f),
+    *mc_dead_flag = InitOption(flag,MC_DEAD_FLAG,(Generic)false,true,(Generic)&dead_f),
+    *mc_cache_anal_flag = InitOption(flag,MC_CACHE_ANAL_FLAG,(Generic)false,true,
+				     (Generic)&cache_f),
+    *mc_ldst_anal_flag = InitOption(flag,MC_LDST_ANAL_FLAG,(Generic)false,true,
+				    (Generic)&ldst_f),
+    *mc_repl_choice = InitOption(choice,MC_REPLACEMENT_CHOICE,(Generic)false,true, 
+				 (Generic)&replacement_c),
+    *mc_dep_choice = InitOption(choice,MC_DEPENDENCE_CHOICE,(Generic)false,true, 
+				(Generic)&dependence_c),
+    *mc_stats_flag = InitOption(flag,MC_STATISTICS_FLAG,(Generic)false,true,
+				(Generic)&statistics_f),
+    *mc_annotate_flag = InitOption(flag,MC_ANNOTATE_FLAG,(Generic)false,true,
+				   (Generic)&annotate_f),
+    *mc_unroll_flag = InitOption(flag,MC_UNROLL_FLAG,(Generic)false,true,
+				 (Generic)&unroll_f),
+    *mc_unroll_cache_flag = InitOption(flag,MC_UNROLL_CACHE_FLAG,(Generic)false,true,
+				       (Generic)&unroll_cache_f),
+    *mc_extended_cache_flag = InitOption(flag,MC_EXTENDED_CACHE_FLAG,(Generic)false,true,
+					 (Generic)&extended_cache_f),
+    *RestrictedUnrolling_flag = InitOption(flag,MC_RESTRICTED_FLAG,(Generic)false,true,
+					   (Generic)&RestrictedUnrolling_f);
+
+  MemoriaOptions.Add(mc_mod_opt);
+  MemoriaOptions.Add(mc_pgm_opt);
+  MemoriaOptions.Add(mc_lst_opt);
+  MemoriaOptions.Add(mc_cfg_opt);
+  MemoriaOptions.Add(mc_out_opt);
+  MemoriaOptions.Add(mc_partition_unroll_opt);
+  MemoriaOptions.Add(mc_int_flag);
+  MemoriaOptions.Add(mc_pre_flag);
+  MemoriaOptions.Add(mc_dead_flag);
+  MemoriaOptions.Add(mc_repl_choice);
+  MemoriaOptions.Add(mc_cache_anal_flag);
+  MemoriaOptions.Add(mc_ldst_anal_flag);
+  MemoriaOptions.Add(mc_dep_choice);
+  MemoriaOptions.Add(mc_stats_flag);
+  MemoriaOptions.Add(mc_annotate_flag);
+  MemoriaOptions.Add(mc_unroll_flag);
+  MemoriaOptions.Add(mc_unroll_cache_flag);
+  MemoriaOptions.Add(mc_extended_cache_flag);
+  MemoriaOptions.Add(RestrictedUnrolling_flag);
 
   if (opt_parse_argv(&MemoriaOptions,0,argc,argv)) {
     MemoriaOptionsUsage(argv[0]);

@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.5 1997/04/10 19:41:08 carr Exp $ */
+/* $Id: Memoria.C,v 1.6 1997/04/24 14:06:18 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -112,6 +112,7 @@ void CompileFile(FortranModule *module)
   char            *NewFile;
   
   
+  module->DisableAttributeCaching();
   ped = new Ped;
   root = ft_Root(ft);
   
@@ -223,6 +224,7 @@ void CompileFile(FortranModule *module)
        (void)dt_finalize_info(PED_DT_INFO(ped));
       }
 
+    module->Close();
 }
 
 int MemoriaMain(int argc, char **argv)
