@@ -1,4 +1,4 @@
-/* $Id: header.h,v 1.21 1997/07/01 13:20:42 carr Exp $ */
+/* $Id: header.h,v 1.22 1998/07/07 19:39:52 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -82,7 +82,14 @@ EXTERN(void, memory_PerformCacheAnalysis, (PedInfo      ped,
 					   SymDescriptor symtab,
 					   arena_type   *ar,
 					   AST_INDEX    root,
-					   int          level));
+					   int          level,
+					   int		loop_num));
+EXTERN(void, memory_PerformAddressOptimization, (PedInfo      ped,
+					 	 SymDescriptor symtab,
+					 	 arena_type   *ar,
+						 AST_INDEX    root,
+						 int          level,
+						 int	      loop_num));
 
 EXTERN(void, memory_AnnotateWithLDSTCount, (AST_INDEX    root,
 					    int          level,
@@ -93,6 +100,11 @@ EXTERN(void, memory_GetDependenceStats, (PedInfo      ped,
 					 LoopStatsType *LoopStats,
 					 SymDescriptor symtab,
 					 arena_type   *ar,
+					 int          level));
+EXTERN(void, memory_PerformF2iAnalysis, (PedInfo      ped,
+					 SymDescriptor symtab,
+					 arena_type   *ar,
+					 AST_INDEX    root,
 					 int          level));
 
 EXTERN(void, DepStatsDump, (FILE *logfile, LoopStatsType *LoopStats));
