@@ -1,4 +1,4 @@
-/* $Id: event.ansi.c,v 1.17 1999/06/23 13:40:01 carr Exp $ */
+/* $Id: event.ansi.c,v 1.18 2000/01/11 21:45:33 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -41,6 +41,10 @@
 #include <libs/graphicInterface/oldMonitor/include/mon/gfx.h>
 
 #include <libs/graphicInterface/oldMonitor/monitor/mon/mach.h>
+
+#ifdef LINUX
+#define sigmask(sig)   __sigmask(sig)
+#endif
 
 	/* LOCAL SPECIAL VARIABLES */
 
@@ -223,7 +227,7 @@ register struct	cr_node	*current;		/* the list entry being deleted		*/
 
 
 /* Replaces "system" with something that knows about the other child pids.		*/
-#ifndef LINUX
+#ifdef LINUX
 int system(const char* s)
 #else
 int system(char* s)
