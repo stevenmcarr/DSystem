@@ -1,4 +1,4 @@
-/* $Id: mem_util.C,v 1.6 1993/06/15 14:05:16 carr Exp $ */ 
+/* $Id: mem_util.C,v 1.7 1993/07/20 16:35:46 carr Exp $ */ 
 
 /****************************************************************************/
 /*                                                                          */
@@ -564,6 +564,8 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
    DG_Edge   *dg;
    int       vector,words;
    EDGE_INDEX edge;
+   Boolean   GroupSpatial = false;
+   Boolean   GroupTemporalCache = false;
   
      if (gen_get_converted_type(node) == TYPE_DOUBLE_PRECISION ||
 	 gen_get_converted_type(node) == TYPE_COMPLEX)
@@ -591,11 +593,21 @@ LocalityType ut_GetReferenceType(AST_INDEX  node,
 		return(GROUP_TEMPORAL);
 	     }
 	   else if (((config_type *)PED_MH_CONFIG(ped))->write_back)
-	     return(GROUP_TEMPORAL);
+	      if (dg[edge].src == dg[edge].sink)
+		return(SELF_TEMPORAL);
+	      else
+	        if (dg[edge].level == LOOP_INDEPENDENT && dg[edge].type == dg_output)
+		  return(GROUP_TEMPORAL);
+                else
+	         GroupTemporalCache = true;
 	   else;
 
 	 else if (HasGroupSpatial(node,&dg[edge],loop_data,words))
-	   return(GROUP_SPATIAL);
+	   GroupSpatial = true;
+     if (GroupTemporalCache)
+       return(GROUP_TEMPORAL_CACHE);
+     if (GroupSpatial)
+       return(GROUP_SPATIAL);
      if (HasSelfSpatial(node,loop_data,loop,words))
        return(SELF_SPATIAL);
      else
@@ -634,8 +646,15 @@ static float MemoryCycles(AST_INDEX node,
        {
 	case SELF_TEMPORAL:
 	case GROUP_TEMPORAL:
-	case GROUP_SPATIAL:
 	  return 0.0;
+
+	case SELF_TEMPORAL_CACHE:
+	case GROUP_TEMPORAL_CACHE:
+	case GROUP_SPATIAL:
+	  if (Stats->UseCache)
+	    return(LoadPenalty);
+	  else
+	    return(1.0);
 
 	case SELF_SPATIAL:
           if (Stats->UseCache)
