@@ -1,4 +1,4 @@
-/* $Id: Memoria.C,v 1.7 1997/10/30 15:31:26 carr Exp $ */
+/* $Id: Memoria.C,v 1.8 1999/02/23 21:45:35 carr Exp $ */
 /******************************************************************************/
 /*        Copyright (c) 1990, 1991, 1992, 1993, 1994 Rice University          */
 /*                           All Rights Reserved                              */
@@ -190,10 +190,12 @@ void CompileFile(FortranModule *module)
 	    break;
 	  }
 #ifdef OSF1
-	  NewFile = (char *)Filename;
+	  char *TempFile= (char *)Filename;
 #else
-	  NewFile = (char *)Filename.data();
+	  char* TempFile = (char *)Filename.data();
 #endif
+	  NewFile = new char[strlen(TempFile)];
+	  (void)strcpy(NewFile,TempFile);
 	}
 
 
