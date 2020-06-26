@@ -5,4 +5,9 @@ SRCS		= scalar.C block.C table.C dfavail.C pick.C dfantic.C \
 		  prune.C insert.C check.C codegen.C name.C \
 		  moderate.C gavail.C dfrgen.C profit.C 
 
-include Makeinclude
+include ../../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

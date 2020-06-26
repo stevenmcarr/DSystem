@@ -20,95 +20,95 @@ static char ctemp;
 
 %%
 
-max[ ]regs[ \t]*[0-9]+	 sscanf(&yytext[9],"%d",&config->max_regs);
+max[ ]regs[ \t]*[0-9]+	 sscanf(&Memoria_text[9],"%d",&config->max_regs);
 
-int[ ]regs[ \t]*[0-9]+	 sscanf(&yytext[9],"%d",&config->int_regs);
+int[ ]regs[ \t]*[0-9]+	 sscanf(&Memoria_text[9],"%d",&config->int_regs);
 
-pipe[ ]length[ \t]*[0-9]+	 sscanf(&yytext[12],"%d",&config->pipe_length);
+pipe[ ]length[ \t]*[0-9]+	 sscanf(&Memoria_text[12],"%d",&config->pipe_length);
 
-beta_m[ \t]*[0-9]*"."[0-9]+      sscanf(&yytext[7],"%f",&config->beta_m);
+beta_m[ \t]*[0-9]*"."[0-9]+      sscanf(&Memoria_text[7],"%f",&config->beta_m);
 
-line[ ]size[ \t]*[0-9]+	 sscanf(&yytext[10],"%d",&config->line);
+line[ ]size[ \t]*[0-9]+	 sscanf(&Memoria_text[10],"%d",&config->line);
 
-prefetch[ ]latency[ \t]*[0-9]+	 sscanf(&yytext[17],"%d",&config->prefetch_latency);
+prefetch[ ]latency[ \t]*[0-9]+	 sscanf(&Memoria_text[17],"%d",&config->prefetch_latency);
 
-prefetch[ ]buffer[ \t]*[0-9]+	 sscanf(&yytext[16],"%d",&config->prefetch_buffer);
+prefetch[ ]buffer[ \t]*[0-9]+	 sscanf(&Memoria_text[16],"%d",&config->prefetch_buffer);
 
-double[ ]fetches[ \t]*[0-9]+	 sscanf(&yytext[15],"%d",&config->double_fetches);
+double[ ]fetches[ \t]*[0-9]+	 sscanf(&Memoria_text[15],"%d",&config->double_fetches);
 
-double[ ]regs[ \t]*[0-9]+	 sscanf(&yytext[12],"%d",&config->double_regs);
+double[ ]regs[ \t]*[0-9]+	 sscanf(&Memoria_text[12],"%d",&config->double_regs);
 
-divide[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[14],"%d",&config->div_cycles);
+divide[ ]cycles[ \t]*[0-9]+	 sscanf(&Memoria_text[14],"%d",&config->div_cycles);
 
-multiply[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[16],"%d",&config->mul_cycles);
+multiply[ ]cycles[ \t]*[0-9]+	 sscanf(&Memoria_text[16],"%d",&config->mul_cycles);
 
-add[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[11],"%d",&config->add_cycles);
+add[ ]cycles[ \t]*[0-9]+	 sscanf(&Memoria_text[11],"%d",&config->add_cycles);
 
-fp[ ]units[ \t]*[0-9]+	         sscanf(&yytext[9],"%d",&config->FPUnits);
+fp[ ]units[ \t]*[0-9]+	         sscanf(&Memoria_text[9],"%d",&config->FPUnits);
 
-integer[ ]units[ \t]*[0-9]+	 sscanf(&yytext[14],"%d",&config->IntegerUnits);
+integer[ ]units[ \t]*[0-9]+	 sscanf(&Memoria_text[14],"%d",&config->IntegerUnits);
 
-hit[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[11],"%d",&config->hit_cycles);
+hit[ ]cycles[ \t]*[0-9]+	 sscanf(&Memoria_text[11],"%d",&config->hit_cycles);
 
-miss[ ]cycles[ \t]*[0-9]+	 sscanf(&yytext[12],"%d",&config->miss_cycles);
+miss[ ]cycles[ \t]*[0-9]+	 sscanf(&Memoria_text[12],"%d",&config->miss_cycles);
 
-instruction[ ]size[ \t]*[0-9]+	 sscanf(&yytext[17],"%d",&config->instruction_size);
+instruction[ ]size[ \t]*[0-9]+	 sscanf(&Memoria_text[17],"%d",&config->instruction_size);
 
 Chow[ \t]+[yn]			 {
-				  sscanf(&yytext[5],"%s",&ctemp);
+				  sscanf(&Memoria_text[5],"%s",&ctemp);
 				  config->chow_alloc = (ctemp == 'y');
 				 }
 
 opt_li[ \t]+[yn]	 	{
-				  sscanf(&yytext[7],"%s",&ctemp);
+				  sscanf(&Memoria_text[7],"%s",&ctemp);
 				  config->opt_li_alloc = (ctemp == 'y');
 				 }
 
 fma[ \t]+[yn]	 	        {
-				  sscanf(&yytext[4],"%c",&ctemp);
+				  sscanf(&Memoria_text[4],"%c",&ctemp);
 				  config->mult_accum = (ctemp == 'y');
 				 }
 
 sdiv[ \t]+[yn]	 	        {
-				  sscanf(&yytext[5],"%c",&ctemp);
+				  sscanf(&Memoria_text[5],"%c",&ctemp);
 				  config->soft_div= (ctemp == 'y');
 				 }
 
 logging[ \t]+[yn]	 	{
-                                  sscanf(&yytext[8],"%c",&ctemp);
+                                  sscanf(&Memoria_text[8],"%c",&ctemp);
 				  config->logging = (ctemp == 'y');
 				 }
 
 aggressive[ \t]+[yn]	 	{
-				  sscanf(&yytext[11],"%c",&ctemp);
+				  sscanf(&Memoria_text[11],"%c",&ctemp);
 				  config->aggressive = (ctemp == 'y');
 				 }
 write[ ]back[ \t]+[yn]	 	{
-				  sscanf(&yytext[11],"%c",&ctemp);
+				  sscanf(&Memoria_text[11],"%c",&ctemp);
 				  config->write_back = (ctemp == 'y');
 				 }
 write[ ]allocate[ \t]+[yn] 	{
-				  sscanf(&yytext[15],"%c",&ctemp);
+				  sscanf(&Memoria_text[15],"%c",&ctemp);
 				  config->write_allocate=(ctemp == 'y');
 				 }
 
 auto[ ]increment[ \t]+[yn] 	{
-				  sscanf(&yytext[15],"%c",&ctemp);
+				  sscanf(&Memoria_text[15],"%c",&ctemp);
 				  config->AutoIncrement=(ctemp == 'y');
 				 }
 
 integer[ ]pipe[ ]length[ \t]+[0-9]+  {
-                                 sscanf(&yytext[20],"%d",
+                                 sscanf(&Memoria_text[20],"%d",
 					&config->IntegerPipeLength);
 				}
 
 float[ ]pipe[ ]length[ \t]+[0-9]+    {
-                                 sscanf(&yytext[18],"%d",
+                                 sscanf(&Memoria_text[18],"%d",
 					&config->FloatPipeLength);
 				}
 
 non[ ]blocking[ ]cache[ \t]+[yn] {
-				  sscanf(&yytext[19],"%c",&ctemp);
+				  sscanf(&Memoria_text[19],"%c",&ctemp);
 				  config->NonBlockingCache=(ctemp == 'y');
 				 }
 
@@ -183,11 +183,11 @@ void mh_get_config(NewConfig,filename)
        }
 
          /* read in configuration */
-     temp = yyin;
-     yyin = fd;
+     temp = Memoria_in;
+     Memoria_in = fd;
      config = NewConfig;
-     ret = yylex();
-     yyin = temp;
+     ret = Memoria_lex();
+     Memoria_in = temp;
      NewConfig->min_flop_cycles = NewConfig->mul_cycles < NewConfig->add_cycles ?
                                  (NewConfig->mul_cycles < NewConfig->div_cycles ?
                                   NewConfig->mul_cycles :

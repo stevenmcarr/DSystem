@@ -1,0 +1,3 @@
+GenericList.o: GenericList.C ../../../libs/support/misc/general.h \
+ ../../../libs/Memoria/include/GenericList.h \
+ ../../../libs/support/lists/SinglyLinkedList.h

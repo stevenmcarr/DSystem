@@ -210,6 +210,7 @@ EXTERN(void, ftt_TraverseText,
 #if defined(OSF1) || defined(LINUX_ALPHA)
 
 #include <include/rn_varargs.h>
+#include <stdarg.h>
 
 typedef
 FUNCTION_POINTER(void, PushFuncV,   

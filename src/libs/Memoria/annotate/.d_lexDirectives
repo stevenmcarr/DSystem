@@ -1,0 +1,7 @@
+lexDirectives.o: lexDirectives.c DirectivesInclude.h \
+ ../../../libs/frontEnd/ast/ast.h ../../../libs/support/misc/general.h \
+ ../../../libs/support/lists/list.h \
+ ../../../libs/frontEnd/fortTree/fortsym.h \
+ ../../../libs/support/tables/cNameValueTable.h \
+ ../../../include/rn_varargs.h ../../../libs/support/tables/symtable.h \
+ yaccDirectives.h

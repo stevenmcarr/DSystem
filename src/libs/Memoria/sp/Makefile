@@ -3,4 +3,9 @@ HERE = libs/Memoria/sp
 ARCHIVE		= ../Memoria-$(DSYSTEM_OS)-g.a
 SRCS		= prefetch.C
 
-include Makeinclude
+include ../../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

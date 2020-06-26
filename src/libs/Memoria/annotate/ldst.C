@@ -32,7 +32,7 @@ static void AddPrints(AST_INDEX Stmt)
 
   {
    AST_INDEX NewStmt,node1,PrintList;
-   char TextConstant[25];
+   char TextConstant[80];
 
      node1 = gen_CONSTANT();
      sprintf(TextConstant,"'%s'","Number of Loads = ");

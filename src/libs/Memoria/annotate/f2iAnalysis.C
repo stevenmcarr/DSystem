@@ -10,7 +10,7 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <iostream.h>
+#include <iostream>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
@@ -23,6 +23,8 @@
 #include <libs/Memoria/include/mark.h>
 #include <libs/Memoria/include/analyze.h>
 #include <libs/Memoria/include/mem_util.h>
+
+using namespace std;
 
 extern int aiCache;
 extern int aiParseComments;

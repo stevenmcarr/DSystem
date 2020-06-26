@@ -1,10 +1,12 @@
-#include <iostream.h>
+#include <iostream>
 #include <assert.h>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/Memoria/ut/MinDist.h>
 #include <libs/Memoria/ut/DDG.h>
 #include <libs/support/Lambda/Lambda.h>
+
+using namespace std;
 
 // access a one-d array with two subscripts. 
 

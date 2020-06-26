@@ -5,12 +5,14 @@
 /******************************************************************************/
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #include <libs/Memoria/include/mem_util.h>
 #include <libs/support/Lambda/Lambda.h>
+
+using namespace std;
 
 Boolean UniformlyGeneratedSetsEntry::SameUniformlyGeneratedSet(AST_INDEX node,
 							       la_matrix nodeH)

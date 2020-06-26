@@ -129,7 +129,7 @@ typedef struct PedInfoStruct
 #endif
 
     /* handle on the memory hierarchy config structure          */
-    int             mh_config;
+    Generic             mh_config;
     
     /* flags for incremental analysis */
     

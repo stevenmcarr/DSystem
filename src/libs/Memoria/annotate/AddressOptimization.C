@@ -9,7 +9,7 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <iostream.h>
+#include <iostream>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
@@ -25,6 +25,8 @@
 #include <libs/Memoria/annotate/CacheAnalysis.h>
 #include <libs/Memoria/include/la.h>
 #include <libs/Memoria/annotate/AddressEquivalenceClassSet.h>
+
+using namespace std;
 
 static void UpdateAddressInfoSubscript(AST_INDEX Id,
 				       ReferenceAccessType aType,

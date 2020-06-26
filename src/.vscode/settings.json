@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "annotate.C": "cpp",
+        "CacheAnalysis.C": "cpp",
+        "ldst.C": "cpp",
+        "AddressEquivalenceClassSet.C": "cpp",
+        "AddressOptimization.C": "cpp",
+        "f2iAnalysis.C": "cpp",
+        "prefetch.C": "cpp",
+        "scalar.C": "cpp",
+        "compute_uj.C": "cpp",
+        "ASTToIntMap.C": "cpp"
+    }
+}

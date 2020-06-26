@@ -6,10 +6,6 @@
 #ifndef rn_varargs_h
 #define rn_varargs_h
 
-#if defined(__cplusplus)  || defined(_STDARG_H)
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 #endif

@@ -3,7 +3,6 @@
 #include <DirectivesInclude.h>
 #include <yaccDirectives.h>
 
-#define a2i_wrap() 1
 #define EOS     '\0'
 
 extern char *a2i_DirectiveString;
@@ -22,16 +21,16 @@ flush                       return FLUSH;
 cluster                     return CLUSTER;
 
 [a-zA-Z][a-zA-Z$_0-9]*       {
-                              a2i_lval.cval = (char *)malloc(strlen((const char *)yytext) *
+                              a2i_lval->cval = (char *)malloc(strlen((const char *)a2i_text) *
                                                            sizeof(char));
-                              strcpy(a2i_lval.cval,(const char *)yytext);
+                              strcpy(a2i_lval->cval,(const char *)a2i_text);
                               return NAME;
                              }
 
 [0-9]+                       {
-                              a2i_lval.cval = (char *)malloc(strlen((const char *)yytext) *
+                              a2i_lval->cval = (char *)malloc(strlen((const char *)a2i_text) *
                                                            sizeof(char));
-                              strcpy(a2i_lval.cval,(const char *)yytext);
+                              strcpy(a2i_lval->cval,(const char *)a2i_text);
                               return ICONST;
                              }
 

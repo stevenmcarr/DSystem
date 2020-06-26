@@ -9,7 +9,7 @@
 //	Do Analysis on Data Reuse Model
 //	Be Ready for Next Step
 
-#include <iostream.h>
+#include <iostream>
 #include <libs/Memoria/include/la.h>
 #include <libs/Memoria/include/Estimate.h>
 #include <assert.h>
@@ -22,6 +22,7 @@ extern "C" {
 #include <stdlib.h>
 }
 
+using namespace std;
 int BlockSize;
 
 int DimDiffOnly(la_vect, la_vect, int, int);

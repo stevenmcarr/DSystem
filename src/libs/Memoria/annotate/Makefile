@@ -1,16 +1,14 @@
 # $Id: Makefile,v 1.10 2000/01/27 19:20:47 carr Exp $
 HERE = libs/Memoria/annotate
+PREFIX = a2i_
+FLEX_FLAGS = --bison-bridge
 ARCHIVE		= ../Memoria-$(DSYSTEM_OS)-g.a
 SRCS		= annotate.C CacheAnalysis.C ldst.C lexDirectives.c \
 		  yaccDirectives.c DepGraphStat.C AddressEquivalenceClassSet.C \
 		  AddressOptimization.C  f2iAnalysis.C
-DERIVED		= $(DSYSTEM_PVT)/obj/$(DSYSTEM_OS)/$(HERE)/lexDirectives.c $(DSYSTEM_PVT)/obj/$(DSYSTEM_OS)/$(HERE)/yaccDirectives.c
 
-include Makeinclude
+include ../../../make.config
 
-$(DSYSTEM_PVT)/obj/$(DSYSTEM_OS)/$(HERE)/yaccDirectives.c: yaccDirectives.y
-	$(BISON) -o yaccDirectives.c -p a2i_ -d $<
-	#$(MV) yaccDirectives.tab.h yaccDirectives.h
+include $(DEPENDS)
 
-$(DSYSTEM_PVT)/obj/$(DSYSTEM_OS)/$(HERE)/lexDirectives.c: lexDirectives.l
-	$(FLEX) -Pa2i_ -o$@ $< 
+# DO NOT DELETE THIS LINE -- make depend depends on it.

@@ -13,8 +13,8 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <iostream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
@@ -32,6 +32,8 @@
 #endif
 
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
+
+using namespace std;
 
 EXTERN(double, ceil, (double x));
 

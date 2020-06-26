@@ -8,7 +8,7 @@
 // C++ code
 // Estimate the cache miss per iteration
 
-#include <iostream.h>
+#include <iostream>
 #include <libs/Memoria/include/la.h>
 
 
@@ -21,6 +21,7 @@ extern "C"{
 #include <math.h>
 }
 
+using namespace std;
 
 static int intcompare(const void *i, const void *j)
 {

@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <iostream>
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/Memoria/ut/Recurrence.h>
@@ -7,6 +7,8 @@
 // Alpha seems to screw up 3-d arrays
 
 #define ONED(i,j,k,n) (((k * n) + j)*n + i)
+
+using namespace std;
 
 Recurrence::Recurrence(AST_INDEX l,
 		       PedInfo p,

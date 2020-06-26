@@ -13,7 +13,7 @@
 //			according to Group Spatial Data Reuse and
 //			Group Temporal Data Reuse
 
-#include <iostream.h>
+#include <iostream>
 #include <libs/Memoria/include/la.h>
 #include <assert.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
@@ -24,6 +24,8 @@
 #include <libs/Memoria/uj/compute_uj.h>
 
 #define sign(x) (((x)>0) ? 1: -1)
+
+using namespace std;
 
 int Solve(la_matrix, la_vect, int, int, la_matrix*, int*);
 int ChangeLeader(la_vect, la_vect, int,AST_INDEX,AST_INDEX);

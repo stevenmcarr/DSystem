@@ -1,5 +1,5 @@
-#include <iostream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh_ast.h>
 #include <libs/Memoria/include/mh_config.h>
@@ -12,6 +12,8 @@
 #include <libs/frontEnd/fortTree/fortsym.h>
 #include <libs/Memoria/include/mem_util.h>
 #include <libs/frontEnd/ast/builtins.h>
+
+using namespace std;
 
 extern char *mc_module;
 

@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <iostream>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
@@ -6,6 +6,7 @@
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #include <libs/Memoria/annotate/DirectivesInclude.h>
 
+using namespace std;
 extern int aiParseComments;
 
 static int CheckNodes(AST_INDEX node,

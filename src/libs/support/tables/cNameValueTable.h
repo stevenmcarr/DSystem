@@ -130,15 +130,13 @@
 
 /******************************* include files ********************************/
 
+#include <stdarg.h>
 #include <sys/types.h>
 
 #ifndef general_h
 #include <libs/support/misc/general.h>
 #endif
 
-#ifndef rn_varargs_h
-#include <include/rn_varargs.h>
-#endif
 
 /**************************** variable definitions ****************************/
 
@@ -154,9 +152,8 @@ typedef FUNCTION_POINTER (void, NameValueTableForAllCallback, (Generic name,
                                                                Generic value, 
                                                                Generic extraArg));
 
-typedef FUNCTION_POINTER (void, NameValueTableForAllCallbackV, (Generic name, 
-                                                                Generic value,
-                                                                va_list argList));
+typedef FUNCTION_POINTER (void, NameValueTableForAllCallbackV, (Generic name, Generic value, ...));
+
 
 /********************** cNameValueTable function externs **********************/
 

@@ -9,7 +9,7 @@
 /*                                                                          */
 /****************************************************************************/
 
-#include <iostream.h>
+#include <iostream>
 #include <assert.h>
 #include <libs/support/misc/general.h>
 #include <libs/frontEnd/include/gi.h>
@@ -27,6 +27,8 @@
 #include <libs/Memoria/annotate/CacheAnalysis.h>
 #include <libs/Memoria/annotate/DirectivesInclude.h>
 #include <libs/Memoria/include/la.h>
+
+using namespace std;
 
 extern int aiCache;
 extern int aiOptimizeAddressCode;

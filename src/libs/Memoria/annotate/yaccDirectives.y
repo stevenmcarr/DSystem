@@ -5,6 +5,7 @@
 /******************************************************************************/
 
 %{
+#include <stdlib.h>
 #include <libs/support/misc/general.h>
 #include <libs/frontEnd/ast/ast.h>
 #include <libs/frontEnd/ast/astutil.h>
@@ -28,6 +29,9 @@ char *a2i_DirectiveString;
 Directive a2i_Directive;
 
 Boolean a2i_IsDirective;
+
+extern int a2i_lex();
+extern void a2i_scan_string(char *);
 
 %}
 
@@ -210,7 +214,7 @@ Boolean a2i_string_parse (str,Dir,symtab)
    /* tell flex to scan the string rather than
       a file */
 
-   a2i__scan_string(str); 
+   a2i_scan_string(str); 
    a2i_IsDirective = true;
    a2i_parse();
    if (a2i_IsDirective)

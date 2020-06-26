@@ -9,8 +9,8 @@
 /*                                                                          */
 /*                                                                          */
 /****************************************************************************/
-#include <iostream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
 #include <libs/support/misc/general.h>
 #include <libs/Memoria/include/sr.h>
 #include <libs/Memoria/include/mh_ast.h>
@@ -41,6 +41,8 @@
 #include <libs/frontEnd/ast/AstIterators.h>
 #include <libs/frontEnd/ast/builtins.h>
 #include <libs/Memoria/include/memory_menu.h>
+
+using namespace std;
 
 int dummy = 0; /* this decl keeps Rn from dying in get_mem (why?) */
 

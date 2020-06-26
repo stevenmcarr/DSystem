@@ -41,8 +41,9 @@
 #include <libs/Memoria/ut/Recurrence.h>
 #include <libs/Memoria/annotate/AddressEquivalenceClassSet.h>
 #undef is_open
-#include <iostream.h>
 #include <math.h>
+
+using namespace std;
 
 extern Boolean Memoria_LetRocketSchedulePrefetches;
 extern Boolean Memoria_IssueDead;

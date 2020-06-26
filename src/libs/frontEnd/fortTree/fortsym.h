@@ -106,7 +106,7 @@ EXTERN(void, fst_KillField, (SymDescriptor d, char *field));
 
 typedef FUNCTION_POINTER(void, fst_ForAllCallbackV, 
 			 (SymDescriptor d, fst_index_t index, 
-			  va_list arg_list));
+			  ...));
 
 typedef FUNCTION_POINTER(void, fst_ForAllCallback, 
 			 (SymDescriptor d, fst_index_t index,  

@@ -135,7 +135,7 @@ typedef enum { Unordered, PreOrder, PostOrder,
 
 #define EXTERN(rettype, name, arglist) extern "C" rettype name arglist
 #define STATIC(rettype, name, arglist) static rettype name arglist
-#define FUNCTION_POINTER(rettype, name, arglist) rettype(*name)arglist
+#define FUNCTION_POINTER(rettype, name, arglist) rettype(*name) arglist
 
 #elif __STDC__
 
