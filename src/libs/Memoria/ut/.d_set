@@ -1,4 +1,0 @@
-set.o: set.C ../../../libs/support/misc/general.h \
- ../../../libs/Memoria/include/cgen_set.h \
- ../../../libs/support/memMgmt/Arena.h \
- ../../../libs/Memoria/include/global.h

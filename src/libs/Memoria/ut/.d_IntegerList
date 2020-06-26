@@ -1,3 +1,0 @@
-IntegerList.o: IntegerList.C ../../../libs/support/misc/general.h \
- ../../../libs/Memoria/include/IntegerList.h \
- ../../../libs/support/lists/SinglyLinkedList.h

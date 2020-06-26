@@ -1,2 +1,0 @@
-MemoriaConfig.o: MemoriaConfig.c ../../../libs/support/misc/general.h \
- ../../../libs/Memoria/include/mh_config.h
