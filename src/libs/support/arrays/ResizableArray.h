@@ -17,17 +17,14 @@
  * be denied using it.
  */
 
-#ifndef __STDIO_H
+#include <ostream>
 #include <stdio.h>
-#endif	__STDIO_H
 #include <assert.h>
-#ifndef _PORT_
 #include <libs/support/misc/port.h>
-#endif	_PORT_
-#ifndef _MEMORY_
 #include <libs/support/memMgmt/libmem.h>
-#endif	_MEMORY_
 //class ostream;
+
+using namespace std;
 
 //------------------------------Array------------------------------------------
 // Arrays of objects which grow as needed.
@@ -67,4 +64,4 @@ class Array {
   friend ostream & operator << (ostream &, Array &a);
 };
 
-#endif _ARRAY_
+#endif 

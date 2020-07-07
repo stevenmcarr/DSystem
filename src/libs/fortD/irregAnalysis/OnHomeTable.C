@@ -57,7 +57,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  */
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 #include <libs/fortD/irregAnalysis/OnHomeTable.h>
 #include <libs/frontEnd/include/walk.h>
 #include <libs/frontEnd/ast/AstIter.h>
@@ -65,6 +65,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 #include <libs/support/strings/rn_string.h>
 #include <libs/frontEnd/ast/groups.h>
 
+using namespace std;
 
 /*----------------------- GLOBAL DECLARATIONS -----------------------*/
 

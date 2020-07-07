@@ -2,6 +2,7 @@
 
 HERE = execs/checker
 
+DSYSTEM_OS = Linux-i686
 SRCS = \
 	   Checker.C \
 	   CheckerOptions.C
@@ -12,14 +13,13 @@ EXEC = checker-$(DSYSTEM_OS)-g
 
 DSYSTEM_LIBS = $(NLIBS) 
 
-ifeq "$(DSYSTEM_OS)" "Linux-i686"
-  LOCAL_LIBS      = -lm -lfl
-else
-  ifeq "$(DSYSTEM_OS)" "Linux-alpha"
-    LOCAL_LIBS      = -lm -lfl
-  else
-    LOCAL_LIBS      = -lm -ll
-  endif
-endif
+LOCAL_LIBS      = -lm -lfl
 
-include Makeinclude
+exec: $(ARCHIVE) 
+	$(CXX) $(CXXFLAGS) -o $(EXEC) $(NLIBS) $(ARCHIVE) $(LOCAL_LIBS)
+
+include ../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

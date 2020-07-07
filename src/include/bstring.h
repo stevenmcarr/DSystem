@@ -17,32 +17,7 @@
 #include <libs/support/misc/general.h>
 #endif
 
-#ifdef _BSD
-
-#ifndef OSF1
-EXTERN(void, bcopy, (const void* src_addr, void* dest_addr, int nbytes));
-EXTERN(void, bzero, (void* src_addr, int nbytes));
-EXTERN(int, bcmp, (const void* src_addr, const void* dest_addr, int nbytes));
-EXTERN(int,atoi,(const char *str));
-#endif
-
-#else
 
 #include <string.h>
-
-#define bcopy(src_addr, dest_addr, nbytes)  \
-	memmove((void*)(dest_addr), (const void*)(src_addr), (nbytes))
-
-#define bzero(src_addr, nbytes) \
-	memset((void*)(src_addr), 0, (nbytes))
-
-#define bcmp(src1_addr, src2_addr, nbytes) \
-	memcmp((void*)(src1_addr), (const void*)(src2_addr), (nbytes))
-
-#ifndef LINUX
-EXTERN(int,atoi,(const char *str)); 
-#endif
-
-#endif /* BSD */
 
 #endif /* bstring_h */

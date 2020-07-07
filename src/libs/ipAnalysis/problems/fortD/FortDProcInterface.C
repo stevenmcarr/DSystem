@@ -12,7 +12,7 @@
 // date     :  June 1993
 //--------------------------------------------------------------------
 
-#include <iostream.h>
+#include <iostream>
 
 #include <libs/fortD/codeGen/FortDInterface.h>
 #include <libs/ipAnalysis/interface/IPQuery.h>

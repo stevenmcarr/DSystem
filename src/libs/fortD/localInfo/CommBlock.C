@@ -17,7 +17,7 @@
 // date   : September 1992
 //-------------------------------------------------------------------------
 #undef is_open
-#include <iostream.h>
+#include <iostream>
 
 #include <libs/frontEnd/ast/ast_include_all.h>
 #include <libs/frontEnd/fortTree/fortsym.h>

@@ -6,6 +6,18 @@ DIRS = \
 	   namedObject \
 	   wordObject
 
+dirs: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir; \
+	done
+
+dirclean: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir clean; \
+	done
+	$(RM) $(ARCHIVE)
 
 SRCS = \
 	   HashTable.C \
@@ -18,4 +30,8 @@ SRCS = \
 
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 
-include Makeinclude
+include ../../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

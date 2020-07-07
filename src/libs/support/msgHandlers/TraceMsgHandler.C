@@ -98,7 +98,8 @@ int TraceMsgHandler::HandleMsg(unsigned int level, const char *format, ...)
 static int DefaultTraceMsgHandler(void *, const char *format, va_list args)
 {
   unsigned int nestingDepth = va_arg(args, unsigned int);
-  va_list userArgs = va_arg(args, va_list);
+  va_list userArgs;
+  va_copy(userArgs, args);
   
   int code =  fprintf(stderr, "%*s", 2 * nestingDepth, "");
   if (code < 0) return code;

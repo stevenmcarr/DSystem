@@ -45,7 +45,8 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  *
  */
 
-#include <strstream.h>
+#include <strstream>
+using namespace std;
 #include <assert.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 #include <libs/fortD/irregAnalysis/Mall.h>

@@ -11,12 +11,14 @@
 static const char * RCS_ID = "$Id: MkAssert.C,v 1.2 2003/02/28 22:23:45 carr Exp $";
 
 #include <stdlib.h>
-#include <strstream.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <strstream>
+#include <iostream>
+#include <fstream>
 #include <string.h>
 #include <libs/support/misc/general.h>
 #include <libs/fortD/performance/staticInfo/MkAssert.h>
+
+using namespace std;
 
 static ofstream logfile;
 static Boolean externlog = false;
@@ -94,7 +96,7 @@ void NoteFailedAssertion(const char * ex, const char * fileVersion, const char *
   cerr << Buf;
   cerr.flush();
   if (externlog) {
-    logfile << o;
+    //logfile << o;
     logfile.flush();
   }
 }  // NoteFailedAssertion

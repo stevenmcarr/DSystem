@@ -11,7 +11,8 @@
  ***********************************************************************/
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
+using namespace std;
 #ifndef Cfg_h
 #include <libs/moduleAnalysis/cfg/Cfg.h>
 #endif

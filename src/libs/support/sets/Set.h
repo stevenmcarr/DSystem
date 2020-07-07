@@ -23,8 +23,9 @@
 
 #ifndef _PORT_
 #include <libs/support/misc/port.h>
-#endif _PORT_
-#include <iostream.h>
+#endif 
+#include <iostream>
+using namespace std;
 class SetI_;
 class SparseSet;
 class VectorSet;

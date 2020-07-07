@@ -46,10 +46,11 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  *
  */
 
-#include <iostream.h>
+#include <iostream>
 #include <assert.h>
 #include <libs/fortD/irregAnalysis/IntervDFProb.h>
 
+using namespace std;
 /*------------------- GLOBAL DECLARATIONS ---------------------*/
 
 EXTERN(CfgNodeId, cfg_get_exit_header, (CfgInstance cfg,

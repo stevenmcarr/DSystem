@@ -47,7 +47,7 @@
  */
 
 #undef is_open
-#include <strstream.h>
+#include <strstream>
 
 #ifndef cfgval_h
 #include <libs/moduleAnalysis/cfgValNum/cfgval.h>
@@ -61,6 +61,7 @@
 #include <libs/frontEnd/ast/AST_ht.h>
 #endif
 
+using namespace std;
 /*------------------- EXTERNAL DECLARATIONS -----------------*/
 
 class IrrSymTab;

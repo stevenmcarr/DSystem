@@ -81,6 +81,10 @@
 #ifndef RecordDossier_h
 #define RecordDossier_h
 
+#include <iostream>
+
+using namespace std;
+
 #include "BaseDescriptor.h"
 #include "Defines.h"
 #include "FieldDescriptor.h"

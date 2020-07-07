@@ -20,8 +20,8 @@ static const char * RCS_ID = "$Id: SDDF_SetupCleanup.C,v 1.2 2001/10/12 19:33:01
 // Include corresponding .h file last. In general, if these routines
 // are called externally, there should be a .h file.
 
-#include <iostream.h>
-
+#include <iostream>
+using namespace std;
 #include <Attributes.h>
 #include <OutputFileStreamPipe.h>
 #include <PipeReader.h>

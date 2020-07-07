@@ -216,7 +216,7 @@ fst_ForAllV(SymDescriptor d, fst_ForAllCallbackV func, ...)
     {
 	w.d = d;
 	w.func = func;
-	w.extra_arg = argList;
+	va_copy(w.extra_arg,argList);
 
 	SymForAll(d->Table, (SymIteratorFunc)fst_ForAll_func, (Generic)&w);
     }

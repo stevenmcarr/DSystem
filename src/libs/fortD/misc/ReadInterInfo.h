@@ -10,7 +10,7 @@
 #endif
 
 #undef is_open
-#include <iostream.h>
+#include <iostream>
 
 EXTERN(void, map_set_to_sp, (SNODE *sp, FortranDHashTableEntry *a,
                 FortranDHashTableEntry *d, int align_index, int dist_index));

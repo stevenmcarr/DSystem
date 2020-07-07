@@ -2,24 +2,22 @@
 
 HERE = libs/frontEnd/fortTextTree/fortParse2
 
+YACC_SRCS = gram2.y
+
 SRCS = \
 	   FortParse2.C \
 	   gram2.C \
 	   lex2.C
 
-DERIVED	= gram2.C gram2.h
-
 ARCHIVE	= ../../FrontEnd-$(DSYSTEM_OS)-g.a
 
-include Makeinclude
-
-# special rules for yacc generated files
-$(RN_OBJ)/$(DSYSTEM_OS)/$(HERE)/%.h $(RN_OBJ)/$(DSYSTEM_OS)/$(HERE)/%.C: %.y
-	$(YACC.y) -d $<
-	sed -e 's/yy/yy2/g' -e 's/YY/YY2/g' < y.tab.c > $*.C; $(RM) y.tab.c
-	sed -e 's/yy/yy2/g' -e 's/YY/YY2/g' < y.tab.h > $*.h; $(RM) y.tab.h
-
 %.h %.C: %.y
-	$(YACC.y) -d $<
-	sed -e 's/yy/yy2/g' -e 's/YY/YY2/g' < y.tab.c > $*.C; $(RM) y.tab.c
-	sed -e 's/yy/yy2/g' -e 's/YY/YY2/g' < y.tab.h > $*.h; $(RM) y.tab.h
+	$(BISON) -d $<
+	sed -e 's/yy/yy2/g' -e 's/YY/YY2/g' < gram2.tab.c > $*.C; $(RM) gram2.tab.c
+	sed -e 's/yy/yy2/g' -e 's/YY/YY2/g' < gram2.tab.h > $*.h; $(RM) gram2.tab.h
+
+include ../../../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

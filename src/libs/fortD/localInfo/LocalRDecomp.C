@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream.h>
+#include <iostream>
 #include <string.h>
 #ifndef general_h
 #include <libs/support/misc/general.h>
@@ -38,6 +38,7 @@
 #include <libs/fortD/misc/FortD.h>
 #include <libs/ipAnalysis/ipInfo/CallSite.h>
 
+using namespace std;
 /*------------------- GLOBAL DECLARATIONS -------------------*/
 
 //EXTERN(Boolean,   match_pattern_insens,        (const char *&str,
@@ -493,7 +494,7 @@ convert_ph (DecEntry *d, int dim_num, struct dc_expr *expr, int maxdim, AST_INDE
      d->AddAlignInfo(dim_num, index, 0, 0,ALIGN_PERFECT);
      break;
 
-    case plus:
+    case fdplus:
       d->AddAlignInfo(dim_num, index, expr->val, 0,ALIGN_OFFSET);
       break;
 
@@ -1011,7 +1012,7 @@ parse_expr(char *str, struct dc_expr *expr)
         return str;
       }
 
-      expr->type = plus;
+      expr->type = fdplus;
       sscanf(str, "%d", &expr->val);
       while (isdigit(*str))
         str++;
@@ -1029,7 +1030,7 @@ parse_expr(char *str, struct dc_expr *expr)
         return str;
       }
 
-      expr->type = plus;
+      expr->type = fdplus;
       sscanf(str, "%d", &expr->val);
       expr->val = -expr->val;
 

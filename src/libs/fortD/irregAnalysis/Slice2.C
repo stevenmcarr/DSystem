@@ -39,7 +39,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  */
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 #include <string.h>
 
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
@@ -56,6 +56,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 #include <libs/fortD/irregAnalysis/analyse.h>
 #include <libs/fortD/irregAnalysis/ValDecomp.h>
 
+using namespace std;
 /*------------------- GLOBAL DECLARATIONS -------------------*/
 
 EXTERN(void,      add_count_to_nest, (AST_INDEX loop_node,

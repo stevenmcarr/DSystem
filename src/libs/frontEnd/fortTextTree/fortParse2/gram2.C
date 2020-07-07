@@ -1474,12 +1474,12 @@ int yy2nerrs;
 | yy2parse.  |
 `----------*/
 
+    int yy2errstatus;
 int
 yy2parse (void)
 {
     int yy2state;
     /* Number of tokens to shift before error messages enabled.  */
-    int yy2errstatus;
 
     /* The stacks and their tools:
        'yy2ss': related to states.

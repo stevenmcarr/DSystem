@@ -13,7 +13,8 @@
 #define _SD_SrcInfo_h
 // All includes and definitions go here. Include only the minimum set required to include this file. Do not include anything that is only required by the coressponding .c file (if there is one)
 
-#include <iostream.h>
+#include <iostream>
+using namespace std;
 #include <libs/fortD/performance/staticInfo/SD_Base.h>
 #include <libs/fortD/performance/staticInfo/SD_List.h>
 #include <libs/support/misc/general.h>

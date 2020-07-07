@@ -48,6 +48,7 @@
 #endif
 #include <libs/fortD/performance/staticInfo/ArrayNameInfo.h>
 
+using namespace std;
 
 //-------------------------------------------------------------------------
 // Declarations of functions private to this file

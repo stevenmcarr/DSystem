@@ -98,7 +98,7 @@ int opt_parse_argv (Options *opts, void *handle, int argc, char **argv)
 	else return optind;
 	break;
 	
-      case string:
+      case stringt:
 	st = (struct string_ *)opt->f_c;
 	extra_arg = optarg;
 	if (st->callback != 0) st->callback(handle, extra_arg);
@@ -205,7 +205,7 @@ static char *get_optstr(Options *opts)
 
   for (OptionsIterator oi(opts); opt = oi.Current(); ++oi) {
     optstring.Append(opt->arg_char);
-    if (opt->t == choice || opt->t == string) optstring.Append(':');
+    if (opt->t == choice || opt->t == stringt) optstring.Append(':');
   }
 
   return optstring.Finalize();

@@ -11,7 +11,8 @@
 #ifndef _SD_Base_h
 #define _SD_Base_h
 
-#include <iostream.h>
+#include <iostream>
+using namespace std;
 //#include "PipeWriter.h"
 //#include "PipeReader.h"
 //#include "RecordDossier.h"

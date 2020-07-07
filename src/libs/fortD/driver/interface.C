@@ -11,7 +11,7 @@
 // date     : August 1992
 //-------------------------------------------------------------------------
 
-#include <iostream.h>
+#include <iostream>
 
 #include <libs/frontEnd/fortTree/ft.h>
 #include <libs/support/database/context.h>
@@ -45,6 +45,7 @@
 
 #include <libs/support/tables/cNameValueTable.h>
 
+using namespace std;
 
 struct proc_list {
   AST_INDEX node[100];

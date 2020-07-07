@@ -20,10 +20,12 @@
 /******************************* include files ********************************/	
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+using namespace std;
 
 #include <libs/support/tables/HashTable.h>
 

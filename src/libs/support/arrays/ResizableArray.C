@@ -15,11 +15,13 @@
  */
 
 #include <string.h>
-#include <iostream.h>
+#include <iostream>
 
 #include <include/bstring.h>
 
 #include <libs/support/arrays/ResizableArray.h>
+
+using namespace std;
 
 //------------------------------Array----------------------------------------
 // Deep-copy an Array

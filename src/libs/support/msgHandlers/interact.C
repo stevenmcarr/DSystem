@@ -4,7 +4,7 @@
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 #include <stdarg.h>
-#include <stdio.h>
+#include <cstdio>
 
 #include <libs/support/msgHandlers/interact.h>
 
@@ -26,7 +26,7 @@ Boolean yes_no_non_windowing(char *prompt, Boolean *answer, Boolean def)
   char buffer[80];
 
   printf("%s [YyNn]?\n", prompt);
-  while (gets(buffer) != NULL)
+  while (fgets(buffer,80,stdin) != NULL)
   {
     if (buffer[0] == 'Y' || buffer[0] == 'y')
     {

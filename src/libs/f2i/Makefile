@@ -10,4 +10,11 @@ SRCS   = ai.C addr.C do.C goto.C map.C  runtime.C idfa.C memos.C \
 
 ARCHIVE	= F2i-$(DSYSTEM_OS)-g.a
 
-include Makeinclude
+include ../../make.config
+
+CFLAGS := $(CFLAGS) -DLINUX
+CPPFLAGS := $(CPPFLAGS) -DLINUX
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

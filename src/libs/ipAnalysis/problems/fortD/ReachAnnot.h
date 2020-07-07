@@ -21,7 +21,7 @@
 
 #include <libs/fortD/misc/FortD.h>
 #undef is_open
-#include <iostream.h>
+#include <iostream>
 
 
 // 9/25/93 RvH: Why all these constants instead of flexible data

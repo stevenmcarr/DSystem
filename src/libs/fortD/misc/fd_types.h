@@ -25,7 +25,7 @@
 
 enum FDtype { DECOMPOSITION = 1, ALIGN = 2, DISTRIBUTE = 3, NODEC = 4 };
 
-enum dc_expr_type { value, variable, plus, irreg_val, unknown };
+enum dc_expr_type { value, variable, fdplus, irreg_val, unknown };
 
 enum ALIGN_DISTRIB_STATE { ACTIVE = 1, INACTIVE = 2 };
 

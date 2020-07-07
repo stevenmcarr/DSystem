@@ -15,7 +15,7 @@
 #ifndef _MkAssert_h
 #define _MkAssert_h
 
-#include <iostream.h>
+#include <iostream>
 #include <libs/support/misc/general.h>
 
 #ifndef ASSERT_FILE_VERSION 

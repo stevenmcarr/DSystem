@@ -7,19 +7,17 @@ SRCS = \
 	   gram1.C \
 	   lex1.C
 
-DERIVED	= gram1.C gram1.h
+YACC_SRCS = gram1.y
 
 ARCHIVE	= ../../FrontEnd-$(DSYSTEM_OS)-g.a
 
-include Makeinclude
-
-# special rules for yacc generated files
-$(RN_OBJ)/$(DSYSTEM_OS)/$(HERE)/%.h $(RN_OBJ)/$(DSYSTEM_OS)/$(HERE)/%.C: %.y
-	$(YACC.y) -d $<
-	sed -e 's/yy/yy1/g' -e 's/YY/YY1/g' < y.tab.c > $*.C; $(RM) y.tab.c
-	sed -e 's/yy/yy1/g' -e 's/YY/YY1/g' < y.tab.h > $*.h; $(RM) y.tab.h
-
 %.h %.C: %.y
-	$(YACC.y) -d $<
-	sed -e 's/yy/yy1/g' -e 's/YY/YY1/g' < y.tab.c > $*.C; $(RM) y.tab.c
-	sed -e 's/yy/yy1/g' -e 's/YY/YY1/g' < y.tab.h > $*.h; $(RM) y.tab.h
+	$(YACC) -d $<
+	sed -e 's/yy/yy1/g' -e 's/YY/YY1/g' < gram1.tab.c > $*.C; $(RM) gram1.tab.c
+	sed -e 's/yy/yy1/g' -e 's/YY/YY1/g' < gram1.tab.h > $*.h; $(RM) gram1.tab.h
+
+include ../../../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

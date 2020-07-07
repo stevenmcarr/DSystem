@@ -14,7 +14,9 @@
  * be denied using it.
  */
 
-#include <iostream.h>
+#include <iostream>
+
+using namespace std;
 
 #include <libs/support/misc/port.h>
 

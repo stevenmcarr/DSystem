@@ -11,7 +11,10 @@ SRCS = \
 	   LocalRDecomp.C \
 	   fd_symtable.ansi.c
 
-ARCHIVE	= FortD-$(DSYSTEM_OS)-g.a
+ARCHIVE	= ../FortD-$(DSYSTEM_OS)-g.a
 
-include Makeinclude
+include ../../../make.config
 
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

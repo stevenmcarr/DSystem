@@ -18,7 +18,7 @@ static const char * RCS_ID = "$Id: SDDF_Instrumentation.C,v 1.3 2001/10/12 19:33
 // Include corresponding .h file last. In general, if these routines
 // are called externally, there should be a .h file.
 
-#include <iostream.h>
+#include <iostream>
 
 #include <libs/fortD/performance/staticInfo/SD_Map.h>
 #include <libs/fortD/performance/staticInfo/SD_Base.h>

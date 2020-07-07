@@ -13,11 +13,7 @@
 
 #undef is_open
 
-#ifdef LINUX
-#include <stream.h>
-#else
-#include <sys/stream.h>
-#endif
+#include <iostream>
 
 #include <libs/frontEnd/include/expr.h>
 #include <libs/fortD/misc/fd_types.h>

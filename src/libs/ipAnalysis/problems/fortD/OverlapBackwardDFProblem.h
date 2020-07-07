@@ -11,7 +11,7 @@
 
 #include <libs/fortD/misc/FortD.h>
 #undef is_open
-#include <iostream.h>
+#include <iostream>
 #include <libs/ipAnalysis/callGraph/CallGraph.h>
 #include <libs/ipAnalysis/callGraph/CallGraphAnnot.h>
 #include <libs/ipAnalysis/callGraph/CallGraphNodeEdge.h>

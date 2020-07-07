@@ -40,7 +40,7 @@
  *
  */
 
-#include <strstream.h>
+#include <strstream>
 
 #ifndef fortsym_h
 #include <libs/frontEnd/fortTree/fortsym.h>

@@ -17,7 +17,7 @@
  * }
  */
 
-#include <iostream.h>
+#include <iostream>
 #include <libs/frontEnd/ast/AstIter.h>
 
 #ifndef asttree_h

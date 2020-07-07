@@ -54,9 +54,9 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 
 #undef is_open
 #include <string.h>
-#include <strstream.h>
+#include <strstream>
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 #include <ctype.h>
 #include <stdlib.h>
 #include <libs/support/strings/rn_string.h>
@@ -77,6 +77,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 #include <libs/fortD/irregAnalysis/Mall.h>
 #include <libs/fortD/localInfo/fd_symtable.h>
 
+using namespace std;
 /*------------------- GLOBAL DECLARATIONS -------------------*/
 
 extern const char *valType[];          // values.C

@@ -4,7 +4,7 @@
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 #include <stdio.h>
-#include <iostream.h>
+#include <iostream>
 #include <libs/fortD/driver/driver.h>
 #include <libs/fortD/misc/fd_code.h>
 #include <libs/frontEnd/ast/ast.h>
@@ -21,6 +21,8 @@ Generic Ped;
 Generic fi;
 };
 
+
+using namespace std;
 static void sp_dump(SNODE *sp);
 static int dc_check_assign(AST_INDEX stmt, int level, Generic ped);
 static int dc_check_side_info(AST_INDEX node, Generic ped);

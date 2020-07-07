@@ -41,7 +41,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  */
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 
 #include <libs/moduleAnalysis/cfgValNum/cfgval.h>
 #include <libs/support/sets/VectorSet.h>
@@ -53,6 +53,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 #include <libs/fortD/irregAnalysis/Slice.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
 
+using namespace std;
 /*------------------- GLOBAL DECLARATIONS -------------------*/
 
 EXTERN(void,      attach_cfg_node,    (CfgInstance cfg,

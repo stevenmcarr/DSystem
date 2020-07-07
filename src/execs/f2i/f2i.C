@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <strstream.h>
+#include <strstream>
 
 #include <libs/support/misc/general.h>
 #include <libs/graphicInterface/oldMonitor/include/mon/standalone.h>
@@ -49,7 +49,7 @@
 
 #include <libs/ipAnalysis/callGraph/CallGraph.h>
 
-#include <iostream.h>
+#include <iostream>
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024

@@ -4,7 +4,8 @@
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 #include <string.h>
-#include <iostream.h>
+#include <iostream>
+using namespace std;
 #include <stdlib.h>
 
 #include <libs/support/misc/general.h>

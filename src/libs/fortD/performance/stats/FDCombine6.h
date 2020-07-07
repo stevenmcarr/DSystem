@@ -90,7 +90,7 @@
 #ifndef  FDCombine6_h
 #define  FDCombine6_h
 
-#include <iostream.h>
+#include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

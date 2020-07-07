@@ -24,7 +24,8 @@
 
 /**************************** System Include Files ****************************/
 
-#include <iostream.h>
+#include <iostream>
+using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -122,16 +123,16 @@ static struct string_	list_loc_s = {
 };
 
 Option pgm_loc_opt = 
-{ string, 'P',  (Generic) "",   true, (Generic)&pgm_loc_s };
+{ stringt, 'P',  (Generic) "",   true, (Generic)&pgm_loc_s };
 
 Option mod_loc_opt = 
-{ string, 'M',  (Generic) "",   true, (Generic)&mod_loc_s };
+{ stringt, 'M',  (Generic) "",   true, (Generic)&mod_loc_s };
 
 Option list_loc_opt = 
-{ string, 'L',  (Generic) "",   true, (Generic)&list_loc_s };
+{ stringt, 'L',  (Generic) "",   true, (Generic)&list_loc_s };
 
 Option dep_ptr_opt = 
-{ string, 'o',  (Generic) "",   true, (Generic)&dep_ptr_s };
+{ stringt, 'o',  (Generic) "",   true, (Generic)&dep_ptr_s };
 
 Option dep_opt = 
 { flag,   'd', (Generic)false, true, (Generic)&dep_f };

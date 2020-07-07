@@ -11,6 +11,10 @@ SRCS = \
 	FileTimeStamp.C \
 	RepositoryContext.C
 
-ARCHIVE = FileAttrMgmt-$(DSYSTEM_OS)-g.a
+ARCHIVE = ../FileAttrMgmt-$(DSYSTEM_OS)-g.a
 
-include Makeinclude
+include ../../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

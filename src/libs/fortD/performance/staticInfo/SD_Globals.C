@@ -16,7 +16,7 @@ static const char * RCS_ID = "$Id: SD_Globals.C,v 1.3 1999/06/11 20:47:17 carr E
 // Include corresponding .h file last. In general, if these routines
 // are called externally, there should be a .h file.
 
-#include <iostream.h>
+#include <iostream>
 #include <malloc.h>
 #include <string.h>
 #include <Attributes.h>

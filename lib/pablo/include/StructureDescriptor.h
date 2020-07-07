@@ -80,6 +80,9 @@
 #ifndef StructureDescriptor_h
 #define StructureDescriptor_h
 
+#include <iostream>
+using namespace std;
+
 #include "BaseDescriptor.h"
 #include "Defines.h"
 #include "FieldDescriptor.h"

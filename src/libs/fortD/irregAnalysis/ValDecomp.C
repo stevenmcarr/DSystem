@@ -57,7 +57,8 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  *
  */
 
-#include <strstream.h>
+#include <strstream>
+using namespace std;
 #include <libs/frontEnd/ast/astlist.h>
 #include <include/frontEnd/astnode.h>
 #include <include/frontEnd/astrec.h>

@@ -30,7 +30,7 @@ typedef FUNCTION_POINTER(void, OPT_CHOICE_CLBK_FN, (void *handle, Generic d));
 
 typedef FUNCTION_POINTER(void, OPT_STRING_CLBK_FN, (void *handle, char *s));
 
-typedef enum {flag, choice, string} option_type;
+typedef enum {flag, choice, stringt} option_type;
 
 struct flag_ {
   OPT_FLAG_CLBK_FN callback;

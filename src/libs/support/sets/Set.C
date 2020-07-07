@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <iostream.h>
+#include <iostream>
 #include <libs/support/sets/Set.h>
 
 // 6/22/93: The following is missing from stdlib.h:

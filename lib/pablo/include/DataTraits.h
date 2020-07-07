@@ -82,7 +82,6 @@
 #define DataTraits_h
 
 #include <stdio.h>
-#include <stream.h>
 
 #include "Defines.h"
 

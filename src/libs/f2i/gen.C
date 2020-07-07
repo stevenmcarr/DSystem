@@ -4,7 +4,7 @@
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 
-#include <iostream.h>
+#include <iostream>
 #include <libs/support/misc/general.h>
 #include <ctype.h>
 #include <include/frontEnd/astnode.h>
@@ -23,6 +23,9 @@
 
 #include <assert.h>
 #include <libs/support/lists/list.h>
+
+
+using namespace std;
 
 /* some representation lookup routines */
 

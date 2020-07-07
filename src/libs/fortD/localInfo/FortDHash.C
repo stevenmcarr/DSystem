@@ -5,7 +5,7 @@
 /******************************************************************************/
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,6 +19,7 @@
 
 #include <libs/ipAnalysis/ipInfo/CallSite.h>
 
+using namespace std;
 //////////////////////////////////////////////////////////////////
 //
 //  FortranDHashTableEntry Class Members

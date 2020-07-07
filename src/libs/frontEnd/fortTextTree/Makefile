@@ -13,11 +13,24 @@ SRCS = \
 
 ARCHIVE	= ../FrontEnd-$(DSYSTEM_OS)-g.a
 
-include Makeinclude
 
-# make the derived source and include files from the subdirectories (early)
-derived::
-	-@$(SUB_SANITIZE);                                       \
-	for dir in $(DIRS); do                                   \
-	    $(MAKE) -C $$dir $(LOCAL_SUBMAKE_FLAGS) derived;     \
+.SILENT:
+
+dirs: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir; \
 	done
+
+clean: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir clean; \
+	done
+	$(RM) $(ARCHIVE)
+
+include ../../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

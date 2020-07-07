@@ -34,7 +34,8 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  * Handle value-based distributions.
  */
 
-#include <strstream.h>
+#include <strstream>
+using namespace std;
 #include <stdlib.h>
 #include <assert.h>
 #include <libs/fortD/irregAnalysis/IrrSymTab.h>

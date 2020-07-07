@@ -2,15 +2,6 @@
 
 HERE = libs/support/file
 
-ifeq "$(DSYSTEM_OS)" "OSF1"
-SRCS = \
-	   Cookie.C \
-	   File.C \
-	   FileName.C \
-	   FileUtilities.C \
-	   FormattedFile.C \
-	   UnixFile.C
-else
 SRCS = \
 	   Cookie.C \
 	   File.C \
@@ -20,8 +11,9 @@ SRCS = \
 	   ScanDir.C \
 	   UnixFile.C
 
-endif
-
 ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
+include ../../../make.config
 
-include Makeinclude
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

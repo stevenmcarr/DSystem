@@ -81,6 +81,10 @@
 #ifndef Value_h
 #define Value_h
 
+#include <iostream>
+
+using namespace std;
+
 #include "Array.h"
 #include "CString.h"
 #include "DataTraits.h"

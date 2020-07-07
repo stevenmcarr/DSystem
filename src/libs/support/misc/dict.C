@@ -15,7 +15,7 @@
  */
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 #include <stdio.h>
 
 #include <libs/support/misc/dict.h>
@@ -420,7 +420,7 @@ Generic hashptr(const void *key)
 {
 #ifdef __TURBOC__
     return (Generic)((const int32)key >> 16);
-#else  __TURBOC__
+#else
     return (Generic)((const int32)key >> 2);
 #endif
 }

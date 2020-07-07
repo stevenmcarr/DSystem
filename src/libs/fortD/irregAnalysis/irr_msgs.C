@@ -33,7 +33,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  *
  */
 
-#include <iostream.h>
+#include <iostream>
 
 #include <libs/frontEnd/ast/AST_Set.h>
 #include <libs/fortD/irregAnalysis/IrrGlobals.h>

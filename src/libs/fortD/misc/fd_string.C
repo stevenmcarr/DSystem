@@ -6,9 +6,10 @@
 /* $Id $ */
 #include <assert.h>
 #include <stdlib.h>
-#include <iostream.h>
+#include <iostream>
 #include <string.h>
 
+using namespace std;
 #include <libs/fortD/misc/fd_string.h>
 
 //------------------------------------------------------------------

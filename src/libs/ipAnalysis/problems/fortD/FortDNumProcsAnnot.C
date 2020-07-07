@@ -7,7 +7,7 @@
 // include files
 //*****************************************************************************
 
-#include <iostream.h>
+#include <iostream>
 
 
 #include <libs/fortD/misc/FortD.h>

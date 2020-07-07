@@ -39,7 +39,8 @@ changes to make AST_ht.C ANSI-C compliant
 
 #include <assert.h>
 #include <stdarg.h>
-#include <iostream.h>
+#include <iostream>
+using namespace std;
 
 #ifndef AST_ht_h
 #include <libs/frontEnd/ast/AST_ht.h>

@@ -8,4 +8,18 @@ DIRS = \
 	   fortranModule \
 	   module
 
-include Makeinclude
+.SILENT:
+
+dirs: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir; \
+	done
+
+clean: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir clean; \
+	done
+	$(RM) $(ARCHIVE)
+

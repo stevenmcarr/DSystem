@@ -7,7 +7,7 @@
 #define _OverlapAnnot_
 
 #include <stdio.h>
-#include <iostream.h>
+#include <iostream>
 
 
 #include <libs/ipAnalysis/callGraph/CallGraphDFProblem.h>

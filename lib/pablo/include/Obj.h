@@ -79,7 +79,10 @@
 #ifndef Obj_h
 #define Obj_h
 
-#include <stream.h>
+#include <iostream>
+
+using namespace std;
+
 
 #include "Assert.h"
 #include "Defines.h"
@@ -166,7 +169,7 @@ public:
 
 	/* Method printOn: 		Stream output function 		*/
 	virtual void printOn( ostream &os = cout ) const {
-		os << form( "Obj(0x%x)", this ); 
+		os << this; 
 		} ;
 };
 

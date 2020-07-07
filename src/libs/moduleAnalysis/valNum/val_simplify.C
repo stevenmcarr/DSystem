@@ -15,7 +15,8 @@
 #include <libs/moduleAnalysis/valNum/val.i>
 #include <libs/support/numerical/ExtendedGCD.h>
 #undef is_open
-#include <iostream.h>
+#include <iostream>
+using namespace std;
 
 extern char *D_sym_simplify;
 

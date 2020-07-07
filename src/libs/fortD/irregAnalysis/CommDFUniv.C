@@ -33,7 +33,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  */
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 #include <stdlib.h>
 
 #include <libs/support/sets/Sparse_Set.h>
@@ -44,6 +44,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 #include <libs/fortD/irregAnalysis/S_desc.h>
 #include <libs/fortD/irregAnalysis/analyse.h>
 
+using namespace std;
 
 /*------------------- GLOBAL DECLARATIONS -------------------*/
 

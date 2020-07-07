@@ -32,7 +32,7 @@
  *
  */
 
-#include <strstream.h>
+#include <strstream>
 
 #ifndef cfgval_h
 #include <libs/moduleAnalysis/cfgValNum/cfgval.h>

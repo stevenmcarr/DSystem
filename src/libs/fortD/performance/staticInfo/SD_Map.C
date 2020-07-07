@@ -8,7 +8,7 @@ static const char * RCS_ID = "$Id: SD_Map.C,v 1.5 2001/10/12 19:33:02 carr Exp $
 #define MKASSERT
 #define ASSERT_FILE_VERSION RCS_ID
 
-#include <iostream.h>
+#include <iostream>
 #include <include/rn_varargs.h>
 #include <libs/support/misc/general.h>
 #include <libs/frontEnd/fortTree/FortTree.h>

@@ -6,7 +6,7 @@
 
 
 
-#include <iostream.h>
+#include <iostream>
 
 #include <libs/fortD/codeGen/private_dc.h>
 #include <libs/fortD/localInfo/fd_symtable.h>
@@ -17,14 +17,9 @@
 
 #undef is_open
 
-#ifdef LINUX
-#include <stream.h>
-#else
-#include <sys/stream.h>
-#endif
-
 #include <libs/frontEnd/ast/ast_include_all.h>
 
+using namespace std;
 //--------------------------------------------------------------------
 // Returns the string that contains the non local section accessed
 //--------------------------------------------------------------------

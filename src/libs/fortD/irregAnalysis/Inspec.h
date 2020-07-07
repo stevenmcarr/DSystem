@@ -50,7 +50,9 @@
  *
  */
 
-#include <strstream.h>
+#include <strstream>
+
+using namespace std;
 
 #ifndef general_h
 #include <libs/support/misc/general.h>

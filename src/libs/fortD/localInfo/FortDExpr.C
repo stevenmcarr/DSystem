@@ -4,7 +4,9 @@
 /*                           All Rights Reserved                              */
 /******************************************************************************/
 
-#include <iostream.h>
+#include <iostream>
+
+using namespace std;
 
 #include <libs/fortD/localInfo/FortDExpr.h>
 

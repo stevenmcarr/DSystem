@@ -57,7 +57,7 @@ void Options::Usage(char *exec_name)
       fprintf(stderr, " %s\n", help_text);
       break;
     }
-    case string:
+    case stringt:
       help_text = ((struct string_ *) opt->f_c)->help;
       fprintf(stderr, "<%s>\n", help_text);
       break;

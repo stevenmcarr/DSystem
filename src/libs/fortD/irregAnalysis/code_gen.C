@@ -36,8 +36,8 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
  */
 
 #include <assert.h>
-#include <iostream.h>
-#include <strstream.h>
+#include <iostream>
+#include <strstream>
 #include <string.h>
 #include <stdlib.h>
 
@@ -53,6 +53,7 @@ See /home/reinhard/rn/zzzgroup_src/libs/fort_d/irreg files for details.
 #include <libs/fortD/localInfo/fd_symtable.h>
 #include <libs/fortD/misc/fd_types.h>
 
+using namespace std;
 /*------------------- GLOBAL DECLARATIONS -------------------*/
 
 EXTERN(AST_INDEX, begin_ast_stmt,   (AST_INDEX node));

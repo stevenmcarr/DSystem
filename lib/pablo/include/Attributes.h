@@ -79,6 +79,10 @@
 #ifndef Attributes_h
 #define Attributes_h
 
+#include <iostream>
+
+using namespace std;
+
 #include "CString.h"
 #include "Obj.h"
 

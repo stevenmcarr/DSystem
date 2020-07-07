@@ -50,5 +50,5 @@ EXTERN(void,lx2_Fini,(void));
 EXTERN(void,lx2_SetScan,(int goal, Flex *lines, int start, int count));
 
 EXTERN(int,yy2lex,(void));
-EXTERN(int,yy2parse,(void));
+int yy2parse(void);
 EXTERN(void,yy2error,(const char*));

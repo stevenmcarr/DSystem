@@ -5,8 +5,20 @@ HERE = libs/support/graphs
 DIRS = \
 	   directedGraph 
 
-SRCS = 
+RM = /bin/rm -r -f
+ARCHIVE         = Support-$(DSYSTEM_OS)-g.a
 
-ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
+.SILENT:
 
-include Makeinclude
+dirs: 
+	for dir in $(DIRS); do \
+		echo "Making directory" $$dir; \
+		make -C $$dir; \
+	done
+
+clean: 
+	for dir in $(DIRS); do \
+		echo "Making directory" $$dir; \
+		make -C $$dir clean; \
+	done
+	$(RM) $(ARCHIVE)

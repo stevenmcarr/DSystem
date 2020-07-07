@@ -13,7 +13,7 @@
 */
 
 #include <assert.h>
-#include <iostream.h>
+#include <iostream>
 
 #include <libs/support/database/context.h>
 
@@ -24,7 +24,7 @@
 #include <libs/fortD/codeGen/FortDInterface.i>
 #include <libs/ipAnalysis/problems/fortD/FortDNumProcsAnnot.h>
 
-
+using namespace std;
 
 //*********************************************************************
 // External function declarations
