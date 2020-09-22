@@ -345,12 +345,12 @@ Boolean CP::CP_HandleInput(Generic generator,
         break;
 
       case EVENT_SELECT:
-        if( generator == R(this)->menuBar->getButtonPane() )
-          { if( R(this)->menuBar->Select(info.x, id) )
-              this->MenuChoice(id);
-          }
-        else
-          this->SelectionEvent(generator, info);
+//        if( generator == R(this)->menuBar->getButtonPane() )
+//          { if( R(this)->menuBar->Select(info.x, id) )
+ //             this->MenuChoice(id);
+  //        }
+  //      else
+   //       this->SelectionEvent(generator, info);
         break;
 
       case EVENT_KEYBOARD:

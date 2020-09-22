@@ -3,7 +3,7 @@
 HERE = libs/frontEnd/fortTextTree
 
 DIRS = fortParse1 fortParse2
-
+DSYSTEM_OS = Linux-i686
 SRCS = \
 	   FortTextTree.C \
 	   FortUnparse1.C \
@@ -15,6 +15,8 @@ ARCHIVE	= ../FrontEnd-$(DSYSTEM_OS)-g.a
 
 
 .SILENT:
+
+all: dirs $(ARCHIVE)
 
 dirs: 
 	for dir in $(DIRS); do \

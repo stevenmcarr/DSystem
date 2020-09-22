@@ -49,9 +49,9 @@
 
 #include <libs/graphicInterface/oldMonitor/monitor/mon/mach.h>
 
-#ifdef LINUX
-#define sigmask(sig)   __sigmask(sig)
-#endif
+//#ifdef LINUX
+//#define sigmask(sig)   __sigmask(sig)
+//#endif
 
 	/* LOCAL SPECIAL VARIABLES */
 

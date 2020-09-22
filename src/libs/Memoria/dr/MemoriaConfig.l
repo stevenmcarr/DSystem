@@ -117,7 +117,7 @@ non[ ]blocking[ ]cache[ \t]+[yn] {
 
 %%
 
-int Memoriawrap()
+int Memoria_wrap()
 {
   return 1;
 }

@@ -3,16 +3,26 @@
 HERE = libs/graphicInterface/cmdProcs/paraScopeEditor
 
 DIRS = \
-	   include \
 	   pt \
 	   dp \
 	   dg \
 	   el \
 	   dt \
 	   perf \
-	   pedCP \
 	   stubs
+#	   pedCP \
 
 #	   memory \
 
-include Makeinclude
+dirs: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir; \
+	done
+
+clean: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir clean; \
+	done
+	$(RM) $(ARCHIVE)

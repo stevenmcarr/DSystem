@@ -27,7 +27,8 @@
 #define DEAD			15    
 #define PARTITION_UNROLL	16    
 #define DEP_STATS               17
-#define MEM_SIZE		18    /* MUST BE LAST! */
+#define MEM_SIZE		18    
+#define AST_DUMP                19 /* MUST BE LAST! */
 
 #define ARENAS 1
 

@@ -4,4 +4,11 @@ HERE = libs/ipAnalysis
 
 DIRS = callGraph interface ipInfo problems
 
-include Makeinclude
+.SILENT:
+
+dirs: 
+	for dir in $(DIRS); do \
+		echo "Making directory " $$dir; \
+		make -C $$dir; \
+	done
+

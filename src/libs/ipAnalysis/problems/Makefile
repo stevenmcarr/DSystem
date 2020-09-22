@@ -14,4 +14,11 @@ DIRS = \
 
 ARCHIVE = IPAnalysis-$(DSYSTEM_OS)-g.a
 
-include Makeinclude
+.SILENT:
+
+dirs: 
+	for dir in $(DIRS); do \
+		echo "Making directory " $$dir; \
+		make -C $$dir; \
+	done
+

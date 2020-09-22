@@ -2165,7 +2165,7 @@ void Memoria_free (void * ptr )
 #line 118 "MemoriaConfig.l"
 
 
-int Memoriawrap()
+int Memoria_wrap()
 {
   return 1;
 }

@@ -22,7 +22,7 @@ SRCS = \
 	ScanFile.C \
 	StandardModuleAttributes.C
 
-ARCHIVE = ../FileAttrMgmt-$(DSYSTEM_OS)-g.a
+ARCHIVE = FileAttrMgmt-$(DSYSTEM_OS)-g.a
 
 
 include ../../../make.config

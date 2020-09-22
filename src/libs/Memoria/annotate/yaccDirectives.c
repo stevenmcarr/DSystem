@@ -59,7 +59,15 @@
 #define YYPULL 1
 
 
+/* Substitute the variable and function names.  */
+#define a2i_parse         a2i_parse
+#define a2i_lex           a2i_lex
+#define a2i_error         a2i_error
+#define a2i_debug         a2i_debug
+#define a2i_nerrs         a2i_nerrs
 
+#define a2i_lval          a2i_lval
+#define a2i_char          a2i_char
 
 /* Copy the first part of user declarations.  */
 #line 7 "yaccDirectives.y" /* yacc.c:339  */
@@ -90,10 +98,10 @@ Directive a2i_Directive;
 Boolean a2i_IsDirective;
 
 extern int a2i_lex();
-extern void a2i_scan_string(char *);
+extern void a2i__scan_string(char *);
 
 
-#line 97 "yaccDirectives.c" /* yacc.c:339  */
+#line 105 "yaccDirectives.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -113,8 +121,8 @@ extern void a2i_scan_string(char *);
 
 /* In a future release of Bison, this section will be replaced
    by #include "yaccDirectives.h".  */
-#ifndef YY_YY_YACCDIRECTIVES_H_INCLUDED
-# define YY_YY_YACCDIRECTIVES_H_INCLUDED
+#ifndef YY_A2I_YACCDIRECTIVES_H_INCLUDED
+# define YY_A2I_YACCDIRECTIVES_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -158,7 +166,7 @@ union YYSTYPE
    AST_INDEX   aval;
   
 
-#line 162 "yaccDirectives.c" /* yacc.c:355  */
+#line 170 "yaccDirectives.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -171,11 +179,11 @@ extern YYSTYPE a2i_lval;
 
 int a2i_parse (void);
 
-#endif /* !YY_YY_YACCDIRECTIVES_H_INCLUDED  */
+#endif /* !YY_A2I_YACCDIRECTIVES_H_INCLUDED  */
 
 /* Copy the second part of user declarations.  */
 
-#line 179 "yaccDirectives.c" /* yacc.c:358  */
+#line 187 "yaccDirectives.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -1273,7 +1281,7 @@ a2i_reduce:
     {
 	      a2i_Directive = (a2i_vsp[0].dval);
 	     }
-#line 1277 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1285 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 3:
@@ -1283,7 +1291,7 @@ a2i_reduce:
 	     (a2i_val.dval).Subscript = (a2i_vsp[0].aval);
 	     (a2i_val.dval).DirectiveNumber = atoi(gen_get_text((a2i_vsp[-2].aval)));
 	    }
-#line 1287 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1295 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 4:
@@ -1292,7 +1300,7 @@ a2i_reduce:
 	     (a2i_val.dval).Instr = FlushInstruction;
 	     (a2i_val.dval).Subscript = (a2i_vsp[-1].aval);
 	    }
-#line 1296 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1304 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 5:
@@ -1302,7 +1310,7 @@ a2i_reduce:
 	      (a2i_val.dval).Subscript = (a2i_vsp[0].aval);
 	      (a2i_val.dval).DirectiveNumber = atoi(gen_get_text((a2i_vsp[-2].aval)));
 	    }
-#line 1306 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1314 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 6:
@@ -1311,7 +1319,7 @@ a2i_reduce:
 	      (a2i_val.dval).Instr = Cluster;
 	      (a2i_val.dval).Cluster = atoi(gen_get_text((a2i_vsp[0].aval)));
 	    }
-#line 1315 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1323 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 7:
@@ -1319,7 +1327,7 @@ a2i_reduce:
     {
    (a2i_val.aval) = gen_SUBSCRIPT((a2i_vsp[-3].aval),(a2i_vsp[-1].aval));
   }
-#line 1323 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1331 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 8:
@@ -1327,7 +1335,7 @@ a2i_reduce:
     {
 		   (a2i_val.aval) = list_insert_last((a2i_vsp[-2].aval),(a2i_vsp[0].aval));
 		  }
-#line 1331 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1339 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 9:
@@ -1335,19 +1343,19 @@ a2i_reduce:
     {
 		   (a2i_val.aval) = list_create((a2i_vsp[0].aval));
 		  }
-#line 1339 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1347 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 10:
 #line 108 "yaccDirectives.y" /* yacc.c:1646  */
     {(a2i_val.aval) = (a2i_vsp[0].aval);}
-#line 1345 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1353 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 11:
 #line 110 "yaccDirectives.y" /* yacc.c:1646  */
     {(a2i_val.aval) = (a2i_vsp[0].aval);}
-#line 1351 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1359 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 12:
@@ -1355,7 +1363,7 @@ a2i_reduce:
     {
           (a2i_val.aval) = gen_BINARY_PLUS((a2i_vsp[-2].aval),(a2i_vsp[0].aval));
          }
-#line 1359 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1367 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 13:
@@ -1363,7 +1371,7 @@ a2i_reduce:
     {
           (a2i_val.aval) = gen_BINARY_MINUS((a2i_vsp[-2].aval),(a2i_vsp[0].aval));
          }
-#line 1367 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1375 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 14:
@@ -1371,7 +1379,7 @@ a2i_reduce:
     {
           (a2i_val.aval) = gen_BINARY_TIMES((a2i_vsp[-2].aval),(a2i_vsp[0].aval));
          }
-#line 1375 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1383 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 15:
@@ -1379,7 +1387,7 @@ a2i_reduce:
     {
           (a2i_val.aval) = gen_BINARY_DIVIDE((a2i_vsp[-2].aval),(a2i_vsp[0].aval));
          }
-#line 1383 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1391 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 16:
@@ -1387,7 +1395,7 @@ a2i_reduce:
     {
           (a2i_val.aval) = (a2i_vsp[-1].aval);
          }
-#line 1391 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1399 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 17:
@@ -1395,7 +1403,7 @@ a2i_reduce:
     { 
 	(a2i_val.aval) =(a2i_vsp[0].aval);
        }
-#line 1399 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1407 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 18:
@@ -1403,7 +1411,7 @@ a2i_reduce:
     { 
 	(a2i_val.aval) =(a2i_vsp[0].aval);
        }
-#line 1407 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1415 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 19:
@@ -1412,7 +1420,7 @@ a2i_reduce:
 	(a2i_val.aval) = gen_CONSTANT();
 	gen_put_text((a2i_val.aval),(a2i_vsp[0].cval),STR_CONSTANT_INTEGER); 
        }
-#line 1416 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1424 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
   case 20:
@@ -1421,11 +1429,11 @@ a2i_reduce:
 	(a2i_val.aval) = gen_IDENTIFIER();
 	gen_put_text((a2i_val.aval),(a2i_vsp[0].cval),STR_IDENTIFIER); 
        }
-#line 1425 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1433 "yaccDirectives.c" /* yacc.c:1646  */
     break;
 
 
-#line 1429 "yaccDirectives.c" /* yacc.c:1646  */
+#line 1437 "yaccDirectives.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter a2i_char, and that requires
@@ -1710,7 +1718,7 @@ Boolean a2i_string_parse (str,Dir,symtab)
    /* tell flex to scan the string rather than
       a file */
 
-   a2i_scan_string(str); 
+   a2i__scan_string(str); 
    a2i_IsDirective = true;
    a2i_parse();
    if (a2i_IsDirective)

@@ -16,7 +16,7 @@ DSYSTEM_LIBS = $(NLIBS)
 LOCAL_LIBS      = -lm -lfl
 
 exec: $(ARCHIVE) 
-	$(CXX) $(CXXFLAGS) -o $(EXEC) $(NLIBS) $(ARCHIVE) $(LOCAL_LIBS)
+	$(CXX) $(CXXFLAGS) -o $(EXEC) $(ARCHIVE) $(NLIBS) $(LOCAL_LIBS)
 
 include ../../make.config
 

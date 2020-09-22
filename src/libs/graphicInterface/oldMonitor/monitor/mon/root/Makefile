@@ -2,60 +2,15 @@
 
 HERE = libs/graphicInterface/oldMonitor/monitor/mon/root
 
-VERSIONS = \
-	       monN \
-	       monX
-
-SRCS = \
-	   cp_mgr.ansi.c \
-	   menu_mgr.C \
-	   notify_mgr.ansi.c \
-	   root.C \
-	   stand_alone.ansi.c
-
-LOCAL_LINT = \
-	         llib-lfor_mgrs.ln \
-	         llib-ldesk_sm.ln \
-	         lint_mgr \
-	         lint_desk \
-	         lint_dia \
-	         lint_sa
-
-
-# X windows version
-SRCS_monX = \
-	        cp_mgr.ansi.c \
-	        menu_mgr.C \
-	        notify_mgr.ansi.c \
-	        root.C
-
-DIRS_monX = \
-	        desk_sm \
-	        dialog_mgr \
-	        system_mgr
-
-ARCHIVE_monX = ../../monX-$(DSYSTEM_OS)-g.a
-
 # command line version
-SRCS_monN = \
+SRCS = \
 	    notify_mgr.ansi.c \
 	    stand_alone.ansi.c
 
-DIRS_monN = 
+ARCHIVE = ../../monN-$(DSYSTEM_OS)-g.a
 
-ARCHIVE_monN = ../../monN-$(DSYSTEM_OS)-g.a
+include ../../../../../../make.config
 
-include Makeinclude
+include $(DEPENDS)
 
-# Handle lint specially (non-version specific)
-lint_mgr: menu_mgr.C cp_mgr.ansi.c notify_mgr.ansi.c
-	$(LINT.c) $^ llib-lfor_mgrs.ln -lc
-
-lint_desk: root.C
-	$(LINT.c) $^ llib-ldesk_sm.ln  -lc
-
-lint_sa: notify_mgr.ansi.c stand_alone.ansi.c
-	@echo "Stand alone version..."
-	$(LINT.c) $^ -lc
-
-.PHONY: lint_mgr lint_desk lint_dia lint_sa
+# DO NOT DELETE THIS LINE -- make depend depends on it.

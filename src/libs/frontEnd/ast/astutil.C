@@ -35,6 +35,7 @@
 #include <libs/frontEnd/ast/astlist.h>
 #include <libs/frontEnd/ast/asttree.h>
 #include <include/frontEnd/astnode.h>
+#include <libs/frontEnd/ast/gen.h>
 
 #include <libs/support/memMgmt/mem.h>
 #include <libs/support/strings/rn_string.h>
@@ -1389,24 +1390,31 @@ void ast_dump(AST_INDEX node)
   (void) printf("node = %u\n", node);
   if (is_list_node(node))
     {
-      (void) printf("  node_type =%u\n", ast_get_node_type(node));
-      (void) printf("  next =%u\n", N(node)->Listnode->next);
-      (void) printf("  prev =%u\n", N(node)->Listnode->prev);
-      (void) printf("  father =%u\n", N(node)->Listnode->father);
-      (void) printf("  son =%u\n", N(node)->Listnode->son);
+      (void) printf("  node_type = %u\n", ast_get_node_type(node));
+      (void) printf("  next = %u\n", N(node)->Listnode->next);
+      (void) printf("  prev = %u\n", N(node)->Listnode->prev);
+      (void) printf("  father = %u\n", N(node)->Listnode->father);
+      (void) printf("  son = %u\n", N(node)->Listnode->son);
     }
   else
     {
       num_of_sons = ast_get_son_count(node);
-      (void) printf("  node_type =%u\n", ast_get_node_type(node));
-      (void) printf("  type =%u\n", N(node)->Leafnode->type);      
-      (void) printf("  status =%u\n", N(node)->Leafnode->status);      
-      (void) printf("  scratch =%u\n", N(node)->Leafnode->scratch);
-      (void) printf("  father =%u\n", N(node)->Leafnode->father);      
-      (void) printf("  display =%u\n", N(node)->Leafnode->display);
-      (void) printf("  meta_type =%u\n", N(node)->Leafnode->meta_type);
+      (void) printf("  node_type = %u\n", ast_get_node_type(node));
+      (void) printf("  type = %u\n", N(node)->Leafnode->type);      
+      (void) printf("  status = %u\n", N(node)->Leafnode->status);      
+      (void) printf("  scratch = %u\n", N(node)->Leafnode->scratch);
+      (void) printf("  father = %u\n", N(node)->Leafnode->father);      
+      (void) printf("  display = %u\n", N(node)->Leafnode->display);
+      (void) printf("  meta_type = %u\n", N(node)->Leafnode->meta_type);
+      (void) printf("  real type = %u\n", ast_get_real_type(node));      
+      (void) printf("  converted type = %u\n", ast_get_converted_type(node));      
+      (void) printf("  has parens = %u\n", ast_get_parens(node));      
+      char *text = gen_get_text(node);
+      if (text != NULL && text != "")
+        (void) printf("  text = %s\n", text);
+
       if (num_of_sons == 0)
-	(void) printf("  symbol =%u\n", N(node)->Leafnode->symbol);
+	      (void) printf("  symbol = %u\n", N(node)->Leafnode->symbol);
       else
 	{
 	  for (i = 1; i <= num_of_sons; i++)

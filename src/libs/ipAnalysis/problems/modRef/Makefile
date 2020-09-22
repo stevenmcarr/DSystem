@@ -10,4 +10,8 @@ SRCS =	\
 
 ARCHIVE = ../IPAnalysis-$(DSYSTEM_OS)-g.a
 
-include Makeinclude
+include ../../../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

@@ -2,14 +2,14 @@
 
 HERE = libs/graphicInterface/oldMonitor/monitor/keyboard
 
-VERSIONS = monX monN
-
 SRCS = \
 	   kb.C \
 	   keymap.C
 
-ARCHIVE_monX = ../monX-$(DSYSTEM_OS)-g.a
+ARCHIVE = ../monN-$(DSYSTEM_OS)-g.a
 
-ARCHIVE_monN = ../monN-$(DSYSTEM_OS)-g.a
+include ../../../../../make.config
 
-include Makeinclude
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

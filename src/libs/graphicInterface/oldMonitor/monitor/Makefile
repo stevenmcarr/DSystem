@@ -2,25 +2,23 @@
 
 HERE = libs/graphicInterface/oldMonitor/monitor
 
-VERSIONS = monX monN
-
-# X windows version
-DIRS_monX = \
-	        dialogs \
-	        items \
-			keyboard \
-	        mon \
-	        sms
-
-ARCHIVE_monX = monX-$(DSYSTEM_OS)-g.a
-
-
 # command line version
-DIRS_monN = \
+DIRS = \
 			keyboard \
 	        mon
 
-ARCHIVE_monN = monN-$(DSYSTEM_OS)-g.a
+ARCHIVE = monN-$(DSYSTEM_OS)-g.a
 
 
-include Makeinclude
+dirs: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir; \
+	done
+
+clean: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir clean; \
+	done
+	$(RM) $(ARCHIVE)

@@ -7,5 +7,15 @@ DIRS = \
 	   message
 
 ARCHIVE = Support-$(DSYSTEM_OS)-g.a
+dirs: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir; \
+	done
 
-include Makeinclude
+clean: 
+	for dir in $(DIRS); do \
+	  echo "Making directory" $$dir; \
+	  make -C $$dir clean; \
+	done
+	$(RM) $(ARCHIVE)

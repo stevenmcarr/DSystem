@@ -51,3 +51,7 @@ cluster                     return CLUSTER;
 [\n]     |
 .                           ;
 %%
+
+int a2i_wrap() {
+    return 1;
+}

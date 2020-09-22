@@ -5,5 +5,9 @@ HERE = libs/ipAnalysis/problems/alias
 SRCS =	AliasSets.C AliasAnnot.C AliasDFProblem.C AliasAnnotMgrs.C
  
 ARCHIVE = ../IPAnalysis-$(DSYSTEM_OS)-g.a
- 
-include Makeinclude
+
+include ../../../../make.config
+
+include $(DEPENDS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
