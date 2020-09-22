@@ -1342,7 +1342,6 @@ void ast_dump_all()
   (void) ast_dump_tree(asttab->root);
 }
 
-
 static void ast_dump_tree(AST_INDEX root)
 {
   int        num_of_sons;
@@ -1361,9 +1360,21 @@ static void ast_dump_tree(AST_INDEX root)
   if (is_list_node(root))
     {
       node = list_first(root);
+      (void) printf("  list_first = %u\n", node);
+      while (node != AST_NIL)
+	{
+          (void) printf("list node = %u\n", node);
+	  AST_INDEX prev = list_prev(node);
+      	  (void) printf("  list_prev = %u\n", prev);
+	  node = list_next(node);
+      	  (void) printf("  list_next = %u\n", node);
+	}
+
+      node = list_first(root);
       while (node != AST_NIL)
 	{
 	  ast_dump_tree(node);
+	  AST_INDEX prev = list_prev(node);
 	  node = list_next(node);
 	}
     }
