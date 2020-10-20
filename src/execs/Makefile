@@ -1,7 +1,14 @@
-# $Id: Makefile,v 1.5 1998/01/07 14:40:45 carr Exp $
+# $Id: Makefile,v 1.2 1997/03/27 20:19:38 carr Exp $
 
 HERE = execs
 
-DIRS = f2i Memoria checker cfg
+DIRS = Memoria
 
-include Makeinclude
+.SILENT:
+
+dirs: 
+	for dir in $(DIRS); do \
+	  echo "Making directory " $$dir; \
+	  make -C $$dir; \
+	done
+
