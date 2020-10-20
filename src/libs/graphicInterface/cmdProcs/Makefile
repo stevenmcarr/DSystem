@@ -2,10 +2,13 @@
 
 HERE = libs/graphicInterface/cmdProcs
 
-DIRS = \
-	   dEditor \
-	   help \
-	   newEditor \
-	   paraScopeEditor
+DIRS = paraScopeEditor
 
-include Makeinclude
+.SILENT:
+
+dirs: 
+	for dir in $(DIRS); do \
+	  echo "Making directory " $$dir; \
+	  make -C $$dir; \
+	done
+
