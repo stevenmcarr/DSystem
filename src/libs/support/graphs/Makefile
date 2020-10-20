@@ -10,6 +10,8 @@ ARCHIVE         = Support-$(DSYSTEM_OS)-g.a
 
 .SILENT:
 
+all: dirs $(ARCHIVE)
+
 dirs: 
 	for dir in $(DIRS); do \
 		echo "Making directory" $$dir; \

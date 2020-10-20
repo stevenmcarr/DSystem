@@ -6,6 +6,10 @@ DIRS = \
 	   namedObject \
 	   wordObject
 
+ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
+
+all: dirs $(ARCHIVE)
+
 dirs: 
 	for dir in $(DIRS); do \
 	  echo "Making directory" $$dir; \
@@ -27,8 +31,6 @@ SRCS = \
 	   PointerMap.C \
 	   StringHashTable.C \
 	   symtable.C
-
-ARCHIVE = ../Support-$(DSYSTEM_OS)-g.a
 
 include ../../../make.config
 
