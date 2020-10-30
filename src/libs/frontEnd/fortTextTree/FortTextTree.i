@@ -130,7 +130,7 @@ extern TextTree			ftt_textTree;
 typedef struct
   {
     FortTreeNode node;
-    int value;
+    Generic value;
     int type;
     TextString title;
     short who;

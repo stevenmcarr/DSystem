@@ -49,6 +49,7 @@ using namespace std;
 
 #include <libs/moduleAnalysis/cfg/cfg.h>
 #include <libs/moduleAnalysis/ssa/ssa.h>
+#include <libs/moduleAnalysis/dependence/dependenceGraph/dep_dg.h>
 #include <libs/moduleAnalysis/cfgValNum/cfgval.h>
 
 #include <libs/support/msgHandlers/ErrorMsgHandler.h>
@@ -118,11 +119,18 @@ void CompileFile(FortranModule *module)
   if (selection == AST_DUMP) {
     ast_dump_all();
     return;
-  }
+  } 
 
+  if (selection == DG_DUMP) {
+    dg_all((Context)module, CONTEXT_NULL, CONTEXT_NULL, ftt, ft, &DG, &EL, &LI, &SI, &DT,
+           &cfgModule, false);
+    dg_print_deps(root,ft,DG,SI);
+    return;
+  }
   if (selection != ANNOTATE)
     dg_all((Context)module, CONTEXT_NULL, CONTEXT_NULL, ftt, ft, &DG, &EL, &LI, &SI, &DT,
            &cfgModule, true);
+
 
   PED_DG(ped) = DG;
   PED_FTT(ped) = ftt;
@@ -130,7 +138,7 @@ void CompileFile(FortranModule *module)
   PED_ROOT(ped) = root;
   PED_INFO(ped) = SI;
   PED_DT_INFO(ped) = DT;
-  PED_MH_CONFIG(ped) = (int)NULL;
+  PED_MH_CONFIG(ped) = (Generic)NULL;
 
   /* Run the memory compiler on the ast of the input file */
 

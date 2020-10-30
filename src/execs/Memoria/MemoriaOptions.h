@@ -21,6 +21,7 @@
 #define MC_ALL_FLAG           'a'
 #define MC_ANNOTATE_FLAG      'c'
 #define MC_AST_DUMP_FLAG   't'
+#define MC_DG_DUMP_FLAG   'g'
 #define MC_INTERCHANGE_FLAG   'i'
 #define MC_NO_PRE_LOOP_FLAG   'n'
 #define MC_REPLACEMENT_CHOICE 'r'

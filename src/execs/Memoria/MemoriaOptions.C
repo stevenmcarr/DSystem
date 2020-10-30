@@ -262,6 +262,15 @@ static void mc_opt_ast_dump(void *state)
   selection = AST_DUMP;
   select_char = 't';
 }
+
+static void mc_opt_dg_dump(void *state)
+{
+  if (selection != NO_SELECT)
+    MemoriaOptionsUsage("Memoria");
+  selection = DG_DUMP;
+  select_char = 't';
+}
+
 static void mc_opt_count_ldst(void *state)
 {
   if (selection != NO_SELECT)
@@ -513,6 +522,13 @@ static struct flag_ astdump_f = {
   "dumpt the AST to cout",
 };
 
+
+static struct flag_ dgdump_f = {
+  mc_opt_dg_dump,
+  "dump dg",
+  "dumpt the dependence graph to cout",
+};
+
 static struct choice_entry_ unroll_choices[3] = {
     {0,
      "0",
@@ -648,6 +664,8 @@ int MemoriaInitOptions(int argc, char **argv)
                                         (Generic)&annotate_f),
          *mc_ast_dump_flag = InitOption(flag, MC_AST_DUMP_FLAG, (Generic) false, true,
                                         (Generic)&astdump_f),
+         *mc_dg_dump_flag = InitOption(flag, MC_DG_DUMP_FLAG, (Generic) false, true,
+                                        (Generic)&dgdump_f),
          *mc_unroll_choice = InitOption(choice, MC_UNROLL_CHOICE, (Generic) false, true,
                                         (Generic)&unroll_c),
          *RestrictedUnrolling_flag = InitOption(flag, MC_RESTRICTED_FLAG,
@@ -681,6 +699,7 @@ int MemoriaInitOptions(int argc, char **argv)
   MemoriaOptions.Add(mc_dep_stats_flag);
   MemoriaOptions.Add(mc_annotate_flag);
   MemoriaOptions.Add(mc_ast_dump_flag);
+  MemoriaOptions.Add(mc_dg_dump_flag);
   MemoriaOptions.Add(mc_unroll_choice);
   MemoriaOptions.Add(RestrictedUnrolling_flag);
 
