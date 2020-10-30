@@ -968,9 +968,10 @@ static void walk_loops_to_interchange(model_loop *loop_data,
 		}
 	}
 }
+
 int buildGraph(AST_INDEX stmt,
 			   int level,
-			   Generic pre_info)
+			   Generic vec_info)
 {
 	DG_Edge *dg;
 	int vector;
@@ -978,21 +979,22 @@ int buildGraph(AST_INDEX stmt,
 		next_edge;
 	int i;
 
-	pre_info_type *pinfo = (pre_info_type*)pre_info;
+	vec_info_type *vinfo = (vec_info_type*)vec_info;
 
-	dg = dg_get_edge_structure(PED_DG(pinfo->ped));
-	vector = get_info(pinfo->ped, stmt, type_levelv);
+	dg = dg_get_edge_structure(PED_DG(vinfo->ped));
+	vector = get_info(vinfo->ped, stmt, type_levelv);
 
 	/* remove carried dependences */
 
 	for (i = 1; i <= level; i++)
 	{
 
-		for (edge = dg_first_src_stmt(PED_DG(pinfo->ped), vector, i);
+		for (edge = dg_first_src_stmt(PED_DG(vinfo->ped), vector, i);
 			 edge != END_OF_LIST;
 			 edge = next_edge)
 		{
-			next_edge = dg_next_src_stmt(PED_DG(pinfo->ped), edge);
+			next_edge = dg_next_src_stmt(PED_DG(vinfo->ped), edge);
+			vinfo->vecDepGraph->addEdge(stmt,dg[edge].sink,&dg[edge]);
 		}
 	}
 }
@@ -1035,6 +1037,6 @@ void memory_advanced_vectorization(PedInfo ped,
 	vec_info.ped = ped;
 	vec_info.vecDepGraph = new DependenceGraph(pre_info->stmt_num);
 	walk_statements(root, level, (WK_STMT_CLBACK)buildGraph,
-					(WK_STMT_CLBACK)ut_mark_do_post, (Generic)pre_info);
+					(WK_STMT_CLBACK)NOFUNC, (Generic)pre_info);
 
 }
