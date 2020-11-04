@@ -77,9 +77,9 @@ int FortTextTreeModAttr::ComputeUpCall()
   case ft_UNINITIALIZED: {
     const char *file = uplinkToFile->ReferenceFilePathName();
 
-    traceMsgHandler.HandleMsg(1, "Begin parsing %s ...\n", file);
+    //traceMsgHandler.HandleMsg(1, "Begin parsing %s ...\n", file);
     ftt_ImportFromTextFile((char *) file, ftt);
-    traceMsgHandler.HandleMsg(1, "Finished parsing %s.\n", file); 
+    //traceMsgHandler.HandleMsg(1, "Finished parsing %s.\n", file); 
 
     ftAttr->ResetStateToInitialized();
     break;

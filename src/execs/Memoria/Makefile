@@ -6,7 +6,7 @@ ARCHIVE         = Memoria-$(DSYSTEM_OS)-g.a
 EXEC	        = Memoria-$(DSYSTEM_OS)-g
 DSYSTEM_LIBS    = $(NLIBS) 
 
-LOCAL_LIBS      = /home/carr/cs6030/flex-2.5.35/libfl.a -lm 
+LOCAL_LIBS      = $(DSYSTEM)/lib/flex-2.5.35/libfl.a -lm 
 
 exec: $(ARCHIVE) 
 	echo "Generating " $(EXEC)

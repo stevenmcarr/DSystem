@@ -110,7 +110,7 @@ print_deps(AST_INDEX id, print_params *params)
 
   char src_text[80];
   /* look at all dependences edges with id as src */
-  if (dg_first_src_ref(dg, ref) >= 0 || dg_first_sink_ref(dg, ref) >= 0)
+  if (dg_first_src_ref(dg, ref) >= 0)
     if (is_subscript(tree_out(id)))
     {
       ut_GetSubscriptText(tree_out(id), src_text);
@@ -156,7 +156,7 @@ print_deps(AST_INDEX id, print_params *params)
 
   /* look at all dependences edges with id as sink */
 
-  for (edge = dg_first_sink_ref(dg, ref);
+  /* for (edge = dg_first_sink_ref(dg, ref);
        edge >= 0;
        edge = dg_next_sink_ref(dg, edge))
   {
@@ -186,8 +186,8 @@ print_deps(AST_INDEX id, print_params *params)
     }
     else
       printf("  %s dep %s to %s, src = %d, sink = %d, level = %d, dvec = %s\n", dep_type_str,
-             gen_get_text(id2), gen_get_text(id), Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str);
-  }
+             gen_get_text(id2), gen_get_text(id), Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str); 
+  } */
 
   return WALK_CONTINUE;
 }
