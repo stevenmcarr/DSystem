@@ -3,18 +3,21 @@
 
 #include <list> 
 #include <libs/frontEnd/ast/ast.h>
+#include <libs/Memoria/include/mh.h>
 
 using namespace std;
 
 class RegionNode 
 {
 
-    list<AST_INDEX> *stmts;
+    std::list< pair<AST_INDEX,int> > *stmts;
 
     public:
         RegionNode();
-        void addStmt(AST_INDEX stmt);
-        const list<AST_INDEX> *getStmts() { return stmts; }
+        RegionNode(RegionNode &r);
+        void addStmt(AST_INDEX stmt,int level);
+        void addStmts(std::list< pair<AST_INDEX,int> > *s);
+        std::list< pair<AST_INDEX,int> > *getStmts() { return stmts; }
 };
 
 

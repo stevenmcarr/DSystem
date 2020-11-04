@@ -10,6 +10,8 @@
 
 #include <libs/moduleAnalysis/dependence/dependenceGraph/dep_dg.h>
 
+#include <regionNode.h>
+
 #define NIL -2 
 using namespace std; 
 
@@ -22,10 +24,10 @@ class DependenceGraph
     int sccNum = 0;
 	std::list<int> *adj; // A dynamic array of adjacency lists 
 	std::list<DG_Edge*> *depEdges;
-	std::map<AST_INDEX,int> R;
-    std::map<AST_INDEX,int> stmt_level;
-	std::list<int> *sccs; 
-	std::map<int,AST_INDEX> *nodes;
+	std::list<DG_Edge*> interRegionEdges;
+	RegionNode *R;
+	std::list< AST_INDEX > *sccs; 
+	std::map<int,AST_INDEX> nodes;
 
 	// A Recursive DFS based function used by SCC() 
 	void SCCUtil(int u, int disc[], int low[], 
@@ -35,7 +37,9 @@ public:
 	DependenceGraph(int V,PedInfo ped); // Constructor 
 	void SCC(); // build strongly connected components 
     int addNodeToRegion(AST_INDEX v, int level);
-	void buildGraph();
+	void buildGraph(int k);
+	std::list<AST_INDEX> *getSCCS() {return sccs;}
+	int size() { return V; }
 }; 
 
 #endif

@@ -46,6 +46,8 @@
 #endif
 #include <libs/Memoria/include/UniformlyGeneratedSets.h>
 
+#include <libs/Memoria/vec/regionNode.h>
+
 extern Boolean mc_extended_cache;
 extern int PartitionUnrollAmount;
 
@@ -148,6 +150,7 @@ typedef struct stmtinfotype {
   AST_INDEX surround_node;
   int  level;
   Boolean pre_loop;
+  RegionNode *R;
  } stmt_info_type;
 
 typedef struct preinfotype {

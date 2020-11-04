@@ -123,24 +123,28 @@ static model_loop *buildLoopInformation(PedInfo ped,
 	return loop_data;
 }
 
-void advancedVectorization(DependenceGraph *dGraph,int k) {
-
+void advancedVectorization(DependenceGraph *dgraph,int k) {
+	dgraph->SCC();
+	std::list<AST_INDEX> *sccs = dgraph->getSCCS();	
+	std::list<DependenceGraph *> d_pi;
+	for (int i = 0; i < sccs->size(); i++) {
+		std::list<AST_INDEX> scc = sccs[i];
+		if (!scc.empty()) {
+			
+			for (std::list<AST_INDEX>::iterator it = scc.begin();
+				it != scc.end();
+				it++)
+		}
+	}
 }
 
 int buildRegion(AST_INDEX stmt,
 			   int level,
 			   Generic vgraph)
 {
-	DG_Edge *dg;
-	int vector;
-	EDGE_INDEX edge,
-		next_edge;
-	int i;
-
 	if (!is_loop_stmt(stmt))
 		((DependenceGraph*)vgraph)->addNodeToRegion(stmt,level);
 	
-
 	return(WALK_CONTINUE);
 
 }
@@ -183,6 +187,6 @@ void memory_advanced_vectorization(PedInfo ped,
 	walk_statements(root, level, (WK_STMT_CLBACK)buildRegion,
 					(WK_STMT_CLBACK)NOFUNC, (Generic)vecDepGraph);
 
-	vecDepGraph->buildGraph();
+	vecDepGraph->buildGraph(1);
 	advancedVectorization(vecDepGraph,1);
 }

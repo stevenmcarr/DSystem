@@ -12,20 +12,16 @@ DependenceGraph::DependenceGraph(int V, PedInfo ped)
 	this->ped = ped;
 	adj = new std::list<int>[V];
 	depEdges = new std::list<DG_Edge *>[V];
-	sccs = new std::list<int>[V];
+	sccs = new std::list<AST_INDEX>[V];
+	R = new RegionNode();
 }
 
 int DependenceGraph::addNodeToRegion(AST_INDEX v, int level)
 {
-	map<AST_INDEX, int>::iterator sit;
-
+	R->addStmt(v,level);
 	int v_index = get_stmt_info_ptr(v)->stmt_num;
-	if ((sit = R.find(v)) != R.end())
-	{
-		R.insert(pair<AST_INDEX, int>(v, v_index));
-		stmt_level.insert(pair<AST_INDEX, int>(v, level));
-	}
-	return v_index;
+	nodes.insert(pair<int,AST_INDEX>(v_index,v));
+	get_stmt_info_ptr(v)->R = R;
 }
 
 void DependenceGraph::addEdge(AST_INDEX v, AST_INDEX w, DG_Edge *edge)
@@ -37,19 +33,19 @@ void DependenceGraph::addEdge(AST_INDEX v, AST_INDEX w, DG_Edge *edge)
 	depEdges[v_index].push_back(edge);
 }
 
-void DependenceGraph::buildGraph()
+void DependenceGraph::buildGraph(int k)
 {
 	DG_Edge *dg = dg_get_edge_structure(PED_DG(ped));
 
-	for (map<AST_INDEX, int>::iterator it = R.begin();
-		 it != R.end();
+	for (std::list< pair<AST_INDEX, int> >::iterator it = R->getStmts()->begin();
+		 it != R->getStmts()->end();
 		 it++)
 	{
 		AST_INDEX stmt = it->first;
 		int vector = get_info(ped, stmt, type_levelv);
-		int level = stmt_level.find(stmt)->second;
+		int level = it->second;
 
-		for (int i = 1; i <= level; i++)
+		for (int i = k; i <= level; i++)
 		{
 
 			EDGE_INDEX next_edge;
@@ -58,7 +54,10 @@ void DependenceGraph::buildGraph()
 				 edge = next_edge)
 			{
 				next_edge = dg_next_src_stmt(PED_DG(ped), edge);
-				addEdge(stmt, dg[edge].sink, &dg[edge]);
+				if (get_stmt_info_ptr(dg[edge].sink)->R == this)
+					addEdge(stmt, dg[edge].sink, &dg[edge]);
+				else
+					interRegionEdges.push_back(&dg[edge]);
 			}
 		}
 	}
@@ -118,13 +117,13 @@ void DependenceGraph::SCCUtil(int u, int disc[], int low[], stack<int> *st,
 		while (st->top() != u)
 		{
 			w = (int)st->top();
-			sccs[sccNum].push_back(w);
+			sccs[sccNum].push_back(nodes.find(w)->second);
 			//cout << w << " ";
 			stackMember[w] = false;
 			st->pop();
 		}
 		w = (int)st->top();
-		sccs[sccNum++].push_back(w);
+		sccs[sccNum++].push_back(nodes.find(w)->second);
 		//cout << w << "\n";
 		stackMember[w] = false;
 		st->pop();
