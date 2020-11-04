@@ -10,7 +10,7 @@ ARCHIVE         = Support-$(DSYSTEM_OS)-g.a
 
 .SILENT:
 
-all: dirs $(ARCHIVE)
+all: dirs 
 
 dirs: 
 	for dir in $(DIRS); do \

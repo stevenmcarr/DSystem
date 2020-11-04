@@ -146,14 +146,12 @@ print_deps(AST_INDEX id, print_params *params)
     {
       char sink_text[80];
       ut_GetSubscriptText(tree_out(id2), sink_text);
-      printf("  %s dep %s to %s, src_ref = %d, sink_ref = %d, src_stmt = %d, sink_stmt = %d, level = %d, dvec = %s\n",dep_type_str,
-             src_text, sink_text, Earray[edge].src_ref, Earray[edge].sink_ref, Earray[edge].src, Earray[edge].sink,
-             Earray[edge].level, Earray[edge].dt_str);
+      printf("  %s dep %s to %s, src = %d, sink = %d, level = %d, dvec = %s\n", dep_type_str,
+             src_text, sink_text, Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str);
     }
     else
-      printf("  %s dep %s to %s, src_ref = %d, sink_ref = %d, src_stmt = %d, sink_stmt = %d, level = %d, dvec = %s\n",dep_type_str,
-             gen_get_text(id), gen_get_text(id2), Earray[edge].src_ref, Earray[edge].sink_ref, Earray[edge].src, Earray[edge].sink,
-             Earray[edge].level, Earray[edge].dt_str);
+      printf("  %s dep %s to %s, src = %d, sink = %d, level = %d, dvec = %s\n", dep_type_str,
+             gen_get_text(id), gen_get_text(id2), Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str);
   }
 
   /* look at all dependences edges with id as sink */
@@ -164,47 +162,31 @@ print_deps(AST_INDEX id, print_params *params)
   {
     id2 = Earray[edge].src;
 
+    char *dep_type_str;
     switch (Earray[edge].type)
     {
     case dg_true:
-      if (is_subscript(tree_out(id2)))
-      {
-        char subscript[80];
-        ut_GetSubscriptText(tree_out(id2), subscript);
-        printf("  True dep from %s, level = %d, dvec = %s\n",
-               subscript, Earray[edge].level, Earray[edge].dt_str);
-      }
-      else
-        printf("  True dep from %s, level = %d, dvec = %s\n",
-               gen_get_text(id2), Earray[edge].level, Earray[edge].dt_str);
+      dep_type_str = ssave("true");
       break;
 
     case dg_anti:
-      if (is_subscript(tree_out(id2)))
-      {
-        char subscript[80];
-        ut_GetSubscriptText(tree_out(id2), subscript);
-        printf("  Anti dep from %s, level = %d, dvec = %s\n",
-               subscript, Earray[edge].level, Earray[edge].dt_str);
-      }
-      else
-        printf("  Anti dep from %s, level = %d, dvec = %s\n",
-               gen_get_text(id2), Earray[edge].level, Earray[edge].dt_str);
+      dep_type_str = ssave("anti");
       break;
 
     case dg_output:
-      if (is_subscript(tree_out(id2)))
-      {
-        char subscript[80];
-        ut_GetSubscriptText(tree_out(id2), subscript);
-        printf("  Output dep from %s, level = %d, dvec = %s\n",
-               subscript, Earray[edge].level, Earray[edge].dt_str);
-      }
-      else
-        printf("  Output dep from %s, level = %d, dvec = %s\n",
-               gen_get_text(id2), Earray[edge].level, Earray[edge].dt_str);
+      dep_type_str = ssave("output");
       break;
     }
+    if (is_subscript(tree_out(id2)))
+    {
+      char from_text[80];
+      ut_GetSubscriptText(tree_out(id2), from_text);
+      printf("  %s dep %s to %s, src = %d, sink = %d, level = %d, dvec = %s\n", dep_type_str,
+             from_text, src_text, Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str);
+    }
+    else
+      printf("  %s dep %s to %s, src = %d, sink = %d, level = %d, dvec = %s\n", dep_type_str,
+             gen_get_text(id2), gen_get_text(id), Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str);
   }
 
   return WALK_CONTINUE;
