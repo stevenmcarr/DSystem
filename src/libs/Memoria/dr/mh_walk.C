@@ -583,6 +583,36 @@ static void PerformF2iAnalysis(AST_INDEX stmt,
 			     stmt,level);
   }
 
+/****************************************************************************/
+/*                                                                          */
+/*   Function:   Vectorization                                              */
+/*                                                                          */
+/*   Input:      stmt - a DO-loop stmt                                      */
+/*               level - nesting level of stmt                              */
+/*               walk_info - structure to hold passed information           */
+/*                                                                          */
+/*   Description: Call function to perform vectorization on a loop          */
+/*                nest.                                                     */
+/*                                                                          */
+/****************************************************************************/
+
+static void Vectorization(AST_INDEX      stmt,
+			      int            level,
+			      walk_info_type *walk_info)
+  {
+     /* perform vectorization */
+   memory_advanced_vectorization(walk_info->ped,stmt,level,walk_info->symtab,
+			     walk_info->ar);
+
+     /* re-initialize scratch field (no dangling pointers) */
+   walk_expression(stmt,set_scratch,NOFUNC,
+
+		   (Generic)NULL);
+     /* free up space used */
+   walk_info->ar->arena_deallocate(LOOP_ARENA);
+  }
+
+
 
 /****************************************************************************/
 /*                                                                          */
@@ -613,6 +643,8 @@ static int post_walk(AST_INDEX      stmt,
 	case LI_STATS:       InterchangeStats(stmt,level,walk_info);
 	                     break;
 	case INTERCHANGE:    Interchange(stmt,level,walk_info);
+	                     break;
+	case VECTORIZE:      Vectorization(stmt,level,walk_info);
 	                     break;
 	case SCALAR_REP:     ScalarReplacement(stmt,level,walk_info);
 	                     break;

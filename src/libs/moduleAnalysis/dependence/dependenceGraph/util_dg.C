@@ -7,10 +7,12 @@
 /*	----------------- I N C L U D E     F I L E S  ------------	*/
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <libs/moduleAnalysis/dependence/dependenceGraph/private_dg.h>
 
 #include <libs/support/memMgmt/mem.h>
+#include <libs/support/strings/rn_string.h>
 
 #include <include/bstring.h>
 
@@ -20,33 +22,39 @@
 #include <libs/frontEnd/ast/gen.h>
 #include <libs/frontEnd/include/walk.h>
 
+#include <libs/frontEnd/fortTree/FortTree.h>
+#include <libs/frontEnd/fortTree/fortsym.h>
+
 #include <libs/moduleAnalysis/dependence/dependenceGraph/dg_instance.h>
 #include <libs/moduleAnalysis/dependence/dependenceGraph/dg_header.h>
 #include <libs/moduleAnalysis/dependence/dependenceGraph/dep_dg.h>
+
+#include <libs/Memoria/include/mem_util.h>
 
 /*	------------------ L O C A L    S T R U C T U R E S --------	*/
 
 struct deps_parm
 {
-	DG_Instance	* dg;		/* handle for dependence graph	*/
-	SideInfo	* infoPtr;	/* handle to side-array		*/
-	int level;              /* level of loop carrying dependence    */
-	Carried_deps *deps;     /* structure to store dependences found */
-	DG_Edge *Earray;		/* array of all DG edges	*/
+  DG_Instance *dg;    /* handle for dependence graph	*/
+  SideInfo *infoPtr;  /* handle to side-array		*/
+  int level;          /* level of loop carrying dependence    */
+  Carried_deps *deps; /* structure to store dependences found */
+  DG_Edge *Earray;    /* array of all DG edges	*/
 };
 
 /*	This struct is for use of the print_deps routing during walks
 	along the AST
 */
-typedef struct	print_params_struct
+typedef struct print_params_struct
 {
-  DG_Instance	*dg;
-  SideInfo	*infoPtr;
+  DG_Instance *dg;
+  SideInfo *infoPtr;
+  FortTree ft;
+  SymDescriptor symtab;
 } print_params;
 
-
-STATIC(int, print_deps,(AST_INDEX id, print_params *params));
-STATIC(int, carried_deps,(AST_INDEX stmt, int level, struct deps_parm *parm));
+STATIC(int, print_deps, (AST_INDEX id, print_params *params));
+STATIC(int, carried_deps, (AST_INDEX stmt, int level, struct deps_parm *parm));
 
 /*---------------------------------------------------------------------
  
@@ -55,19 +63,18 @@ STATIC(int, carried_deps,(AST_INDEX stmt, int level, struct deps_parm *parm));
   Uses print_deps() as helper function for walk_expressions().
 
 */
-int
-dg_print_deps(AST_INDEX root, DG_Instance *dg, SideInfo *infoPtr)
+int dg_print_deps(AST_INDEX root, FortTree ft, DG_Instance *dg, SideInfo *infoPtr)
 {
-  print_params	 params;
+  print_params params;
 
-  params.dg	= dg;
-  params.infoPtr= infoPtr;
+  params.dg = dg;
+  params.infoPtr = infoPtr;
+  params.ft = ft;
 
-  walk_expression( root, (WK_EXPR_CLBACK)print_deps, NULL, (Generic )&params);
-  
+  walk_expression(root, (WK_EXPR_CLBACK)print_deps, NULL, (Generic)&params);
+
   return WALK_CONTINUE;
 }
-
 
 /*---------------------------------------------------------------------
  
@@ -78,78 +85,109 @@ dg_print_deps(AST_INDEX root, DG_Instance *dg, SideInfo *infoPtr)
 static int
 print_deps(AST_INDEX id, print_params *params)
 {
-  int	ref;
-  AST_INDEX	 id2;
-  EDGE_INDEX	 edge;
-  DG_Edge	*Earray;      /* array of all DG edges    */
-  DG_Instance	*dg	= params->dg;
-  SideInfo	*infoPtr= params->infoPtr;
+  int ref;
+  AST_INDEX id2;
+  EDGE_INDEX edge;
+  DG_Edge *Earray; /* array of all DG edges    */
+  DG_Instance *dg = params->dg;
+  SideInfo *infoPtr = params->infoPtr;
+
+  if (is_program(id))
+    params->symtab = ft_SymGetTable(params->ft, gen_get_text(gen_PROGRAM_get_name(id)));
+  else if (is_subroutine(id))
+    params->symtab = ft_SymGetTable(params->ft, gen_get_text(gen_SUBROUTINE_get_name(id)));
+  else if (is_function(id))
+    params->symtab = ft_SymGetTable(params->ft, gen_get_text(gen_FUNCTION_get_name(id)));
 
   /* if no dependences, then create RSD at outermost loop */
-
   if (!is_identifier(id))
     return WALK_CONTINUE;
-
-  printf("ID %s [%d]:\n", gen_get_text(id), id);
 
   if ((ref = dg_get_info(infoPtr, id, type_levelv)) == NO_LEVELV)
     return WALK_CONTINUE;
 
-  Earray = dg_get_edge_structure( dg);
+  Earray = dg_get_edge_structure(dg);
 
+  char src_text[80];
   /* look at all dependences edges with id as src */
+  if (dg_first_src_ref(dg, ref) >= 0)
+    if (is_subscript(tree_out(id)))
+    {
+      ut_GetSubscriptText(tree_out(id), src_text);
+      printf("Array Reference %s :\n", src_text);
+    }
+    else
+      printf("Scalar Reference %s :\n", gen_get_text(id));
+  else
+    return (WALK_CONTINUE);
 
-  for (edge = dg_first_src_ref( dg, ref);
+  for (edge = dg_first_src_ref(dg, ref);
        edge >= 0;
-       edge = dg_next_src_ref( dg, edge))
+       edge = dg_next_src_ref(dg, edge))
   {
     id2 = Earray[edge].sink;
 
+    char *dep_type_str;
     switch (Earray[edge].type)
     {
-      case dg_true:
-        printf("  True dep to %s [%d], level = %d\n",
-            gen_get_text(id2), id2, Earray[edge].level);
-        break;
+    case dg_true:
+      dep_type_str = ssave("true");
+      break;
 
-      case dg_anti:
-        printf("  Anti dep to %s [%d], level = %d\n",
-            gen_get_text(id2), id2, Earray[edge].level);
-        break;
+    case dg_anti:
+      dep_type_str = ssave("anti");
+      break;
 
-      case dg_output:
-        printf("  Outp dep to %s [%d], level = %d\n",
-            gen_get_text(id2), id2, Earray[edge].level);
-        break;
+    case dg_output:
+      dep_type_str = ssave("output");
+      break;
     }
+    if (is_subscript(tree_out(id2)))
+    {
+      char sink_text[80];
+      ut_GetSubscriptText(tree_out(id2), sink_text);
+      printf("  %s dep %s to %s, src = %d, sink = %d, level = %d, dvec = %s\n", dep_type_str,
+             src_text, sink_text, Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str);
+    }
+    else
+      printf("  %s dep %s to %s, src = %d, sink = %d, level = %d, dvec = %s\n", dep_type_str,
+             gen_get_text(id), gen_get_text(id2), Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str);
   }
 
   /* look at all dependences edges with id as sink */
 
-  for (edge = dg_first_sink_ref( dg, ref);
+  /* for (edge = dg_first_sink_ref(dg, ref);
        edge >= 0;
-       edge = dg_next_sink_ref( dg, edge))
+       edge = dg_next_sink_ref(dg, edge))
   {
     id2 = Earray[edge].src;
 
+    char *dep_type_str;
     switch (Earray[edge].type)
     {
-      case dg_true:
-        printf("  True dep from %s [%d], level = %d\n",
-            gen_get_text(id2), id2, Earray[edge].level);
-        break;
+    case dg_true:
+      dep_type_str = ssave("true");
+      break;
 
-      case dg_anti:
-        printf("  Anti dep from %s [%d], level = %d\n",
-            gen_get_text(id2), id2, Earray[edge].level);
-        break;
+    case dg_anti:
+      dep_type_str = ssave("anti");
+      break;
 
-      case dg_output:
-        printf("  Outp dep from %s [%d], level = %d\n",
-            gen_get_text(id2), id2, Earray[edge].level);
-        break;
+    case dg_output:
+      dep_type_str = ssave("output");
+      break;
     }
-  }
+    if (is_subscript(tree_out(id2)))
+    {
+      char from_text[80];
+      ut_GetSubscriptText(tree_out(id2), from_text);
+      printf("  %s dep %s to %s, src = %d, sink = %d, level = %d, dvec = %s\n", dep_type_str,
+             from_text, src_text, Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str);
+    }
+    else
+      printf("  %s dep %s to %s, src = %d, sink = %d, level = %d, dvec = %s\n", dep_type_str,
+             gen_get_text(id2), gen_get_text(id), Earray[edge].src, Earray[edge].sink, Earray[edge].level, Earray[edge].dt_str); 
+  } */
 
   return WALK_CONTINUE;
 }
@@ -165,21 +203,20 @@ dg_carried_deps(DG_Instance *dg, SideInfo *infoPtr, AST_INDEX loop)
 {
   struct deps_parm parm;
 
-  parm.dg	= dg;
-  parm.infoPtr	= infoPtr;
-  parm.level	= loop_level(loop);
-  parm.Earray	= dg_get_edge_structure(dg);
-  parm.deps	= (Carried_deps *) get_mem(sizeof(Carried_deps),"dg_carried_deps");
-  bzero((char*)parm.deps, sizeof(Carried_deps));
+  parm.dg = dg;
+  parm.infoPtr = infoPtr;
+  parm.level = loop_level(loop);
+  parm.Earray = dg_get_edge_structure(dg);
+  parm.deps = (Carried_deps *)get_mem(sizeof(Carried_deps), "dg_carried_deps");
+  bzero((char *)parm.deps, sizeof(Carried_deps));
 
   walk_statements(loop, LEVEL1, (WK_STMT_CLBACK)carried_deps, NULL, (Generic)&parm);
 
-  parm.deps->all_num = parm.deps->true_num + 
+  parm.deps->all_num = parm.deps->true_num +
                        parm.deps->anti_num + parm.deps->out_num;
 
   return parm.deps;
 }
-
 
 /*---------------------------------------------------------------------
  
@@ -190,20 +227,20 @@ dg_carried_deps(DG_Instance *dg, SideInfo *infoPtr, AST_INDEX loop)
 static int
 carried_deps(AST_INDEX stmt, int level, struct deps_parm *parm)
 {
-  int	vector;
-  int	edge_idx;
-  DG_Edge	*Edge;
-  DG_Instance	*dg	= parm->dg;
-  SideInfo	*infoPtr= parm->infoPtr;
+  int vector;
+  int edge_idx;
+  DG_Edge *Edge;
+  DG_Instance *dg = parm->dg;
+  SideInfo *infoPtr = parm->infoPtr;
 
-  if ((vector = dg_get_info( infoPtr, stmt, type_levelv)) == UNUSED)
+  if ((vector = dg_get_info(infoPtr, stmt, type_levelv)) == UNUSED)
     return WALK_CONTINUE;
 
-  edge_idx = dg_first_src_stmt( dg, vector, parm->level);
+  edge_idx = dg_first_src_stmt(dg, vector, parm->level);
   while (edge_idx != UNUSED)
   {
     Edge = parm->Earray + edge_idx;
-    
+
     switch (Edge->type)
     {
     case dg_true:
@@ -219,10 +256,8 @@ carried_deps(AST_INDEX stmt, int level, struct deps_parm *parm)
       break;
     }
 
-    edge_idx = dg_next_src_stmt( dg, edge_idx);
+    edge_idx = dg_next_src_stmt(dg, edge_idx);
   }
 
   return WALK_CONTINUE;
 }
-
-

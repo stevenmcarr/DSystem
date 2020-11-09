@@ -42,6 +42,7 @@
 #include <libs/moduleAnalysis/dependence/dependenceGraph/dg_header.h>
 #endif
 
+#include <libs/frontEnd/fortTree/FortTree.h>
 /*-----------------------------------------------*/
 /* DG_Edge structure - represents one dependence */
 
@@ -109,7 +110,7 @@ struct struct_carried_deps
 
 
 EXTERN(int,	dg_print_deps,
-		(AST_INDEX  root, DG_Instance * dg, SideInfo * infoPtr) );
+		(AST_INDEX  root, FortTree ft, DG_Instance * dg, SideInfo * infoPtr) );
 /* Prints all dependences in program on REF lists
  */
 

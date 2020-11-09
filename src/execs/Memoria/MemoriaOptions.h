@@ -21,6 +21,7 @@
 #define MC_ALL_FLAG           'a'
 #define MC_ANNOTATE_FLAG      'c'
 #define MC_AST_DUMP_FLAG   't'
+#define MC_DG_DUMP_FLAG   'g'
 #define MC_INTERCHANGE_FLAG   'i'
 #define MC_NO_PRE_LOOP_FLAG   'n'
 #define MC_REPLACEMENT_CHOICE 'r'
@@ -36,6 +37,7 @@
 #define MC_LONG_INT_FLAG          'I'
 #define MC_DEPENDENCE_STATS_FLAG 'S'
 #define MC_ROCKET_SCHEDULE_FLAG  'R'
+#define MC_VECTORIZATION_FLAG  'V'
 #define MC_DEBUG_CHOICE       'X'
 
 EXTERN(int, MemoriaInitOptions,(int argc, char **argv));

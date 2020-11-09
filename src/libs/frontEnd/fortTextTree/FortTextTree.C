@@ -3496,8 +3496,8 @@ int ftt_Export(FortTextTree ftt, int continuationCharacter,
   int numSourceLines = ftt_NumLines(ftt);
   va_list exportLineArgs;
 
-  va_start(exportLineArgs, exportLine);
 
+  va_start(exportLineArgs, exportLine);
   state.ftt = ftt;
   state.schandlers = 
     ((schandlers == DEFAULT_SIG_COMMENT_HANDLERS) ? 
@@ -3567,7 +3567,10 @@ static int writeLine(ppstate *state, MapInfoOpaque Map,
     offset = (int)strlen(outLine);
   } else offset = 0;
   
+  int count = 0;
   for(;;) {
+    va_list exportLineCopy;
+    va_copy(exportLineCopy,exportLineArgs);
     numToCopy = min(numCharsLeft, maxlen - offset);
     (void) strncpy(outLine + offset, restOfLine, numToCopy);
 
@@ -3577,7 +3580,7 @@ static int writeLine(ppstate *state, MapInfoOpaque Map,
     outLine[numToCopy + offset] = '\0';
 
     if (exportLine)
-      retcode = exportLine(state->currentOutputLine, outLine, exportLineArgs);
+      retcode = exportLine(state->currentOutputLine, outLine, exportLineCopy);
 
     state->currentOutputLine++;
     

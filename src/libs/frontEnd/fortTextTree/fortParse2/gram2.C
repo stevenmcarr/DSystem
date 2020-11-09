@@ -1036,7 +1036,7 @@ static const yy2type_uint8 yy2r2[] =
        2,     1,     1,     2,     2,     1
 };
 
-
+int yy2errstatus;
 #define yy2errok         (yy2errstatus = 0)
 #define yy2clearin       (yy2char = YY2EMPTY)
 #define YY2EMPTY         (-2)
@@ -1474,12 +1474,12 @@ int yy2nerrs;
 | yy2parse.  |
 `----------*/
 
-    int yy2errstatus;
 int
 yy2parse (void)
 {
     int yy2state;
     /* Number of tokens to shift before error messages enabled.  */
+    int yy2errstatus;
 
     /* The stacks and their tools:
        'yy2ss': related to states.

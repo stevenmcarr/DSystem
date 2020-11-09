@@ -2,6 +2,8 @@
 
 HERE = libs/support/tables
 
+DSYSTEM_OS = Linux-i686
+
 DIRS = \
 	   namedObject \
 	   wordObject

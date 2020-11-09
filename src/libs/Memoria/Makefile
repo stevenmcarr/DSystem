@@ -1,7 +1,7 @@
 # $Id: Makefile,v 1.10 1997/03/27 20:21:21 carr Exp $
 HERE = libs/Memoria
 RM = /bin/rm -r -f
-DIRS		= annotate dr li sp sr uj ut
+DIRS		= annotate dr li sp sr uj ut vec
 ARCHIVE		= Memoria-$(DSYSTEM_OS)-g.a
 
 .SILENT:
