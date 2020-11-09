@@ -14,7 +14,7 @@ DependenceGraph::DependenceGraph(int V, PedInfo ped)
 	R = new RegionNode();
 }
 
-int DependenceGraph::addNodeToRegion(AST_INDEX v, int level)
+void DependenceGraph::addNodeToRegion(AST_INDEX v, int level)
 {
 	R->addStmt(v,level);
 	int v_index = sNum++;
@@ -42,7 +42,7 @@ void DependenceGraph::buildGraph(int k)
 		int vector = get_info(ped, stmt, type_levelv);
 		int level = it->second;
 
-		for (int i = k; i <= level; i++)
+		for (int i = k; i < level; i++)
 		{
 
 			EDGE_INDEX next_edge;
@@ -69,8 +69,8 @@ void DependenceGraph::buildGraph(int k)
 //		 of SCC)
 // stackMember[] --> bit/index array for faster check whether
 //				 a node is in stack
-void DependenceGraph::SCCUtil(AST_INDEX u, map<AST_INDEX,int> disc, map<AST_INDEX,int> low, stack<AST_INDEX> *st,
-							  map<AST_INDEX,bool> stackMember)
+void DependenceGraph::SCCUtil(AST_INDEX u, map<AST_INDEX,int>& disc, map<AST_INDEX,int>& low, stack<AST_INDEX> *st,
+							  map<AST_INDEX,bool>& stackMember)
 {
 	// A static variable is used for simplicity, we can avoid use
 	// of static variable by passing a pointer.
@@ -112,17 +112,18 @@ void DependenceGraph::SCCUtil(AST_INDEX u, map<AST_INDEX,int> disc, map<AST_INDE
 	AST_INDEX w = 0; // To store stack extracted vertices
 	if (low[u] == disc[u])
 	{
+		cout << "SCC: ";
 		while (st->top() != u)
 		{
 			w = (AST_INDEX)st->top();
 			sccs[sccNum].push_back(w);
-			//cout << w << " ";
+			cout << w << " ";
 			stackMember[w] = false;
 			st->pop();
 		}
 		w = (AST_INDEX)st->top();
 		sccs[sccNum++].push_back(w);
-		//cout << w << "\n";
+		cout << w << "\n";
 		stackMember[w] = false;
 		st->pop();
 	}

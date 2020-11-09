@@ -27,18 +27,19 @@ class DependenceGraph
 	std::map<AST_INDEX,int> stmtNums;
 
 	// A Recursive DFS based function used by SCC() 
-	void SCCUtil(AST_INDEX u, map<AST_INDEX,int> disc, map<AST_INDEX,int> low, 
-				stack<AST_INDEX> *st, map<AST_INDEX,bool> stackMember); 
+	void SCCUtil(AST_INDEX u, map<AST_INDEX,int>& disc, map<AST_INDEX,int>& low, 
+				stack<AST_INDEX> *st, map<AST_INDEX,bool>& stackMember); 
 	void addEdge(AST_INDEX v, AST_INDEX w,DG_Edge *edge); // function to add an edge to graph 
 public: 
 	DependenceGraph(int V,PedInfo ped); // Constructor 
 	void SCC(); // build strongly connected components 
-    int addNodeToRegion(AST_INDEX v, int level);
+    void addNodeToRegion(AST_INDEX v, int level);
 	void buildGraph(int k);
 	std::list<AST_INDEX> *getSCCS() {return sccs;}
 	int size() { return V; }
 	bool isSCCCyclic(int sccNum);
 	void dumpGraph();
+	int getNumSCCs() { return sccNum; }
 }; 
 
 #endif

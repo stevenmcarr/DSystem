@@ -96,6 +96,8 @@ std::list<RegionNode *> *PiDependenceGraph::topSort() {
 			}
 		}
 	}
+
+	return topOrder;
 }
 
 void PiDependenceGraph::dumpGraph() 

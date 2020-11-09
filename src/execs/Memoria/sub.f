@@ -21,10 +21,8 @@ C
 C SPEC removed CCMIC$ DO GLOBAL
       DO 100 J=1,N
       DO 100 I=1,M
-      U(I+1,J) = .5D0*(P(I+1,J)+P(I,J))*U(I+1,J)
-      V(I,J+1) = .5D0*(P(I,J+1)+P(I,J))*V(I,J+1)
-      P(I+1,J+1) = (FSDX*(V(I+1,J+1)-V(I,J+1))-FSDY*(U(I+1,J+1)
-     1          -U(I+1,J)))/(P(I,J)+P(I+1,J)+P(I+1,J+1)+P(I,J+1))
+      U(I,J) = .5D0*(V(I+1,J)+V(I,J-1))*U(I-1,J)
+      V(I,J) = .5D0*(U(I,J-1)+U(I,J))*V(I,J)
   100 CONTINUE
 
       RETURN
