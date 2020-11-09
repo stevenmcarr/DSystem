@@ -10,8 +10,6 @@ DependenceGraph::DependenceGraph(int V, PedInfo ped)
 {
 	this->V = V;
 	this->ped = ped;
-	adj = new std::list<int>[V];
-	depEdges = new std::list<DG_Edge *>[V];
 	sccs = new std::list<AST_INDEX>[V];
 	R = new RegionNode();
 }
@@ -19,18 +17,17 @@ DependenceGraph::DependenceGraph(int V, PedInfo ped)
 int DependenceGraph::addNodeToRegion(AST_INDEX v, int level)
 {
 	R->addStmt(v,level);
-	int v_index = get_stmt_info_ptr(v)->stmt_num;
-	nodes.insert(pair<int,AST_INDEX>(v_index,v));
+	int v_index = sNum++;
 	get_stmt_info_ptr(v)->R = R;
 }
 
 void DependenceGraph::addEdge(AST_INDEX v, AST_INDEX w, DG_Edge *edge)
 {
-	int v_index = get_stmt_info_ptr(v)->stmt_num;
-	int w_index = get_stmt_info_ptr(w)->stmt_num;
-
-	adj[v_index].push_back(w_index);
-	depEdges[v_index].push_back(edge);
+	if (adj.find(v) == adj.end()) {
+		adj.insert(pair<AST_INDEX,std::list<AST_INDEX>*>(v,new std::list<AST_INDEX>));
+	}
+	std::list<AST_INDEX> *adjList = adj.find(v)->second;
+	adjList->push_back(w);
 }
 
 void DependenceGraph::buildGraph(int k)
@@ -54,10 +51,8 @@ void DependenceGraph::buildGraph(int k)
 				 edge = next_edge)
 			{
 				next_edge = dg_next_src_stmt(PED_DG(ped), edge);
-				if (get_stmt_info_ptr(dg[edge].sink)->R == this)
+				if (get_stmt_info_ptr(dg[edge].sink)->R == get_stmt_info_ptr(dg[edge].src)->R)
 					addEdge(stmt, dg[edge].sink, &dg[edge]);
-				else
-					interRegionEdges.push_back(&dg[edge]);
 			}
 		}
 	}
@@ -74,23 +69,26 @@ void DependenceGraph::buildGraph(int k)
 //		 of SCC)
 // stackMember[] --> bit/index array for faster check whether
 //				 a node is in stack
-void DependenceGraph::SCCUtil(int u, int disc[], int low[], stack<int> *st,
-							  bool stackMember[])
+void DependenceGraph::SCCUtil(AST_INDEX u, map<AST_INDEX,int> disc, map<AST_INDEX,int> low, stack<AST_INDEX> *st,
+							  map<AST_INDEX,bool> stackMember)
 {
 	// A static variable is used for simplicity, we can avoid use
 	// of static variable by passing a pointer.
 	static int time = 0;
 
 	// Initialize discovery time and low value
-	disc[u] = low[u] = ++time;
+	disc[u] = ++time;
+	low[u] = time;
 	st->push(u);
 	stackMember[u] = true;
 
 	// Go through all vertices adjacent to this
-	std::list<int>::iterator i;
-	for (i = adj[u].begin(); i != adj[u].end(); ++i)
+	std::list<AST_INDEX> *adjList = adj[u];
+	for (std::list<AST_INDEX>::iterator i = adjList->begin(); 
+		 i != adjList->end(); 
+		 ++i)
 	{
-		int v = *i; // v is current adjacent of 'u'
+		AST_INDEX v = *i; // v is current adjacent of 'u'
 
 		// If v is not visited yet, then recur for it
 		if (disc[v] == -1)
@@ -111,19 +109,19 @@ void DependenceGraph::SCCUtil(int u, int disc[], int low[], stack<int> *st,
 	}
 
 	// head node found, pop the stack and print an SCC
-	int w = 0; // To store stack extracted vertices
+	AST_INDEX w = 0; // To store stack extracted vertices
 	if (low[u] == disc[u])
 	{
 		while (st->top() != u)
 		{
-			w = (int)st->top();
-			sccs[sccNum].push_back(nodes.find(w)->second);
+			w = (AST_INDEX)st->top();
+			sccs[sccNum].push_back(w);
 			//cout << w << " ";
 			stackMember[w] = false;
 			st->pop();
 		}
-		w = (int)st->top();
-		sccs[sccNum++].push_back(nodes.find(w)->second);
+		w = (AST_INDEX)st->top();
+		sccs[sccNum++].push_back(w);
 		//cout << w << "\n";
 		stackMember[w] = false;
 		st->pop();
@@ -133,14 +131,17 @@ void DependenceGraph::SCCUtil(int u, int disc[], int low[], stack<int> *st,
 // The function to do DFS traversal. It uses SCCUtil()
 void DependenceGraph::SCC()
 {
-	int *disc = new int[V];
-	int *low = new int[V];
-	bool *stackMember = new bool[V];
-	stack<int> *st = new stack<int>();
+	map<AST_INDEX,int> disc;
+	map<AST_INDEX,int> low;
+	map<AST_INDEX,bool> stackMember;
+	stack<AST_INDEX> *st = new stack<AST_INDEX>();
 
 	// Initialize disc and low, and stackMember arrays
-	for (int i = 0; i < V; i++)
+	for (map<AST_INDEX,std::list<AST_INDEX>*>::iterator it = adj.begin();
+		 it != adj.end();
+		 it++)
 	{
+		AST_INDEX i = it->first;
 		disc[i] = NIL;
 		low[i] = NIL;
 		stackMember[i] = false;
@@ -148,7 +149,30 @@ void DependenceGraph::SCC()
 
 	// Call the recursive helper function to find strongly
 	// connected components in DFS tree with vertex 'i'
-	for (int i = 0; i < V; i++)
+	for (map<AST_INDEX,std::list<AST_INDEX>*>::iterator it = adj.begin();
+		 it != adj.end();
+		 it++) 
+	{
+        AST_INDEX i = it->first;
 		if (disc[i] == NIL)
 			SCCUtil(i, disc, low, st, stackMember);
+	}
+}
+
+bool DependenceGraph::isSCCCyclic(int i) {
+	if (sccs[i].size() > 1)
+		return true;
+	else
+	{
+		bool cyclic = false;
+		AST_INDEX v = sccs[i].front();
+		std::list<AST_INDEX>* adjList = adj[v];
+		for (std::list<AST_INDEX>::iterator it = adjList->begin();
+			 cyclic && it != adjList->end();
+			 it++)
+			 if (v == *it)
+			 	cyclic = true;
+		return cyclic;
+	}
+	
 }

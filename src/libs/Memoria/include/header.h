@@ -107,5 +107,9 @@ EXTERN(void, memory_PerformF2iAnalysis, (PedInfo      ped,
 					 AST_INDEX    root,
 					 int          level));
 
+EXTERN(void, memory_advanced_vectorization,(PedInfo ped,AST_INDEX root,
+				      int level,SymDescriptor symtab,
+				      arena_type *ar));
+
 EXTERN(void, DepStatsDump, (FILE *logfile, LoopStatsType *LoopStats));
 #endif

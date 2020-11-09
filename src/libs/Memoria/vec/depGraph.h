@@ -12,7 +12,6 @@
 
 #include <regionNode.h>
 
-#define NIL -2 
 using namespace std; 
 
 // A class that represents an directed graph 
@@ -20,18 +19,16 @@ class DependenceGraph
 { 
     PedInfo ped;
 	int V; // No. of vertices 
-    int nodeNum = 0; // index of the last node inserted
+    int sNum = 0; // index of the last node inserted
     int sccNum = 0;
-	std::list<int> *adj; // A dynamic array of adjacency lists 
-	std::list<DG_Edge*> *depEdges;
-	std::list<DG_Edge*> interRegionEdges;
+	map<AST_INDEX, std::list<AST_INDEX>*> adj; // A dynamic array of adjacency lists 
 	RegionNode *R;
 	std::list< AST_INDEX > *sccs; 
-	std::map<int,AST_INDEX> nodes;
+	std::map<AST_INDEX,int> stmtNums;
 
 	// A Recursive DFS based function used by SCC() 
-	void SCCUtil(int u, int disc[], int low[], 
-				stack<int> *st, bool stackMember[]); 
+	void SCCUtil(AST_INDEX u, map<AST_INDEX,int> disc, map<AST_INDEX,int> low, 
+				stack<AST_INDEX> *st, map<AST_INDEX,bool> stackMember); 
 	void addEdge(AST_INDEX v, AST_INDEX w,DG_Edge *edge); // function to add an edge to graph 
 public: 
 	DependenceGraph(int V,PedInfo ped); // Constructor 
@@ -40,6 +37,7 @@ public:
 	void buildGraph(int k);
 	std::list<AST_INDEX> *getSCCS() {return sccs;}
 	int size() { return V; }
+	bool isSCCCyclic(int sccNum);
 }; 
 
 #endif

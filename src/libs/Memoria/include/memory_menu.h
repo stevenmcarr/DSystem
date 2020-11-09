@@ -29,7 +29,8 @@
 #define DEP_STATS               17
 #define MEM_SIZE		18    
 #define AST_DUMP                19 
-#define DG_DUMP                 20 /* MUST BE LAST! */
+#define DG_DUMP                 20 
+#define VECTORIZE               21 /* MUST BE LAST! */
 
 #define ARENAS 1
 

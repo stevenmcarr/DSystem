@@ -13,6 +13,8 @@
 /*                                                              */
 /****************************************************************/
 
+#include <sstream>
+
 #ifndef general_h
 #include <libs/support/misc/general.h>
 #endif
@@ -63,6 +65,7 @@
 #include <libs/frontEnd/ast/cd_branch.h>
 
 #include <libs/Memoria/vec/depGraph.h>
+#include <libs/Memoria/vec/piDepGraph.h>
 #include <libs/Memoria/vec/vectorize.h>
 
 /****************************************************************************/
@@ -109,7 +112,7 @@ static model_loop *buildLoopInformation(PedInfo ped,
 	/* prepare nest for analyzing, record surrounding do information */
 
 	walk_statements(root, level, (WK_STMT_CLBACK)ut_mark_do_pre,
-					(WK_STMT_CLBACK)ut_mark_do_post, (Generic)&pre_info);
+					(WK_STMT_CLBACK)ut_mark_do_post, (Generic)pre_info);
 	if (pre_info->abort)
 		return NULL;
 
@@ -123,30 +126,111 @@ static model_loop *buildLoopInformation(PedInfo ped,
 	return loop_data;
 }
 
-void advancedVectorization(DependenceGraph *dgraph,int k) {
-	dgraph->SCC();
-	std::list<AST_INDEX> *sccs = dgraph->getSCCS();	
-	std::list<DependenceGraph *> d_pi;
-	for (int i = 0; i < sccs->size(); i++) {
+static PiDependenceGraph *buildDPi(std::list<AST_INDEX> *sccs, int n, int k, PedInfo ped)
+{
+	PiDependenceGraph *d_pi = new PiDependenceGraph(n, ped);
+	for (int i = 0; i < n; i++)
+	{
 		std::list<AST_INDEX> scc = sccs[i];
-		if (!scc.empty()) {
-			
-			for (std::list<AST_INDEX>::iterator it = scc.begin();
-				it != scc.end();
-				it++)
+		RegionNode *R = new RegionNode();
+		for (std::list<AST_INDEX>::iterator it = scc.begin();
+			 it != scc.end();
+			 it++)
+		{
+			AST_INDEX stmt = *it;
+			R->addStmt(stmt, get_stmt_info_ptr(stmt)->level);
 		}
+		R->setSCCNum(i);
+		d_pi->addRegionNode(R);
 	}
+	d_pi->buildGraph(k);
+
+	return d_pi;
+}
+
+static DependenceGraph *buildIntraRegionGraph(RegionNode *R, PedInfo ped, int k) {
+
+	DependenceGraph *dgraph = new DependenceGraph(R->getNumStmts(),ped);
+	std::list<pair<AST_INDEX,int> > *stmts = R->getStmts();
+	for (std::list<pair<AST_INDEX,int> >::iterator it = stmts->begin();
+	     it != stmts->end();
+		 it++)
+    {
+		dgraph->addNodeToRegion(it->first,it->second);
+	}
+	dgraph->buildGraph(k);
+
+	return dgraph;
+}
+
+static string *getLevelsString(int k, int max) {
+	if (max < k)
+		return new string("none");
+	else
+	{
+		string *s = new string("");
+		for (int i = k; i < max; i++)
+		{
+		    stringstream ss;
+			ss << i;
+			s->append(ss.str()+", ");
+		}
+
+		stringstream ss;
+		ss << max;
+        s->append(ss.str());
+
+		return s;
+	}
+
+}
+
+void advancedVectorization(PedInfo ped, DependenceGraph *dgraph, int k)
+{
+	dgraph->SCC();
+	std::list<AST_INDEX> *sccs = dgraph->getSCCS();
+
+	PiDependenceGraph *d_pi = buildDPi(sccs, dgraph->size(), k, ped);
+
+	std::list<RegionNode*> *regionOrder = d_pi->topSort();
+
+	for (std::list<RegionNode*>::iterator it = regionOrder->begin();
+		 it != regionOrder->end();
+		 it++)
+    {
+		RegionNode *R = *it;
+		if (dgraph->isSCCCyclic(R->getSCCNum()))
+		{
+			///generate a level-k DO
+			advancedVectorization(ped,buildIntraRegionGraph(R,ped,k+1),k+1);
+			//generate a level-k ENDDO
+		} else
+		{
+			std::list< pair<AST_INDEX,int> > *regionStmts = R->getStmts();
+			for (std::list< pair<AST_INDEX,int> >::iterator it2 = regionStmts->begin();
+				 it2 != regionStmts->end();
+				 it2++)
+			{
+				AST_INDEX stmt = it2->first;
+				stringstream ss;
+				ss << get_stmt_info_ptr(stmt)->stmt_num ;
+				cout << "Statement " << ss.str() <<  " is vectorizable at levels: " <<  
+								*getLevelsString(k,get_stmt_info_ptr(stmt)->level);
+			}
+		}
+		
+	}
+
 }
 
 int buildRegion(AST_INDEX stmt,
-			   int level,
-			   Generic vgraph)
+				int level,
+				Generic vgraph)
 {
 	if (!is_loop_stmt(stmt))
-		((DependenceGraph*)vgraph)->addNodeToRegion(stmt,level);
-	
-	return(WALK_CONTINUE);
+		((DependenceGraph *)vgraph)->addNodeToRegion(stmt, level);
 
+	return (WALK_CONTINUE);
 }
 /****************************************************************/
 /*                                                              */
@@ -172,21 +256,25 @@ void memory_advanced_vectorization(PedInfo ped,
 {
 	model_loop *loop_data;
 
-	pre_info_type *pre_info = new pre_info_type();
+	pre_info_type pre_info;
+	pre_info.stmt_num = 0;
+    pre_info.loop_num = 0;
+    pre_info.surrounding_do = 0;
+	pre_info.surround_node = AST_NIL;
+    pre_info.abort = false;
+    pre_info.ped = ped;
+    pre_info.symtab = symtab;
+    pre_info.ar = ar;
 
-	if ((loop_data = buildLoopInformation(ped, root, level, symtab, ar, pre_info)) == NULL)
-	{
-		delete pre_info;
+
+	if ((loop_data = buildLoopInformation(ped, root, level, symtab, ar, &pre_info)) == NULL)
 		return;
-	}
-
-	delete pre_info;
 
 
-	DependenceGraph *vecDepGraph = new DependenceGraph(pre_info->stmt_num,ped);
+	DependenceGraph *vecDepGraph = new DependenceGraph(pre_info.stmt_num, ped);
 	walk_statements(root, level, (WK_STMT_CLBACK)buildRegion,
 					(WK_STMT_CLBACK)NOFUNC, (Generic)vecDepGraph);
 
 	vecDepGraph->buildGraph(1);
-	advancedVectorization(vecDepGraph,1);
+	advancedVectorization(ped, vecDepGraph, 1);
 }
