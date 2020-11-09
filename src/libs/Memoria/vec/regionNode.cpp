@@ -1,8 +1,10 @@
+#include <iostream>
 #include <regionNode.h>
 
 RegionNode::RegionNode()
 {
 
+    regionNum = numRegions++;
     stmts = new std::list<pair<AST_INDEX, int> >();
 }
 
@@ -29,4 +31,15 @@ void RegionNode::addStmts(std::list<pair<AST_INDEX, int> > *s)
          it != s->end();
          it++)
         addStmt(it->first, it->second);
+}
+
+void RegionNode::dumpRegion()
+{
+    cout << " Region " << regionNum << "\n\t Statements = ";
+    for (std::list<pair<AST_INDEX,int> >::iterator it = stmts->begin();
+         it != stmts->end();
+         it++)
+    {
+        cout << get_stmt_info_ptr(it->first)->stmt_num << " ";
+    }
 }

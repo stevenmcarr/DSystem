@@ -30,6 +30,8 @@ public:
 	int size() { return V; }
 	void buildGraph(int k);
 	std::list<RegionNode*> *topSort();
+	void dumpGraph();
+	void dumpRevGraph();
 }; 
 
 #endif

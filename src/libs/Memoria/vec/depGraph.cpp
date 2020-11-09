@@ -52,7 +52,7 @@ void DependenceGraph::buildGraph(int k)
 			{
 				next_edge = dg_next_src_stmt(PED_DG(ped), edge);
 				if (get_stmt_info_ptr(dg[edge].sink)->R == get_stmt_info_ptr(dg[edge].src)->R)
-					addEdge(stmt, dg[edge].sink, &dg[edge]);
+					addEdge(stmt, ut_get_stmt(dg[edge].sink), &dg[edge]);
 			}
 		}
 	}
@@ -175,4 +175,24 @@ bool DependenceGraph::isSCCCyclic(int i) {
 		return cyclic;
 	}
 	
+}
+
+void DependenceGraph::dumpGraph() 
+{
+	cout << "Dependence Graph\n________________\n\n";
+	cout << "\tRegion " << R->getRegionNum();
+	for (map<AST_INDEX,std::list<AST_INDEX> *>::iterator it = adj.begin();
+		 it != adj.end();
+		 it++) 
+	{
+		cout << "\n\tStatement " << get_stmt_info_ptr(it->first)->stmt_num;
+		cout << "\n\tAdjacent To = ";
+		for (std::list<AST_INDEX>::iterator it2 = it->second->begin();
+			 it2 != it->second->end();
+			 it2++)
+		{
+			cout << get_stmt_info_ptr(*it2)->stmt_num << " ";
+		}
+		cout << "\n\n";
+	}
 }

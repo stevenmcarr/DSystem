@@ -19,7 +19,7 @@ void PiDependenceGraph::addRegionNode(RegionNode *R)
 	revAdjList.insert(pair<RegionNode*,std::list<RegionNode*>*>(R,rlist));
 }
 
-void PiDependenceGraph::addEdge(std::map<RegionNode*,std::list<RegionNode*>*>& adjList,RegionNode *src, RegionNode *sink)
+void PiDependenceGraph::addEdge(map<RegionNode*,std::list<RegionNode*>*>& adjList,RegionNode *src, RegionNode *sink)
 {
 	map< RegionNode*,std::list<RegionNode *>* >::iterator it = adjList.find(src);
 	std::list<RegionNode*> *rlist = it->second;
@@ -95,5 +95,43 @@ std::list<RegionNode *> *PiDependenceGraph::topSort() {
 				}
 			}
 		}
+	}
+}
+
+void PiDependenceGraph::dumpGraph() 
+{
+	cout << "D Pi\n____\n\n";
+	for (map<RegionNode*,std::list<RegionNode *> *>::iterator it = adjList.begin();
+		 it != adjList.end();
+		 it++) 
+	{
+		it->first->dumpRegion();
+		cout << "\n\tAdjacent To = ";
+		for (std::list<RegionNode *>::iterator it2 = it->second->begin();
+			 it2 != it->second->end();
+			 it2++)
+		{
+			cout << (*it2)->getRegionNum() << " ";
+		}
+		cout << "\n\n";
+	}
+}
+
+void PiDependenceGraph::dumpRevGraph() 
+{
+	cout << "Reverse D Pi\n____________\n\n";
+	for (map<RegionNode*,std::list<RegionNode *> *>::iterator it = revAdjList.begin();
+		 it != revAdjList.end();
+		 it++) 
+	{
+		it->first->dumpRegion();
+		cout << "\n\tAdjacent From = ";
+		for (std::list<RegionNode *>::iterator it2 = it->second->begin();
+			 it2 != it->second->end();
+			 it2++)
+		{
+			cout << (*it2)->getRegionNum() << " ";
+		}
+		cout << "\n\n";
 	}
 }

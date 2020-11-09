@@ -38,6 +38,7 @@ public:
 	std::list<AST_INDEX> *getSCCS() {return sccs;}
 	int size() { return V; }
 	bool isSCCCyclic(int sccNum);
+	void dumpGraph();
 }; 
 
 #endif
