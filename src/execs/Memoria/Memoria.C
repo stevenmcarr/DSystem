@@ -121,16 +121,18 @@ void CompileFile(FortranModule *module)
     return;
   } 
 
+  if (selection != ANNOTATE)
+    if (selection == DG_DUMP || selection == VECTORIZE)
+      dg_all((Context)module, CONTEXT_NULL, CONTEXT_NULL, ftt, ft, &DG, &EL, &LI, &SI, &DT,
+             &cfgModule, false);
+    else
+      dg_all((Context)module, CONTEXT_NULL, CONTEXT_NULL, ftt, ft, &DG, &EL, &LI, &SI, &DT,
+             &cfgModule, true);
+
   if (selection == DG_DUMP) {
-    dg_all((Context)module, CONTEXT_NULL, CONTEXT_NULL, ftt, ft, &DG, &EL, &LI, &SI, &DT,
-           &cfgModule, false);
     dg_print_deps(root,ft,DG,SI);
     return;
   }
-  if (selection != ANNOTATE)
-    dg_all((Context)module, CONTEXT_NULL, CONTEXT_NULL, ftt, ft, &DG, &EL, &LI, &SI, &DT,
-           &cfgModule, true);
-
 
   PED_DG(ped) = DG;
   PED_FTT(ped) = ftt;

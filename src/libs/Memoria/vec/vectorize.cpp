@@ -190,7 +190,7 @@ void advancedVectorization(PedInfo ped, DependenceGraph *dgraph, int k)
 	dgraph->SCC();
 	std::list<AST_INDEX> *sccs = dgraph->getSCCS();
 
-	PiDependenceGraph *d_pi = buildDPi(sccs, dgraph->size(), k, ped);
+	PiDependenceGraph *d_pi = buildDPi(sccs, dgraph->getNumSCCs(), k, ped);
 
 	std::list<RegionNode*> *regionOrder = d_pi->topSort();
 
