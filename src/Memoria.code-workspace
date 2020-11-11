@@ -1,19 +1,40 @@
 {
 	"folders": [
 		{
-			"path": "libs/Memoria/vec"
-		},
-		{
-			"path": "libs"
-		},
-		{
-			"path": "execs"
+			"path": "."
 		}
 	],
 	"settings": {
-		"C_Cpp.default.cppStandard": "c++98",
-		"C_Cpp.default.cStandard": "c89",
-		"C_Cpp.default.includePath": ["/home/scarr/DSystem/src",
-								      "."],
+		"files.associations": {
+			"util_dg.C": "cpp",
+			"mh_walk.C": "cpp",
+			"Memoria.C": "cpp",
+			"AttributedFile.C": "cpp",
+			"astutil.C": "cpp"
+		}
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "(gdb) Memoria",
+				"type": "cppdbg",
+				"request": "launch",
+				"program": "${workspaceFolder}/execs/Memoria/Memoria-Linux-i686-g",
+				"args": ["-V","-M", "${workspaceFolder}/execs/Memoria/sub.f"],
+				"stopAtEntry": true,
+				"cwd": "${workspaceFolder}",
+				"environment": [],
+				"externalConsole": false,
+				"MIMode": "gdb",
+				"setupCommands": [
+					{
+						"description": "Enable pretty-printing for gdb",
+						"text": "-enable-pretty-printing",
+						"ignoreFailures": true
+					}
+				]
+			}
+		]
 	}
 }

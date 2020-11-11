@@ -1,7 +1,8 @@
 // A C++ program to find strongly connected components in a given
 // directed graph using Tarjan's algorithm (single DFS)
 
-#include <depGraph.h>
+#include <libs/Memoria/vec/depGraph.h>
+#include <libs/Memoria/vec/scc.h>
 
 #include <libs/Memoria/include/mh.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
@@ -10,22 +11,26 @@ DependenceGraph::DependenceGraph(int V, PedInfo ped)
 {
 	this->V = V;
 	this->ped = ped;
-	sccs = new std::list<AST_INDEX>[V];
 	R = new RegionNode();
 }
 
-void DependenceGraph::addNodeToRegion(AST_INDEX v, int level)
+std::list<SCC*>& DependenceGraph::getSCCS() {
+	return sccs;
+}
+
+void DependenceGraph::addNodeToRegion(AST_INDEX v)
 {
-	R->addStmt(v,level);
-	int v_index = sNum++;
+	R->addStmt(v);
 	get_stmt_info_ptr(v)->R = R;
 }
 
-void DependenceGraph::addEdge(AST_INDEX v, AST_INDEX w, DG_Edge *edge)
+void DependenceGraph::addNode(AST_INDEX v) 
 {
-	if (adj.find(v) == adj.end()) {
-		adj.insert(pair<AST_INDEX,std::list<AST_INDEX>*>(v,new std::list<AST_INDEX>));
-	}
+	adj.insert(pair<AST_INDEX,std::list<AST_INDEX>*>(v,new std::list<AST_INDEX>));
+}
+
+void DependenceGraph::addEdge(AST_INDEX v, AST_INDEX w)
+{
 	std::list<AST_INDEX> *adjList = adj.find(v)->second;
 	adjList->push_back(w);
 }
@@ -34,27 +39,41 @@ void DependenceGraph::buildGraph(int k)
 {
 	DG_Edge *dg = dg_get_edge_structure(PED_DG(ped));
 
-	for (std::list< pair<AST_INDEX, int> >::iterator it = R->getStmts()->begin();
-		 it != R->getStmts()->end();
+	for (std::list<AST_INDEX>::iterator it = R->getStmts().begin();
+		 it != R->getStmts().end();
+		 it++)
+		addNode(*it);
+
+	for (std::list<AST_INDEX>::iterator it = R->getStmts().begin();
+		 it != R->getStmts().end();
 		 it++)
 	{
-		AST_INDEX stmt = it->first;
+		AST_INDEX stmt = *it;
 		int vector = get_info(ped, stmt, type_levelv);
-		int level = it->second;
+		int level = get_stmt_info_ptr(stmt)->level;
 
 		for (int i = k; i < level; i++)
 		{
 
-			EDGE_INDEX next_edge;
 			for (EDGE_INDEX edge = dg_first_src_stmt(PED_DG(ped), vector, i);
 				 edge != END_OF_LIST;
-				 edge = next_edge)
+				 edge = dg_next_src_stmt(PED_DG(ped), edge))
 			{
-				next_edge = dg_next_src_stmt(PED_DG(ped), edge);
-				if (get_stmt_info_ptr(dg[edge].sink)->R == get_stmt_info_ptr(dg[edge].src)->R)
-					addEdge(stmt, ut_get_stmt(dg[edge].sink), &dg[edge]);
+				AST_INDEX sink_stmt = ut_get_stmt(dg[edge].sink);
+				if (get_stmt_info_ptr(sink_stmt)->R == get_stmt_info_ptr(stmt)->R)
+					addEdge(stmt, sink_stmt);
 			}
+
+			
 		}
+		for (EDGE_INDEX edge = dg_first_src_stmt(PED_DG(ped), vector, LOOP_INDEPENDENT);
+			 edge != END_OF_LIST;
+			 edge = dg_next_src_stmt(PED_DG(ped), edge)) 
+			{
+				AST_INDEX sink_stmt = ut_get_stmt(dg[edge].sink);
+				if (get_stmt_info_ptr(sink_stmt)->R == get_stmt_info_ptr(stmt)->R)
+					addEdge(stmt, sink_stmt);
+			}
 	}
 }
 
@@ -113,16 +132,19 @@ void DependenceGraph::SCCUtil(AST_INDEX u, map<AST_INDEX,int>& disc, map<AST_IND
 	if (low[u] == disc[u])
 	{
 		cout << "SCC: ";
+		SCC* scc = new SCC();
 		while (st->top() != u)
 		{
 			w = (AST_INDEX)st->top();
-			sccs[sccNum].push_back(w);
+			scc->addNode(w);
 			cout << w << " ";
 			stackMember[w] = false;
 			st->pop();
 		}
 		w = (AST_INDEX)st->top();
-		sccs[sccNum++].push_back(w);
+		scc->addNode(w);
+		sccs.push_back(scc);
+		sccNum++;
 		cout << w << "\n";
 		stackMember[w] = false;
 		st->pop();
@@ -130,7 +152,7 @@ void DependenceGraph::SCCUtil(AST_INDEX u, map<AST_INDEX,int>& disc, map<AST_IND
 }
 
 // The function to do DFS traversal. It uses SCCUtil()
-void DependenceGraph::SCC()
+void DependenceGraph::computeSCC()
 {
 	map<AST_INDEX,int> disc;
 	map<AST_INDEX,int> low;
@@ -160,13 +182,13 @@ void DependenceGraph::SCC()
 	}
 }
 
-bool DependenceGraph::isSCCCyclic(int i) {
-	if (sccs[i].size() > 1)
+bool DependenceGraph::isRegionCyclic(RegionNode& R) {
+	if (R.getNumStmts() > 1)
 		return true;
 	else
 	{
 		bool cyclic = false;
-		AST_INDEX v = sccs[i].front();
+		AST_INDEX v = R.getStmts().front();
 		std::list<AST_INDEX>* adjList = adj[v];
 		for (std::list<AST_INDEX>::iterator it = adjList->begin();
 			 cyclic && it != adjList->end();

@@ -126,21 +126,17 @@ static model_loop *buildLoopInformation(PedInfo ped,
 	return loop_data;
 }
 
-static PiDependenceGraph *buildDPi(std::list<AST_INDEX> *sccs, int n, int k, PedInfo ped)
+static PiDependenceGraph *buildDPi(std::list<SCC*>& sccs, int k, PedInfo ped)
 {
+	int n = sccs.size();
 	PiDependenceGraph *d_pi = new PiDependenceGraph(n, ped);
-	for (int i = 0; i < n; i++)
+	int i = 0;
+	for (std::list<SCC*>::iterator it = sccs.begin();
+		 it != sccs.end();
+		 it++)
 	{
-		std::list<AST_INDEX> scc = sccs[i];
-		RegionNode *R = new RegionNode();
-		for (std::list<AST_INDEX>::iterator it = scc.begin();
-			 it != scc.end();
-			 it++)
-		{
-			AST_INDEX stmt = *it;
-			R->addStmt(stmt, get_stmt_info_ptr(stmt)->level);
-		}
-		R->setSCCNum(i);
+		SCC *scc = *it;
+		RegionNode *R = new RegionNode(scc,k);
 		d_pi->addRegionNode(R);
 	}
 	d_pi->buildGraph(k);
@@ -151,12 +147,12 @@ static PiDependenceGraph *buildDPi(std::list<AST_INDEX> *sccs, int n, int k, Ped
 static DependenceGraph *buildIntraRegionGraph(RegionNode *R, PedInfo ped, int k) {
 
 	DependenceGraph *dgraph = new DependenceGraph(R->getNumStmts(),ped);
-	std::list<pair<AST_INDEX,int> > *stmts = R->getStmts();
-	for (std::list<pair<AST_INDEX,int> >::iterator it = stmts->begin();
-	     it != stmts->end();
+	std::list<AST_INDEX>& stmts = R->getStmts();
+	for (std::list<AST_INDEX>::iterator it = stmts.begin();
+	     it != stmts.end();
 		 it++)
     {
-		dgraph->addNodeToRegion(it->first,it->second);
+		dgraph->addNodeToRegion(*it);
 	}
 	dgraph->buildGraph(k);
 
@@ -169,16 +165,15 @@ static string *getLevelsString(int k, int max) {
 	else
 	{
 		string *s = new string("");
-		for (int i = k; i < max; i++)
+		for (int i = k; i < max-1; i++)
 		{
 		    stringstream ss;
 			ss << i;
 			s->append(ss.str()+", ");
 		}
-
 		stringstream ss;
-		ss << max;
-        s->append(ss.str());
+		ss << (max-1);
+		s->append(ss.str());
 
 		return s;
 	}
@@ -187,10 +182,10 @@ static string *getLevelsString(int k, int max) {
 
 void advancedVectorization(PedInfo ped, DependenceGraph *dgraph, int k)
 {
-	dgraph->SCC();
-	std::list<AST_INDEX> *sccs = dgraph->getSCCS();
+	dgraph->computeSCC();
+	std::list<SCC*>& sccs = dgraph->getSCCS();
 
-	PiDependenceGraph *d_pi = buildDPi(sccs, dgraph->getNumSCCs(), k, ped);
+	PiDependenceGraph *d_pi = buildDPi(sccs, k, ped);
 
 	std::list<RegionNode*> *regionOrder = d_pi->topSort();
 
@@ -199,23 +194,24 @@ void advancedVectorization(PedInfo ped, DependenceGraph *dgraph, int k)
 		 it++)
     {
 		RegionNode *R = *it;
-		if (dgraph->isSCCCyclic(R->getSCCNum()))
+		if (dgraph->isRegionCyclic(*R))
 		{
 			///generate a level-k DO
-			advancedVectorization(ped,buildIntraRegionGraph(R,ped,k+1),k+1);
+			DependenceGraph *dgraph2 = buildIntraRegionGraph(R,ped,k+1);
+			advancedVectorization(ped,dgraph2,k+1);
 			//generate a level-k ENDDO
 		} else
 		{
-			std::list< pair<AST_INDEX,int> > *regionStmts = R->getStmts();
-			for (std::list< pair<AST_INDEX,int> >::iterator it2 = regionStmts->begin();
-				 it2 != regionStmts->end();
+			std::list<AST_INDEX>& regionStmts = R->getStmts();
+			for (std::list<AST_INDEX>::iterator it2 = regionStmts.begin();
+				 it2 != regionStmts.end();
 				 it2++)
 			{
-				AST_INDEX stmt = it2->first;
+				AST_INDEX stmt = *it2;
 				stringstream ss;
 				ss << get_stmt_info_ptr(stmt)->stmt_num ;
 				cout << "Statement " << ss.str() <<  " is vectorizable at levels: " <<  
-								*getLevelsString(k,get_stmt_info_ptr(stmt)->level);
+								*getLevelsString(k,get_stmt_info_ptr(stmt)->level) << "\n\n";
 			}
 		}
 		
@@ -228,7 +224,7 @@ int buildRegion(AST_INDEX stmt,
 				Generic vgraph)
 {
 	if (!is_loop_stmt(stmt))
-		((DependenceGraph *)vgraph)->addNodeToRegion(stmt, level);
+		((DependenceGraph *)vgraph)->addNodeToRegion(stmt);
 
 	return (WALK_CONTINUE);
 }

@@ -3,6 +3,7 @@
 
 #include <list> 
 #include <libs/frontEnd/ast/ast.h>
+#include <libs/Memoria/vec/scc.h>
 
 class RegionNode;
 
@@ -15,7 +16,7 @@ static int numRegions = 0;
 class RegionNode 
 {
 
-    std::list< pair<AST_INDEX,int> > *stmts;
+    std::list<AST_INDEX> stmts;
     int sccNum = -1;
     bool visited = false;
     int numStmts = 0;
@@ -24,11 +25,12 @@ class RegionNode
     public:
         RegionNode();
         RegionNode(RegionNode &r);
+        RegionNode(SCC* scc, int level);
         int getNumStmts() { return numStmts; }
         int getRegionNum() { return regionNum; }
-        void addStmt(AST_INDEX stmt,int level);
-        void addStmts(std::list< pair<AST_INDEX,int> > *s);
-        std::list< pair<AST_INDEX,int> > *getStmts() { return stmts; }
+        void addStmt(AST_INDEX stmt);
+        void addStmts(std::list<AST_INDEX>& s);
+        std::list<AST_INDEX>& getStmts() { return stmts; }
         bool isVisited() { return visited; }
         void markVisited() { visited = true; }
         void clearVisited() { visited = false; }

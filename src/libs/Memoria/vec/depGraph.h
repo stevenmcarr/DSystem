@@ -6,11 +6,12 @@
 #include <stack> 
 #include <map>
 
+#include <libs/Memoria/vec/regionNode.h>
+#include <libs/Memoria/vec/scc.h>
+
 #include <libs/frontEnd/ast/ast.h>
 
 #include <libs/moduleAnalysis/dependence/dependenceGraph/dep_dg.h>
-
-#include <regionNode.h>
 
 using namespace std; 
 
@@ -23,21 +24,21 @@ class DependenceGraph
     int sccNum = 0;
 	map<AST_INDEX, std::list<AST_INDEX>*> adj; // A dynamic array of adjacency lists 
 	RegionNode *R;
-	std::list< AST_INDEX > *sccs; 
-	std::map<AST_INDEX,int> stmtNums;
+	std::list<SCC*> sccs; 
 
 	// A Recursive DFS based function used by SCC() 
 	void SCCUtil(AST_INDEX u, map<AST_INDEX,int>& disc, map<AST_INDEX,int>& low, 
 				stack<AST_INDEX> *st, map<AST_INDEX,bool>& stackMember); 
-	void addEdge(AST_INDEX v, AST_INDEX w,DG_Edge *edge); // function to add an edge to graph 
+	void addEdge(AST_INDEX v, AST_INDEX w); // function to add an edge to graph 
+	void addNode(AST_INDEX v);
 public: 
 	DependenceGraph(int V,PedInfo ped); // Constructor 
-	void SCC(); // build strongly connected components 
-    void addNodeToRegion(AST_INDEX v, int level);
+	void computeSCC(); // build strongly connected components 
+    void addNodeToRegion(AST_INDEX v);
 	void buildGraph(int k);
-	std::list<AST_INDEX> *getSCCS() {return sccs;}
+	std::list<SCC*>& getSCCS(); 
 	int size() { return V; }
-	bool isSCCCyclic(int sccNum);
+	bool isRegionCyclic(RegionNode& R);
 	void dumpGraph();
 	int getNumSCCs() { return sccNum; }
 }; 

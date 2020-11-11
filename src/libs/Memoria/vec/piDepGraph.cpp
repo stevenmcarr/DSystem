@@ -1,7 +1,7 @@
 // A C++ program to find strongly connected components in a given
 // directed graph using Tarjan's algorithm (single DFS)
 
-#include <piDepGraph.h>
+#include <libs/Memoria/vec/piDepGraph.h>
 
 #include <libs/Memoria/include/mh.h>
 #include <libs/graphicInterface/cmdProcs/paraScopeEditor/include/pt_util.h>
@@ -16,14 +16,20 @@ void PiDependenceGraph::addRegionNode(RegionNode *R)
 {
 	std::list<RegionNode*> *rlist = new std::list<RegionNode*>();
 	adjList.insert(pair<RegionNode*,std::list<RegionNode*>*>(R,rlist));
+
+	rlist = new std::list<RegionNode*>();
 	revAdjList.insert(pair<RegionNode*,std::list<RegionNode*>*>(R,rlist));
 }
 
-void PiDependenceGraph::addEdge(map<RegionNode*,std::list<RegionNode*>*>& adjList,RegionNode *src, RegionNode *sink)
+void PiDependenceGraph::addEdge(RegionNode *src, RegionNode *sink)
 {
 	map< RegionNode*,std::list<RegionNode *>* >::iterator it = adjList.find(src);
 	std::list<RegionNode*> *rlist = it->second;
 	rlist->push_back(sink);
+
+	it = revAdjList.find(sink);
+	rlist = it->second;
+	rlist->push_back(src);
 }
 
 void PiDependenceGraph::buildGraph(int k)
@@ -47,18 +53,26 @@ void PiDependenceGraph::buildGraph(int k)
 			for (int i = k; i <= level; i++)
 			{
 
-				EDGE_INDEX next_edge;
 				for (EDGE_INDEX edge = dg_first_src_stmt(PED_DG(ped), vector, i);
 				 	 edge != END_OF_LIST;
-				 	 edge = next_edge)
+				 	 edge = dg_next_src_stmt(PED_DG(ped), edge))
 				{
-					next_edge = dg_next_src_stmt(PED_DG(ped), edge);
 					AST_INDEX sink_stmt = ut_get_stmt(dg[edge].sink);
 					if (get_stmt_info_ptr(sink_stmt)->R != get_stmt_info_ptr(stmt)->R)
 					{
-						addEdge(adjList,get_stmt_info_ptr(stmt)->R, get_stmt_info_ptr(sink_stmt)->R);
-						addEdge(revAdjList,get_stmt_info_ptr(sink_stmt)->R, get_stmt_info_ptr(stmt)->R);
+						addEdge(get_stmt_info_ptr(stmt)->R, get_stmt_info_ptr(sink_stmt)->R);
 					}
+				}
+			}
+
+			for (EDGE_INDEX edge = dg_first_src_stmt(PED_DG(ped), vector, LOOP_INDEPENDENT);
+				 edge != END_OF_LIST;
+				 edge = dg_next_src_stmt(PED_DG(ped), edge))
+			{
+				AST_INDEX sink_stmt = ut_get_stmt(dg[edge].sink);
+				if (get_stmt_info_ptr(sink_stmt)->R != get_stmt_info_ptr(stmt)->R)
+				{
+					addEdge(get_stmt_info_ptr(stmt)->R, get_stmt_info_ptr(sink_stmt)->R);
 				}
 			}
 		}
