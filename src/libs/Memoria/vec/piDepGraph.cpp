@@ -41,14 +41,14 @@ void PiDependenceGraph::buildGraph(int k)
 		 it++)
 	{
 		RegionNode *R = it->first;
-		std::list<pair < AST_INDEX,int > > *slist = R->getStmts();
-		for (std::list< pair<AST_INDEX,int> >::iterator it = slist->begin();
-			 it != slist->end();
+		std::list<AST_INDEX>& slist = R->getStmts();
+		for (std::list<AST_INDEX>::iterator it = slist.begin();
+			 it != slist.end();
 			 it++) 
 		 {
-			AST_INDEX stmt = it->first;
+			AST_INDEX stmt = *it;
 			int vector = get_info(ped, stmt, type_levelv);
-			int level = it->second;
+			int level = get_stmt_info_ptr(*it)->level;
 
 			for (int i = k; i <= level; i++)
 			{

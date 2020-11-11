@@ -197,8 +197,12 @@ void advancedVectorization(PedInfo ped, DependenceGraph *dgraph, int k)
 		if (dgraph->isRegionCyclic(*R))
 		{
 			///generate a level-k DO
-			DependenceGraph *dgraph2 = buildIntraRegionGraph(R,ped,k+1);
-			advancedVectorization(ped,dgraph2,k+1);
+			R->updateRegion(k+1);
+			if (R->getNumStmts() > 0) 
+			{
+				DependenceGraph *dgraph2 = buildIntraRegionGraph(R,ped,k+1);
+				advancedVectorization(ped,dgraph2,k+1);
+			}
 			//generate a level-k ENDDO
 		} else
 		{

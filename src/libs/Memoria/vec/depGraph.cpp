@@ -131,13 +131,13 @@ void DependenceGraph::SCCUtil(AST_INDEX u, map<AST_INDEX,int>& disc, map<AST_IND
 	AST_INDEX w = 0; // To store stack extracted vertices
 	if (low[u] == disc[u])
 	{
-		cout << "SCC: ";
+		// cout << "SCC: ";
 		SCC* scc = new SCC();
 		while (st->top() != u)
 		{
 			w = (AST_INDEX)st->top();
 			scc->addNode(w);
-			cout << w << " ";
+			// cout << w << " ";
 			stackMember[w] = false;
 			st->pop();
 		}
@@ -145,7 +145,7 @@ void DependenceGraph::SCCUtil(AST_INDEX u, map<AST_INDEX,int>& disc, map<AST_IND
 		scc->addNode(w);
 		sccs.push_back(scc);
 		sccNum++;
-		cout << w << "\n";
+		// cout << w << "\n";
 		stackMember[w] = false;
 		st->pop();
 	}
@@ -191,7 +191,7 @@ bool DependenceGraph::isRegionCyclic(RegionNode& R) {
 		AST_INDEX v = R.getStmts().front();
 		std::list<AST_INDEX>* adjList = adj[v];
 		for (std::list<AST_INDEX>::iterator it = adjList->begin();
-			 cyclic && it != adjList->end();
+			 !cyclic && it != adjList->end();
 			 it++)
 			 if (v == *it)
 			 	cyclic = true;

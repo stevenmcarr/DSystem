@@ -19,14 +19,13 @@ class RegionNode
     std::list<AST_INDEX> stmts;
     int sccNum = -1;
     bool visited = false;
-    int numStmts = 0;
     int regionNum=0;
 
     public:
         RegionNode();
         RegionNode(RegionNode &r);
         RegionNode(SCC* scc, int level);
-        int getNumStmts() { return numStmts; }
+        int getNumStmts() { return stmts.size(); }
         int getRegionNum() { return regionNum; }
         void addStmt(AST_INDEX stmt);
         void addStmts(std::list<AST_INDEX>& s);
@@ -36,6 +35,7 @@ class RegionNode
         void clearVisited() { visited = false; }
         void setSCCNum(int n) { sccNum = n; }
         int getSCCNum() { return sccNum; }
+        void updateRegion(int level);
         void dumpRegion();
 };
 
