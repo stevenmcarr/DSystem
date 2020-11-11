@@ -28,7 +28,6 @@ RegionNode::RegionNode(SCC* scc,int level)
 void RegionNode::addStmt(AST_INDEX stmt)
 {
 
-    numStmts++;
     stmts.push_back(stmt);
     get_stmt_info_ptr(stmt)->R = this;
 }
@@ -53,4 +52,21 @@ void RegionNode::dumpRegion()
     }
 
     cout << "\n";
+}
+
+void RegionNode::updateRegion(int level)
+{
+    std::list<AST_INDEX>::iterator it = stmts.begin();
+    while(it != stmts.end())
+    {
+        if (get_stmt_info_ptr(*it)->level == level)
+        {
+            cout << "Statement " << get_stmt_info_ptr(*it)->stmt_num << " is not vectorizable\n";
+            it = stmts.erase(it);
+        }
+        else
+        {
+            it++;
+        }
+    }
 }
