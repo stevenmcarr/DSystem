@@ -21,7 +21,7 @@
 				"type": "cppdbg",
 				"request": "launch",
 				"program": "${workspaceFolder}/execs/Memoria/Memoria-Linux-i686-g",
-				"args": ["-V","-M", "${workspaceFolder}/execs/Memoria/sub.f"],
+				"args": ["-V","-M", "${workspaceFolder}/execs/Memoria/s10.f"],
 				"stopAtEntry": true,
 				"cwd": "${workspaceFolder}",
 				"environment": [],
