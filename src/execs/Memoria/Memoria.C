@@ -130,6 +130,7 @@ void CompileFile(FortranModule *module)
              &cfgModule, true);
 
   if (selection == DG_DUMP) {
+    ast_dump_all();
     dg_print_deps(root,ft,DG,SI);
     return;
   }

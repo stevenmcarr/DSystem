@@ -47,6 +47,7 @@ void PiDependenceGraph::buildGraph(int k)
 			 it++) 
 		 {
 			AST_INDEX stmt = *it;
+			RegionNode *src_region = get_stmt_info_ptr(stmt)->R;
 			int vector = get_info(ped, stmt, type_levelv);
 			int level = get_stmt_info_ptr(*it)->level;
 
@@ -58,10 +59,9 @@ void PiDependenceGraph::buildGraph(int k)
 				 	 edge = dg_next_src_stmt(PED_DG(ped), edge))
 				{
 					AST_INDEX sink_stmt = ut_get_stmt(dg[edge].sink);
-					if (get_stmt_info_ptr(sink_stmt)->R != get_stmt_info_ptr(stmt)->R)
-					{
-						addEdge(get_stmt_info_ptr(stmt)->R, get_stmt_info_ptr(sink_stmt)->R);
-					}
+					RegionNode *sink_region = get_stmt_info_ptr(sink_stmt)->R;
+					if (adjList.find(sink_region) != adjList.end() && src_region != sink_region)
+						addEdge(src_region, sink_region);
 				}
 			}
 
@@ -70,10 +70,9 @@ void PiDependenceGraph::buildGraph(int k)
 				 edge = dg_next_src_stmt(PED_DG(ped), edge))
 			{
 				AST_INDEX sink_stmt = ut_get_stmt(dg[edge].sink);
-				if (get_stmt_info_ptr(sink_stmt)->R != get_stmt_info_ptr(stmt)->R)
-				{
-					addEdge(get_stmt_info_ptr(stmt)->R, get_stmt_info_ptr(sink_stmt)->R);
-				}
+				RegionNode *sink_region = get_stmt_info_ptr(sink_stmt)->R;
+				if (adjList.find(sink_region) != adjList.end() && src_region != sink_region)
+					addEdge(src_region, sink_region);
 			}
 		}
 	}
