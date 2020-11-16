@@ -10,7 +10,12 @@
 			"mh_walk.C": "cpp",
 			"Memoria.C": "cpp",
 			"AttributedFile.C": "cpp",
-			"astutil.C": "cpp"
+			"astutil.C": "cpp",
+			"mem_util.C": "cpp",
+			"astlist.C": "cpp",
+			"FortTextTree.C": "cpp",
+			"FortUnparse1.C": "cpp",
+			"pt_util.C": "cpp"
 		}
 	},
 	"launch": {
@@ -21,7 +26,7 @@
 				"type": "cppdbg",
 				"request": "launch",
 				"program": "${workspaceFolder}/execs/Memoria/Memoria-Linux-i686-g",
-				"args": ["-V","-M", "${workspaceFolder}/execs/Memoria/s10.f"],
+				"args": ["-V","-M", "${workspaceFolder}/execs/Memoria/s1.f"],
 				"stopAtEntry": true,
 				"cwd": "${workspaceFolder}",
 				"environment": [],
