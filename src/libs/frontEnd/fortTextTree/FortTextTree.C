@@ -1115,8 +1115,19 @@ static unparseTable nodeInfo[] =
       { SSTOP_LOOP_STAT,
         "{exists(%1)%1}	stop loop{exists(%2) %2}",
         "stop loop &lbl&",
-      }
+      }, 
 
+    /* NONE */
+      { UNUSED,
+        (char *) 0,
+        (char *) 0,
+      },
+
+    /* TRIPLET */
+      { UNUSED,
+        "%1:%2{exists(%3):%3}",
+        "&expr&:&expr&:&expr&",
+      }
   };
 
 

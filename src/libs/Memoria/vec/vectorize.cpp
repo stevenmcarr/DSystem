@@ -6,7 +6,7 @@
 
 /****************************************************************/
 /*                                                              */
-/*   File:        interchange.C                                 */
+/*   File:        vectorize.C                                 */
 /*                                                              */
 /*   Description: Apply the AdancedVectorization algorithm from */
 /*                Allen and Kennedy book to a loop nest         */
@@ -15,9 +15,8 @@
 
 #include <sstream>
 
-#ifndef general_h
 #include <libs/support/misc/general.h>
-#endif
+#include <libs/support/strings/rn_string.h>
 
 #include <libs/Memoria/include/mh.h>
 #include <libs/Memoria/include/mh_ast.h>
@@ -180,8 +179,103 @@ static string *getLevelsString(int k, int max) {
 
 }
 
-void advancedVectorization(PedInfo ped, DependenceGraph *dgraph, int k)
+int getLevelKLoopIndex(model_loop *loop_data,int index, int k) {
+
+	if (loop_data[index].level == k)
+		return index;
+	else 
+		getLevelKLoopIndex(loop_data,loop_data[index].parent,k);
+}
+
+typedef struct genvecinfo {
+	AST_INDEX expr;
+	char *index_var;
+} GenVecInfo;
+
+static int replace_index(AST_INDEX node,
+						 Generic vecinfo)
 {
+	GenVecInfo *gen_vec_info = (GenVecInfo *)vecinfo;
+	if (is_identifier(node) && !strcmp(gen_get_text(node),gen_vec_info->index_var)) 
+	{
+		pt_tree_replace(node,tree_copy_with_type(gen_vec_info->expr));
+		return WALK_FROM_OLD_NEXT;
+	}
+	return WALK_CONTINUE;
+}
+
+static int update_index(AST_INDEX node,
+					   	 	  Generic loop_info)
+{
+	model_loop * loop_data = (model_loop*)loop_info;
+	AST_INDEX control = gen_DO_get_control(loop_data->node);
+	AST_INDEX lwb = gen_INDUCTIVE_get_rvalue1(control);
+	AST_INDEX upb = gen_INDUCTIVE_get_rvalue2(control);
+	AST_INDEX step = gen_INDUCTIVE_get_rvalue3(control);
+
+	char *index_var = gen_get_text(gen_INDUCTIVE_get_name(control));
+
+	if (is_identifier(node) && !strcmp(gen_get_text(node),index_var)) 
+	{
+		if (!is_subscript(tree_out(node))) 
+		{
+			GenVecInfo vecinfo;
+
+			vecinfo.index_var = index_var;
+			vecinfo.expr = lwb;
+			AST_INDEX triplet_lwb = tree_copy_with_type(tree_out(node));
+			walk_expression(triplet_lwb,NOFUNC,replace_index,(Generic)&vecinfo);
+			triplet_lwb = pt_simplify_expr(triplet_lwb);
+
+			vecinfo.expr = upb;
+			AST_INDEX triplet_upb = tree_copy_with_type(tree_out(node));
+			walk_expression(triplet_upb,NOFUNC,replace_index,(Generic)&vecinfo);
+			triplet_upb = pt_simplify_expr(triplet_upb);
+
+			pt_tree_replace(tree_out(node),gen_TRIPLET(triplet_lwb,triplet_upb,tree_copy_with_type(step)));
+
+		    return WALK_ABORT;
+		} else 
+			pt_tree_replace(node,gen_TRIPLET(tree_copy_with_type(lwb),tree_copy_with_type(upb),
+											 tree_copy_with_type(step)));
+        
+		return WALK_ABORT;
+	}
+
+	return WALK_CONTINUE;
+	
+}
+
+static int find_subscript(AST_INDEX node,
+						  Generic loop_info)
+{
+	if (is_subscript(node)) {
+		AST_INDEX next_subscript = AST_NIL;
+		for (AST_INDEX subscript = list_first(gen_SUBSCRIPT_get_rvalue_LIST(node));
+			 subscript != AST_NIL;
+			 subscript = next_subscript) 
+		{
+			next_subscript = list_next(subscript);
+			walk_expression(subscript,NOFUNC,update_index,loop_info);
+		}
+	}
+	return WALK_CONTINUE;
+}
+
+AST_INDEX makeVectorStatement(AST_INDEX stmt, model_loop *loop_data, int k, int max) {
+	
+    AST_INDEX new_stmt = tree_copy_with_type(stmt);
+	for (int i = k; i < max; i++)
+	{
+		int index = getLevelKLoopIndex(loop_data,get_stmt_info_ptr(stmt)->surrounding_do,i);
+		walk_expression(new_stmt, NOFUNC, find_subscript, (Generic)&loop_data[index]);
+	}
+	return new_stmt;
+}
+
+AST_INDEX advancedVectorization(model_loop *loop_data,PedInfo ped, DependenceGraph *dgraph, int k)
+{
+	AST_INDEX levelKStmtList = gen_LIST_OF_NODES();
 	dgraph->computeSCC();
 	std::list<SCC*>& sccs = dgraph->getSCCS();
 
@@ -196,14 +290,42 @@ void advancedVectorization(PedInfo ped, DependenceGraph *dgraph, int k)
 		RegionNode *R = *it;
 		if (dgraph->isRegionCyclic(*R))
 		{
-			///generate a level-k DO
-			R->updateRegion(k+1);
 			if (R->getNumStmts() > 0) 
 			{
-				DependenceGraph *dgraph2 = buildIntraRegionGraph(R,ped,k+1);
-				advancedVectorization(ped,dgraph2,k+1);
+				///generate a level-k DO
+				AST_INDEX first_stmt = *R->getStmts().begin();
+				AST_INDEX loop_stmt = loop_data[getLevelKLoopIndex(loop_data,get_stmt_info_ptr(first_stmt)->surrounding_do,k)].node;
+				AST_INDEX levelKDo = gen_DO(tree_copy_with_type(gen_DO_get_lbl_def(loop_stmt)),
+											tree_copy_with_type(gen_DO_get_close_lbl_def(loop_stmt)),
+											tree_copy_with_type(gen_DO_get_lbl_ref(loop_stmt)),
+											tree_copy_with_type(gen_DO_get_control(loop_stmt)),
+											AST_NIL);
+				AST_INDEX loop_stmt_list = gen_LIST_OF_NODES();
+				
+				while(R->getNumStmts() > 0) {
+					std::list<AST_INDEX> *stmt_group = R->getStatementGroup(k+1);
+
+					first_stmt = *stmt_group->begin();
+
+					if (get_stmt_info_ptr(first_stmt)->level == k+1)
+						for (std::list<AST_INDEX>::iterator it2 = stmt_group->begin();
+							 it2 != stmt_group->end();
+							 it2++)
+							loop_stmt_list = list_insert_last(loop_stmt_list,*it2);
+					else 
+					{
+						RegionNode *R2 = new RegionNode();
+						R2->addStmts(*stmt_group);
+						DependenceGraph *dgraph2 = buildIntraRegionGraph(R2,ped,k+1);
+						loop_stmt_list = list_append(loop_stmt_list,advancedVectorization(loop_data,ped,dgraph2,k+1));
+					}
+				}
+				gen_DO_put_stmt_LIST(levelKDo,loop_stmt_list);
+
+				//generate a level-k ENDDO
+
+				levelKStmtList = list_insert_last(levelKStmtList,levelKDo);
 			}
-			//generate a level-k ENDDO
 		} else
 		{
 			std::list<AST_INDEX>& regionStmts = R->getStmts();
@@ -214,12 +336,14 @@ void advancedVectorization(PedInfo ped, DependenceGraph *dgraph, int k)
 				AST_INDEX stmt = *it2;
 				stringstream ss;
 				ss << get_stmt_info_ptr(stmt)->stmt_num ;
-				cout << "Statement " << ss.str() <<  " is vectorizable at levels: " <<  
-								*getLevelsString(k,get_stmt_info_ptr(stmt)->level) << "\n\n";
+				levelKStmtList = list_insert_last(levelKStmtList,
+												  makeVectorStatement(stmt,loop_data,k,get_stmt_info_ptr(stmt)->level));
 			}
 		}
 		
 	}
+
+	return levelKStmtList;
 
 }
 
@@ -276,5 +400,13 @@ void memory_advanced_vectorization(PedInfo ped,
 					(WK_STMT_CLBACK)NOFUNC, (Generic)vecDepGraph);
 
 	vecDepGraph->buildGraph(1);
-	advancedVectorization(ped, vecDepGraph, 1);
+
+	AST_INDEX vecStmts = advancedVectorization(loop_data, ped, vecDepGraph, 1);
+
+	AST_INDEX oldLoop = loop_data[0].node;
+	for (AST_INDEX stmt = list_first(vecStmts);
+		 stmt != AST_NIL;
+		 stmt = list_next(stmt))
+		list_insert_before(oldLoop,tree_copy_with_type(stmt));
+	list_remove_node(oldLoop);
 }
