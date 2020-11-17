@@ -35,7 +35,7 @@ class RegionNode
         void clearVisited() { visited = false; }
         void setSCCNum(int n) { sccNum = n; }
         int getSCCNum() { return sccNum; }
-        void updateRegion(int level);
+        std::list<AST_INDEX> *getStatementGroup(int level);
         void dumpRegion();
 };
 

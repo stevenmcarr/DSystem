@@ -54,19 +54,30 @@ void RegionNode::dumpRegion()
     cout << "\n";
 }
 
-void RegionNode::updateRegion(int level)
+std::list<AST_INDEX> *RegionNode::getStatementGroup(int level)
 {
+    std::list<AST_INDEX> *stmt_group = new std::list<AST_INDEX>();
     std::list<AST_INDEX>::iterator it = stmts.begin();
+    bool this_level = get_stmt_info_ptr(*it)->level == level;
     while(it != stmts.end())
     {
-        if (get_stmt_info_ptr(*it)->level == level)
-        {
-            cout << "Statement " << get_stmt_info_ptr(*it)->stmt_num << " is not vectorizable\n";
-            it = stmts.erase(it);
-        }
+        if (this_level)
+            if (get_stmt_info_ptr(*it)->level == level)
+            {
+                stmt_group->push_back(*it);
+                it = stmts.erase(it);
+            }
+            else
+                break;
         else
-        {
-            it++;
-        }
+            if (get_stmt_info_ptr(*it)->level > level)
+            {
+                stmt_group->push_back(*it);
+                it = stmts.erase(it);
+            }
+            else
+                break;
     }
+
+    return stmt_group;
 }

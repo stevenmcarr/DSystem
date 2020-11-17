@@ -15,7 +15,8 @@
 			"astlist.C": "cpp",
 			"FortTextTree.C": "cpp",
 			"FortUnparse1.C": "cpp",
-			"pt_util.C": "cpp"
+			"pt_util.C": "cpp",
+			"SPRegisters.C": "cpp"
 		}
 	},
 	"launch": {
@@ -26,7 +27,7 @@
 				"type": "cppdbg",
 				"request": "launch",
 				"program": "${workspaceFolder}/execs/Memoria/Memoria-Linux-i686-g",
-				"args": ["-V","-M", "${workspaceFolder}/execs/Memoria/s1.f"],
+				"args": ["-V","-M", "${workspaceFolder}/execs/Memoria/s2.f"],
 				"stopAtEntry": true,
 				"cwd": "${workspaceFolder}",
 				"environment": [],

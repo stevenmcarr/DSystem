@@ -196,6 +196,9 @@ void CompileFile(FortranModule *module)
       case PARTITION_UNROLL:
         (void)strcat(Filename, ".unroll.f");
         break;
+      case VECTORIZE:
+        (void)strcat(Filename, ".vec.f");
+        break;
       default:
         (void)strcat(Filename, ".memoria.f");
         break;
